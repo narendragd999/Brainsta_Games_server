@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Pong Game</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/addons/p5.sound.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -142,9 +141,25 @@
       pointer-events: none;
       z-index: 5;
     }
+    .audio-error {
+      position: absolute;
+      top: 40px;
+      width: 100%;
+      text-align: center;
+      color: #ff4444;
+      font-size: 14px;
+      font-weight: bold;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+      z-index: 5;
+      display: none;
+    }
     @media (max-width: 767px) {
       .score {
         font-size: 16px;
+      }
+      .audio-error {
+        font-size: 12px;
       }
       .modal h2 {
         font-size: 20px;
@@ -167,6 +182,7 @@
 <body>
   <div class="ui-container">
     <div class="score" id="score">Player: 0 | Opponent: 0</div>
+    <div class="audio-error" id="audioError">Audio failed to initialize. Check device settings or try another browser.</div>
     <div class="mobile-controls" id="mobileControls">
       <div class="mobile-button" id="upButton">↑</div>
       <div class="mobile-button" id="downButton">↓</div>
@@ -189,22 +205,7 @@
     let playerPaddle, opponentPaddle, ball, playerScore, opponentScore, gameState;
     let isMobile = /Mobi|Android/i.test(navigator.userAgent);
     let upPressed = false, downPressed = false;
-    let bounceSound, scoreSound, gameOverSound;
-
-    function preload() {
-      // Initialize sound oscillators
-      bounceSound = new p5.Oscillator('sine');
-      bounceSound.amp(0);
-      bounceSound.freq(440); // A4 note for bounce
-
-      scoreSound = new p5.Oscillator('square');
-      scoreSound.amp(0);
-      scoreSound.freq(330); // E4 note for score
-
-      gameOverSound = new p5.Oscillator('triangle');
-      gameOverSound.amp(0);
-      gameOverSound.freq(220); // A3 note for game over
-    }
+    let audioContext;
 
     function setup() {
       const aspectRatio = 2;
@@ -217,14 +218,32 @@
       createCanvas(canvasWidth, canvasHeight);
       let canvas = document.querySelector('canvas');
       canvas.style.margin = 'auto';
-      
-      // Start sound oscillators
-      bounceSound.start();
-      scoreSound.start();
-      gameOverSound.start();
-      
+
+      // Initialize game state
       resetGame();
-      document.getElementById('startButton').addEventListener('click', startGame);
+
+      // Initialize AudioContext on user interaction
+      document.getElementById('startButton').addEventListener('click', () => {
+        if (!audioContext) {
+          try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('AudioContext created:', audioContext.state);
+            if (audioContext.state === 'suspended') {
+              audioContext.resume().then(() => {
+                console.log('AudioContext resumed:', audioContext.state);
+              }).catch(err => {
+                console.error('Failed to resume AudioContext:', err);
+                document.getElementById('audioError').style.display = 'block';
+              });
+            }
+          } catch (err) {
+            console.error('Failed to create AudioContext:', err);
+            document.getElementById('audioError').style.display = 'block';
+          }
+        }
+        startGame();
+      });
+
       document.getElementById('restartButton').addEventListener('click', resetGame);
       if (isMobile) {
         setupMobileControls();
@@ -244,20 +263,23 @@
       resizeCanvas(canvasWidth, canvasHeight);
       let canvas = document.querySelector('canvas');
       canvas.style.margin = 'auto';
-      playerPaddle.x = 10;
-      playerPaddle.width = canvasWidth * 0.02;
-      playerPaddle.height = canvasHeight * 0.3;
-      playerPaddle.y = constrain(playerPaddle.y, 0, height - playerPaddle.height);
-      opponentPaddle.x = width - 20;
-      opponentPaddle.width = canvasWidth * 0.02;
-      opponentPaddle.height = canvasHeight * 0.3;
-      opponentPaddle.y = constrain(opponentPaddle.y, 0, height - opponentPaddle.height);
-      ball.x = constrain(ball.x, ball.radius, width - ball.radius);
-      ball.y = constrain(ball.y, ball.radius, height - ball.radius);
-      ball.radius = canvasWidth * 0.015;
+      if (playerPaddle && opponentPaddle && ball) {
+        playerPaddle.x = 10;
+        playerPaddle.width = canvasWidth * 0.02;
+        playerPaddle.height = canvasHeight * 0.3;
+        playerPaddle.y = constrain(playerPaddle.y, 0, height - playerPaddle.height);
+        opponentPaddle.x = width - 20;
+        opponentPaddle.width = canvasWidth * 0.02;
+        opponentPaddle.height = canvasHeight * 0.3;
+        opponentPaddle.y = constrain(opponentPaddle.y, 0, height - opponentPaddle.height);
+        ball.x = constrain(ball.x, ball.radius, width - ball.radius);
+        ball.y = constrain(ball.y, ball.radius, height - ball.radius);
+        ball.radius = canvasWidth * 0.015;
+      }
     }
 
     function resetGame() {
+      console.log('Resetting game...');
       playerPaddle = { x: 10, y: height / 2 - height * 0.15, width: width * 0.02, height: height * 0.3 };
       opponentPaddle = { x: width - 20, y: height / 2 - height * 0.15, width: width * 0.02, height: height * 0.3 };
       ball = { x: width / 2, y: height / 2, vx: random([-3, 3]) * (width / 600), vy: random(-1.5, 1.5) * (height / 300), radius: width * 0.015 };
@@ -268,19 +290,22 @@
       document.getElementById('startModal').style.display = 'block';
       document.getElementById('gameOverModal').style.display = 'none';
       document.getElementById('loader').style.display = 'none';
+      document.getElementById('audioError').style.display = 'none';
       upPressed = false;
       downPressed = false;
-      loop();
+      noLoop();
+      console.log('Game reset complete:', { playerPaddle, opponentPaddle, ball });
     }
 
     function startGame() {
+      console.log('Starting game...');
       gameState = 'playing';
       document.getElementById('startModal').style.display = 'none';
       document.getElementById('loader').style.display = 'block';
       setTimeout(() => {
         document.getElementById('loader').style.display = 'none';
+        loop();
       }, 500);
-      loop();
     }
 
     function setupMobileControls() {
@@ -319,23 +344,40 @@
       if (keyCode === DOWN_ARROW) downPressed = false;
     }
 
+    function playSound(frequency, type, duration) {
+      if (!audioContext || audioContext.state !== 'running') {
+        console.warn('AudioContext not running, sound skipped:', { frequency, type, duration });
+        document.getElementById('audioError').style.display = 'block';
+        return;
+      }
+      console.log('Playing sound:', { frequency, type, duration });
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+
     function playBounceSound() {
-      bounceSound.amp(0.3, 0.1); // Quick fade-in
-      setTimeout(() => bounceSound.amp(0, 0.1), 100); // Short beep
+      playSound(440, 'sine', 0.1); // Short beep for paddle/wall hit
     }
 
     function playScoreSound() {
-      scoreSound.amp(0.3, 0.1);
-      setTimeout(() => scoreSound.amp(0, 0.2), 200); // Slightly longer tone
+      playSound(330, 'square', 0.2); // Medium buzz for score
     }
 
     function playGameOverSound() {
-      gameOverSound.amp(0.3, 0.1);
-      setTimeout(() => gameOverSound.amp(0, 0.3), 500); // Longer, deeper tone
+      playSound(220, 'triangle', 0.5); // Longer tone for game over
     }
 
     function draw() {
-      if (gameState !== 'playing') {
+      if (gameState !== 'playing' || !ball || !playerPaddle || !opponentPaddle) {
+        console.log('Draw skipped:', { gameState, ball, playerPaddle, opponentPaddle });
         return;
       }
 
@@ -398,6 +440,7 @@
         document.getElementById('finalScore').innerText = `Player: ${playerScore} | Opponent: ${opponentScore}`;
         document.getElementById('gameOverModal').style.display = 'block';
         playGameOverSound();
+        noLoop();
       }
 
       // Draw paddles and ball
