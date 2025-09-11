@@ -48,9 +48,19 @@
       color: #6a11cb;
       margin-bottom: 5px;
     }
+    #score-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
     #score {
       font-size: 18px;
       color: #3498db;
+      font-weight: 600;
+    }
+    #coins {
+      font-size: 14px;
+      color: #f1c40f;
       font-weight: 600;
     }
     #settings-btn {
@@ -245,19 +255,39 @@
       cursor: pointer;
       z-index: 10;
     }
+    #progress-bar {
+      height: 5px;
+      background: #f1c40f;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    .coin-progress {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+    .coin-icon {
+      color: #f1c40f;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
   <div id="game-container">
     <div id="header">
       <div id="title">Coin Collector</div>
-      <div id="score">Score: 0</div>
+      <div id="score-container">
+        <div id="score">Score: 0</div>
+        <div id="coins">Coins: 0/200</div>
+      </div>
       <button id="settings-btn">Settings</button>
     </div>
+    <div id="progress-bar"></div>
     <div id="canvas-container">
       <button id="audio-toggle">🔊</button>
       <div id="instructions">
-        Collect 50 coins to win!<br>
+        Collect 200 coins to win!<br>
         Use buttons on mobile<br>
         Arrow keys on desktop
       </div>
@@ -318,12 +348,12 @@
     let canvas;
 
     // Game variables
-    let player, coins, platforms, score, highScore, isGameOver, gameStarted;
+    let player, coins, platforms, score, coinsCollected, highScore, isGameOver, gameStarted;
     let leftPressed = false, rightPressed = false, jumpPressed = false;
     let gravity = 0.8, friction = 0.15, moveSpeed = 6, jumpPower = 16;
     let particles = [];
     let audioEnabled = true;
-    const WIN_SCORE = 50; // Reduced for easier testing
+    const WIN_COINS = 200; // Player needs to collect 200 coins to win
 
     // Audio context and sounds
     let audioContext;
@@ -516,13 +546,14 @@
         { x: 50, y: 100, width: 90, height: 15 }
       ];
       score = 0;
+      coinsCollected = 0;
       isGameOver = false;
       gameStarted = false;
       leftPressed = false;
       rightPressed = false;
       jumpPressed = false;
       particles = [];
-      spawnCoins(10);
+      spawnCoins(15);
       updateUI();
       document.getElementById('game-over-modal').style.display = 'none';
       document.getElementById('win-modal').style.display = 'none';
@@ -543,6 +574,8 @@
 
     function updateUI() {
       document.getElementById('score').textContent = `Score: ${score}`;
+      document.getElementById('coins').textContent = `Coins: ${coinsCollected}/${WIN_COINS}`;
+      document.getElementById('progress-bar').style.width = `${(coinsCollected / WIN_COINS) * 100}%`;
     }
 
     function updatePlayer() {
@@ -621,24 +654,28 @@
         if (distance < (player.width + coin.size)/2) {
           coin.collected = true;
           score += 10;
+          coinsCollected++;
           updateUI();
           createParticles(coin.x, coin.y, 'collect');
           playSound(coinSound);
-          // Respawn coin
-          setTimeout(() => {
-            coins[i] = {
-              x: random(20, 380),
-              y: random(50, 400),
-              size: 18,
-              rotation: 0,
-              collected: false
-            };
-          }, 1000);
+          
+          // Respawn coin if we haven't reached the win condition
+          if (coinsCollected < WIN_COINS) {
+            setTimeout(() => {
+              coins[i] = {
+                x: random(20, 380),
+                y: random(50, 400),
+                size: 18,
+                rotation: 0,
+                collected: false
+              };
+            }, 1000);
+          }
         }
       }
 
       // Check win condition
-      if (score >= WIN_SCORE && !isGameOver) {
+      if (coinsCollected >= WIN_COINS && !isGameOver) {
         isGameOver = true;
         saveHighScore();
         document.getElementById('final-score').textContent = `Final Score: ${score} | High: ${highScore}`;
@@ -712,6 +749,13 @@
       drawParticles();
       drawCoins();
       drawPlayer();
+      
+      // Draw coin progress in the top right
+      fill(0, 0, 0, 150);
+      noStroke();
+      textAlign(RIGHT);
+      textSize(14);
+      text(`Coins: ${coinsCollected}/${WIN_COINS}`, width - 10, 30);
     }
 
     function drawPlayer() {
@@ -729,6 +773,10 @@
       fill(255);
       ellipse(player.x + player.width/3, player.y + player.height/3, 6, 6);
       ellipse(player.x + 2*player.width/3, player.y + player.height/3, 6, 6);
+      
+      // Mouth
+      fill(255);
+      arc(player.x + player.width/2, player.y + 2*player.height/3, 10, 5, 0, PI);
     }
 
     function drawPlatforms() {
@@ -765,7 +813,7 @@
         noStroke();
         textAlign(CENTER, CENTER);
         textSize(12);
-        text('★', 0, 0);
+        text('$', 0, 0);
         pop();
       }
     }
