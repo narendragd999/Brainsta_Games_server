@@ -241,9 +241,7 @@
     </div>
     <div id="canvas-container">
       <div id="instructions">
-        Collect 50 coins to win!<br>
-        Use buttons on mobile<br>
-        Arrow keys on desktop
+        Collect 50 coins to win!<br>        
       </div>
       <div id="game-over-modal">
         <div id="game-over-content">
@@ -317,13 +315,17 @@
       
       // Show loader briefly
       showLoader(1000);
+
+      // Add canvas event listeners here to ensure canvas is defined
+      canvas.elt.addEventListener('touchstart', startGame);
+      canvas.elt.addEventListener('click', startGame);
+      document.addEventListener('keydown', startGame);
     }
 
     function showLoader(duration) {
       document.getElementById('loader').style.display = 'flex';
       setTimeout(() => {
         document.getElementById('loader').style.display = 'none';
-        gameStarted = true;
       }, duration);
     }
 
@@ -425,11 +427,15 @@
       score = 0;
       isGameOver = false;
       gameStarted = false;
+      leftPressed = false;
+      rightPressed = false;
+      jumpPressed = false;
       particles = [];
       spawnCoins(10);
       updateUI();
       document.getElementById('game-over-modal').style.display = 'none';
       document.getElementById('win-modal').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'none';
     }
 
     function spawnCoins(num) {
@@ -471,10 +477,11 @@
       // Platform collision
       player.onGround = false;
       for (let plat of platforms) {
-        if (player.x < plat.x + plat.width &&
-            player.x + player.width > plat.x &&
+        if (player.x + player.width > plat.x &&
+            player.x < plat.x + plat.width &&
+            player.y + player.height > plat.y &&
             player.y + player.height <= plat.y + plat.height &&
-            player.y + player.height + player.vy >= plat.y) {
+            player.vy >= 0) { // Only collide when moving downward
           player.y = plat.y - player.height;
           player.vy = 0;
           player.onGround = true;
@@ -483,7 +490,7 @@
       }
 
       // Ground collision
-      if (player.y + player.height > height) {
+      if (player.y + player.height >= height) {
         player.y = height - player.height;
         player.vy = 0;
         player.onGround = true;
@@ -690,13 +697,13 @@
     // Game event listeners
     document.getElementById('restart-btn').addEventListener('click', resetGame);
     document.getElementById('main-menu-btn').addEventListener('click', () => {
-      alert('Returning to main menu...');
       resetGame();
+      gameStarted = false; // Return to start screen
     });
     document.getElementById('win-restart-btn').addEventListener('click', resetGame);
     document.getElementById('win-main-menu-btn').addEventListener('click', () => {
-      alert('Returning to main menu...');
       resetGame();
+      gameStarted = false; // Return to start screen
     });
 
     // Start game on first interaction
@@ -707,10 +714,6 @@
         gameStarted = true;
       }
     }
-
-    canvas.elt.addEventListener('touchstart', startGame);
-    canvas.elt.addEventListener('click', startGame);
-    document.addEventListener('keydown', startGame);
   </script>
 </body>
 </html>
