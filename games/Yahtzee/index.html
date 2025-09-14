@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Yahtzee Game</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -11,47 +11,52 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            background: linear-gradient(135deg, #6a11cb, #fff);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 10px;
+            overflow: hidden;
         }
 
         .game-container {
             width: 100%;
             max-width: 500px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            max-height: 100vh;
         }
 
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f1f1f1;
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: bold;
-            color: white;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            color: #6a11cb;
         }
 
-        .info-btn {
-            background: linear-gradient(135deg, #3498db, #2c3e50);
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
+            background-color: #3498db;
             color: white;
             border: none;
             width: 35px;
@@ -61,40 +66,35 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        .info-btn:hover {
-            transform: scale(1.1);
+        .header-btn.restart {
+            background-color: #6a11cb;
         }
 
         .turn-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: white;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: #666;
         }
 
         .game-status {
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
             font-weight: bold;
-            color: white;
+            color: #6a11cb;
             min-height: 24px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
+            font-size: 0.95rem;
         }
 
         .dice-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .die {
@@ -102,25 +102,21 @@
             width: 100%;
             aspect-ratio: 1;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: center;
             align-items: center;
+            font-size: 1.8rem;
+            font-weight: bold;
             cursor: pointer;
             user-select: none;
-            transition: transform 0.3s, box-shadow 0.3s;
-            padding: 10%;
+            transition: transform 0.2s;
         }
 
         .die.held {
-            box-shadow: 0 0 0 3px #3498db, 0 5px 15px rgba(52, 152, 219, 0.5);
+            box-shadow: 0 0 0 3px #3498db;
             transform: scale(0.95);
-        }
-
-        .die:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
         }
 
         .die-face {
@@ -129,7 +125,7 @@
             grid-template-rows: repeat(3, 1fr);
             width: 100%;
             height: 100%;
-            padding: 10%;
+            padding: 15%;
         }
 
         .dot {
@@ -145,111 +141,100 @@
         .controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
         .btn {
-            padding: 12px;
+            padding: 10px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #3498db, #2c3e50);
+            background-color: #3498db;
             color: white;
         }
 
         .btn-secondary {
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            background-color: #6a11cb;
             color: white;
         }
 
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn:not(:disabled):hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
         .score-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
         .score-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #f1f1f1;
         }
 
         .score-card h3 {
             text-align: center;
-            margin-bottom: 12px;
-            font-size: 0.95rem;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
             color: #6a11cb;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
 
         .score-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 5px;
         }
 
         .score-option {
-            padding: 8px 5px;
+            padding: 5px;
             text-align: center;
             background: #f8f8f8;
-            border-radius: 8px;
-            font-size: 0.8rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: background 0.2s;
         }
 
         .score-option:hover {
             background: #e8e8e8;
-            transform: translateY(-2px);
         }
 
         .score-option.used {
             background: #e0e0e0;
             color: #888;
             cursor: not-allowed;
-            transform: none;
         }
 
         .score-display {
             display: flex;
             justify-content: space-between;
-            margin-top: 12px;
+            margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
-            font-size: 0.9rem;
+            border-top: 1px solid #f1f1f1;
+            font-size: 0.85rem;
         }
 
-        .total-display {
+        .total-score {
             display: flex;
             justify-content: center;
-            margin-top: 15px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
             font-weight: bold;
             color: #6a11cb;
         }
@@ -279,39 +264,32 @@
             background: white;
             width: 90%;
             max-width: 500px;
-            border-radius: 20px;
-            padding: 25px;
+            border-radius: 15px;
+            padding: 20px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #f1f1f1;
         }
 
         .modal-title {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             color: #6a11cb;
-            font-weight: bold;
         }
 
         .close-btn {
             background: none;
             border: none;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             cursor: pointer;
             color: #888;
-            transition: color 0.2s;
-        }
-
-        .close-btn:hover {
-            color: #333;
         }
 
         .rules-list {
@@ -320,61 +298,62 @@
         }
 
         .rules-list li {
-            margin-bottom: 12px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        .rules-list li strong {
-            color: #6a11cb;
-        }
-
-        .how-to-play {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #f1f1f1;
-        }
-
-        .how-to-play h4 {
-            color: #6a11cb;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
         }
 
         @media (max-width: 500px) {
             .game-container {
-                padding: 15px;
+                padding: 10px;
+                border-radius: 12px;
             }
             
-            .logo {
+            .die {
                 font-size: 1.5rem;
             }
             
             .score-option {
                 font-size: 0.7rem;
-                padding: 6px 3px;
+                padding: 4px 2px;
             }
             
             .btn {
-                padding: 10px;
+                padding: 8px;
                 font-size: 0.9rem;
             }
             
-            .modal-content {
-                padding: 20px;
+            .header-btn {
+                width: 30px;
+                height: 30px;
             }
             
-            .modal-title {
+            .logo {
                 font-size: 1.3rem;
             }
         }
 
-        @media (min-width: 768px) {
+        @media (max-height: 700px) {
             .game-container {
-                max-width: 550px;
+                padding: 8px;
             }
             
             .dice-container {
-                gap: 15px;
+                gap: 5px;
+                margin-bottom: 10px;
+            }
+            
+            .score-section {
+                gap: 8px;
+                margin-bottom: 10px;
+            }
+            
+            .score-card {
+                padding: 8px;
+            }
+            
+            .score-option {
+                font-size: 0.7rem;
+                padding: 3px 1px;
             }
         }
 
@@ -396,9 +375,14 @@
     <div class="game-container">
         <header>
             <div class="logo">YAHTZEE</div>
-            <button class="info-btn" id="infoBtn">
-                <i class="fas fa-info"></i>
-            </button>
+            <div class="header-buttons">
+                <button class="header-btn restart" id="restartBtn">
+                    <i class="fas fa-redo"></i>
+                </button>
+                <button class="header-btn" id="infoBtn">
+                    <i class="fas fa-info"></i>
+                </button>
+            </div>
         </header>
         
         <div class="turn-info">
@@ -406,7 +390,7 @@
             <span id="rollCounter">Rolls: 0/3</span>
         </div>
         
-        <div class="game-status" id="gameStatus">Click "Roll Dice" to start playing!</div>
+        <div class="game-status" id="gameStatus">Roll the dice to start!</div>
         
         <div class="dice-container" id="diceContainer">
             <!-- Dice will be generated here -->
@@ -445,7 +429,7 @@
             </div>
         </div>
         
-        <div class="total-display">
+        <div class="total-score">
             <span>Grand Total: </span>
             <span id="grandTotal">0</span>
         </div>
@@ -454,34 +438,20 @@
     <div class="modal" id="instructionsModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">How to Play Yahtzee</h3>
+                <h3 class="modal-title">Yahtzee Game Rules</h3>
                 <button class="close-btn" id="closeModal">&times;</button>
             </div>
-            <div class="how-to-play">
-                <h4>Game Instructions</h4>
-                <ol class="rules-list">
-                    <li>Click <strong>"Roll Dice"</strong> to start your turn. You can roll up to 3 times per turn.</li>
-                    <li>After each roll, you can <strong>click on dice</strong> to hold them (they won't be re-rolled).</li>
-                    <li>After your final roll, click <strong>"Score Roll"</strong> and choose a category to score.</li>
-                    <li>Each category can only be used <strong>once per game</strong>.</li>
-                    <li>The game consists of <strong>13 turns</strong>, one for each category.</li>
-                    <li>Try to maximize your score by strategically choosing categories!</li>
-                </ol>
-            </div>
-            <div class="how-to-play">
-                <h4>Scoring Rules</h4>
-                <ul class="rules-list">
-                    <li><strong>Upper Section:</strong> Score the sum of specific numbers (Ones, Twos, etc.)</li>
-                    <li><strong>Bonus:</strong> Get 35 bonus points if your upper section total is 63 or more</li>
-                    <li><strong>Three of a Kind:</strong> At least 3 same dice - score total of all dice</li>
-                    <li><strong>Four of a Kind:</strong> At least 4 same dice - score total of all dice</li>
-                    <li><strong>Full House:</strong> 3 of one number + 2 of another = 25 points</li>
-                    <li><strong>Small Straight:</strong> Sequence of 4 numbers = 30 points</li>
-                    <li><strong>Large Straight:</strong> Sequence of 5 numbers = 40 points</li>
-                    <li><strong>Yahtzee:</strong> All 5 dice the same = 50 points</li>
-                    <li><strong>Chance:</strong> Anything - score total of all dice</li>
-                </ul>
-            </div>
+            <ul class="rules-list">
+                <li>Roll dice up to 3 times per turn to achieve the best combination.</li>
+                <li>Choose which dice to keep between rolls.</li>
+                <li>After rolling, select a category to score your roll.</li>
+                <li>Each category can only be used once per game.</li>
+                <li>Upper section: Score the sum of specific numbers.</li>
+                <li>Lower section: Score special combinations like Full House, Straights, etc.</li>
+                <li>Bonus: Score 35 bonus points if your upper section total is 63 or more.</li>
+                <li>Yahtzee: Score 50 points for five of a kind.</li>
+                <li>The game ends after 13 rounds, and the player with the highest total wins!</li>
+            </ul>
         </div>
     </div>
 
@@ -509,6 +479,7 @@
             const turnCounter = document.getElementById('turnCounter');
             const rollCounter = document.getElementById('rollCounter');
             const infoBtn = document.getElementById('infoBtn');
+            const restartBtn = document.getElementById('restartBtn');
             const instructionsModal = document.getElementById('instructionsModal');
             const closeModal = document.getElementById('closeModal');
             const upperSection = document.getElementById('upperSection');
@@ -520,6 +491,9 @@
             
             // Initialize the game
             function initGame() {
+                // Clear existing dice
+                diceContainer.innerHTML = '';
+                
                 // Create dice elements with dot representation
                 for (let i = 0; i < 5; i++) {
                     const die = document.createElement('div');
@@ -541,13 +515,18 @@
                     diceContainer.appendChild(die);
                 }
                 
-                // Create score options
-                createScoreOptions();
+                // Create score options if they don't exist
+                if (upperSection.children.length === 0) {
+                    createScoreOptions();
+                } else {
+                    resetScoreOptions();
+                }
                 
                 // Add event listeners
                 rollBtn.addEventListener('click', rollDice);
                 scoreBtn.addEventListener('click', showScoreOptions);
                 infoBtn.addEventListener('click', () => instructionsModal.classList.add('active'));
+                restartBtn.addEventListener('click', restartGame);
                 closeModal.addEventListener('click', () => instructionsModal.classList.remove('active'));
                 
                 // Close modal when clicking outside
@@ -558,6 +537,30 @@
                 });
                 
                 updateUI();
+            }
+            
+            // Restart the game
+            function restartGame() {
+                // Reset game state
+                diceValues = [0, 0, 0, 0, 0];
+                heldDice = [false, false, false, false, false];
+                rollsLeft = 3;
+                currentTurn = 1;
+                gameActive = true;
+                
+                // Reset scores
+                for (let key in scores) {
+                    scores[key] = null;
+                }
+                
+                // Enable buttons
+                rollBtn.disabled = false;
+                scoreBtn.disabled = true;
+                
+                // Reinitialize the game
+                initGame();
+                
+                gameStatus.textContent = 'Game restarted! Roll the dice to start!';
             }
             
             // Create dice dot patterns based on value
@@ -582,9 +585,11 @@
                             6: [0, 2, 3, 5, 6, 8]
                         };
                         
-                        patterns[value].forEach(pos => {
-                            dots[pos].classList.remove('hidden');
-                        });
+                        if (patterns[value]) {
+                            patterns[value].forEach(pos => {
+                                dots[pos].classList.remove('hidden');
+                            });
+                        }
                     }
                 });
             }
@@ -610,6 +615,10 @@
                     { id: 'chance', label: 'Chance', score: 0 }
                 ];
                 
+                // Clear existing options
+                upperSection.innerHTML = '';
+                lowerSection.innerHTML = '';
+                
                 // Create upper section options
                 upperCategories.forEach(cat => {
                     const option = document.createElement('div');
@@ -633,14 +642,37 @@
                 });
             }
             
+            // Reset score options for a new game
+            function resetScoreOptions() {
+                for (let key in scores) {
+                    const option = document.getElementById(`option-${key}`);
+                    if (option) {
+                        option.classList.remove('used');
+                        
+                        // Reset the text based on category type
+                        if (key === 'fullHouse') {
+                            option.innerHTML = 'Full House<br>25';
+                        } else if (key === 'smallStraight') {
+                            option.innerHTML = 'Sm Straight<br>30';
+                        } else if (key === 'largeStraight') {
+                            option.innerHTML = 'Lg Straight<br>40';
+                        } else if (key === 'yahtzee') {
+                            option.innerHTML = 'Yahtzee<br>50';
+                        } else {
+                            option.innerHTML = `${option.dataset.category}<br>0`;
+                        }
+                    }
+                }
+            }
+            
             // Roll the dice
             function rollDice() {
                 if (rollsLeft <= 0 || !gameActive) return;
                 
                 // Add rolling animation
                 const dice = diceContainer.querySelectorAll('.die');
-                dice.forEach(die => {
-                    if (!die.classList.contains('held')) {
+                dice.forEach((die, index) => {
+                    if (!heldDice[index]) {
                         die.classList.add('rolling');
                         setTimeout(() => die.classList.remove('rolling'), 500);
                     }
@@ -920,7 +952,7 @@
                 grandTotalElem.textContent = total;
             }
             
-            // Initialize the game 
+            // Initialize the game
             initGame();
         });
     </script>
