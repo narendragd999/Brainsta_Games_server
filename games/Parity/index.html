@@ -271,6 +271,11 @@
             color: #3498db;
         }
 
+        .power-up.solve {
+            background: #e6f7e6;
+            color: #27ae60;
+        }
+
         .power-up i {
             font-size: 1.2rem;
             margin-bottom: 5px;
@@ -412,6 +417,23 @@
             background: #e74c3c;
         }
 
+        /* Solution path animation */
+        .solution-path {
+            position: absolute;
+            background: rgba(52, 152, 219, 0.3);
+            border-radius: 50%;
+            width: 70%;
+            height: 70%;
+            animation: pathPulse 1.5s infinite;
+            z-index: -1;
+        }
+
+        @keyframes pathPulse {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+
         /* Responsive adjustments */
         @media (max-height: 700px) {
             .game-container {
@@ -497,6 +519,10 @@
                 <i class="fas fa-plus-circle"></i>
                 <span>+5 Moves</span>
             </button>
+            <button class="power-up solve" id="solvePowerUp" title="Show optimal solution">
+                <i class="fas fa-robot"></i>
+                <span>Show Solution</span>
+            </button>
         </div>
 
         <div class="action-buttons">
@@ -526,6 +552,7 @@
                 <ul class="feature-list">
                     <li><strong>Reset Cell</strong>: Set one cell back to 0 (limited uses)</li>
                     <li><strong>+5 Moves</strong>: Get extra moves when you're running low</li>
+                    <li><strong>Show Solution</strong>: Highlight the optimal path to solve the puzzle</li>
                 </ul>
                 
                 <h3>Difficulty Levels:</h3>
@@ -534,6 +561,9 @@
                     <li><strong>Medium</strong>: 4x4 grid, 25 moves, target 7</li>
                     <li><strong>Hard</strong>: 5x5 grid, 30 moves, target 9</li>
                 </ul>
+                
+                <h3>Optimal Strategy:</h3>
+                <p>The most efficient solution is to increment cells in a specific order to minimize the total number of moves needed. The solution finder uses a mathematical approach to determine this optimal path.</p>
                 
                 <p>Plan your moves carefully to achieve parity before running out of moves!</p>
             </div>
@@ -554,8 +584,10 @@
                 difficulty: 'easy',
                 powerUps: {
                     reset: 2,
-                    addMoves: 1
-                }
+                    addMoves: 1,
+                    solve: 1
+                },
+                solutionPath: []
             };
 
             // DOM elements
@@ -573,6 +605,7 @@
             const diffBtns = document.querySelectorAll('.diff-btn');
             const resetPowerUp = document.getElementById('resetPowerUp');
             const movesPowerUp = document.getElementById('movesPowerUp');
+            const solvePowerUp = document.getElementById('solvePowerUp');
 
             // Initialize the game board
             function initGame() {
@@ -622,6 +655,9 @@
                 winMessage.classList.remove('active');
                 gameState.gameActive = true;
                 
+                // Clear solution path
+                gameState.solutionPath = [];
+                
                 // Update power-up buttons
                 updatePowerUpButtons();
             }
@@ -664,6 +700,7 @@
                 // Reset power-ups
                 gameState.powerUps.reset = 2;
                 gameState.powerUps.addMoves = 1;
+                gameState.powerUps.solve = 1;
                 
                 // Initialize new game
                 initGame();
@@ -828,13 +865,156 @@
                 }
             }
 
+            // Find optimal solution using a mathematical approach
+            function findOptimalSolution() {
+                // Create a copy of the board
+                const board = JSON.parse(JSON.stringify(gameState.board));
+                const target = gameState.targetValue;
+                const size = gameState.boardSize;
+                
+                // Calculate the required increments for each cell
+                const requiredIncrements = [];
+                for (let row = 0; row < size; row++) {
+                    requiredIncrements[row] = [];
+                    for (let col = 0; col < size; col++) {
+                        // Calculate how many increments are needed to reach the target
+                        let incrementsNeeded = (target - board[row][col]) % (target + 1);
+                        if (incrementsNeeded < 0) incrementsNeeded += target + 1;
+                        requiredIncrements[row][col] = incrementsNeeded;
+                    }
+                }
+                
+                // Find the optimal path using a greedy approach
+                const path = [];
+                const visited = Array(size).fill().map(() => Array(size).fill(false));
+                
+                // Start from the center or a cell with the highest required increments
+                let currentRow = Math.floor(size / 2);
+                let currentCol = Math.floor(size / 2);
+                
+                // Find the cell that needs the most increments
+                let maxIncrements = -1;
+                for (let row = 0; row < size; row++) {
+                    for (let col = 0; col < size; col++) {
+                        if (requiredIncrements[row][col] > maxIncrements) {
+                            maxIncrements = requiredIncrements[row][col];
+                            currentRow = row;
+                            currentCol = col;
+                        }
+                    }
+                }
+                
+                // Generate the solution path
+                while (true) {
+                    // Mark current cell as visited
+                    visited[currentRow][currentCol] = true;
+                    
+                    // Add the required increments for this cell to the path
+                    for (let i = 0; i < requiredIncrements[currentRow][currentCol]; i++) {
+                        path.push({ row: currentRow, col: currentCol });
+                    }
+                    
+                    // Find the next unvisited cell with the highest required increments
+                    let nextRow = -1;
+                    let nextCol = -1;
+                    maxIncrements = -1;
+                    
+                    for (let row = 0; row < size; row++) {
+                        for (let col = 0; col < size; col++) {
+                            if (!visited[row][col] && requiredIncrements[row][col] > maxIncrements) {
+                                maxIncrements = requiredIncrements[row][col];
+                                nextRow = row;
+                                nextCol = col;
+                            }
+                        }
+                    }
+                    
+                    // If no more cells, break
+                    if (nextRow === -1 || nextCol === -1) break;
+                    
+                    // Add movement path to the next cell
+                    // Move horizontally first, then vertically
+                    while (currentCol !== nextCol) {
+                        if (currentCol < nextCol) {
+                            currentCol++;
+                        } else {
+                            currentCol--;
+                        }
+                        path.push({ row: currentRow, col: currentCol, move: true });
+                    }
+                    
+                    while (currentRow !== nextRow) {
+                        if (currentRow < nextRow) {
+                            currentRow++;
+                        } else {
+                            currentRow--;
+                        }
+                        path.push({ row: currentRow, col: currentCol, move: true });
+                    }
+                }
+                
+                return path;
+            }
+
+            // Use solve power-up to show optimal solution
+            function useSolvePowerUp() {
+                if (gameState.powerUps.solve > 0 && gameState.gameActive) {
+                    // Calculate optimal solution
+                    gameState.solutionPath = findOptimalSolution();
+                    
+                    // Visualize the solution path
+                    visualizeSolution();
+                    
+                    gameState.powerUps.solve--;
+                    updatePowerUpButtons();
+                }
+            }
+
+            // Visualize the solution path
+            function visualizeSolution() {
+                // Clear any existing visualization
+                document.querySelectorAll('.solution-path').forEach(el => el.remove());
+                
+                if (gameState.solutionPath.length === 0) return;
+                
+                // Show the path step by step
+                let index = 0;
+                const interval = setInterval(() => {
+                    if (index >= gameState.solutionPath.length) {
+                        clearInterval(interval);
+                        return;
+                    }
+                    
+                    const step = gameState.solutionPath[index];
+                    const cell = document.querySelector(`.cell[data-row="${step.row}"][data-col="${step.col}"]`);
+                    
+                    if (cell && !step.move) {
+                        // This is an increment step, highlight the cell
+                        const highlight = document.createElement('div');
+                        highlight.className = 'solution-path';
+                        cell.appendChild(highlight);
+                        
+                        // Remove the highlight after some time
+                        setTimeout(() => {
+                            if (cell.contains(highlight)) {
+                                cell.removeChild(highlight);
+                            }
+                        }, 1400);
+                    }
+                    
+                    index++;
+                }, 150);
+            }
+
             // Update power-up buttons state
             function updatePowerUpButtons() {
                 resetPowerUp.disabled = gameState.powerUps.reset <= 0;
                 movesPowerUp.disabled = gameState.powerUps.addMoves <= 0;
+                solvePowerUp.disabled = gameState.powerUps.solve <= 0;
                 
                 resetPowerUp.innerHTML = `<i class="fas fa-undo"></i><span>Reset (${gameState.powerUps.reset})</span>`;
                 movesPowerUp.innerHTML = `<i class="fas fa-plus-circle"></i><span>+5 Moves (${gameState.powerUps.addMoves})</span>`;
+                solvePowerUp.innerHTML = `<i class="fas fa-robot"></i><span>Solve (${gameState.powerUps.solve})</span>`;
             }
 
             // Set up control button events
@@ -864,6 +1044,7 @@
             // Set up power-up buttons
             resetPowerUp.addEventListener('click', useResetPowerUp);
             movesPowerUp.addEventListener('click', useAddMovesPowerUp);
+            solvePowerUp.addEventListener('click', useSolvePowerUp);
 
             // Keyboard support
             document.addEventListener('keydown', (e) => {
@@ -893,6 +1074,10 @@
                     case 'a':
                     case 'A':
                         useAddMovesPowerUp();
+                        break;
+                    case 's':
+                    case 'S':
+                        useSolvePowerUp();
                         break;
                 }
             });

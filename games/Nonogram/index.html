@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Nonogram — Fixed & Centered</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{--cell-size:28px}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,Segoe UI,Roboto,system-ui,-apple-system,"Helvetica Neue",Arial}
+    html,body{height:100%}
+    body{background:linear-gradient(135deg,#6a11cb 0%,#fff 100%);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:8px;color:#222}
+    .container{width:100%;max-width:760px;background:#fff;border-radius:14px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);display:flex;flex-direction:column;align-items:center}
+    .header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;width:100%}
+    h1{flex:1;color:#6a11cb;font-size:1rem}
+    .game-info{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap;width:100%}
+    .info-item{background:#f8f9fa;padding:6px 8px;border-radius:8px;display:flex;flex-direction:column;align-items:center;font-size:0.78rem}
+    .info-value{font-weight:700;color:#6a11cb}
+    .controls{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;width:100%;justify-content:center}
+    button{border:none;padding:6px 8px;border-radius:8px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:6px;font-size:0.82rem}
+    .btn-primary{background:#3498db;color:#fff}
+    .btn-secondary{background:#6a11cb;color:#fff}
+    .btn-clear{background:#e74c3c;color:#fff}
+    .btn-new{background:#2ecc71;color:#fff}
+    .btn-solution{background:#f39c12;color:#fff}
+    .board-area{display:flex;gap:8px;align-items:flex-start;justify-content:center}
+    .clues-left{    display: flex
+;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 54px;
+    align-items: flex-end;}
+    .row-clue{display:flex;justify-content:flex-end;align-items:center;gap:4px;flex-wrap:wrap}
+    .row-clue .num{background:#e9ecef;color:#6a11cb;padding:3px 6px;border-radius:6px;font-weight:700;font-size:0.75rem}
+    .board-wrap{position:relative;display:flex;flex-direction:column;align-items:center}
+    .clues-top{display:grid;grid-auto-flow:column;gap:4px;align-items:flex-end;margin-bottom:4px}
+    .clue-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+    .clue-col .num{background:#e9ecef;color:#6a11cb;padding:3px 6px;border-radius:6px;font-weight:700;font-size:0.75rem}
+    .game-board{display:grid;gap:4px;touch-action:manipulation}
+    .cell{width:var(--cell-size);height:var(--cell-size);background:#f8f9fa;border:1px solid #e3e6ea;display:flex;align-items:center;justify-content:center;border-radius:6px;user-select:none;cursor:pointer}
+    .cell.filled{background:#2c3e50;border-color:#2c3e50}
+    .cell.marked{background:#fff;color:#e74c3c;border-style:dashed}
+    .victory{margin-top:8px;padding:8px;background:#f8f9fa;border-radius:8px;text-align:center;font-weight:700;color:#6a11cb;font-size:0.9rem;width:100%}
+    .solution-overlay{position:absolute;left:0;top:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);border-radius:8px;opacity:0;pointer-events:none;transition:opacity .18s}
+    .solution-overlay.active{opacity:1;pointer-events:all}
+    @media(max-width:520px){.row-clue .num,.clue-col .num{font-size:0.6rem;padding:2px 4px}.info-item{padding:4px 6px;font-size:0.7rem}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Nonogram Puzzles</h1>
+    </div>
+    <div class="game-info">
+      <div class="info-item"><div>Time</div><div class="info-value" id="time">00:00</div></div>
+      <div class="info-item"><div>Moves</div><div class="info-value" id="moves">0</div></div>
+    </div>
+    <div class="controls">
+      <button class="btn-primary" id="check-btn">Check</button>
+      <button class="btn-secondary" id="hint-btn">Hint</button>
+      <button class="btn-clear" id="clear-btn">Clear</button>
+      <button class="btn-new" id="newgame-btn">New Game</button>
+      <button class="btn-solution" id="solution-btn">Show Solution</button>
+    </div>
+    <div class="board-area">
+      <div class="clues-left" id="row-clues"></div>
+      <div class="board-wrap">
+        <div class="clues-top" id="col-clues"></div>
+        <div id="game-board" class="game-board"></div>
+        <div class="solution-overlay" id="solution-overlay">
+          <button id="hide-solution" class="btn-primary">Hide Solution</button>
+        </div>
+      </div>
+    </div>
+    <div id="victory" class="victory" style="display:none"></div>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded',()=>{
+    const state={boardSize:5,board:[],solution:[],moves:0,timer:0,timerInterval:null,gameCompleted:false};
+
+    const gameBoard=document.getElementById('game-board');
+    const colClues=document.getElementById('col-clues');
+    const rowClues=document.getElementById('row-clues');
+    const movesDisplay=document.getElementById('moves');
+    const timeDisplay=document.getElementById('time');
+    const victory=document.getElementById('victory');
+    const newGameBtn=document.getElementById('newgame-btn');
+    const checkBtn=document.getElementById('check-btn');
+    const hintBtn=document.getElementById('hint-btn');
+    const clearBtn=document.getElementById('clear-btn');
+    const solutionBtn=document.getElementById('solution-btn');
+    const solutionOverlay=document.getElementById('solution-overlay');
+    const hideSolution=document.getElementById('hide-solution');
+
+    function createRandomSolution(n){
+      return Array.from({length:n},()=>Array.from({length:n},()=>Math.random()<0.4?1:0));
+    }
+    function calculateClueForRow(row){let out=[],cnt=0;for(let i=0;i<state.boardSize;i++){if(state.solution[row][i]===1)cnt++;else if(cnt){out.push(cnt);cnt=0}}if(cnt)out.push(cnt);return out.length?out:[0]}
+    function calculateClueForColumn(col){let out=[],cnt=0;for(let i=0;i<state.boardSize;i++){if(state.solution[i][col]===1)cnt++;else if(cnt){out.push(cnt);cnt=0}}if(cnt)out.push(cnt);return out.length?out:[0]}
+
+    function render(){
+      rowClues.innerHTML='';colClues.innerHTML='';
+      for(let r=0;r<state.boardSize;r++){const rc=document.createElement('div');rc.className='row-clue';calculateClueForRow(r).forEach(n=>{const e=document.createElement('div');e.className='num';e.textContent=n;rc.appendChild(e)});rowClues.appendChild(rc);}
+      colClues.style.gridTemplateColumns=`repeat(${state.boardSize},var(--cell-size))`;
+      for(let c=0;c<state.boardSize;c++){const cc=document.createElement('div');cc.className='clue-col';calculateClueForColumn(c).forEach(n=>{const e=document.createElement('div');e.className='num';e.textContent=n;cc.appendChild(e)});colClues.appendChild(cc);}
+      gameBoard.innerHTML='';gameBoard.style.gridTemplateColumns=`repeat(${state.boardSize},var(--cell-size))`;
+      for(let r=0;r<state.boardSize;r++){for(let c=0;c<state.boardSize;c++){const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;cell.addEventListener('click',()=>toggleCell(r,c,'left'));cell.addEventListener('contextmenu',(e)=>{e.preventDefault();toggleCell(r,c,'right')});gameBoard.appendChild(cell);}}
+    }
+
+    function toggleCell(r,c,type){
+      if(state.gameCompleted)return;
+      let before=state.board[r][c];let after=before;
+      if(type==='left')after=before===1?0:1;else if(type==='right')after=before===-1?0:-1;
+      state.board[r][c]=after;
+      const cell=document.querySelector(`.cell[data-r='${r}'][data-c='${c}']`);
+      cell.classList.toggle('filled',after===1);
+      cell.classList.toggle('marked',after===-1);
+      state.moves++;movesDisplay.textContent=state.moves;
+    }
+
+    function checkSolution(){
+      let ok=true;
+      for(let r=0;r<state.boardSize;r++){for(let c=0;c<state.boardSize;c++){if(state.solution[r][c]===1&&state.board[r][c]!==1)ok=false;if(state.solution[r][c]!==1&&state.board[r][c]===1)ok=false}}
+      victory.style.display='block';victory.textContent=ok?`Solved in ${formatTime(state.timer)} with ${state.moves} moves!`:'Not correct!';
+      if(ok)state.gameCompleted=true;
+    }
+
+    function giveHint(){
+      const empties=[];
+      for(let r=0;r<state.boardSize;r++)for(let c=0;c<state.boardSize;c++)if(state.solution[r][c]===1&&state.board[r][c]!==1)empties.push({r,c});
+      if(empties.length===0)return;
+      const pick=empties[Math.floor(Math.random()*empties.length)];
+      state.board[pick.r][pick.c]=1;
+      const cell=document.querySelector(`.cell[data-r='${pick.r}'][data-c='${pick.c}']`);
+      cell.classList.add('filled');cell.classList.remove('marked');
+    }
+
+    function clearBoard(){state.board=Array(state.boardSize).fill().map(()=>Array(state.boardSize).fill(0));render()}
+
+    function showSolution(){solutionOverlay.classList.add('active');for(let r=0;r<state.boardSize;r++)for(let c=0;c<state.boardSize;c++){const cell=document.querySelector(`.cell[data-r='${r}'][data-c='${c}']`);if(state.solution[r][c]===1){cell.classList.add('filled');cell.classList.remove('marked')}else{cell.classList.remove('filled','marked')}}}
+    function hideSolutionView(){solutionOverlay.classList.remove('active');render();}
+
+    function startTimer(){if(state.timerInterval)clearInterval(state.timerInterval);state.timer=0;timeDisplay.textContent='00:00';state.timerInterval=setInterval(()=>{state.timer++;timeDisplay.textContent=formatTime(state.timer)},1000)}
+    function formatTime(s){const m=Math.floor(s/60),sec=s%60;return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`}
+
+    function init(){state.solution=createRandomSolution(state.boardSize);state.board=Array(state.boardSize).fill().map(()=>Array(state.boardSize).fill(0));state.moves=0;movesDisplay.textContent='0';state.gameCompleted=false;victory.style.display='none';render();startTimer();}
+
+    newGameBtn.addEventListener('click',init);
+    checkBtn.addEventListener('click',checkSolution);
+    hintBtn.addEventListener('click',giveHint);
+    clearBtn.addEventListener('click',clearBoard);
+    solutionBtn.addEventListener('click',showSolution);
+    hideSolution.addEventListener('click',hideSolutionView);
+
+    init();
+  });
+  </script>
+</body>
+</html>
