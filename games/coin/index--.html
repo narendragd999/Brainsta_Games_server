@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enhanced Coin Collector Game</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -48,19 +47,9 @@
       color: #6a11cb;
       margin-bottom: 5px;
     }
-    #score-container {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
     #score {
       font-size: 18px;
       color: #3498db;
-      font-weight: 600;
-    }
-    #coins {
-      font-size: 14px;
-      color: #f1c40f;
       font-weight: 600;
     }
     #settings-btn {
@@ -146,8 +135,7 @@
       left: 0;
       width: 100%;
       height: 120px;
-      background: rgba(255, 255, 255, 0.3);
-      -webkit-backdrop-filter: none;
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: none;
       padding: 20px;
       z-index: 5;
@@ -242,52 +230,18 @@
       border-radius: 5px;
       margin-top: 5px;
     }
-    #audio-toggle {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #3498db;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      cursor: pointer;
-      z-index: 10;
-    }
-    #progress-bar {
-      height: 5px;
-      background: #f1c40f;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-    .coin-progress {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 5px;
-    }
-    .coin-icon {
-      color: #f1c40f;
-      font-size: 16px;
-    }
   </style>
 </head>
 <body>
   <div id="game-container">
     <div id="header">
       <div id="title">Coin Collector</div>
-      <div id="score-container">
-        <div id="score">Score: 0</div>
-        
-      </div>
+      <div id="score">Score: 0</div>
       <button id="settings-btn">Settings</button>
     </div>
-    <div id="progress-bar"></div>
     <div id="canvas-container">
-      <button id="audio-toggle">🔊</button>
       <div id="instructions">
-        <div id="coins">Coins: 0/200</div>
+        Collect 100 coins to win!<br>        
       </div>
       <div id="game-over-modal">
         <div id="game-over-content">
@@ -346,79 +300,26 @@
     let canvas;
 
     // Game variables
-    let player, coins, platforms, score, coinsCollected, highScore, isGameOver, gameStarted;
+    let player, coins, platforms, score, highScore, isGameOver, gameStarted;
     let leftPressed = false, rightPressed = false, jumpPressed = false;
     let gravity = 0.8, friction = 0.15, moveSpeed = 6, jumpPower = 16;
     let particles = [];
-    let audioEnabled = true;
-    const WIN_COINS = 200; // Player needs to collect 200 coins to win
-
-    // Audio context and sounds
-    let audioContext;
-    let jumpSound, coinSound, gameOverSound, winSound;
+    const WIN_SCORE = 1000;
 
     function setup() {
       canvas = createCanvas(400, 480);
       canvas.parent('canvas-container');
       resetGame();
       initControls();
-      initAudio();
       loadHighScore();
       
       // Show loader briefly
       showLoader(1000);
 
-      // Add canvas event listeners
+      // Add canvas event listeners here to ensure canvas is defined
       canvas.elt.addEventListener('touchstart', startGame);
       canvas.elt.addEventListener('click', startGame);
       document.addEventListener('keydown', startGame);
-    }
-
-    function initAudio() {
-      try {
-        // Create audio context
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        
-        // Create sounds using oscillators
-        jumpSound = createSound(523.25, 0.2); // C5
-        coinSound = createSound(659.25, 0.2); // E5
-        gameOverSound = createSound(196.00, 1.0); // G3
-        winSound = createSound(783.99, 1.5); // G5
-      } catch (e) {
-        console.warn("Web Audio API is not supported in this browser", e);
-        audioEnabled = false;
-        document.getElementById('audio-toggle').textContent = '🔇';
-      }
-    }
-
-    function createSound(frequency, duration) {
-      return function() {
-        if (!audioEnabled) return;
-        
-        try {
-          const oscillator = audioContext.createOscillator();
-          const gainNode = audioContext.createGain();
-          
-          oscillator.connect(gainNode);
-          gainNode.connect(audioContext.destination);
-          
-          oscillator.type = 'sine';
-          oscillator.frequency.value = frequency;
-          gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-          
-          oscillator.start();
-          gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-          oscillator.stop(audioContext.currentTime + duration);
-        } catch (e) {
-          console.warn("Error playing sound", e);
-        }
-      };
-    }
-
-    function playSound(sound) {
-      if (audioEnabled && sound) {
-        sound();
-      }
     }
 
     function showLoader(duration) {
@@ -474,26 +375,6 @@
       document.getElementById('close-settings').addEventListener('click', () => {
         document.getElementById('settings-modal').style.display = 'none';
       });
-
-      // Audio toggle
-      document.getElementById('audio-toggle').addEventListener('click', toggleAudio);
-      
-      // Game buttons
-      document.getElementById('restart-btn').addEventListener('click', resetGame);
-      document.getElementById('main-menu-btn').addEventListener('click', () => {
-        resetGame();
-        gameStarted = false;
-      });
-      document.getElementById('win-restart-btn').addEventListener('click', resetGame);
-      document.getElementById('win-main-menu-btn').addEventListener('click', () => {
-        resetGame();
-        gameStarted = false;
-      });
-    }
-
-    function toggleAudio() {
-      audioEnabled = !audioEnabled;
-      document.getElementById('audio-toggle').textContent = audioEnabled ? '🔊' : '🔇';
     }
 
     function showSettings() {
@@ -544,14 +425,13 @@
         { x: 50, y: 100, width: 90, height: 15 }
       ];
       score = 0;
-      coinsCollected = 0;
       isGameOver = false;
       gameStarted = false;
       leftPressed = false;
       rightPressed = false;
       jumpPressed = false;
       particles = [];
-      spawnCoins(15);
+      spawnCoins(10);
       updateUI();
       document.getElementById('game-over-modal').style.display = 'none';
       document.getElementById('win-modal').style.display = 'none';
@@ -572,8 +452,6 @@
 
     function updateUI() {
       document.getElementById('score').textContent = `Score: ${score}`;
-      document.getElementById('coins').textContent = `Coins: ${coinsCollected}/${WIN_COINS}`;
-      document.getElementById('progress-bar').style.width = `${(coinsCollected / WIN_COINS) * 100}%`;
     }
 
     function updatePlayer() {
@@ -623,7 +501,7 @@
         player.vy = -jumpPower;
         player.onGround = false;
         createParticles(player.x + player.width/2, player.y + player.height, 'jump');
-        playSound(jumpSound);
+        // Add sound: jumpSound.play();
       }
 
       // Game over check
@@ -632,7 +510,7 @@
         saveHighScore();
         document.getElementById('final-score').textContent = `Final Score: ${score} | High: ${highScore}`;
         document.getElementById('game-over-modal').style.display = 'flex';
-        playSound(gameOverSound);
+        // Add sound: gameOverSound.play();
       }
     }
 
@@ -652,33 +530,29 @@
         if (distance < (player.width + coin.size)/2) {
           coin.collected = true;
           score += 10;
-          coinsCollected++;
           updateUI();
           createParticles(coin.x, coin.y, 'collect');
-          playSound(coinSound);
-          
-          // Respawn coin if we haven't reached the win condition
-          if (coinsCollected < WIN_COINS) {
-            setTimeout(() => {
-              coins[i] = {
-                x: random(20, 380),
-                y: random(50, 400),
-                size: 18,
-                rotation: 0,
-                collected: false
-              };
-            }, 1000);
-          }
+          // Add sound: coinSound.play();
+          // Respawn coin
+          setTimeout(() => {
+            coins[i] = {
+              x: random(20, 380),
+              y: random(50, 400),
+              size: 18,
+              rotation: 0,
+              collected: false
+            };
+          }, 1000);
         }
       }
 
       // Check win condition
-      if (coinsCollected >= WIN_COINS && !isGameOver) {
+      if (score >= WIN_SCORE && !isGameOver) {
         isGameOver = true;
         saveHighScore();
         document.getElementById('final-score').textContent = `Final Score: ${score} | High: ${highScore}`;
         document.getElementById('win-modal').style.display = 'flex';
-        playSound(winSound);
+        // Add sound: winSound.play();
       }
     }
 
@@ -747,13 +621,6 @@
       drawParticles();
       drawCoins();
       drawPlayer();
-      
-      // Draw coin progress in the top right
-      fill(0, 0, 0, 150);
-      noStroke();
-      textAlign(RIGHT);
-      textSize(14);
-      text(`Coins: ${coinsCollected}/${WIN_COINS}`, width - 10, 30);
     }
 
     function drawPlayer() {
@@ -771,10 +638,6 @@
       fill(255);
       ellipse(player.x + player.width/3, player.y + player.height/3, 6, 6);
       ellipse(player.x + 2*player.width/3, player.y + player.height/3, 6, 6);
-      
-      // Mouth
-      fill(255);
-      arc(player.x + player.width/2, player.y + 2*player.height/3, 10, 5, 0, PI);
     }
 
     function drawPlatforms() {
@@ -811,7 +674,7 @@
         noStroke();
         textAlign(CENTER, CENTER);
         textSize(12);
-        text('$', 0, 0);
+        text('★', 0, 0);
         pop();
       }
     }
@@ -831,19 +694,24 @@
       resizeCanvas(min(windowWidth - 40, 400), min(windowHeight - 40, 600));
     }
 
+    // Game event listeners
+    document.getElementById('restart-btn').addEventListener('click', resetGame);
+    document.getElementById('main-menu-btn').addEventListener('click', () => {
+      resetGame();
+      gameStarted = false; // Return to start screen
+    });
+    document.getElementById('win-restart-btn').addEventListener('click', resetGame);
+    document.getElementById('win-main-menu-btn').addEventListener('click', () => {
+      resetGame();
+      gameStarted = false; // Return to start screen
+    });
+
     // Start game on first interaction
     let firstTouch = false;
     function startGame() {
       if (!firstTouch && !gameStarted) {
         firstTouch = true;
         gameStarted = true;
-        
-        // Resume audio context on first user interaction
-        if (audioContext && audioContext.state === 'suspended') {
-          audioContext.resume().then(() => {
-            console.log('Audio context resumed successfully');
-          });
-        }
       }
     }
   </script>
