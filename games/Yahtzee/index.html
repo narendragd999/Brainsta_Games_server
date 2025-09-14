@@ -1,168 +1,928 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Yahtzee Game</title>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
-  <style>
-    body, html {
-      margin: 0; padding: 0;
-      width: 100%; height: 100%;
-      background: linear-gradient(180deg, #6a11cb, #fff);
-      font-family: "Segoe UI", sans-serif;
-      display: flex; justify-content: center; align-items: center;
-    }
-    #game-container { width: 100%; height: 100%; }
-    /* UI Overlay Styles */
-    .ui-panel {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      background: rgba(255,255,255,0.9);
-      border-radius: 20px 20px 0 0;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
-    }
-    .scorecard {
-      display: grid;
-      grid-template-columns: 1fr 60px;
-      gap: 5px;
-      font-size: 14px;
-    }
-    .score-row {
-      background: #fff;
-      border-radius: 8px;
-      padding: 5px 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .primary-btn {
-      background: #3498db;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 8px;
-      cursor: pointer;
-    }
-    .secondary-btn {
-      background: #6a11cb;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 14px;
-      margin-top: 4px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yahtzee Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-btn {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .info-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .turn-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-status {
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+            color: white;
+            min-height: 24px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .dice-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .die {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 10%;
+        }
+
+        .die.held {
+            box-shadow: 0 0 0 3px #3498db, 0 5px 15px rgba(52, 152, 219, 0.5);
+            transform: scale(0.95);
+        }
+
+        .die:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .die-face {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            height: 100%;
+            padding: 10%;
+        }
+
+        .dot {
+            background-color: #333;
+            border-radius: 50%;
+            margin: 10%;
+        }
+
+        .dot.hidden {
+            background-color: transparent;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn:not(:disabled):hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .score-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .score-card h3 {
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #6a11cb;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .score-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .score-option {
+            padding: 8px 5px;
+            text-align: center;
+            background: #f8f8f8;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .score-option:hover {
+            background: #e8e8e8;
+            transform: translateY(-2px);
+        }
+
+        .score-option.used {
+            background: #e0e0e0;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .total-display {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            color: #6a11cb;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: #6a11cb;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .rules-list {
+            list-style-position: inside;
+            padding: 10px 0;
+        }
+
+        .rules-list li {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .rules-list li strong {
+            color: #6a11cb;
+        }
+
+        .how-to-play {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f1f1f1;
+        }
+
+        .how-to-play h4 {
+            color: #6a11cb;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .game-container {
+                padding: 15px;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .score-option {
+                font-size: 0.7rem;
+                padding: 6px 3px;
+            }
+            
+            .btn {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .modal-title {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .game-container {
+                max-width: 550px;
+            }
+            
+            .dice-container {
+                gap: 15px;
+            }
+        }
+
+        /* Animation for dice rolling */
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.1); }
+            50% { transform: rotate(180deg) scale(1); }
+            75% { transform: rotate(270deg) scale(1.1); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .rolling {
+            animation: roll 0.5s ease-out;
+        }
+    </style>
 </head>
 <body>
-  <div id="game-container"></div>
-  <div class="ui-panel">
-    <button id="rollBtn" class="primary-btn">🎲 Roll Dice</button>
-    <div class="scorecard" id="scorecard"></div>
-  </div>
+    <div class="game-container">
+        <header>
+            <div class="logo">YAHTZEE</div>
+            <button class="info-btn" id="infoBtn">
+                <i class="fas fa-info"></i>
+            </button>
+        </header>
+        
+        <div class="turn-info">
+            <span id="turnCounter">Turn: 1/13</span>
+            <span id="rollCounter">Rolls: 0/3</span>
+        </div>
+        
+        <div class="game-status" id="gameStatus">Click "Roll Dice" to start playing!</div>
+        
+        <div class="dice-container" id="diceContainer">
+            <!-- Dice will be generated here -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="rollBtn">Roll Dice</button>
+            <button class="btn btn-secondary" id="scoreBtn" disabled>Score Roll</button>
+        </div>
+        
+        <div class="score-section">
+            <div class="score-card">
+                <h3>Upper Section</h3>
+                <div class="score-options" id="upperSection">
+                    <!-- Upper section options will be generated here -->
+                </div>
+                <div class="score-display">
+                    <span>Total: </span>
+                    <span id="upperTotal">0</span>
+                </div>
+                <div class="score-display">
+                    <span>Bonus: </span>
+                    <span id="upperBonus">0</span>
+                </div>
+            </div>
+            
+            <div class="score-card">
+                <h3>Lower Section</h3>
+                <div class="score-options" id="lowerSection">
+                    <!-- Lower section options will be generated here -->
+                </div>
+                <div class="score-display">
+                    <span>Total: </span>
+                    <span id="lowerTotal">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="total-display">
+            <span>Grand Total: </span>
+            <span id="grandTotal">0</span>
+        </div>
+    </div>
+    
+    <div class="modal" id="instructionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">How to Play Yahtzee</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="how-to-play">
+                <h4>Game Instructions</h4>
+                <ol class="rules-list">
+                    <li>Click <strong>"Roll Dice"</strong> to start your turn. You can roll up to 3 times per turn.</li>
+                    <li>After each roll, you can <strong>click on dice</strong> to hold them (they won't be re-rolled).</li>
+                    <li>After your final roll, click <strong>"Score Roll"</strong> and choose a category to score.</li>
+                    <li>Each category can only be used <strong>once per game</strong>.</li>
+                    <li>The game consists of <strong>13 turns</strong>, one for each category.</li>
+                    <li>Try to maximize your score by strategically choosing categories!</li>
+                </ol>
+            </div>
+            <div class="how-to-play">
+                <h4>Scoring Rules</h4>
+                <ul class="rules-list">
+                    <li><strong>Upper Section:</strong> Score the sum of specific numbers (Ones, Twos, etc.)</li>
+                    <li><strong>Bonus:</strong> Get 35 bonus points if your upper section total is 63 or more</li>
+                    <li><strong>Three of a Kind:</strong> At least 3 same dice - score total of all dice</li>
+                    <li><strong>Four of a Kind:</strong> At least 4 same dice - score total of all dice</li>
+                    <li><strong>Full House:</strong> 3 of one number + 2 of another = 25 points</li>
+                    <li><strong>Small Straight:</strong> Sequence of 4 numbers = 30 points</li>
+                    <li><strong>Large Straight:</strong> Sequence of 5 numbers = 40 points</li>
+                    <li><strong>Yahtzee:</strong> All 5 dice the same = 50 points</li>
+                    <li><strong>Chance:</strong> Anything - score total of all dice</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-  <script>
-    const categories = [
-      "Ones","Twos","Threes","Fours","Fives","Sixes",
-      "Three of a Kind","Four of a Kind","Full House",
-      "Small Straight","Large Straight","Yahtzee","Chance"
-    ];
-
-    // Phaser config
-    const config = {
-      type: Phaser.AUTO,
-      parent: "game-container",
-      width: window.innerWidth,
-      height: window.innerHeight - 150, // leave room for UI panel
-      backgroundColor: "rgba(0,0,0,0)",
-      transparent: true,
-      scene: { preload, create, update }
-    };
-
-    let game = new Phaser.Game(config);
-    let dice = [];
-    let rollCount = 0;
-
-    function preload() {
-      // generate dice images dynamically with graphics
-    }
-
-    function create() {
-      const centerX = this.cameras.main.centerX;
-      const centerY = this.cameras.main.centerY;
-
-      for (let i = 0; i < 5; i++) {
-        let die = this.add.text(centerX - 160 + i*80, centerY, "⚀", {
-          fontSize: "60px", color: "#000"
-        }).setOrigin(0.5).setInteractive();
-
-        die.value = 1;
-        die.locked = false;
-
-        die.on("pointerdown", () => {
-          die.locked = !die.locked;
-          die.setAlpha(die.locked ? 0.5 : 1);
-        });
-
-        dice.push(die);
-      }
-
-      // Populate scorecard UI
-      const scorecardDiv = document.getElementById("scorecard");
-      categories.forEach(cat => {
-        const row = document.createElement("div");
-        row.className = "score-row";
-        row.innerHTML = `<span>${cat}</span><span id="${cat.replace(/\s+/g,'')}">-</span>`;
-        row.addEventListener("click", () => {
-          if (rollCount > 0) {
-            document.getElementById(cat.replace(/\s+/g,'')).textContent = calculateScore(cat);
-            rollCount = 0;
-          }
-        });
-        scorecardDiv.appendChild(row);
-      });
-
-      // Roll button
-      document.getElementById("rollBtn").addEventListener("click", () => {
-        if (rollCount < 3) {
-          dice.forEach(die => {
-            if (!die.locked) {
-              let val = Phaser.Math.Between(1,6);
-              die.value = val;
-              die.setText(["⚀","⚁","⚂","⚃","⚄","⚅"][val-1]);
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game state variables
+            let diceValues = [0, 0, 0, 0, 0];
+            let heldDice = [false, false, false, false, false];
+            let rollsLeft = 3;
+            let currentTurn = 1;
+            let gameActive = true;
+            
+            // Scorecard state
+            const scores = {
+                ones: null, twos: null, threes: null, fours: null, fives: null, sixes: null,
+                threeOfKind: null, fourOfKind: null, fullHouse: null,
+                smallStraight: null, largeStraight: null, yahtzee: null, chance: null
+            };
+            
+            // DOM elements
+            const diceContainer = document.getElementById('diceContainer');
+            const rollBtn = document.getElementById('rollBtn');
+            const scoreBtn = document.getElementById('scoreBtn');
+            const gameStatus = document.getElementById('gameStatus');
+            const turnCounter = document.getElementById('turnCounter');
+            const rollCounter = document.getElementById('rollCounter');
+            const infoBtn = document.getElementById('infoBtn');
+            const instructionsModal = document.getElementById('instructionsModal');
+            const closeModal = document.getElementById('closeModal');
+            const upperSection = document.getElementById('upperSection');
+            const lowerSection = document.getElementById('lowerSection');
+            const upperTotalElem = document.getElementById('upperTotal');
+            const upperBonusElem = document.getElementById('upperBonus');
+            const lowerTotalElem = document.getElementById('lowerTotal');
+            const grandTotalElem = document.getElementById('grandTotal');
+            
+            // Initialize the game
+            function initGame() {
+                // Create dice elements with dot representation
+                for (let i = 0; i < 5; i++) {
+                    const die = document.createElement('div');
+                    die.className = 'die';
+                    die.dataset.index = i;
+                    
+                    const dieFace = document.createElement('div');
+                    dieFace.className = 'die-face';
+                    
+                    // Create 9 dots for the die face
+                    for (let j = 0; j < 9; j++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'dot hidden';
+                        dieFace.appendChild(dot);
+                    }
+                    
+                    die.appendChild(dieFace);
+                    die.addEventListener('click', toggleHoldDie);
+                    diceContainer.appendChild(die);
+                }
+                
+                // Create score options
+                createScoreOptions();
+                
+                // Add event listeners
+                rollBtn.addEventListener('click', rollDice);
+                scoreBtn.addEventListener('click', showScoreOptions);
+                infoBtn.addEventListener('click', () => instructionsModal.classList.add('active'));
+                closeModal.addEventListener('click', () => instructionsModal.classList.remove('active'));
+                
+                // Close modal when clicking outside
+                instructionsModal.addEventListener('click', (e) => {
+                    if (e.target === instructionsModal) {
+                        instructionsModal.classList.remove('active');
+                    }
+                });
+                
+                updateUI();
             }
-          });
-          rollCount++;
-        }
-      });
-    }
-
-    function update() {}
-
-    // Simple scoring placeholder
-    function calculateScore(category) {
-      let values = dice.map(d => d.value);
-      let total = values.reduce((a,b)=>a+b,0);
-      switch(category) {
-        case "Ones": return values.filter(v=>v===1).length*1;
-        case "Twos": return values.filter(v=>v===2).length*2;
-        case "Threes": return values.filter(v=>v===3).length*3;
-        case "Fours": return values.filter(v=>v===4).length*4;
-        case "Fives": return values.filter(v=>v===5).length*5;
-        case "Sixes": return values.filter(v=>v===6).length*6;
-        case "Chance": return total;
-        case "Yahtzee": return new Set(values).size === 1 ? 50 : 0;
-        default: return total; // placeholder for combos
-      }
-    }
-  </script>
+            
+            // Create dice dot patterns based on value
+            function updateDiceDots() {
+                const dice = diceContainer.querySelectorAll('.die');
+                
+                dice.forEach((die, index) => {
+                    const value = diceValues[index];
+                    const dots = die.querySelectorAll('.dot');
+                    
+                    // Hide all dots first
+                    dots.forEach(dot => dot.classList.add('hidden'));
+                    
+                    // Show dots based on dice value
+                    if (value > 0) {
+                        const patterns = {
+                            1: [4],
+                            2: [0, 8],
+                            3: [0, 4, 8],
+                            4: [0, 2, 6, 8],
+                            5: [0, 2, 4, 6, 8],
+                            6: [0, 2, 3, 5, 6, 8]
+                        };
+                        
+                        patterns[value].forEach(pos => {
+                            dots[pos].classList.remove('hidden');
+                        });
+                    }
+                });
+            }
+            
+            // Create score option buttons
+            function createScoreOptions() {
+                const upperCategories = [
+                    { id: 'ones', label: 'Ones', score: 0 },
+                    { id: 'twos', label: 'Twos', score: 0 },
+                    { id: 'threes', label: 'Threes', score: 0 },
+                    { id: 'fours', label: 'Fours', score: 0 },
+                    { id: 'fives', label: 'Fives', score: 0 },
+                    { id: 'sixes', label: 'Sixes', score: 0 }
+                ];
+                
+                const lowerCategories = [
+                    { id: 'threeOfKind', label: '3 of a Kind', score: 0 },
+                    { id: 'fourOfKind', label: '4 of a Kind', score: 0 },
+                    { id: 'fullHouse', label: 'Full House', score: 25 },
+                    { id: 'smallStraight', label: 'Sm Straight', score: 30 },
+                    { id: 'largeStraight', label: 'Lg Straight', score: 40 },
+                    { id: 'yahtzee', label: 'Yahtzee', score: 50 },
+                    { id: 'chance', label: 'Chance', score: 0 }
+                ];
+                
+                // Create upper section options
+                upperCategories.forEach(cat => {
+                    const option = document.createElement('div');
+                    option.className = 'score-option';
+                    option.id = `option-${cat.id}`;
+                    option.dataset.category = cat.id;
+                    option.innerHTML = `${cat.label}<br>${cat.score}`;
+                    option.addEventListener('click', () => scoreRoll(cat.id));
+                    upperSection.appendChild(option);
+                });
+                
+                // Create lower section options
+                lowerCategories.forEach(cat => {
+                    const option = document.createElement('div');
+                    option.className = 'score-option';
+                    option.id = `option-${cat.id}`;
+                    option.dataset.category = cat.id;
+                    option.innerHTML = `${cat.label}<br>${cat.score}`;
+                    option.addEventListener('click', () => scoreRoll(cat.id));
+                    lowerSection.appendChild(option);
+                });
+            }
+            
+            // Roll the dice
+            function rollDice() {
+                if (rollsLeft <= 0 || !gameActive) return;
+                
+                // Add rolling animation
+                const dice = diceContainer.querySelectorAll('.die');
+                dice.forEach(die => {
+                    if (!die.classList.contains('held')) {
+                        die.classList.add('rolling');
+                        setTimeout(() => die.classList.remove('rolling'), 500);
+                    }
+                });
+                
+                // Roll all dice that aren't held
+                for (let i = 0; i < 5; i++) {
+                    if (!heldDice[i]) {
+                        diceValues[i] = Math.floor(Math.random() * 6) + 1;
+                    }
+                }
+                
+                rollsLeft--;
+                updateUI();
+                
+                // If no rolls left, force scoring
+                if (rollsLeft === 0) {
+                    scoreBtn.disabled = false;
+                    gameStatus.textContent = 'Select a category to score';
+                } else {
+                    gameStatus.textContent = `Roll again or select dice to hold`;
+                }
+            }
+            
+            // Toggle hold on a die
+            function toggleHoldDie(e) {
+                if (rollsLeft === 3 || !gameActive) return;
+                
+                const die = e.target.closest('.die');
+                const index = parseInt(die.dataset.index);
+                heldDice[index] = !heldDice[index];
+                updateUI();
+            }
+            
+            // Show available score options
+            function showScoreOptions() {
+                if (rollsLeft === 3) return;
+                
+                // Calculate potential scores for all categories
+                updateScoreOptions();
+                gameStatus.textContent = 'Select a category to score';
+            }
+            
+            // Update the score options with calculated values
+            function updateScoreOptions() {
+                // For upper section
+                for (let i = 1; i <= 6; i++) {
+                    const category = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'][i-1];
+                    if (scores[category] === null) {
+                        const count = diceValues.filter(val => val === i).length;
+                        const score = count * i;
+                        document.getElementById(`option-${category}`).innerHTML = `${category.charAt(0).toUpperCase() + category.slice(1)}<br>${score}`;
+                    }
+                }
+                
+                // For lower section
+                if (scores.threeOfKind === null) {
+                    const score = calculateThreeOfKind();
+                    document.getElementById('option-threeOfKind').innerHTML = `3 of a Kind<br>${score}`;
+                }
+                
+                if (scores.fourOfKind === null) {
+                    const score = calculateFourOfKind();
+                    document.getElementById('option-fourOfKind').innerHTML = `4 of a Kind<br>${score}`;
+                }
+                
+                if (scores.fullHouse === null) {
+                    const score = calculateFullHouse() ? 25 : 0;
+                    document.getElementById('option-fullHouse').innerHTML = `Full House<br>${score}`;
+                }
+                
+                if (scores.smallStraight === null) {
+                    const score = calculateSmallStraight() ? 30 : 0;
+                    document.getElementById('option-smallStraight').innerHTML = `Sm Straight<br>${score}`;
+                }
+                
+                if (scores.largeStraight === null) {
+                    const score = calculateLargeStraight() ? 40 : 0;
+                    document.getElementById('option-largeStraight').innerHTML = `Lg Straight<br>${score}`;
+                }
+                
+                if (scores.yahtzee === null) {
+                    const score = calculateYahtzee() ? 50 : 0;
+                    document.getElementById('option-yahtzee').innerHTML = `Yahtzee<br>${score}`;
+                }
+                
+                if (scores.chance === null) {
+                    const score = diceValues.reduce((sum, val) => sum + val, 0);
+                    document.getElementById('option-chance').innerHTML = `Chance<br>${score}`;
+                }
+            }
+            
+            // Score the current roll in a category
+            function scoreRoll(category) {
+                if (scores[category] !== null || rollsLeft === 3) return;
+                
+                let score = 0;
+                
+                // Calculate score based on category
+                switch(category) {
+                    case 'ones':
+                    case 'twos':
+                    case 'threes':
+                    case 'fours':
+                    case 'fives':
+                    case 'sixes':
+                        const value = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'].indexOf(category) + 1;
+                        const count = diceValues.filter(val => val === value).length;
+                        score = count * value;
+                        break;
+                    case 'threeOfKind':
+                        score = calculateThreeOfKind();
+                        break;
+                    case 'fourOfKind':
+                        score = calculateFourOfKind();
+                        break;
+                    case 'fullHouse':
+                        score = calculateFullHouse() ? 25 : 0;
+                        break;
+                    case 'smallStraight':
+                        score = calculateSmallStraight() ? 30 : 0;
+                        break;
+                    case 'largeStraight':
+                        score = calculateLargeStraight() ? 40 : 0;
+                        break;
+                    case 'yahtzee':
+                        score = calculateYahtzee() ? 50 : 0;
+                        break;
+                    case 'chance':
+                        score = diceValues.reduce((sum, val) => sum + val, 0);
+                        break;
+                }
+                
+                // Record the score
+                scores[category] = score;
+                
+                // Mark the option as used
+                document.getElementById(`option-${category}`).classList.add('used');
+                
+                // Reset for next turn
+                resetTurn();
+                
+                // Check if game is over
+                if (currentTurn > 13) {
+                    endGame();
+                }
+                
+                updateUI();
+            }
+            
+            // Calculate Three of a Kind score
+            function calculateThreeOfKind() {
+                const counts = [0, 0, 0, 0, 0, 0];
+                diceValues.forEach(val => counts[val-1]++);
+                
+                if (counts.some(count => count >= 3)) {
+                    return diceValues.reduce((sum, val) => sum + val, 0);
+                }
+                return 0;
+            }
+            
+            // Calculate Four of a Kind score
+            function calculateFourOfKind() {
+                const counts = [0, 0, 0, 0, 0, 0];
+                diceValues.forEach(val => counts[val-1]++);
+                
+                if (counts.some(count => count >= 4)) {
+                    return diceValues.reduce((sum, val) => sum + val, 0);
+                }
+                return 0;
+            }
+            
+            // Check for Full House
+            function calculateFullHouse() {
+                const counts = [0, 0, 0, 0, 0, 0];
+                diceValues.forEach(val => counts[val-1]++);
+                
+                const hasThree = counts.some(count => count === 3);
+                const hasTwo = counts.some(count => count === 2);
+                
+                return hasThree && hasTwo;
+            }
+            
+            // Check for Small Straight
+            function calculateSmallStraight() {
+                const uniqueSorted = [...new Set(diceValues)].sort();
+                
+                if (uniqueSorted.length < 4) return false;
+                
+                // Check for sequences
+                for (let i = 0; i <= uniqueSorted.length - 4; i++) {
+                    if (uniqueSorted[i+3] - uniqueSorted[i] === 3) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+            
+            // Check for Large Straight
+            function calculateLargeStraight() {
+                const sorted = [...diceValues].sort();
+                return sorted[4] - sorted[0] === 4 && new Set(sorted).size === 5;
+            }
+            
+            // Check for Yahtzee
+            function calculateYahtzee() {
+                return new Set(diceValues).size === 1;
+            }
+            
+            // Reset for the next turn
+            function resetTurn() {
+                rollsLeft = 3;
+                heldDice = [false, false, false, false, false];
+                currentTurn++;
+                
+                // Reset dice values for visual clarity
+                diceValues = [0, 0, 0, 0, 0];
+                
+                scoreBtn.disabled = true;
+            }
+            
+            // End the game
+            function endGame() {
+                gameActive = false;
+                rollBtn.disabled = true;
+                scoreBtn.disabled = true;
+                
+                // Calculate final score
+                const upperSum = (scores.ones || 0) + (scores.twos || 0) + (scores.threes || 0) + 
+                                (scores.fours || 0) + (scores.fives || 0) + (scores.sixes || 0);
+                const bonus = upperSum >= 63 ? 35 : 0;
+                const lowerSum = (scores.threeOfKind || 0) + (scores.fourOfKind || 0) + 
+                                (scores.fullHouse || 0) + (scores.smallStraight || 0) + 
+                                (scores.largeStraight || 0) + (scores.yahtzee || 0) + 
+                                (scores.chance || 0);
+                const total = upperSum + bonus + lowerSum;
+                
+                gameStatus.textContent = `Game Over! Final Score: ${total}`;
+            }
+            
+            // Update the UI
+            function updateUI() {
+                // Update dice display
+                updateDiceDots();
+                
+                const diceElements = diceContainer.querySelectorAll('.die');
+                for (let i = 0; i < 5; i++) {
+                    if (heldDice[i]) {
+                        diceElements[i].classList.add('held');
+                    } else {
+                        diceElements[i].classList.remove('held');
+                    }
+                }
+                
+                // Update buttons
+                rollBtn.disabled = rollsLeft <= 0 || !gameActive;
+                rollBtn.textContent = rollsLeft > 0 ? `Roll Dice (${rollsLeft} left)` : 'No Rolls Left';
+                
+                // Update counters
+                turnCounter.textContent = `Turn: ${currentTurn}/13`;
+                rollCounter.textContent = `Rolls: ${3 - rollsLeft}/3`;
+                
+                // Update score displays
+                const upperSum = (scores.ones || 0) + (scores.twos || 0) + (scores.threes || 0) + 
+                                (scores.fours || 0) + (scores.fives || 0) + (scores.sixes || 0);
+                const bonus = upperSum >= 63 ? 35 : 0;
+                const lowerSum = (scores.threeOfKind || 0) + (scores.fourOfKind || 0) + 
+                                (scores.fullHouse || 0) + (scores.smallStraight || 0) + 
+                                (scores.largeStraight || 0) + (scores.yahtzee || 0) + 
+                                (scores.chance || 0);
+                const total = upperSum + bonus + lowerSum;
+                
+                upperTotalElem.textContent = upperSum;
+                upperBonusElem.textContent = bonus;
+                lowerTotalElem.textContent = lowerSum;
+                grandTotalElem.textContent = total;
+            }
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
 </body>
 </html>
