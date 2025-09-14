@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yahtzee Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <style>
+    body, html {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(180deg, #6a11cb, #fff);
+      font-family: "Segoe UI", sans-serif;
+      display: flex; justify-content: center; align-items: center;
+    }
+    #game-container { width: 100%; height: 100%; }
+    /* UI Overlay Styles */
+    .ui-panel {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background: rgba(255,255,255,0.9);
+      border-radius: 20px 20px 0 0;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    }
+    .scorecard {
+      display: grid;
+      grid-template-columns: 1fr 60px;
+      gap: 5px;
+      font-size: 14px;
+    }
+    .score-row {
+      background: #fff;
+      border-radius: 8px;
+      padding: 5px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .primary-btn {
+      background: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    .secondary-btn {
+      background: #6a11cb;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 14px;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+  <div class="ui-panel">
+    <button id="rollBtn" class="primary-btn">🎲 Roll Dice</button>
+    <div class="scorecard" id="scorecard"></div>
+  </div>
+
+  <script>
+    const categories = [
+      "Ones","Twos","Threes","Fours","Fives","Sixes",
+      "Three of a Kind","Four of a Kind","Full House",
+      "Small Straight","Large Straight","Yahtzee","Chance"
+    ];
+
+    // Phaser config
+    const config = {
+      type: Phaser.AUTO,
+      parent: "game-container",
+      width: window.innerWidth,
+      height: window.innerHeight - 150, // leave room for UI panel
+      backgroundColor: "rgba(0,0,0,0)",
+      transparent: true,
+      scene: { preload, create, update }
+    };
+
+    let game = new Phaser.Game(config);
+    let dice = [];
+    let rollCount = 0;
+
+    function preload() {
+      // generate dice images dynamically with graphics
+    }
+
+    function create() {
+      const centerX = this.cameras.main.centerX;
+      const centerY = this.cameras.main.centerY;
+
+      for (let i = 0; i < 5; i++) {
+        let die = this.add.text(centerX - 160 + i*80, centerY, "⚀", {
+          fontSize: "60px", color: "#000"
+        }).setOrigin(0.5).setInteractive();
+
+        die.value = 1;
+        die.locked = false;
+
+        die.on("pointerdown", () => {
+          die.locked = !die.locked;
+          die.setAlpha(die.locked ? 0.5 : 1);
+        });
+
+        dice.push(die);
+      }
+
+      // Populate scorecard UI
+      const scorecardDiv = document.getElementById("scorecard");
+      categories.forEach(cat => {
+        const row = document.createElement("div");
+        row.className = "score-row";
+        row.innerHTML = `<span>${cat}</span><span id="${cat.replace(/\s+/g,'')}">-</span>`;
+        row.addEventListener("click", () => {
+          if (rollCount > 0) {
+            document.getElementById(cat.replace(/\s+/g,'')).textContent = calculateScore(cat);
+            rollCount = 0;
+          }
+        });
+        scorecardDiv.appendChild(row);
+      });
+
+      // Roll button
+      document.getElementById("rollBtn").addEventListener("click", () => {
+        if (rollCount < 3) {
+          dice.forEach(die => {
+            if (!die.locked) {
+              let val = Phaser.Math.Between(1,6);
+              die.value = val;
+              die.setText(["⚀","⚁","⚂","⚃","⚄","⚅"][val-1]);
+            }
+          });
+          rollCount++;
+        }
+      });
+    }
+
+    function update() {}
+
+    // Simple scoring placeholder
+    function calculateScore(category) {
+      let values = dice.map(d => d.value);
+      let total = values.reduce((a,b)=>a+b,0);
+      switch(category) {
+        case "Ones": return values.filter(v=>v===1).length*1;
+        case "Twos": return values.filter(v=>v===2).length*2;
+        case "Threes": return values.filter(v=>v===3).length*3;
+        case "Fours": return values.filter(v=>v===4).length*4;
+        case "Fives": return values.filter(v=>v===5).length*5;
+        case "Sixes": return values.filter(v=>v===6).length*6;
+        case "Chance": return total;
+        case "Yahtzee": return new Set(values).size === 1 ? 50 : 0;
+        default: return total; // placeholder for combos
+      }
+    }
+  </script>
+</body>
+</html>

@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Shifted Realms - Mobile Puzzle Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shifted Realms - Mobile Puzzle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -198,39 +198,6 @@
             font-size: 0.7rem;
         }
 
-        .powerups {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .powerup {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-
-        .powerup-icon {
-            font-size: 1.2rem;
-            margin-bottom: 3px;
-        }
-
-        .powerup-name {
-            font-size: 0.6rem;
-            color: #6a11cb;
-            font-weight: 600;
-        }
-
         footer {
             margin-top: 10px;
             color: #777;
@@ -368,10 +335,66 @@
         .hidden {
             display: none;
         }
+
+        /* Compact UI adjustments */
+        .compact-ui .game-info {
+            padding: 6px;
+            margin: 8px 0;
+        }
+
+        .compact-ui .info-value {
+            font-size: 1rem;
+        }
+
+        .compact-ui .info-label {
+            font-size: 0.7rem;
+        }
+
+        .compact-ui .game-board {
+            max-width: 260px;
+            grid-gap: 4px;
+        }
+
+        .compact-ui .tile {
+            font-size: 1.2rem;
+        }
+
+        .compact-ui .controls {
+            margin: 8px 0;
+        }
+
+        .compact-ui button {
+            padding: 8px 12px;
+            min-width: 90px;
+            font-size: 0.85rem;
+        }
+
+        .compact-ui .game-modes {
+            margin: 8px 0;
+            gap: 6px;
+        }
+
+        .compact-ui .mode-btn {
+            padding: 6px;
+        }
+
+        .compact-ui .mode-btn h3 {
+            font-size: 0.8rem;
+        }
+
+        .compact-ui .mode-btn p {
+            font-size: 0.65rem;
+        }
+
+        .compact-ui footer {
+            margin-top: 8px;
+            padding: 6px;
+            font-size: 0.7rem;
+        }
     </style>
 </head>
 <body>
-    <div id="game-container">
+    <div id="game-container" class="compact-ui">
         <header>
             <h1>Shifted Realms</h1>
             <p class="subtitle">Slide tiles to restore the pattern</p>
@@ -384,10 +407,6 @@
                 <div class="info-value" id="moves">0</div>
             </div>
             <div class="info-item">
-                <div class="info-label">TIME</div>
-                <div class="info-value" id="timer">00:00</div>
-            </div>
-            <div class="info-item">
                 <div class="info-label">LEVEL</div>
                 <div class="info-value" id="level">3x3</div>
             </div>
@@ -398,7 +417,6 @@
         </div>
         
         <div class="controls">
-            <button class="primary" id="shuffle-btn">Shuffle</button>
             <button class="secondary" id="reset-btn">Reset</button>
         </div>
         
@@ -414,25 +432,6 @@
             <div class="mode-btn" data-size="5">
                 <h3>5x5</h3>
                 <p>Expert</p>
-            </div>
-            <div class="mode-btn" data-mode="image">
-                <h3>Image</h3>
-                <p>Puzzle</p>
-            </div>
-        </div>
-        
-        <div class="powerups">
-            <div class="powerup" id="hint-powerup">
-                <div class="powerup-icon">💡</div>
-                <div class="powerup-name">HINT</div>
-            </div>
-            <div class="powerup" id="swap-powerup">
-                <div class="powerup-icon">🔄</div>
-                <div class="powerup-name">SWAP</div>
-            </div>
-            <div class="powerup" id="undo-powerup">
-                <div class="powerup-icon">↩️</div>
-                <div class="powerup-name">UNDO</div>
             </div>
         </div>
         
@@ -450,7 +449,6 @@
             <h2>Puzzle Solved!</h2>
             <p>Congratulations! You've completed the puzzle.</p>
             <p>Moves: <span id="win-moves">0</span></p>
-            <p>Time: <span id="win-time">00:00</span></p>
             <button class="primary" id="play-again-btn">Play Again</button>
         </div>
     </div>
@@ -465,24 +463,14 @@
             <h3>Gameplay</h3>
             <ul>
                 <li>Tap on any tile adjacent to the empty space to move it</li>
-                <li>On desktop, use arrow keys to move tiles</li>
                 <li>Arrange all tiles in numerical order to win</li>
-            </ul>
-            
-            <h3>Controls</h3>
-            <ul>
-                <li><strong>Shuffle:</strong> Randomize the board</li>
-                <li><strong>Reset:</strong> Return to the initial shuffled state</li>
-                <li><strong>Hint:</strong> Highlights a tile that's out of place</li>
-                <li><strong>Swap:</strong> Swap two tiles (limited uses)</li>
-                <li><strong>Undo:</strong> Revert your last move</li>
             </ul>
             
             <h3>Levels</h3>
             <ul>
-                <li><strong>3x3:</strong> 8 tiles (Beginner)</li>
-                <li><strong>4x4:</strong> 15 tiles (Advanced)</li>
-                <li><strong>5x5:</strong> 24 tiles (Expert)</li>
+                <li><strong>3x3:</strong> 8 tiles + 1 empty space (Beginner)</li>
+                <li><strong>4x4:</strong> 15 tiles + 1 empty space (Advanced)</li>
+                <li><strong>5x5:</strong> 24 tiles + 1 empty space (Expert)</li>
             </ul>
             
             <button class="primary" id="close-instructions">Got It!</button>
@@ -495,32 +483,23 @@
             const gameState = {
                 gridSize: 3,
                 moves: 0,
-                time: 0,
-                timerInterval: null,
                 board: [],
                 emptyPos: { row: 0, col: 0 },
                 gameActive: false,
                 // We'll store the initial board state for reset
-                initialBoard: [],
-                moveHistory: []
+                initialBoard: []
             };
             
             // DOM elements
             const puzzleBoard = document.getElementById('puzzle-board');
             const movesElement = document.getElementById('moves');
-            const timerElement = document.getElementById('timer');
             const levelElement = document.getElementById('level');
-            const shuffleBtn = document.getElementById('shuffle-btn');
             const resetBtn = document.getElementById('reset-btn');
             const modeButtons = document.querySelectorAll('.mode-btn');
             const loader = document.getElementById('loader');
             const winMessage = document.getElementById('win-message');
             const winMoves = document.getElementById('win-moves');
-            const winTime = document.getElementById('win-time');
             const playAgainBtn = document.getElementById('play-again-btn');
-            const hintPowerup = document.getElementById('hint-powerup');
-            const swapPowerup = document.getElementById('swap-powerup');
-            const undoPowerup = document.getElementById('undo-powerup');
             const helpBtn = document.getElementById('help-btn');
             const instructionsModal = document.getElementById('instructions-modal');
             const closeInstructions = document.getElementById('close-instructions');
@@ -529,7 +508,6 @@
             initGame();
             
             // Event listeners
-            shuffleBtn.addEventListener('click', shuffleBoard);
             resetBtn.addEventListener('click', resetGame);
             playAgainBtn.addEventListener('click', function() {
                 winMessage.classList.add('hidden');
@@ -545,11 +523,6 @@
                 instructionsModal.classList.add('hidden');
             });
             
-            // Power-up event listeners
-            hintPowerup.addEventListener('click', showHint);
-            swapPowerup.addEventListener('click', swapTiles);
-            undoPowerup.addEventListener('click', undoMove);
-            
             modeButtons.forEach(button => {
                 button.addEventListener('click', function() {
                     // Remove active class from all buttons
@@ -559,8 +532,6 @@
                     
                     if (this.dataset.size) {
                         changeGridSize(parseInt(this.dataset.size));
-                    } else if (this.dataset.mode === 'image') {
-                        activateImageMode();
                     }
                 });
             });
@@ -568,7 +539,6 @@
             // Initialize the game board
             function initGame() {
                 createBoard();
-                startTimer();
                 gameState.gameActive = true;
             }
             
@@ -581,38 +551,42 @@
                 gameState.board = [];
                 let counter = 1;
                 
-                // Create tiles
+                // Create tiles for all cells
                 for (let row = 0; row < gameState.gridSize; row++) {
                     gameState.board[row] = [];
                     for (let col = 0; col < gameState.gridSize; col++) {
+                        const tile = document.createElement('div');
+                        
                         if (counter < totalTiles) {
-                            const tile = document.createElement('div');
+                            // Numbered tile
                             tile.className = 'tile';
                             tile.textContent = counter;
                             tile.dataset.value = counter;
-                            tile.dataset.row = row;
-                            tile.dataset.col = col;
-                            
-                            tile.addEventListener('click', () => {
-                                if (gameState.gameActive) {
-                                    moveTile(row, col);
-                                }
-                            });
-                            
-                            puzzleBoard.appendChild(tile);
                             gameState.board[row][col] = counter;
                             counter++;
                         } else {
-                            // Empty space
+                            // Empty tile
+                            tile.className = 'tile empty';
+                            tile.dataset.value = 0;
                             gameState.board[row][col] = 0;
                             gameState.emptyPos = { row, col };
                         }
+                        
+                        tile.dataset.row = row;
+                        tile.dataset.col = col;
+                        
+                        tile.addEventListener('click', () => {
+                            if (gameState.gameActive) {
+                                moveTile(row, col);
+                            }
+                        });
+                        
+                        puzzleBoard.appendChild(tile);
                     }
                 }
                 
                 // Store initial state
                 gameState.initialBoard = JSON.parse(JSON.stringify(gameState.board));
-                gameState.moveHistory = [];
                 levelElement.textContent = `${gameState.gridSize}x${gameState.gridSize}`;
             }
             
@@ -621,16 +595,10 @@
                 const { row: emptyRow, col: emptyCol } = gameState.emptyPos;
                 
                 // Check if the tile is adjacent to the empty space
-                if ((Math.abs(row - emptyRow) === 1 && col === emptyCol) || 
-                    (Math.abs(col - emptyCol) === 1 && row === emptyRow)) {
-                    
-                    // Store move in history for undo functionality
-                    gameState.moveHistory.push({
-                        from: {row, col},
-                        to: {row: emptyRow, col: emptyCol},
-                        value: gameState.board[row][col]
-                    });
-                    
+                const isAdjacent = (Math.abs(row - emptyRow) === 1 && col === emptyCol) || 
+                                   (Math.abs(col - emptyCol) === 1 && row === emptyRow);
+                
+                if (isAdjacent) {
                     // Swap positions
                     gameState.board[emptyRow][emptyCol] = gameState.board[row][col];
                     gameState.board[row][col] = 0;
@@ -664,8 +632,8 @@
                     } else {
                         tile.classList.remove('empty');
                         tile.textContent = value;
-                        tile.dataset.value = value;
                     }
+                    tile.dataset.value = value;
                 });
             }
             
@@ -676,12 +644,14 @@
                 
                 for (let row = 0; row < gameState.gridSize; row++) {
                     for (let col = 0; col < gameState.gridSize; col++) {
+                        // Last position should be empty
                         if (row === gameState.gridSize - 1 && col === gameState.gridSize - 1) {
-                            // Last position should be empty
                             if (gameState.board[row][col] !== 0) {
                                 return false;
                             }
-                        } else if (gameState.board[row][col] !== counter) {
+                        } 
+                        // All other positions should be in order
+                        else if (gameState.board[row][col] !== counter) {
                             return false;
                         }
                         counter++;
@@ -698,8 +668,6 @@
                 // Reset game state
                 gameState.moves = 0;
                 movesElement.textContent = '0';
-                resetTimer();
-                gameState.moveHistory = [];
                 
                 // Simulate shuffle time with setTimeout
                 setTimeout(() => {
@@ -761,8 +729,6 @@
                 updateBoardView();
                 gameState.moves = 0;
                 movesElement.textContent = '0';
-                resetTimer();
-                gameState.moveHistory = [];
                 gameState.gameActive = true;
             }
             
@@ -778,133 +744,12 @@
                 }, 500);
             }
             
-            // Activate image mode (placeholder)
-            function activateImageMode() {
-                showLoader();
-                
-                setTimeout(() => {
-                    alert("Image mode would load here. This would allow you to use your own images as puzzles!");
-                    hideLoader();
-                }, 500);
-            }
-            
-            // Power-up functions
-            function showHint() {
-                if (!gameState.gameActive) return;
-                
-                // Find the first incorrect tile and highlight it
-                let counter = 1;
-                const totalTiles = gameState.gridSize * gameState.gridSize;
-                
-                for (let row = 0; row < gameState.gridSize; row++) {
-                    for (let col = 0; col < gameState.gridSize; col++) {
-                        if (row === gameState.gridSize - 1 && col === gameState.gridSize - 1) {
-                            // Skip the empty space
-                            continue;
-                        }
-                        
-                        if (gameState.board[row][col] !== counter) {
-                            // Highlight this tile
-                            const tile = document.querySelector(`.tile[data-row="${row}"][data-col="${col}"]`);
-                            if (tile) {
-                                tile.style.backgroundColor = "#ffcc00";
-                                tile.style.color = "#000";
-                                setTimeout(() => {
-                                    tile.style.backgroundColor = "";
-                                    tile.style.color = "";
-                                }, 1000);
-                            }
-                            return;
-                        }
-                        counter++;
-                    }
-                }
-            }
-            
-            function swapTiles() {
-                if (!gameState.gameActive || gameState.moveHistory.length < 2) return;
-                
-                // Get the last two moves
-                const move1 = gameState.moveHistory[gameState.moveHistory.length - 1];
-                const move2 = gameState.moveHistory[gameState.moveHistory.length - 2];
-                
-                // Swap the tiles
-                const temp = gameState.board[move1.to.row][move1.to.col];
-                gameState.board[move1.to.row][move1.to.col] = gameState.board[move2.to.row][move2.to.col];
-                gameState.board[move2.to.row][move2.to.col] = temp;
-                
-                // Update the view
-                updateBoardView();
-                
-                // Add to move count
-                gameState.moves++;
-                movesElement.textContent = gameState.moves;
-                
-                // Check if puzzle is solved
-                if (isPuzzleSolved()) {
-                    endGame();
-                }
-            }
-            
-            function undoMove() {
-                if (!gameState.gameActive || gameState.moveHistory.length === 0) return;
-                
-                // Get the last move
-                const lastMove = gameState.moveHistory.pop();
-                
-                // Reverse the move
-                gameState.board[lastMove.from.row][lastMove.from.col] = lastMove.value;
-                gameState.board[lastMove.to.row][lastMove.to.col] = 0;
-                gameState.emptyPos = lastMove.from;
-                
-                // Update the view
-                updateBoardView();
-                
-                // Decrement move count
-                gameState.moves--;
-                movesElement.textContent = gameState.moves;
-            }
-            
-            // Timer functions - FIXED
-            function startTimer() {
-                // Clear any existing timer
-                if (gameState.timerInterval) {
-                    clearInterval(gameState.timerInterval);
-                }
-                
-                gameState.time = 0;
-                updateTimerDisplay();
-                
-                gameState.timerInterval = setInterval(() => {
-                    gameState.time++;
-                    updateTimerDisplay();
-                }, 1000);
-            }
-            
-            function resetTimer() {
-                if (gameState.timerInterval) {
-                    clearInterval(gameState.timerInterval);
-                }
-                gameState.time = 0;
-                updateTimerDisplay();
-            }
-            
-            function updateTimerDisplay() {
-                const minutes = Math.floor(gameState.time / 60);
-                const seconds = gameState.time % 60;
-                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            }
-            
             // End the game
             function endGame() {
                 gameState.gameActive = false;
-                if (gameState.timerInterval) {
-                    clearInterval(gameState.timerInterval);
-                }
                 
                 // Update win message
                 winMoves.textContent = gameState.moves;
-                winTime.textContent = timerElement.textContent;
                 
                 // Show win message after a short delay
                 setTimeout(() => {
