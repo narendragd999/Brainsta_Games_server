@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maze Runner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(to bottom, #6a11cb, #fff);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 15px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #6a11cb;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .game-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 2px solid #6a11cb;
+        }
+        
+        .maze {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(10, 1fr);
+        }
+        
+        .cell {
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wall {
+            background-color: #6a11cb;
+            border: 1px solid #4d0ca1;
+        }
+        
+        .path {
+            background-color: #f8f9fa;
+        }
+        
+        .player {
+            width: 70%;
+            height: 70%;
+            background-color: #3498db;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .exit {
+            width: 70%;
+            height: 70%;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .coin {
+            width: 50%;
+            height: 50%;
+            background-color: #f1c40f;
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+            max-width: 180px;
+            margin: 0 auto 15px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .control-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .up { grid-column: 2; grid-row: 1; }
+        .left { grid-column: 1; grid-row: 2; }
+        .right { grid-column: 3; grid-row: 2; }
+        .down { grid-column: 2; grid-row: 3; }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to bottom, #6a11cb, #4d0ca1);
+            color: white;
+        }
+        
+        .powerups {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .powerup {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+            font-size: 1.2rem;
+            color: #6a11cb;
+            border: 2px solid #6a11cb;
+        }
+        
+        .instructions-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 25px;
+            height: 25px;
+            background-color: #6a11cb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            color: #6a11cb;
+            font-size: 1.2rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+        
+        .modal-body {
+            margin-bottom: 15px;
+        }
+        
+        .instruction-item {
+            display: flex;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .instruction-icon {
+            color: #3498db;
+            margin-right: 10px;
+            min-width: 20px;
+        }
+        
+        .level-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+            gap: 5px;
+        }
+        
+        .level-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ddd;
+        }
+        
+        .level-dot.active {
+            background-color: #6a11cb;
+        }
+        
+        @media (max-height: 700px) {
+            .container {
+                transform: scale(0.9);
+            }
+            
+            .game-area {
+                margin-bottom: 10px;
+            }
+            
+            .controls {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Maze Runner</div>
+            <div class="stats">
+                <div class="stat-box">
+                    <i class="fas fa-clock"></i>
+                    <span>02:30</span>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-star"></i>
+                    <span>5</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="level-indicator">
+            <div class="level-dot active"></div>
+            <div class="level-dot"></div>
+            <div class="level-dot"></div>
+            <div class="level-dot"></div>
+            <div class="level-dot"></div>
+        </div>
+        
+        <div class="game-area">
+            <div class="maze">
+                <!-- Maze will be generated with JavaScript -->
+                <!-- For demo, I'll create a simple static maze -->
+                <div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell path"></div><div class="cell wall"></div>
+                <div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div><div class="cell wall"></div>
+            </div>
+            
+            <div class="player" style="grid-column: 2; grid-row: 2;"></div>
+            <div class="exit" style="grid-column: 9; grid-row: 9;"></div>
+            <div class="coin" style="grid-column: 4; grid-row: 4;"></div>
+            <div class="coin" style="grid-column: 7; grid-row: 3;"></div>
+            <div class="coin" style="grid-column: 5; grid-row: 8;"></div>
+            
+            <div class="instructions-btn">i</div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn up"><i class="fas fa-arrow-up"></i></button>
+            <button class="control-btn left"><i class="fas fa-arrow-left"></i></button>
+            <button class="control-btn right"><i class="fas fa-arrow-right"></i></button>
+            <button class="control-btn down"><i class="fas fa-arrow-down"></i></button>
+        </div>
+        
+        <div class="powerups">
+            <div class="powerup"><i class="fas fa-bolt"></i></div>
+            <div class="powerup"><i class="fas fa-shield-alt"></i></div>
+            <div class="powerup"><i class="fas fa-clock"></i></div>
+            <div class="powerup"><i class="fas fa-key"></i></div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary">Pause</button>
+            <button class="btn btn-secondary">Restart</button>
+        </div>
+    </div>
+    
+    <div class="modal" id="instructions-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Game Instructions</div>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-arrow-up"></i></div>
+                    <div>Use arrow keys or buttons to navigate through the maze</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-star"></i></div>
+                    <div>Collect coins to increase your score</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-door-open"></i></div>
+                    <div>Find the exit before time runs out</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-bolt"></i></div>
+                    <div>Use power-ups to help you navigate the maze</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>Watch out for moving walls and traps</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show instructions modal
+        document.querySelector('.instructions-btn').addEventListener('click', function() {
+            document.getElementById('instructions-modal').style.display = 'flex';
+        });
+        
+        // Close modal
+        document.querySelector('.close-btn').addEventListener('click', function() {
+            document.getElementById('instructions-modal').style.display = 'none';
+        });
+        
+        // Close modal if clicked outside
+        window.addEventListener('click', function(event) {
+            if (event.target == document.getElementById('instructions-modal')) {
+                document.getElementById('instructions-modal').style.display = 'none';
+            }
+        });
+        
+        // Simple movement for demo purposes
+        const player = document.querySelector('.player');
+        let playerCol = 2;
+        let playerRow = 2;
+        
+        document.querySelector('.up').addEventListener('click', function() {
+            if (playerRow > 1) playerRow--;
+            player.style.gridRow = playerRow;
+            player.style.gridColumn = playerCol;
+        });
+        
+        document.querySelector('.down').addEventListener('click', function() {
+            if (playerRow < 10) playerRow++;
+            player.style.gridRow = playerRow;
+            player.style.gridColumn = playerCol;
+        });
+        
+        document.querySelector('.left').addEventListener('click', function() {
+            if (playerCol > 1) playerCol--;
+            player.style.gridRow = playerRow;
+            player.style.gridColumn = playerCol;
+        });
+        
+        document.querySelector('.right').addEventListener('click', function() {
+            if (playerCol < 10) playerCol++;
+            player.style.gridRow = playerRow;
+            player.style.gridColumn = playerCol;
+        });
+    </script>
+</body>
+</html>

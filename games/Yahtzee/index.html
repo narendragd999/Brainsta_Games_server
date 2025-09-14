@@ -178,44 +178,70 @@
         }
 
         .score-card {
-            background: white;
-            border-radius: 8px;
-            padding: 10px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid #f1f1f1;
+            background: linear-gradient(135deg, #f8f9ff, #eef0ff);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e0e5ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #6a11cb, #3498db);
         }
 
         .score-card h3 {
             text-align: center;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
             color: #6a11cb;
+            padding: 5px;
+            background: rgba(106, 17, 203, 0.1);
+            border-radius: 6px;
+            font-weight: bold;
         }
 
         .score-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 5px;
+            gap: 6px;
         }
 
         .score-option {
-            padding: 5px;
+            padding: 8px 5px;
             text-align: center;
-            background: #f8f8f8;
-            border-radius: 5px;
+            background: white;
+            border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border: 1px solid #eaeaea;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 40px;
         }
 
         .score-option:hover {
-            background: #e8e8e8;
+            background: #f0f5ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .score-option.used {
-            background: #e0e0e0;
-            color: #888;
+            background: linear-gradient(135deg, #f5f5f5, #e8e8e8);
+            color: #a0a0a0;
             cursor: not-allowed;
+            transform: none;
+            border-color: #e0e0e0;
         }
 
         .score-display {
@@ -223,20 +249,26 @@
             justify-content: space-between;
             margin-top: 10px;
             padding-top: 10px;
-            border-top: 1px solid #f1f1f1;
+            border-top: 1px solid rgba(106, 17, 203, 0.2);
             font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .score-display span:last-child {
+            color: #6a11cb;
         }
 
         .total-score {
             display: flex;
             justify-content: center;
             margin-top: 10px;
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+            padding: 12px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
             font-weight: bold;
-            color: #6a11cb;
+            color: white;
+            font-size: 1.1rem;
         }
 
         .modal {
@@ -314,7 +346,7 @@
             
             .score-option {
                 font-size: 0.7rem;
-                padding: 4px 2px;
+                padding: 6px 3px;
             }
             
             .btn {
@@ -329,6 +361,10 @@
             
             .logo {
                 font-size: 1.3rem;
+            }
+            
+            .score-card {
+                padding: 10px;
             }
         }
 
@@ -353,7 +389,8 @@
             
             .score-option {
                 font-size: 0.7rem;
-                padding: 3px 1px;
+                padding: 5px 2px;
+                min-height: 35px;
             }
         }
 
@@ -368,6 +405,17 @@
 
         .rolling {
             animation: roll 0.5s ease-out;
+        }
+        
+        /* Pulse animation for score options */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
         }
     </style>
 </head>
@@ -724,44 +772,68 @@
                     if (scores[category] === null) {
                         const count = diceValues.filter(val => val === i).length;
                         const score = count * i;
-                        document.getElementById(`option-${category}`).innerHTML = `${category.charAt(0).toUpperCase() + category.slice(1)}<br>${score}`;
+                        const option = document.getElementById(`option-${category}`);
+                        option.innerHTML = `${category.charAt(0).toUpperCase() + category.slice(1)}<br>${score}`;
+                        option.classList.add('pulse');
+                        setTimeout(() => option.classList.remove('pulse'), 500);
                     }
                 }
                 
                 // For lower section
                 if (scores.threeOfKind === null) {
                     const score = calculateThreeOfKind();
-                    document.getElementById('option-threeOfKind').innerHTML = `3 of a Kind<br>${score}`;
+                    const option = document.getElementById('option-threeOfKind');
+                    option.innerHTML = `3 of a Kind<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
                 
                 if (scores.fourOfKind === null) {
                     const score = calculateFourOfKind();
-                    document.getElementById('option-fourOfKind').innerHTML = `4 of a Kind<br>${score}`;
+                    const option = document.getElementById('option-fourOfKind');
+                    option.innerHTML = `4 of a Kind<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
                 
                 if (scores.fullHouse === null) {
                     const score = calculateFullHouse() ? 25 : 0;
-                    document.getElementById('option-fullHouse').innerHTML = `Full House<br>${score}`;
+                    const option = document.getElementById('option-fullHouse');
+                    option.innerHTML = `Full House<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
                 
                 if (scores.smallStraight === null) {
                     const score = calculateSmallStraight() ? 30 : 0;
-                    document.getElementById('option-smallStraight').innerHTML = `Sm Straight<br>${score}`;
+                    const option = document.getElementById('option-smallStraight');
+                    option.innerHTML = `Sm Straight<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
                 
                 if (scores.largeStraight === null) {
                     const score = calculateLargeStraight() ? 40 : 0;
-                    document.getElementById('option-largeStraight').innerHTML = `Lg Straight<br>${score}`;
+                    const option = document.getElementById('option-largeStraight');
+                    option.innerHTML = `Lg Straight<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
                 
                 if (scores.yahtzee === null) {
                     const score = calculateYahtzee() ? 50 : 0;
-                    document.getElementById('option-yahtzee').innerHTML = `Yahtzee<br>${score}`;
+                    const option = document.getElementById('option-yahtzee');
+                    option.innerHTML = `Yahtzee<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
                 
                 if (scores.chance === null) {
                     const score = diceValues.reduce((sum, val) => sum + val, 0);
-                    document.getElementById('option-chance').innerHTML = `Chance<br>${score}`;
+                    const option = document.getElementById('option-chance');
+                    option.innerHTML = `Chance<br>${score}`;
+                    option.classList.add('pulse');
+                    setTimeout(() => option.classList.remove('pulse'), 500);
                 }
             }
             
@@ -810,7 +882,8 @@
                 scores[category] = score;
                 
                 // Mark the option as used
-                document.getElementById(`option-${category}`).classList.add('used');
+                const optionElement = document.getElementById(`option-${category}`);
+                optionElement.classList.add('used');
                 
                 // Reset for next turn
                 resetTurn();
