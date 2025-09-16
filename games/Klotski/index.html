@@ -76,6 +76,57 @@ button{border:0;padding:12px 16px;border-radius:12px;font-weight:600;cursor:poin
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:12px 20px;border-radius:50px;font-weight:600;z-index:1000;opacity:0;transition:opacity 0.3s ease;pointer-events:none;}
 .toast.show{opacity:1;}
 
+.volume-control {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.volume-control svg {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}
+
+.volume-control.muted svg {
+  fill: #ccc;
+}
+
+.audio-permission {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.audio-permission button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 @media (max-width: 480px) {
   .app{gap:12px;}
   .topbar{flex-direction:column;align-items:stretch;}
@@ -86,6 +137,19 @@ button{border:0;padding:12px 16px;border-radius:12px;font-weight:600;cursor:poin
   .instructions{font-size:12px;}
   button{padding:10px 14px;font-size:13px;}
   .hud{flex-direction:column;gap:8px;}
+  .volume-control {
+    top: 5px;
+    right: 5px;
+    width: 28px;
+    height: 28px;
+  }
+  .audio-permission {
+    bottom: 10px;
+    right: 10px;
+    left: 10px;
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 @media (max-height: 700px) {
@@ -145,6 +209,19 @@ button{border:0;padding:12px 16px;border-radius:12px;font-weight:600;cursor:poin
 
   <div class="toast" id="toast"></div>
 
+  <!-- Volume control button -->
+  <div class="volume-control" id="volumeControl">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.84 14,18.7V20.77C18,19.86 21,16.28 21,12C21,7.72 18,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16C15.5,15.29 16.5,13.76 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/>
+    </svg>
+  </div>
+
+  <!-- Audio permission prompt -->
+  <div class="audio-permission" id="audioPermission">
+    <span>Enable sound effects for better experience</span>
+    <button id="enableAudioBtn">Enable Sound</button>
+  </div>
+
   <!-- JS section goes below -->
   <script>
     /* Klotski (Huarong Dao) with embedded BFS solver
@@ -160,12 +237,126 @@ const movesEl=document.getElementById('moves');
 const overlay=document.getElementById('overlay');
 const overlayMessage=document.getElementById('overlayMessage');
 const toastEl=document.getElementById('toast');
+const volumeControl = document.getElementById('volumeControl');
+const audioPermission = document.getElementById('audioPermission');
+const enableAudioBtn = document.getElementById('enableAudioBtn');
 
 let cellSize=0, boardRect=null;
 let blocks=[], undoStack=[], moves=0;
 let solutionCache = new Map(); // cache: stateKey -> move array
 let isAutoSolving = false;
 let selectedId = 'A'; // default selected (target)
+let soundEnabled = false; // Start with sound disabled until user enables it
+let audioContext = null; // Will be initialized after user interaction
+
+// --------- Sound Effects ---------
+// Function to initialize audio context
+function initAudioContext() {
+  if (audioContext) return; // Already initialized
+  
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    console.log('Audio context initialized successfully');
+    
+    // Hide the permission prompt
+    audioPermission.style.display = 'none';
+    
+    // Show toast notification
+    showToast("Sound enabled 🎵");
+    
+    // Set sound enabled
+    soundEnabled = true;
+    volumeControl.classList.remove('muted');
+  } catch (e) {
+    console.error('Error initializing audio context:', e);
+    showToast("Could not initialize audio");
+  }
+}
+
+// Function to play a sound with specified frequency and duration
+function playSound(frequency, duration, type = 'sine', volume = 0.2) {
+  if (!soundEnabled || !audioContext) return;
+  
+  try {
+    // Ensure audio context is resumed
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().then(() => {
+        console.log('AudioContext resumed successfully');
+      });
+    }
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.type = type;
+    oscillator.frequency.value = frequency;
+    
+    gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (e) {
+    console.error('Error playing sound:', e);
+  }
+}
+
+// Specific sound effects
+function playDragStartSound() {
+  playSound(523.25, 0.1, 'sine', 0.15); // C5 note
+}
+
+function playDropSound() {
+  playSound(392.00, 0.15, 'sine', 0.1); // G4 note
+}
+
+function playMoveSound() {
+  playSound(659.25, 0.08, 'sine', 0.1); // E5 note
+}
+
+function playWinSound() {
+  // Play a little victory melody
+  playSound(523.25, 0.15, 'sine', 0.2); // C5
+  setTimeout(() => playSound(659.25, 0.15, 'sine', 0.2), 150); // E5
+  setTimeout(() => playSound(783.99, 0.3, 'sine', 0.25), 300); // G5
+}
+
+function playErrorSound() {
+  playSound(311.13, 0.3, 'sawtooth', 0.15); // D#4
+}
+
+function playClickSound() {
+  playSound(392.00, 0.05, 'sine', 0.1); // G4
+}
+
+// Toggle sound on/off
+volumeControl.addEventListener('click', function() {
+  if (!audioContext) {
+    initAudioContext();
+    return;
+  }
+  
+  soundEnabled = !soundEnabled;
+  this.classList.toggle('muted', !soundEnabled);
+  playClickSound();
+  showToast(soundEnabled ? "Sound enabled" : "Sound muted");
+});
+
+// Enable audio button
+enableAudioBtn.addEventListener('click', function() {
+  initAudioContext();
+});
+
+// Also initialize audio on any user interaction with the game
+document.addEventListener('click', function initOnClick() {
+  if (!audioContext) {
+    initAudioContext();
+  }
+  document.removeEventListener('click', initOnClick);
+}, { once: true });
 
 // --------- Standard Huarong Dao initial layout (classic) ---------
 // We'll use IDs that are stable and sorted for serialization.
@@ -257,6 +448,11 @@ function attachPointerHandlers(el){
   const getBlock = ()=>blocks.find(b=>b.id===id);
 
   el.addEventListener('pointerdown', e=>{
+    // Initialize audio on first interaction if not already done
+    if (!audioContext) {
+      initAudioContext();
+    }
+    
     e.preventDefault();
     el.setPointerCapture(e.pointerId);
     pointerId = e.pointerId;
@@ -266,6 +462,9 @@ function attachPointerHandlers(el){
     movableAxis = null;
     el.classList.add('dragging');
     boardEl.classList.add('dragging');
+    
+    // Play drag start sound
+    playDragStartSound();
   });
 
   el.addEventListener('pointermove', e=>{
@@ -288,6 +487,10 @@ function attachPointerHandlers(el){
     const dx = e.clientX - startX; const dy = e.clientY - startY;
     if(!movableAxis) movableAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
     const deltaCells = movableAxis==='x' ? Math.round(dx / cellSize) : Math.round(dy / cellSize);
+    
+    // Play drop sound
+    playDropSound();
+    
     attemptMove(id, movableAxis, deltaCells);
   });
 
@@ -295,6 +498,10 @@ function attachPointerHandlers(el){
     dragging=false;
     if(pointerId) el.releasePointerCapture(pointerId);
     el.classList.remove('dragging');
+    
+    // Play cancel sound (same as drop)
+    playDropSound();
+    
     render();
   });
 
@@ -302,6 +509,7 @@ function attachPointerHandlers(el){
   el.addEventListener('click', e=>{
     selectedId = id;
     flashBlock(id);
+    playClickSound();
     showToast(`Selected ${id} (use arrows)`);
   });
 }
@@ -332,8 +540,16 @@ function attemptMove(id, axis, delta){
   }
 
   const desired = delta > 0 ? Math.min(delta, maxPos) : Math.max(delta, -maxNeg);
-  if(desired === 0){ render(); return; }
+  if(desired === 0){ 
+    // Play error sound if movement is not possible
+    playErrorSound();
+    render(); 
+    return; 
+  }
 
+  // Play move sound for successful movement
+  playMoveSound();
+  
   // record undo only if not auto-solving
   if(!isAutoSolving) pushUndo();
   if(axis === 'x') b.x += desired; else b.y += desired;
@@ -353,15 +569,37 @@ function rectsOverlap(x1,y1,w1,h1,x2,y2,w2,h2){
 }
 
 function pushUndo(){ undoStack.push(JSON.parse(JSON.stringify(blocks))); if(undoStack.length>200) undoStack.shift(); }
-function undo(){ if(undoStack.length===0) { showToast("Nothing to undo"); return; } blocks = undoStack.pop(); moves++; updateMoves(); render(); solutionCache.clear(); }
+function undo(){ 
+  if(undoStack.length===0) { 
+    playErrorSound();
+    showToast("Nothing to undo"); 
+    return; 
+  } 
+  playClickSound();
+  blocks = undoStack.pop(); 
+  moves++; 
+  updateMoves(); 
+  render(); 
+  solutionCache.clear(); 
+}
 
-function reset(){ pushUndo(); blocks = INITIAL_BLOCKS.map(b=>Object.assign({},b)); moves=0; updateMoves(); render(); solutionCache.clear(); showToast("Reset to classic layout"); }
+function reset(){ 
+  pushUndo(); 
+  blocks = INITIAL_BLOCKS.map(b=>Object.assign({},b)); 
+  moves=0; 
+  updateMoves(); 
+  render(); 
+  solutionCache.clear(); 
+  playClickSound();
+  showToast("Reset to classic layout"); 
+}
 
 // ---------- Win check ----------
 function checkWin(){
   const t = blocks.find(b=>b.type==='target');
   if(t && t.x===1 && t.y===3){
     // reached exit (x=1,y=3)
+    playWinSound();
     showOverlayMessage('You won! 🎉', true);
   }
 }
@@ -452,18 +690,27 @@ function applyMoveObj(moveObj, recordUndo=true){
   if(recordUndo && !isAutoSolving) pushUndo();
   if(moveObj.axis === 'x') b.x += moveObj.delta; else b.y += moveObj.delta;
   moves++; updateMoves(); render(); checkWin();
+  
+  // Play move sound for auto moves
+  playMoveSound();
+  
   return true;
 }
 
 // Hint: perform only next move from BFS path
 async function doHint(){
+  playClickSound();
   const key = serializeState(blocks);
   overlayMessage.textContent = "Computing hint...";
   overlay.classList.add('active');
   await sleep(80);
   const path = bfsSolve(blocks);
   overlay.classList.remove('active');
-  if(!path || path.length === 0){ showToast("No solution found from current state"); return; }
+  if(!path || path.length === 0){ 
+    playErrorSound();
+    showToast("No solution found from current state"); 
+    return; 
+  }
   const next = path[0];
   // animate quick (flash) then apply
   flashBlock(next.id);
@@ -476,13 +723,21 @@ async function doHint(){
 
 // Auto Solve: find path and animate through all moves
 async function doAutoSolve(){
+  playClickSound();
   overlayMessage.textContent = "Finding shortest solution...";
   overlay.classList.add('active');
   await sleep(80);
   const path = bfsSolve(blocks);
   overlay.classList.remove('active');
-  if(!path){ showToast("No solution found"); return; }
-  if(path.length === 0){ showToast("Already solved!"); return; }
+  if(!path){ 
+    playErrorSound();
+    showToast("No solution found"); 
+    return; 
+  }
+  if(path.length === 0){ 
+    showToast("Already solved!"); 
+    return; 
+  }
 
   isAutoSolving = true;
   showToast(`Auto solve: ${path.length} moves`, 1600);
@@ -518,8 +773,15 @@ document.getElementById('undoBtn').addEventListener('click', ()=> undo());
 document.getElementById('resetBtn').addEventListener('click', ()=> reset());
 document.getElementById('hintBtn').addEventListener('click', ()=> { doHint(); });
 document.getElementById('autoBtn').addEventListener('click', ()=> { doAutoSolve(); });
-document.getElementById('keyboardBtn').addEventListener('click', ()=> showToast("Arrow keys move selected block. Click a block to select it.",4000));
-document.getElementById('selectDefaultBtn').addEventListener('click', ()=> { selectedId = 'A'; showToast('Selected target block'); });
+document.getElementById('keyboardBtn').addEventListener('click', ()=> {
+  playClickSound();
+  showToast("Arrow keys move selected block. Click a block to select it.",4000);
+});
+document.getElementById('selectDefaultBtn').addEventListener('click', ()=> { 
+  selectedId = 'A'; 
+  playClickSound();
+  showToast('Selected target block'); 
+});
 
 // keyboard controls
 window.addEventListener('keydown', e=>{
@@ -540,6 +802,7 @@ boardEl.addEventListener('click', (e)=> {
   if(blockEl){
     selectedId = blockEl.dataset.id;
     flashBlock(selectedId);
+    playClickSound();
     showToast(`Selected ${selectedId}. Use arrows to move.`, 1600);
   }
 });
