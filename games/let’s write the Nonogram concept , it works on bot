@@ -1,0 +1,85 @@
+let’s write the Nonogram concept , it works on both desktop (keyboard) and mobile 
+CGoal
+
+Fill a blank grid (like 5×5, 10×10, or bigger) using numerical clues given along each row and column. When solved correctly, the filled cells reveal a hidden pixel art image (e.g., heart, smiley, tree).
+
+🎮 Mechanics
+
+Grid setup
+
+Grid size: N × N (e.g., 10×10).
+
+Each row and column has a sequence of numbers.
+
+Example: A row clue 3 1 means → 3 filled cells, then at least one empty, then 1 filled cell.
+
+Player actions
+
+Click/tap to mark a cell filled (black).
+
+Right-click/long-press to mark a cell as empty (X).
+
+Leave unmarked if undecided.
+
+Logic solving
+
+Players cross-check row and column clues.
+
+Must ensure all constraints match simultaneously.
+
+No guessing ideally — pure logic leads to solution.
+
+Validation
+
+Game auto-checks if rows/columns match clues.
+
+Puzzle ends when all conditions are satisfied → hidden pixel-art revealed 🎉.
+
+⚙️ Features / Variations
+
+Puzzle Sizes: Easy 5×5 → Challenging 20×20+.
+
+Themes: Reveal animals, logos, retro icons.
+
+Modes:
+
+Classic: No time pressure.
+
+Timed: Solve under countdown.
+
+Daily Puzzle: New nonogram each day.
+
+Helpers: Autofill definite cells, highlight errors, hint system.
+
+Scoring: Based on time, hints used, mistakes made.
+
+🧠 Skills / Appeal
+
+Pure logic puzzle (like Sudoku).
+
+Relaxing yet brain-stimulating.
+
+Satisfaction of revealing hidden image as reward.
+
+👉 Use Phaser.js for game building.
+
+UI must be clean, compact, display complete game screen to mobile screen only without scroll ,Clean, modern design with consistent color scheme
+
+small icon for instruction with popup 
+
+
+"Style this screen using a professional UI design with centerd align using full space of mobile screen. Apply the same background gradient and button color combinations (purple-to-white gradient background, blue primary buttons, purple secondary buttons, white input cards with rounded corners). Keep padding, spacing, and typography clean and modern. Ensure all buttons, modals, and loaders follow this color scheme for consistency." Background → LinearGradient ["#6a11cb", "#fff"] Primary Button → Blue (#3498db) Secondary Button → Purple (#6a11cb) Cards/Input → White with subtle shadow & rounded corners Loader Overlay → Dark translucent with white spinner Typography → Dark text on white cards, light text on buttons
+
+Compact Layout: Reduced padding, margins, and font sizes throughout the interface
+
+Smaller Game Board: Adjusted the board size to fit better on mobile screens
+
+Simplified Labels: Shortened text labels to save space (e.g., "3x3" instead of "Classic 3x3")
+
+Tighter Spacing: Reduced spacing between all UI elements
+
+Smaller Controls: Made buttons and power-up icons more compact
+
+Responsive Text: Adjusted font sizes to be proportional to the screen size
+Fixed Mobile Layout: The game now fits completely on mobile screens without scrolling
+Optimized Sizing: Further reduced element sizes to fit everything on screen
