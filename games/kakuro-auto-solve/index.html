@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Kakuro Puzzle Game</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="screen active">
+        <div class="splash-content">
+            <h1 class="game-title">
+                <i class="fas fa-puzzle-piece"></i>
+                KAKURO
+            </h1>
+            <p class="game-subtitle">Number puzzle challenge</p>
+            <div class="loading-spinner">
+                <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="main-menu" class="screen">
+        <div class="menu-content">
+            <h1 class="game-title">
+                <i class="fas fa-puzzle-piece"></i>
+                KAKURO
+            </h1>
+            <div class="menu-buttons">
+                <button class="btn btn-primary" id="new-game-btn">
+                    <i class="fas fa-play"></i>
+                    New Game
+                </button>
+                <button class="btn btn-secondary" id="continue-btn" disabled>
+                    <i class="fas fa-redo"></i>
+                    Continue
+                </button>
+                <button class="btn btn-secondary" id="settings-btn">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Difficulty Selection -->
+    <div id="difficulty-screen" class="screen">
+        <div class="difficulty-content">
+            <h2 class="screen-title">Select Difficulty</h2>
+            <div class="difficulty-buttons">
+                <button class="btn btn-difficulty" data-difficulty="easy">
+                    <i class="fas fa-seedling"></i>
+                    <span>Easy</span>
+                    <small>6x6 Grid</small>
+                </button>
+                <button class="btn btn-difficulty" data-difficulty="medium">
+                    <i class="fas fa-fire"></i>
+                    <span>Medium</span>
+                    <small>8x8 Grid</small>
+                </button>
+            </div>
+            <button class="btn btn-back" id="back-to-menu">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div class="game-stats">
+                <div class="stat">
+                    <i class="fas fa-clock"></i>
+                    <span id="timer">00:00</span>
+                </div>
+                <div class="stat">
+                    <i class="fas fa-star"></i>
+                    <span id="score">0</span>
+                </div>
+            </div>
+            <div class="game-controls">
+                <button class="btn-icon auto-solve-btn" id="auto-solve-btn" title="Auto Solve">
+                    <i class="fas fa-magic"></i>
+                </button>
+                <button class="btn-icon" id="hint-btn" title="Hint">
+                    <i class="fas fa-lightbulb"></i>
+                </button>
+                <button class="btn-icon" id="undo-btn" title="Undo">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button class="btn-icon" id="pause-btn" title="Pause">
+                    <i class="fas fa-pause"></i>
+                </button>
+                <button class="btn-icon" id="settings-game-btn" title="Settings">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="game-container">
+            <div id="game-grid" class="game-grid"></div>
+        </div>
+
+        <div class="game-footer">
+            <button class="btn btn-secondary btn-small" id="new-puzzle-btn">
+                <i class="fas fa-refresh"></i>
+                New Puzzle
+            </button>
+        </div>
+    </div>
+
+    <!-- Auto-Solve Modal -->
+    <div id="auto-solve-modal" class="modal">
+        <div class="modal-content auto-solve-content">
+            <h3>
+                <i class="fas fa-magic"></i>
+                Auto Solve Puzzle
+            </h3>
+            <div class="auto-solve-options">
+                <div class="solve-mode-selection">
+                    <h4>Choose Solve Mode:</h4>
+                    <div class="mode-buttons">
+                        <button class="btn btn-mode active" data-mode="instant">
+                            <i class="fas fa-bolt"></i>
+                            <span>Instant Solve</span>
+                            <small>Complete immediately</small>
+                        </button>
+                        <button class="btn btn-mode" data-mode="step-by-step">
+                            <i class="fas fa-play"></i>
+                            <span>Step-by-Step</span>
+                            <small>Watch the solving process</small>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="speed-control" id="speed-control" style="display: none;">
+                    <h4>Animation Speed:</h4>
+                    <div class="speed-slider-container">
+                        <label>Slow</label>
+                        <input type="range" id="solve-speed-slider" min="0" max="2" value="1" step="1">
+                        <label>Fast</label>
+                    </div>
+                    <div class="speed-indicators">
+                        <span class="speed-indicator" data-speed="0">2s</span>
+                        <span class="speed-indicator active" data-speed="1">1s</span>
+                        <span class="speed-indicator" data-speed="2">0.5s</span>
+                    </div>
+                </div>
+
+                <div class="auto-solve-warning">
+                    <i class="fas fa-info-circle"></i>
+                    <span>This will solve the entire puzzle for you. Your current progress will be maintained.</span>
+                </div>
+            </div>
+            
+            <div class="auto-solve-actions">
+                <button class="btn btn-secondary" id="cancel-auto-solve">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button class="btn btn-auto-solve" id="start-auto-solve">
+                    <i class="fas fa-magic"></i>
+                    Start Auto Solve
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-Solve Progress Modal -->
+    <div id="auto-solve-progress" class="modal">
+        <div class="modal-content auto-solve-progress-content">
+            <div class="solving-header">
+                <h3>
+                    <i class="fas fa-magic fa-spin"></i>
+                    Solving Puzzle...
+                </h3>
+                <div class="progress-percentage" id="progress-percentage">0%</div>
+            </div>
+            
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            
+            <div class="solving-stats">
+                <div class="stat-item">
+                    <label>Cells Solved:</label>
+                    <span id="cells-solved">0 / 0</span>
+                </div>
+                <div class="stat-item">
+                    <label>Current Technique:</label>
+                    <span id="current-technique">Initializing...</span>
+                </div>
+                <div class="stat-item">
+                    <label>Time Elapsed:</label>
+                    <span id="solve-time">00:00</span>
+                </div>
+            </div>
+
+            <div class="solving-controls" id="solving-controls" style="display: none;">
+                <button class="btn btn-secondary btn-small" id="pause-solving">
+                    <i class="fas fa-pause"></i>
+                    Pause
+                </button>
+                <button class="btn btn-error btn-small" id="stop-solving">
+                    <i class="fas fa-stop"></i>
+                    Stop
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Number Picker Modal -->
+    <div id="number-picker" class="modal">
+        <div class="modal-content number-picker-content">
+            <h3>Select Number</h3>
+            <div class="number-grid">
+                <button class="number-btn" data-number="1">1</button>
+                <button class="number-btn" data-number="2">2</button>
+                <button class="number-btn" data-number="3">3</button>
+                <button class="number-btn" data-number="4">4</button>
+                <button class="number-btn" data-number="5">5</button>
+                <button class="number-btn" data-number="6">6</button>
+                <button class="number-btn" data-number="7">7</button>
+                <button class="number-btn" data-number="8">8</button>
+                <button class="number-btn" data-number="9">9</button>
+            </div>
+            <div class="picker-actions">
+                <button class="btn btn-secondary btn-small" id="clear-cell">
+                    <i class="fas fa-eraser"></i>
+                    Clear
+                </button>
+                <button class="btn btn-primary btn-small" id="close-picker">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content settings-content">
+            <h3>
+                <i class="fas fa-cog"></i>
+                Settings
+            </h3>
+            <div class="setting-item">
+                <label>Sound Effects</label>
+                <button class="toggle-btn" id="sfx-toggle">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+            <div class="setting-item">
+                <label>Background Music</label>
+                <button class="toggle-btn" id="music-toggle">
+                    <i class="fas fa-music"></i>
+                </button>
+            </div>
+            <div class="setting-item">
+                <label>Volume</label>
+                <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="70">
+            </div>
+            <div class="setting-item">
+                <label>Auto-Solve Hints</label>
+                <button class="toggle-btn" id="autosolve-hints-toggle">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+            <div class="settings-actions">
+                <button class="btn btn-secondary" id="reset-game">
+                    <i class="fas fa-refresh"></i>
+                    Reset Game
+                </button>
+                <button class="btn btn-primary" id="close-settings">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="modal">
+        <div class="modal-content victory-content">
+            <div class="confetti" id="confetti"></div>
+            <h2 class="victory-title">
+                <i class="fas fa-trophy"></i>
+                Congratulations!
+            </h2>
+            <p class="victory-text">You solved the puzzle!</p>
+            <div class="victory-stats">
+                <div class="victory-stat">
+                    <i class="fas fa-clock"></i>
+                    <span>Time: <span id="final-time">00:00</span></span>
+                </div>
+                <div class="victory-stat">
+                    <i class="fas fa-star"></i>
+                    <span>Score: <span id="final-score">0</span></span>
+                </div>
+                <div class="victory-stat" id="auto-solve-stat" style="display: none;">
+                    <i class="fas fa-magic"></i>
+                    <span>Auto-Solved</span>
+                </div>
+            </div>
+            <div class="victory-actions">
+                <button class="btn btn-primary" id="play-again">
+                    <i class="fas fa-play"></i>
+                    Play Again
+                </button>
+                <button class="btn btn-secondary" id="back-to-menu-victory">
+                    <i class="fas fa-home"></i>
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-content">
+            <i class="fas fa-circle-notch fa-spin loading-spinner-large"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
