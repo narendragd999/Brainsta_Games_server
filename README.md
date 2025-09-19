@@ -2,15 +2,23 @@
 Brainsta Games server
 
 
-Hashi (Bridges)
+Hitori
 
-Connect islands with bridges based on numerical clues.
-Mechanics: Line drawing, bridge count validation.
+Shade cells in a grid to ensure no duplicate numbers in rows/columns.
+Mechanics: Shading logic, uniqueness checks.
+
+Hitori is a logic puzzle with simple rules and challenging solutions.
+The rules of Hitori are simple:
+You have to shade some of the cells of the grid according to the rules:
+- No number should appear unshaded more than once in a row or a column.
+- 2 black cells cannot be adjacent horizontally or vertically.
+- All non-shaded cells should be connected in a single group by vertical or horizontal motion.
 
 Theme:
 "Style this screen using a professional UI design with centerd align using full space of mobile screen. Apply the same background gradient and button color combinations (purple-to-white gradient background, blue primary buttons, purple secondary buttons, white input cards with rounded corners). Keep padding, spacing, and typography clean and modern. Ensure all buttons, modals, and loaders follow this color scheme for consistency." Background → LinearGradient ["#6a11cb", "#fff"] Primary Button → Blue (#3498db) Secondary Button → Purple (#6a11cb) Cards/Input → White with subtle shadow & rounded corners Loader Overlay → Dark translucent with white spinner Typography → Dark text on white cards, light text on buttons
 
 Game Board: Adjusted the board size to fit better on mobile screens.
+add features fro Auto-solve, Check solutions, Hints, Instruction with popup icon., dynamic solvable puzzles with new game
 Use audio with movements and button press , drag & drop events.
 Smaller Controls: Made buttons and power-up icons more compact.
 Responsive Text: Adjusted font sizes to be proportional to the screen size.
