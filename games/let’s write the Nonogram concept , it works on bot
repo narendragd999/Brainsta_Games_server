@@ -1,9 +1,4 @@
-Set Game
-
-Find sets of three cards with matching or differing attributes.
-Mechanics: Card dealing, set detection.
-A set is a combination of three cards where, for each of the four attributes, the three cards are either all the same or all different.
-A group of three cards is not a set if, for any single attribute, two cards are the same and one is different.
+Color Block Puzzle
 
 Good if new game with new challange startegy
 
@@ -12,6 +7,8 @@ Theme:
 
 Game Board: Adjusted the board size to fit better on mobile screens.
 add features fro Auto-solve, Check solutions, Hints, Instruction with popup icon., dynamic solvable puzzles with new game
+game must be solvable with Auto-solve
+use 4x4,5x5...etc if type of game grid
 Use audio with movements and button press , drag & drop events.
 Smaller Controls: Made buttons and power-up icons more compact.
 Responsive Text: Adjusted font sizes to be proportional to the screen size.
@@ -19,3 +16,5 @@ Fixed Mobile Layout: The game now fits completely on mobile screens without scro
 Optimized Sizing: Further reduced element sizes to fit everything on screen.
 Tighter Spacing: Reduced spacing between all UI elements.
 Use falticons if possibles for more attarctive Look and theme
+use rich colors to make UI attractive
+use html5 
