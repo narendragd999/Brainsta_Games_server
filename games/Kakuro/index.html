@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Kakuro Puzzle — Fixed Solver</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { margin: 0 0 8px; text-align:center }
+    #controls { margin: 10px 0; }
+    button {
+      margin: 2px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    #board { display: grid; gap: 2px; margin-top: 10px; }
+    .cell {
+      width: 50px; height: 50px;
+      display: flex; justify-content:center; align-items:center;
+      font-size: 18px; border: 1px solid #aaa;
+      background: white; position: relative; transition: background .12s;
+      user-select: none;
+    }
+    .cell.block { background: black; border: none; }
+    .cell.clue {
+      background: #e0d4f7; font-size: 10px; color: #333; position:relative;
+    }
+    .cell.clue::before {
+      content: "";
+      position: absolute; top:0; left:0; width:100%; height:100%;
+      background: linear-gradient(135deg, transparent 49%, #c2a9e9 50%, #c2a9e9 51%, transparent 52%);
+      z-index:0;
+    }
+    .clue-text { position:absolute; font-size:11px; z-index:1; }
+    .clue-right { top:2px; right:2px; }
+    .clue-down  { bottom:2px; left:2px; }
+    .selected { background:#fff2b8 !important; }
+    #num-pad { display:flex; margin-top:15px; flex-wrap:wrap; width:220px; justify-content:center; }
+    .num-btn {
+      width:40px; height:40px; margin:6px; border-radius:6px; background:#dee2e6;
+      display:flex; justify-content:center; align-items:center; font-size:18px; cursor:pointer;
+      transition: background .12s;
+    }
+    .num-btn:hover{ background:#adb5bd; }
+    #status { margin-top: 12px; font-weight: bold; min-height:18px; }
+    .success { color: green; } .error { color: red; }
+    .small { font-size: 12px; color:#555; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <h1>Kakuro Puzzle</h1>
+  <div id="controls">
+    <button id="btnCheck">Check</button>
+    <button id="btnSolve">Solve</button>
+    <button id="btnClear">Clear</button>
+    <button id="btnSave">Save</button>
+    <button id="btnLoad">Load</button>
+  </div>
+
+  <div id="board" aria-hidden="false"></div>
+
+  <div id="num-pad"></div>
+
+  <div id="status"></div>
+  <div class="small">Tip: click an empty cell, then press a number (or × to erase).</div>
+
+<script>
+/* ---------- Puzzle state ---------- */
+const boardElement = document.getElementById('board');
+const numPad = document.getElementById('num-pad');
+const statusElement = document.getElementById('status');
+const btnCheck = document.getElementById('btnCheck');
+const btnSolve = document.getElementById('btnSolve');
+const btnClear = document.getElementById('btnClear');
+const btnSave = document.getElementById('btnSave');
+const btnLoad = document.getElementById('btnLoad');
+
+let selectedCell = null;
+
+/* Example board (5x5) — same layout you provided */
+let gameState = {
+  board: [
+    [{type:"block"}, {type:"clue", right:16}, {type:"clue", right:24}, {type:"clue", right:3}, {type:"block"}],
+    [{type:"clue", down:17}, {type:"empty"}, {type:"empty"}, {type:"empty"}, {type:"clue", down:10}],
+    [{type:"clue", down:23}, {type:"empty"}, {type:"empty"}, {type:"empty"}, {type:"empty"}],
+    [{type:"clue", down:18}, {type:"empty"}, {type:"empty"}, {type:"empty"}, {type:"empty"}],
+    [{type:"block"}, {type:"clue", down:10}, {type:"empty"}, {type:"empty"}, {type:"block"}]
+  ]
+};
+
+/* Internal solver structures */
+let runs = [];          // {cells: [{r,c}], target, orientation}
+let cellToRuns = {};    // "r,c" -> [runIndex,...]
+
+/* ---------- Rendering ---------- */
+function renderBoard() {
+  // clear selected
+  selectedCell = null;
+  boardElement.innerHTML = '';
+  const rows = gameState.board.length;
+  const cols = gameState.board[0].length;
+  boardElement.style.gridTemplateColumns = `repeat(${cols}, 50px)`;
+  boardElement.style.gridTemplateRows = `repeat(${rows}, 50px)`;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const cell = gameState.board[r][c];
+      const div = document.createElement('div');
+      div.className = 'cell';
+
+      if (cell.type === 'block') {
+        div.classList.add('block');
+      } else if (cell.type === 'clue') {
+        div.classList.add('clue');
+        if (cell.right) {
+          const s = document.createElement('span');
+          s.className = 'clue-text clue-right';
+          s.textContent = cell.right;
+          div.appendChild(s);
+        }
+        if (cell.down) {
+          const s = document.createElement('span');
+          s.className = 'clue-text clue-down';
+          s.textContent = cell.down;
+          div.appendChild(s);
+        }
+      } else if (cell.type === 'empty') {
+        div.textContent = (cell.value != null ? cell.value : '');
+        div.tabIndex = 0;
+        div.addEventListener('click', () => {
+          // deselect previous
+          const prev = boardElement.querySelector('.selected');
+          if (prev) prev.classList.remove('selected');
+          selectedCell = div;
+          div.classList.add('selected');
+          // store coordinates on the DOM node for quick lookup
+          div.dataset.r = r; div.dataset.c = c;
+        });
+      }
+      boardElement.appendChild(div);
+      cell.element = div;
+    }
+  }
+  buildRuns(); // rebuild runs and mappings after rendering (board structure stable)
+}
+
+/* ---------- Build runs mapping ---------- */
+function buildRuns() {
+  runs = [];
+  cellToRuns = {};
+  const rows = gameState.board.length;
+  const cols = gameState.board[0].length;
+
+  function addCellToMap(r,c, runIndex) {
+    const key = `${r},${c}`;
+    if (!cellToRuns[key]) cellToRuns[key] = [];
+    cellToRuns[key].push(runIndex);
+  }
+
+  for (let r=0; r<rows; r++) {
+    for (let c=0; c<cols; c++) {
+      const cell = gameState.board[r][c];
+      if (cell.type === 'clue') {
+        if (cell.right) {
+          const runCells = [];
+          for (let cc = c+1; cc<cols && gameState.board[r][cc].type === 'empty'; cc++) {
+            runCells.push({r, c: cc});
+          }
+          if (runCells.length > 0) {
+            const idx = runs.length;
+            runs.push({cells: runCells, target: cell.right, orientation:'across'});
+            runCells.forEach(p => addCellToMap(p.r, p.c, idx));
+          }
+        }
+        if (cell.down) {
+          const runCells = [];
+          for (let rr = r+1; rr<rows && gameState.board[rr][c].type === 'empty'; rr++) {
+            runCells.push({r: rr, c});
+          }
+          if (runCells.length > 0) {
+            const idx = runs.length;
+            runs.push({cells: runCells, target: cell.down, orientation:'down'});
+            runCells.forEach(p => addCellToMap(p.r, p.c, idx));
+          }
+        }
+      }
+    }
+  }
+}
+
+/* ---------- Utility: candidate feasibility checks ---------- */
+function sumArray(arr) { return arr.reduce((a,b)=>a+b,0); }
+
+function availableDigitsExcluding(excludeSet) {
+  const out = [];
+  for (let n=1;n<=9;n++) if (!excludeSet.has(n)) out.push(n);
+  return out;
+}
+
+// compute min sum of smallest k numbers from arr (assumed sorted ascending)
+function minSumFrom(arr, k) {
+  if (arr.length < k) return null;
+  let s = 0;
+  for (let i=0;i<k;i++) s += arr[i];
+  return s;
+}
+function maxSumFrom(arr, k) {
+  if (arr.length < k) return null;
+  let s = 0;
+  for (let i=0;i<k;i++) s += arr[arr.length-1-i];
+  return s;
+}
+
+/* Return candidate numbers for cell (r,c) given current board assignments */
+function getCandidates(r,c) {
+  const key = `${r},${c}`;
+  const runIdxs = cellToRuns[key] || [];
+  if (runIdxs.length === 0) {
+    // no run constraints (rare) — allow 1..9
+    return Array.from({length:9},(_,i)=>i+1);
+  }
+
+  const candidates = [];
+  for (let num=1; num<=9; num++) {
+    let ok = true;
+    for (const ri of runIdxs) {
+      const run = runs[ri];
+      const used = new Set();
+      let assignedSum = 0;
+      let unfilledOthers = 0;
+
+      // gather info of other cells in the run
+      for (const p of run.cells) {
+        if (p.r === r && p.c === c) continue;
+        const v = gameState.board[p.r][p.c].value;
+        if (v != null) {
+          const vn = Number(v);
+          used.add(vn);
+          assignedSum += vn;
+        } else {
+          unfilledOthers++;
+        }
+      }
+
+      // uniqueness: num must not already be used in run
+      if (used.has(num)) { ok = false; break; }
+
+      const remainAfter = run.target - (assignedSum + num);
+      if (unfilledOthers === 0) {
+        // this is the last cell: must hit target exactly
+        if (remainAfter !== 0) { ok = false; break; }
+      } else {
+        // there are k other cells to fill after this one
+        const k = unfilledOthers;
+        // available digits for other cells: excluding used and num
+        const exclude = new Set(used);
+        exclude.add(num);
+        const avail = availableDigitsExcluding(exclude); // ascending
+        // need to see if remainAfter can be formed by k distinct digits from avail
+        // quick feasibility: remainAfter must be between min and max possible sums
+        const minPossible = minSumFrom(avail, k);
+        const maxPossible = maxSumFrom(avail, k);
+        if (minPossible === null || maxPossible === null) { ok = false; break; }
+        if (remainAfter < minPossible || remainAfter > maxPossible) { ok = false; break; }
+      }
+      // also simple bound: assignedSum + num must be <= target
+      if (assignedSum + num > run.target) { ok = false; break; }
+    } // end runs loop
+
+    if (ok) candidates.push(num);
+  } // end numbers loop
+
+  return candidates;
+}
+
+/* ---------- Solver (backtracking with MRV heuristic) ---------- */
+function solveBoardWithRuns() {
+  // collect all empty cells
+  const empties = [];
+  for (let r=0;r<gameState.board.length;r++){
+    for (let c=0;c<gameState.board[0].length;c++){
+      if (gameState.board[r][c].type === 'empty') empties.push({r,c});
+    }
+  }
+
+  // recursive backtracking with MRV (choose cell with fewest candidates)
+  function backtrack() {
+    // find unfilled cell with fewest candidates
+    let bestIdx = -1;
+    let bestCands = null;
+    for (let i=0;i<empties.length;i++) {
+      const {r,c} = empties[i];
+      if (gameState.board[r][c].value != null) continue;
+      const cands = getCandidates(r,c);
+      if (cands.length === 0) return false; // dead end
+      if (bestIdx === -1 || cands.length < bestCands.length) {
+        bestIdx = i; bestCands = cands;
+        if (bestCands.length === 1) break; // can't do better than single candidate
+      }
+    }
+
+    if (bestIdx === -1) return true; // all filled
+
+    const {r,c} = empties[bestIdx];
+    // try candidates (small to large)
+    for (const num of bestCands.sort((a,b)=>a-b)) {
+      gameState.board[r][c].value = num;
+      if (backtrack()) return true;
+      gameState.board[r][c].value = null;
+    }
+
+    return false;
+  }
+
+  return backtrack();
+}
+
+/* ---------- Validate full board (for "Check") ---------- */
+function validateBoardFully(board) {
+  // every empty cell must be filled and every run must exactly match target with unique digits
+  for (const run of runs) {
+    let sum = 0;
+    const seen = new Set();
+    for (const p of run.cells) {
+      const v = board[p.r][p.c].value;
+      if (v == null) return false; // not filled
+      const vn = Number(v);
+      if (seen.has(vn)) return false; // duplicate
+      seen.add(vn);
+      sum += vn;
+    }
+    if (sum !== run.target) return false;
+  }
+  return true;
+}
+
+/* ---------- UI helpers ---------- */
+function showMessage(msg, type) {
+  statusElement.textContent = msg;
+  statusElement.className = type || '';
+}
+
+/* ---------- Buttons / Actions ---------- */
+function placeNumber(num) {
+  if (!selectedCell) return;
+  const r = Number(selectedCell.dataset.r);
+  const c = Number(selectedCell.dataset.c);
+  const cell = gameState.board[r][c];
+  if (cell && cell.type === 'empty') {
+    cell.value = (num == null ? null : num);
+    // update DOM quickly
+    selectedCell.textContent = (cell.value != null ? cell.value : '');
+  }
+}
+
+function checkBoard() {
+  // ensure runs mapping up-to-date
+  buildRuns();
+  if (validateBoardFully(gameState.board)) {
+    showMessage('Board correct!', 'success');
+  } else {
+    showMessage('Board invalid or incomplete.', 'error');
+  }
+}
+
+function solvePuzzle() {
+  buildRuns();
+  showMessage('Solving...', '');
+  // try to solve
+  // make sure all existing values are numeric or null
+  for (let r=0;r<gameState.board.length;r++){
+    for (let c=0;c<gameState.board[0].length;c++){
+      const cell = gameState.board[r][c];
+      if (cell.type === 'empty') {
+        if (cell.value === '') cell.value = null;
+        if (cell.value != null) cell.value = Number(cell.value);
+      }
+    }
+  }
+
+  const ok = solveBoardWithRuns();
+  if (ok) {
+    renderBoard();
+    showMessage('Solved!', 'success');
+  } else {
+    renderBoard();
+    showMessage('No solution found.', 'error');
+  }
+}
+
+function clearBoard() {
+  for (const row of gameState.board) {
+    for (const cell of row) {
+      if (cell.type === 'empty') cell.value = null;
+    }
+  }
+  renderBoard();
+  showMessage('Cleared!', 'success');
+}
+
+function saveBoard() {
+  // stringify board (values kept as numbers or null)
+  localStorage.setItem('kakuro', JSON.stringify(gameState.board));
+  showMessage('Saved!', 'success');
+}
+
+function loadBoard() {
+  const data = localStorage.getItem('kakuro');
+  if (!data) { showMessage('No saved board found', 'error'); return; }
+  try {
+    const parsed = JSON.parse(data);
+    // sanitize values (convert "" to null)
+    for (const row of parsed) for (const cell of row) {
+      if (cell.type === 'empty') {
+        if (cell.value === '') cell.value = null;
+        if (cell.value != null) cell.value = Number(cell.value);
+      }
+    }
+    gameState.board = parsed;
+    renderBoard();
+    showMessage('Loaded!', 'success');
+  } catch (e) {
+    showMessage('Error loading board', 'error');
+  }
+}
+
+/* ---------- Number pad rendering ---------- */
+function renderNumPad() {
+  numPad.innerHTML = '';
+  for (let i=1;i<=9;i++){
+    const btn = document.createElement('div');
+    btn.className = 'num-btn';
+    btn.textContent = i;
+    btn.onclick = () => placeNumber(i);
+    numPad.appendChild(btn);
+  }
+  const erase = document.createElement('div');
+  erase.className = 'num-btn';
+  erase.textContent = '×';
+  erase.onclick = () => placeNumber(null);
+  numPad.appendChild(erase);
+}
+
+/* ---------- Init ---------- */
+btnCheck.addEventListener('click', checkBoard);
+btnSolve.addEventListener('click', solvePuzzle);
+btnClear.addEventListener('click', clearBoard);
+btnSave.addEventListener('click', saveBoard);
+btnLoad.addEventListener('click', loadBoard);
+
+renderNumPad();
+renderBoard();
+showMessage('', '');
+</script>
+</body>
+</html>
