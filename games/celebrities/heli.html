@@ -60,7 +60,7 @@
         }
         
         .controls-panel {
-            bottom: 20px;
+            bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -139,9 +139,17 @@
         
         @media (max-width: 768px) {
             #game-container {
-                height: 100vh;
+                height: calc(100vh - 120px);
                 max-width: 100%;
                 border-radius: 0;
+                padding-bottom: 120px;
+                box-sizing: border-box;
+            }
+            
+            .controls-panel {
+                bottom: 0;
+                padding: 10px 20px;
+                gap: 10px;
             }
             
             .control-btn {
@@ -154,10 +162,6 @@
                 font-size: 20px;
                 top: 10px;
                 right: 10px;
-            }
-            
-            .controls-panel {
-                bottom: 10px;
             }
         }
     </style>
@@ -214,6 +218,33 @@
                 up: false,
                 down: false
             };
+            
+            // Function to add button listeners
+            function addButtonListeners(btnId, direction) {
+                const btn = document.getElementById(btnId);
+                if (!btn) return;
+                const pressHandler = (e) => {
+                    if (e.type === 'touchstart') {
+                        e.preventDefault();
+                    }
+                    inputStates[direction] = true;
+                };
+                const releaseHandler = () => {
+                    inputStates[direction] = false;
+                };
+                btn.addEventListener('touchstart', pressHandler, {passive: false});
+                btn.addEventListener('mousedown', pressHandler);
+                btn.addEventListener('touchend', releaseHandler);
+                btn.addEventListener('touchcancel', releaseHandler);
+                btn.addEventListener('mouseup', releaseHandler);
+                btn.addEventListener('mouseleave', releaseHandler);
+            }
+            
+            // Add touch controls early
+            addButtonListeners('left-btn', 'left');
+            addButtonListeners('up-btn', 'up');
+            addButtonListeners('down-btn', 'down');
+            addButtonListeners('right-btn', 'right');
             
             // Game configuration
             const config = {
@@ -278,31 +309,6 @@
                 // Set up keyboard controls
                 cursors = this.input.keyboard.createCursorKeys();
                 
-                // Set up touch controls
-                function addButtonListeners(btnId, direction) {
-                    const btn = document.getElementById(btnId);
-                    const pressHandler = (e) => {
-                        if (e.type === 'touchstart') {
-                            e.preventDefault();
-                        }
-                        inputStates[direction] = true;
-                    };
-                    const releaseHandler = () => {
-                        inputStates[direction] = false;
-                    };
-                    btn.addEventListener('touchstart', pressHandler, {passive: false});
-                    btn.addEventListener('mousedown', pressHandler);
-                    btn.addEventListener('touchend', releaseHandler);
-                    btn.addEventListener('touchcancel', releaseHandler);
-                    btn.addEventListener('mouseup', releaseHandler);
-                    btn.addEventListener('mouseleave', releaseHandler);
-                }
-                
-                addButtonListeners('left-btn', 'left');
-                addButtonListeners('up-btn', 'up');
-                addButtonListeners('down-btn', 'down');
-                addButtonListeners('right-btn', 'right');
-                
                 // Create score text
                 scoreText = document.querySelector('.score-display');
                 
@@ -350,6 +356,8 @@
                 // Rotate helicopter based on movement
                 if (vx !== 0 || vy !== 0) {
                     helicopter.rotation = Math.atan2(vy, vx);
+                } else {
+                    helicopter.rotation = 0;
                 }
             }
             

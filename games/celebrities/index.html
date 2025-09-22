@@ -60,7 +60,7 @@
         }
         
         .controls-panel {
-            bottom: 20px;
+            bottom: 60px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -139,9 +139,17 @@
         
         @media (max-width: 768px) {
             #game-container {
-                height: 100vh;
+                height: calc(100vh - 120px);
                 max-width: 100%;
                 border-radius: 0;
+                padding-bottom: 120px;
+                box-sizing: border-box;
+            }
+            
+            .controls-panel {
+                bottom: 0;
+                padding: 10px 20px;
+                gap: 10px;
             }
             
             .control-btn {
@@ -154,10 +162,6 @@
                 font-size: 20px;
                 top: 10px;
                 right: 10px;
-            }
-            
-            .controls-panel {
-                bottom: 10px;
             }
         }
     </style>
@@ -191,11 +195,62 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Get actual dimensions of the game canvas container
+            const canvasElement = document.getElementById('game-canvas');
+            const gameWidth = canvasElement.offsetWidth;
+            const gameHeight = canvasElement.offsetHeight;
+            
+            // Game variables
+            let game;
+            let helicopter;
+            let obstacles;
+            let survivors;
+            let cursors;
+            let score = 0;
+            let scoreText;
+            let gameActive = false;
+            let obstacleTimer;
+            let survivorTimer;
+            let background;
+            let inputStates = {
+                left: false,
+                right: false,
+                up: false,
+                down: false
+            };
+            
+            // Function to add button listeners
+            function addButtonListeners(btnId, direction) {
+                const btn = document.getElementById(btnId);
+                if (!btn) return;
+                const pressHandler = (e) => {
+                    if (e.type === 'touchstart') {
+                        e.preventDefault();
+                    }
+                    inputStates[direction] = true;
+                };
+                const releaseHandler = () => {
+                    inputStates[direction] = false;
+                };
+                btn.addEventListener('touchstart', pressHandler, {passive: false});
+                btn.addEventListener('mousedown', pressHandler);
+                btn.addEventListener('touchend', releaseHandler);
+                btn.addEventListener('touchcancel', releaseHandler);
+                btn.addEventListener('mouseup', releaseHandler);
+                btn.addEventListener('mouseleave', releaseHandler);
+            }
+            
+            // Add touch controls early
+            addButtonListeners('left-btn', 'left');
+            addButtonListeners('up-btn', 'up');
+            addButtonListeners('down-btn', 'down');
+            addButtonListeners('right-btn', 'right');
+            
             // Game configuration
             const config = {
                 type: Phaser.AUTO,
-                width: window.innerWidth,
-                height: window.innerHeight,
+                width: gameWidth,
+                height: gameHeight,
                 parent: 'game-canvas',
                 physics: {
                     default: 'arcade',
@@ -211,19 +266,6 @@
                 }
             };
             
-            // Game variables
-            let game;
-            let helicopter;
-            let obstacles;
-            let survivors;
-            let cursors;
-            let score = 0;
-            let scoreText;
-            let gameActive = false;
-            let obstacleTimer;
-            let survivorTimer;
-            let background;
-            
             // Initialize Phaser game
             game = new Phaser.Game(config);
             
@@ -237,18 +279,18 @@
                 // Create a gradient background programmatically
                 const gradient = this.make.graphics({x: 0, y: 0});
                 gradient.fillGradientStyle(0x6a11cb, 0x6a11cb, 0x2575fc, 0x2575fc);
-                gradient.fillRect(0, 0, config.width, config.height);
-                gradient.generateTexture('background', config.width, config.height);
+                gradient.fillRect(0, 0, gameWidth, gameHeight);
+                gradient.generateTexture('background', gameWidth, gameHeight);
                 gradient.destroy();
             }
             
             // Create game objects
             function create() {
                 // Create background
-                background = this.add.tileSprite(0, 0, config.width, config.height, 'background').setOrigin(0);
+                background = this.add.tileSprite(0, 0, gameWidth, gameHeight, 'background').setOrigin(0);
                 
                 // Create helicopter
-                helicopter = this.physics.add.sprite(config.width / 2, config.height / 2, 'helicopter');
+                helicopter = this.physics.add.sprite(gameWidth / 2, gameHeight / 2, 'helicopter');
                 helicopter.setCollideWorldBounds(true);
                 helicopter.setScale(0.8);
                 helicopter.body.setSize(30, 15);
@@ -266,25 +308,6 @@
                 
                 // Set up keyboard controls
                 cursors = this.input.keyboard.createCursorKeys();
-                
-                // Set up touch controls
-                document.getElementById('up-btn').addEventListener('touchstart', () => moveUp());
-                document.getElementById('up-btn').addEventListener('mousedown', () => moveUp());
-                document.getElementById('down-btn').addEventListener('touchstart', () => moveDown());
-                document.getElementById('down-btn').addEventListener('mousedown', () => moveDown());
-                document.getElementById('left-btn').addEventListener('touchstart', () => moveLeft());
-                document.getElementById('left-btn').addEventListener('mousedown', () => moveLeft());
-                document.getElementById('right-btn').addEventListener('touchstart', () => moveRight());
-                document.getElementById('right-btn').addEventListener('mousedown', () => moveRight());
-                
-                // Add event listeners for button releases
-                const buttons = document.querySelectorAll('.control-btn');
-                buttons.forEach(btn => {
-                    btn.addEventListener('touchend', stopHelicopter);
-                    btn.addEventListener('touchcancel', stopHelicopter);
-                    btn.addEventListener('mouseup', stopHelicopter);
-                    btn.addEventListener('mouseleave', stopHelicopter);
-                });
                 
                 // Create score text
                 scoreText = document.querySelector('.score-display');
@@ -307,26 +330,34 @@
                 // Scroll the background
                 background.tilePositionX += 2;
                 
-                // Keyboard controls
-                if (cursors.left.isDown) {
-                    helicopter.setVelocityX(-200);
-                } else if (cursors.right.isDown) {
-                    helicopter.setVelocityX(200);
-                } else if (helicopter.body.velocity.x !== 0) {
-                    helicopter.setVelocityX(0);
+                // Input handling (unified for keyboard and touch)
+                const leftPressed = inputStates.left || cursors.left.isDown;
+                const rightPressed = inputStates.right || cursors.right.isDown;
+                const upPressed = inputStates.up || cursors.up.isDown;
+                const downPressed = inputStates.down || cursors.down.isDown;
+                
+                let vx = 0;
+                if (leftPressed) {
+                    vx = -200;
+                } else if (rightPressed) {
+                    vx = 200;
                 }
                 
-                if (cursors.up.isDown) {
-                    helicopter.setVelocityY(-200);
-                } else if (cursors.down.isDown) {
-                    helicopter.setVelocityY(200);
-                } else if (helicopter.body.velocity.y !== 0) {
-                    helicopter.setVelocityY(0);
+                let vy = 0;
+                if (upPressed) {
+                    vy = -200;
+                } else if (downPressed) {
+                    vy = 200;
                 }
+                
+                helicopter.setVelocityX(vx);
+                helicopter.setVelocityY(vy);
                 
                 // Rotate helicopter based on movement
-                if (helicopter.body.velocity.x !== 0 || helicopter.body.velocity.y !== 0) {
-                    helicopter.rotation = Math.atan2(helicopter.body.velocity.y, helicopter.body.velocity.x);
+                if (vx !== 0 || vy !== 0) {
+                    helicopter.rotation = Math.atan2(vy, vx);
+                } else {
+                    helicopter.rotation = 0;
                 }
             }
             
@@ -336,12 +367,15 @@
                 score = 0;
                 updateScore();
                 
+                // Reset input states
+                Object.keys(inputStates).forEach(key => inputStates[key] = false);
+                
                 // Clear any existing objects
                 obstacles.clear(true, true);
                 survivors.clear(true, true);
                 
                 // Reset helicopter position
-                helicopter.setPosition(config.width / 2, config.height / 2);
+                helicopter.setPosition(gameWidth / 2, gameHeight / 2);
                 helicopter.setVelocity(0, 0);
                 helicopter.rotation = 0;
                 
@@ -375,7 +409,7 @@
             
             // Create an obstacle
             function createObstacle() {
-                const obstacle = obstacles.create(config.width, Phaser.Math.Between(100, config.height - 100), 'obstacle');
+                const obstacle = obstacles.create(gameWidth, Phaser.Math.Between(100, gameHeight - 100), 'obstacle');
                 obstacle.setVelocityX(-200);
                 obstacle.body.immovable = true;
                 
@@ -386,7 +420,7 @@
             
             // Create a survivor
             function createSurvivor() {
-                const survivor = survivors.create(config.width, Phaser.Math.Between(100, config.height - 100), 'survivor');
+                const survivor = survivors.create(gameWidth, Phaser.Math.Between(100, gameHeight - 100), 'survivor');
                 survivor.setVelocityX(-150);
                 
                 // Add a slight floating animation
@@ -432,8 +466,8 @@
                 document.getElementById('game-over-menu').style.display = 'block';
                 
                 // Clear timers
-                obstacleTimer.remove();
-                survivorTimer.remove();
+                if (obstacleTimer) obstacleTimer.remove();
+                if (survivorTimer) survivorTimer.remove();
             }
             
             // Handle survivor rescue
@@ -463,32 +497,6 @@
             // Update score display
             function updateScore() {
                 scoreText.textContent = `Score: ${score}`;
-            }
-            
-            // Touch control functions
-            function moveUp() {
-                if (!gameActive) return;
-                helicopter.setVelocityY(-200);
-            }
-            
-            function moveDown() {
-                if (!gameActive) return;
-                helicopter.setVelocityY(200);
-            }
-            
-            function moveLeft() {
-                if (!gameActive) return;
-                helicopter.setVelocityX(-200);
-            }
-            
-            function moveRight() {
-                if (!gameActive) return;
-                helicopter.setVelocityX(200);
-            }
-            
-            function stopHelicopter() {
-                if (!gameActive) return;
-                helicopter.setVelocity(0, 0);
             }
         });
     </script>
