@@ -59,36 +59,6 @@
             min-width: 100px;
         }
         
-        .controls-panel {
-            bottom: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
-            padding: 15px 25px;
-        }
-        
-        .control-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.2s;
-        }
-        
-        .control-btn:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
         .game-menu {
             top: 50%;
             left: 50%;
@@ -139,23 +109,9 @@
         
         @media (max-width: 768px) {
             #game-container {
-                height: calc(100vh - 120px);
+                height: 100vh;
                 max-width: 100%;
                 border-radius: 0;
-                padding-bottom: 120px;
-                box-sizing: border-box;
-            }
-            
-            .controls-panel {
-                bottom: 0;
-                padding: 10px 20px;
-                gap: 10px;
-            }
-            
-            .control-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 24px;
             }
             
             .score-display {
@@ -172,17 +128,11 @@
         
         <div class="ui-panel score-display">Score: 0</div>
         
-        <div class="ui-panel controls-panel">
-            <div class="control-btn" id="left-btn">←</div>
-            <div class="control-btn" id="up-btn">↑</div>
-            <div class="control-btn" id="down-btn">↓</div>
-            <div class="control-btn" id="right-btn">→</div>
-        </div>
-        
         <div class="ui-panel game-menu" id="start-menu">
             <h1>Helicopter Rescue</h1>
             <p>Navigate through obstacles and rescue the survivors!</p>
-            <p>Use arrow keys or touch controls to move the helicopter.</p>
+            <p>Touch anywhere on the screen to activate the virtual joystick and drag to move. Release to stop.</p>
+            <p>Use arrow keys on desktop.</p>
             <button class="btn" id="start-btn">Start Mission</button>
         </div>
         
@@ -212,39 +162,20 @@
             let obstacleTimer;
             let survivorTimer;
             let background;
-            let inputStates = {
-                left: false,
-                right: false,
-                up: false,
-                down: false
-            };
             
-            // Function to add button listeners
-            function addButtonListeners(btnId, direction) {
-                const btn = document.getElementById(btnId);
-                if (!btn) return;
-                const pressHandler = (e) => {
-                    if (e.type === 'touchstart') {
-                        e.preventDefault();
-                    }
-                    inputStates[direction] = true;
-                };
-                const releaseHandler = () => {
-                    inputStates[direction] = false;
-                };
-                btn.addEventListener('touchstart', pressHandler, {passive: false});
-                btn.addEventListener('mousedown', pressHandler);
-                btn.addEventListener('touchend', releaseHandler);
-                btn.addEventListener('touchcancel', releaseHandler);
-                btn.addEventListener('mouseup', releaseHandler);
-                btn.addEventListener('mouseleave', releaseHandler);
-            }
+            // Particle emitters
+            let explosionEmitter;
+            let rescueEmitter;
             
-            // Add touch controls early
-            addButtonListeners('left-btn', 'left');
-            addButtonListeners('up-btn', 'up');
-            addButtonListeners('down-btn', 'down');
-            addButtonListeners('right-btn', 'right');
+            // Virtual Joystick variables
+            let joystickActive = false;
+            let joystickDirX = 0;
+            let joystickDirY = 0;
+            let joystickBase;
+            let joystickKnob;
+            let joystickCenterX;
+            let joystickCenterY;
+            const joystickRadius = 80;
             
             // Game configuration
             const config = {
@@ -309,6 +240,73 @@
                 // Set up keyboard controls
                 cursors = this.input.keyboard.createCursorKeys();
                 
+                // Particle emitters
+                explosionEmitter = this.add.particles(0, 0, 'helicopter', {
+                    speed: 100,
+                    lifespan: 500,
+                    quantity: 20,
+                    scale: { start: 1, end: 0 },
+                    blendMode: 'ADD',
+                    tint: 0xff0000
+                }).setDepth(20);
+                
+                rescueEmitter = this.add.particles(0, 0, 'survivor', {
+                    speed: 50,
+                    lifespan: 800,
+                    quantity: 10,
+                    scale: { start: 1, end: 0 },
+                    blendMode: 'ADD',
+                    tint: 0x00ff00
+                }).setDepth(20);
+                
+                // Virtual Joystick setup - initially invisible
+                joystickBase = this.add.circle(0, 0, joystickRadius, 0x000000, 0.3).setDepth(10);
+                joystickKnob = this.add.circle(0, 0, joystickRadius * 0.5, 0xffffff, 0.7).setDepth(11);
+                joystickBase.setVisible(false);
+                joystickKnob.setVisible(false);
+                
+                this.input.on('pointerdown', function(pointer) {
+                    if (gameActive && !joystickActive) {
+                        joystickActive = true;
+                        joystickCenterX = pointer.x;
+                        joystickCenterY = pointer.y;
+                        joystickBase.setPosition(joystickCenterX, joystickCenterY);
+                        joystickKnob.setPosition(joystickCenterX, joystickCenterY);
+                        joystickBase.setVisible(true);
+                        joystickKnob.setVisible(true);
+                        joystickDirX = 0;
+                        joystickDirY = 0;
+                    }
+                }, this);
+                
+                this.input.on('pointermove', function(pointer) {
+                    if (!joystickActive) return;
+                    
+                    let dx = pointer.x - joystickCenterX;
+                    let dy = pointer.y - joystickCenterY;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > joystickRadius) {
+                        dx *= joystickRadius / dist;
+                        dy *= joystickRadius / dist;
+                    }
+                    
+                    joystickKnob.setPosition(joystickCenterX + dx, joystickCenterY + dy);
+                    joystickDirX = dx / joystickRadius;
+                    joystickDirY = dy / joystickRadius;
+                }, this);
+                
+                this.input.on('pointerup', function(pointer) {
+                    if (joystickActive) {
+                        joystickActive = false;
+                        joystickBase.setVisible(false);
+                        joystickKnob.setVisible(false);
+                        joystickKnob.setPosition(joystickCenterX, joystickCenterY);
+                        joystickDirX = 0;
+                        joystickDirY = 0;
+                    }
+                }, this);
+                
                 // Create score text
                 scoreText = document.querySelector('.score-display');
                 
@@ -330,31 +328,38 @@
                 // Scroll the background
                 background.tilePositionX += 2;
                 
-                // Input handling (unified for keyboard and touch)
-                const leftPressed = inputStates.left || cursors.left.isDown;
-                const rightPressed = inputStates.right || cursors.right.isDown;
-                const upPressed = inputStates.up || cursors.up.isDown;
-                const downPressed = inputStates.down || cursors.down.isDown;
-                
                 let vx = 0;
-                if (leftPressed) {
-                    vx = -200;
-                } else if (rightPressed) {
-                    vx = 200;
-                }
-                
                 let vy = 0;
-                if (upPressed) {
-                    vy = -200;
-                } else if (downPressed) {
-                    vy = 200;
+                let rotate = false;
+                
+                // Keyboard controls (priority)
+                const hasKeyboardInput = cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown;
+                if (hasKeyboardInput) {
+                    if (cursors.left.isDown) {
+                        vx = -350; // Boosted sensitivity
+                    } else if (cursors.right.isDown) {
+                        vx = 350;
+                    }
+                    if (cursors.up.isDown) {
+                        vy = -350;
+                    } else if (cursors.down.isDown) {
+                        vy = 350;
+                    }
+                    rotate = true;
+                } else if (joystickActive) {
+                    vx = joystickDirX * 350; // Boosted sensitivity
+                    vy = joystickDirY * 350;
+                    if (vx !== 0 || vy !== 0) {
+                        rotate = true;
+                    }
                 }
                 
+                // Set velocity directly for precise control
                 helicopter.setVelocityX(vx);
                 helicopter.setVelocityY(vy);
                 
                 // Rotate helicopter based on movement
-                if (vx !== 0 || vy !== 0) {
+                if (rotate && (vx !== 0 || vy !== 0)) {
                     helicopter.rotation = Math.atan2(vy, vx);
                 } else {
                     helicopter.rotation = 0;
@@ -366,9 +371,6 @@
                 gameActive = true;
                 score = 0;
                 updateScore();
-                
-                // Reset input states
-                Object.keys(inputStates).forEach(key => inputStates[key] = false);
                 
                 // Clear any existing objects
                 obstacles.clear(true, true);
@@ -445,21 +447,9 @@
                 this.physics.pause();
                 gameActive = false;
                 
-                // Show explosion effect
-                const explosion = this.add.sprite(helicopter.x, helicopter.y, 'helicopter');
-                explosion.setTint(0xff0000);
-                explosion.setScale(1.2);
-                
-                this.tweens.add({
-                    targets: explosion,
-                    alpha: 0,
-                    scaleX: 2,
-                    scaleY: 2,
-                    duration: 500,
-                    onComplete: () => {
-                        explosion.destroy();
-                    }
-                });
+                // Particle explosion effect
+                explosionEmitter.setPosition(helicopter.x, helicopter.y);
+                explosionEmitter.explode(20, helicopter.x, helicopter.y);
                 
                 // Show game over menu
                 document.getElementById('final-score').textContent = score;
@@ -472,26 +462,22 @@
             
             // Handle survivor rescue
             function rescueSurvivor(helicopter, survivor) {
+                if (survivor.rescued) return; // Prevent multiple calls
+                survivor.rescued = true;
+                
+                // Kill any tweens on the survivor
+                this.tweens.killTweensOf(survivor);
+                
+                // Particle rescue effect first
+                rescueEmitter.setPosition(survivor.x, survivor.y);
+                rescueEmitter.explode(10, survivor.x, survivor.y);
+                
+                // Then remove and destroy
                 survivors.remove(survivor, true, true);
                 
                 // Add points
                 score += 100;
                 updateScore();
-                
-                // Show rescue effect
-                const rescueEffect = this.add.sprite(survivor.x, survivor.y, 'survivor');
-                rescueEffect.setTint(0xffffff);
-                
-                this.tweens.add({
-                    targets: rescueEffect,
-                    alpha: 0,
-                    scaleX: 1.5,
-                    scaleY: 1.5,
-                    duration: 500,
-                    onComplete: () => {
-                        rescueEffect.destroy();
-                    }
-                });
             }
             
             // Update score display
