@@ -1,731 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jigsaw Puzzle</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --grid-size: 3;
-            --puzzle-image: url('https://picsum.photos/300/300');
-            --board-size: 300px;
-            --piece-size: calc(100% / 3);
-            --font-size: 18px;
-        }
-        body {
-            background: linear-gradient(to bottom, #6a11cb, #fff);
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            color: #333;
-            touch-action: none;
-            overflow: hidden;
-        }
-        .container {
-            text-align: center;
-            padding: 10px;
-            width: 100%;
-            max-width: 400px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            gap: 5px;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 1.5em;
-        }
-        .game-setup {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            flex-wrap: wrap;
-            margin-bottom: 5px;
-        }
-        .puzzle-area {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 5px 0;
-            flex-grow: 1;
-            gap: 5px;
-        }
-        .board {
-            position: relative;
-            width: var(--board-size);
-            height: var(--board-size);
-            background: #f0f0f0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        .board::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: var(--puzzle-image);
-            background-repeat: no-repeat;
-            background-size: cover;
-            opacity: 0.3;
-            z-index: 1;
-        }
-        .slot {
-            position: absolute;
-            border: 1px dashed #ccc;
-            background: transparent;
-            cursor: pointer;
-            pointer-events: auto;
-            z-index: 2;
-        }
-        .pieces {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2px;
-            max-width: var(--board-size);
-            flex-shrink: 0;
-        }
-        .piece {
-            width: var(--piece-size);
-            height: var(--piece-size);
-            background-image: var(--puzzle-image);
-            background-repeat: no-repeat;
-            background-size: var(--board-size) var(--board-size);
-            border-radius: 4px;
-            cursor: move;
-            z-index: 10;
-            transition: transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            user-select: none;
-            will-change: transform;
-            box-sizing: border-box;
-        }
-        .piece:hover {
-            transform: scale(1.05);
-        }
-        .piece.placed {
-            border: 2px solid #3498db;
-        }
-        .piece.dragging {
-            transform: scale(1.1);
-            z-index: 100;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .controls {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: auto;
-            padding-bottom: 10px;
-        }
-        .primary, .secondary {
-            border: none;
-            padding: 8px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-        }
-        .primary {
-            background: #3498db;
-        }
-        .secondary {
-            background: #6a11cb;
-        }
-        .white-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            max-width: 80%;
-            margin: 20px auto;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .hide {
-            display: none;
-        }
-        .close {
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #aaa;
-        }
-        .close:hover {
-            color: #000;
-        }
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .spinner {
-            border: 4px solid white;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .win-message {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            z-index: 100;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        @media (max-width: 480px) {
-            body {
-                align-items: stretch;
-                padding: 2px;
-            }
-            .container {
-                max-width: none;
-                padding: 2px;
-                height: 100vh;
-                gap: 2px;
-            }
-            h1 {
-                font-size: 1.2em;
-                margin-bottom: 2px;
-            }
-            .game-setup {
-                gap: 2px;
-                margin-bottom: 2px;
-            }
-            .puzzle-area {
-                margin: 2px 0;
-                gap: 2px;
-            }
-            .pieces {
-                gap: 1px;
-            }
-            .controls {
-                flex-direction: column;
-                align-items: center;
-                margin-top: 5px;
-                gap: 2px;
-            }
-            .primary, .secondary {
-                width: 40px;
-                height: 40px;
-                font-size: 16px;
-                padding: 8px;
-            }
-            .piece {
-                touch-action: manipulation;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Bird Clone</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+    #game-container {
+        border: 2px solid #333;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        position: relative;
+    }
+    #ui {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        z-index: 10;
+    }
+    #start-screen, #game-over-screen {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255,255,255,0.9);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 20;
+    }
+    button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 5px;
+    }
+    button:hover {
+        background: #45a049;
+    }
+    .hidden { display: none; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-puzzle-piece" style="color: #6a11cb;"></i> Jigsaw Puzzle</h1>
-        <div class="game-setup">
-            <button id="newGame" class="secondary" title="New Game"><i class="fas fa-plus"></i></button>
-            <button id="instructions" class="secondary" title="Instructions"><i class="fas fa-question-circle"></i></button>
-             <button id="hint" class="secondary" title="Hint"><i class="fas fa-lightbulb" style="color: #fff;"></i></button>
-            <button id="check" class="primary" title="Check"><i class="fas fa-check" style="color: #fff;"></i></button>
-            <button id="autoSolve" class="primary" title="Auto-Solve"><i class="fas fa-magic" style="color: #fff;"></i></button>
-        </div>
-       
-        <div class="puzzle-area">
-            <div id="board" class="board"></div>
-            <div id="pieces" class="pieces"></div>
-        </div>
-        
-    </div>
+<div id="game-container"></div>
+<div id="ui">
+    <div>Score: <span id="score">0</span></div>
+</div>
+<div id="start-screen">
+    <h1>Flappy Bird</h1>
+    <p>Press SPACE or CLICK to start!</p>
+    <button id="start-btn">Start Game</button>
+</div>
+<div id="game-over-screen" class="hidden">
+    <h2>Game Over!</h2>
+    <p>Score: <span id="final-score">0</span></p>
+    <p>High Score: <span id="high-score">0</span></p>
+    <button id="restart-btn">Play Again</button>
+    <button id="menu-btn">Main Menu</button>
+</div>
 
-    <!-- Instructions Modal -->
-    <div id="modal" class="modal hide">
-        <div class="white-card">
-            <span class="close" onclick="hideInstructions()">&times;</span>
-            <h2><i class="fas fa-question-circle"></i> Instructions</h2>
-            <p>Drag the puzzle pieces from the bottom to their correct slots on the board to assemble the image. Use hints, check your solution, or auto-solve for help!</p>
-        </div>
-    </div>
+<script>
+let game;
+let score = 0;
+let highScore = localStorage.getItem('flappyHighScore') || 0;
+document.getElementById('high-score').textContent = highScore;
 
-    <!-- Loader -->
-    <!-- <div id="loader" class="loader hide">
-        <div class="spinner"></div>
-    </div> -->
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'game-container',
+    physics: { default: 'arcade', arcade: { gravity: { y: 600 }, debug: false }},
+    scene: { preload, create, update }
+};
 
-    <script>
-        let gridSize = 3;
-        let totalPieces = 9;
-        let piecePositions = [];
-        let placedPieces = new Set();
-        let currentBoardSize = 0;
-        let audioContext;
-        let draggedPiece = null;
-        let startX, startY, startLeft, startTop;
-        let isDragging = false;
-        let originalParent = null;
-        let originalIndex = 0;
+let bird, pipes, cursors, scoreText, gameStarted = false, gameOver = false, pipeTimer;
+let bg, ground;
 
-        function initAudio() {
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-        }
+function preload() {
+    // Bird texture
+    const birdGraphics = this.add.graphics();
+    birdGraphics.fillStyle(0xffff00);
+    birdGraphics.fillCircle(12,12,12);
+    birdGraphics.fillStyle(0xff0000);
+    birdGraphics.fillTriangle(20,12,28,16,20,20);
+    birdGraphics.fillStyle(0x000000);
+    birdGraphics.fillCircle(16,8,2);
+    birdGraphics.generateTexture('bird',24,24);
+    birdGraphics.destroy();
 
-        function playSound(type) {
-            if (!audioContext) {
-                console.log(`Play sound: ${type}`);
-                return;
-            }
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            let freq = 440;
-            let gain = 0.1;
-            switch (type) {
-                case 'move':
-                    freq = 440;
-                    gain = 0.1;
-                    break;
-                case 'drop':
-                    freq = 523;
-                    gain = 0.2;
-                    break;
-                case 'button':
-                    freq = 659;
-                    gain = 0.1;
-                    break;
-                case 'win':
-                    freq = 784;
-                    gain = 0.3;
-                    break;
-                default:
-                    return;
-            }
-            oscillator.frequency.value = freq;
-            gainNode.gain.setValueAtTime(gain, audioContext.currentTime);
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.1);
-        }
+    // Pipe texture
+    const pipeGraphics = this.add.graphics();
+    pipeGraphics.fillStyle(0x228B22);
+    pipeGraphics.fillRect(0,0,52,320);
+    pipeGraphics.lineStyle(2,0x006400);
+    pipeGraphics.strokeRect(0,0,52,320);
+    pipeGraphics.fillStyle(0x32CD32);
+    pipeGraphics.fillRect(-10,0,72,20);
+    pipeGraphics.generateTexture('pipe',52,340);
+    pipeGraphics.destroy();
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
+    // Background
+    const bgGraphics = this.make.graphics({ add:false });
+    bgGraphics.fillGradientStyle(0x87CEEB,0x87CEEB,0x98FB98,0x98FB98,1);
+    bgGraphics.fillRect(0,0,800,600);
+    bgGraphics.generateTexture("bgTex",800,600);
+    bgGraphics.destroy();
 
-        function getNewImageUrl() {
-            return `https://picsum.photos/seed/${Date.now()}/300/300`;
-        }
+    // Ground tile (grass)
+    const groundGraphics = this.make.graphics({ add:false });
+    groundGraphics.fillStyle(0x228B22);
+    groundGraphics.fillRect(0,0,40,40);
+    groundGraphics.fillStyle(0x8B4513);
+    groundGraphics.fillRect(0,30,40,10);
+    groundGraphics.generateTexture("groundTile",40,40);
+    groundGraphics.destroy();
+}
 
-        function setPuzzleImage() {
-            document.documentElement.style.setProperty('--puzzle-image', `url(${getNewImageUrl()})`);
-        }
+function create() {
+    // Background
+    bg = this.add.tileSprite(400,300,800,600,"bgTex");
+    ground = this.add.tileSprite(400,580,800,40,"groundTile");
+    this.physics.add.existing(ground,true);
 
-        function resizeGame() {
-            const isMobile = window.innerWidth <= 480;
-            let newSize = isMobile ? Math.floor(window.innerWidth * 0.85) : 300;
-            newSize = Math.min(newSize, Math.floor(window.innerHeight * 0.4));
-            if (Math.abs(newSize - currentBoardSize) > 5) {
-                document.documentElement.style.setProperty('--board-size', newSize + 'px');
-                document.documentElement.style.setProperty('--piece-size', (newSize / gridSize) + 'px');
-                createSlots();
-                createPieces();
-                currentBoardSize = newSize;
-            }
-        }
+    // Bird
+    bird = this.physics.add.sprite(100,300,'bird');
+    bird.setCollideWorldBounds(false);
+    bird.setOrigin(0.5,0.5);
 
-        function createSlots() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
-            const pieceSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--piece-size'));
-            for (let row = 0; row < gridSize; row++) {
-                for (let col = 0; col < gridSize; col++) {
-                    const slot = document.createElement('div');
-                    slot.classList.add('slot');
-                    slot.style.width = pieceSize + 'px';
-                    slot.style.height = pieceSize + 'px';
-                    slot.style.left = (col * pieceSize) + 'px';
-                    slot.style.top = (row * pieceSize) + 'px';
-                    slot.dataset.row = row;
-                    slot.dataset.col = col;
-                    slot.addEventListener('dragover', dragOver);
-                    slot.addEventListener('drop', drop);
-                    board.appendChild(slot);
-                }
-            }
-        }
+    // Pipes
+    pipes = this.physics.add.group();
 
-        function createPieces() {
-            const piecesContainer = document.getElementById('pieces');
-            piecesContainer.innerHTML = '';
-            piecePositions = [];
-            placedPieces.clear();
-            const pieceSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--piece-size'));
-            let pieces = [];
-            for (let i = 0; i < totalPieces; i++) {
-                const piece = document.createElement('div');
-                piece.classList.add('piece');
-                const row = Math.floor(i / gridSize);
-                const col = i % gridSize;
-                piece.style.backgroundPosition = `-${col * pieceSize}px -${row * pieceSize}px`;
-                piece.draggable = true;
-                piece.dataset.id = i;
-                piece.dataset.row = row;
-                piece.dataset.col = col;
-                piece.addEventListener('dragstart', dragStart);
-                piece.addEventListener('dragend', dragEnd);
-                if ('ontouchstart' in window) {
-                    piece.addEventListener('touchstart', touchStart, { passive: false });
-                }
-                piecePositions.push({ id: i, row, col });
-                pieces.push(piece);
-            }
-            shuffle(pieces);
-            pieces.forEach(piece => piecesContainer.appendChild(piece));
-        }
+    // Input
+    cursors = this.input.keyboard.createCursorKeys();
+    this.input.on('pointerdown', flap);
+    this.input.keyboard.on('keydown-SPACE', flap);
 
-        function init() {
-            initAudio();
-            setPuzzleImage();
-            resizeGame();
-            if ('ontouchstart' in window) {
-                document.addEventListener('touchmove', touchMove, { passive: false });
-                document.addEventListener('touchend', touchEnd, { passive: false });
-            }
-            window.addEventListener('resize', resizeGame);
-            document.getElementById('newGame').addEventListener('click', newGame);
-            document.getElementById('instructions').addEventListener('click', showInstructions);
-            document.getElementById('check').addEventListener('click', checkSolution);
-            document.getElementById('hint').addEventListener('click', showHint);
-            document.getElementById('autoSolve').addEventListener('click', autoSolve);
-            window.addEventListener('click', (e) => {
-                if (e.target.id === 'modal') hideInstructions();
-            });
-        }
+    // Score
+    scoreText = this.add.text(350,50,'Score: 0',{ fontSize:'32px', fill:'#000' });
 
-        // Mouse drag events
-        function dragStart(e) {
-            draggedPiece = e.target;
-            isDragging = true;
-            draggedPiece.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', e.target.dataset.id);
-            playSound('move');
-            
-            // Store original position
-            originalParent = draggedPiece.parentElement;
-            originalIndex = Array.from(originalParent.children).indexOf(draggedPiece);
-        }
+    // Timer for pipes
+    pipeTimer = this.time.addEvent({ delay:1500, callback:addPipe, callbackScope:this, loop:true });
+    pipeTimer.paused = true;
 
-        function dragEnd(e) {
-            if (!draggedPiece) return;
-            
-            draggedPiece.classList.remove('dragging');
-            
-            // If not placed, return to original position
-            if (!placedPieces.has(parseInt(draggedPiece.dataset.id))) {
-                resetPiecePosition(draggedPiece);
-            }
-            
-            draggedPiece = null;
-            isDragging = false;
-        }
+    // Start screen
+    showStartScreen();
+}
 
-        function dragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        }
+function update() {
+    if(!gameStarted || gameOver) return;
 
-        function drop(e) {
-            e.preventDefault();
-            if (!draggedPiece) return;
-            
-            const slot = e.target.closest('.slot');
-            if (slot) {
-                placePiece(slot);
-            } else {
-                resetPiecePosition(draggedPiece);
-            }
-            
-            draggedPiece.classList.remove('dragging');
-            draggedPiece = null;
-            isDragging = false;
-        }
+    // Bird rotation
+    if(bird.body.velocity.y < 0) bird.angle = -25;
+    else if(bird.body.velocity.y >= 0) bird.angle = Phaser.Math.Clamp(bird.angle + 2, -25, 90);
 
-        // Touch drag events
-        function touchStart(e) {
-            if (e.touches.length > 1) return;
-            e.preventDefault();
-            e.stopPropagation();
-            
-            draggedPiece = e.currentTarget;
-            isDragging = true;
-            draggedPiece.classList.add('dragging');
-            
-            const touch = e.touches[0];
-            const rect = draggedPiece.getBoundingClientRect();
-            startX = touch.clientX;
-            startY = touch.clientY;
-            startLeft = rect.left;
-            startTop = rect.top;
-            
-            // Store original position
-            originalParent = draggedPiece.parentElement;
-            originalIndex = Array.from(originalParent.children).indexOf(draggedPiece);
-            
-            // Move piece to body for absolute positioning during drag
-            document.body.appendChild(draggedPiece);
-            draggedPiece.style.position = 'fixed';
-            draggedPiece.style.left = startLeft + 'px';
-            draggedPiece.style.top = startTop + 'px';
-            draggedPiece.style.width = rect.width + 'px';
-            draggedPiece.style.height = rect.height + 'px';
-            draggedPiece.style.zIndex = '100';
-            draggedPiece.style.transition = 'none';
-            
-            playSound('move');
-        }
+    // Scroll background & ground
+    bg.tilePositionX += 1;
+    ground.tilePositionX += 2;
 
-        function touchMove(e) {
-            if (!draggedPiece || !isDragging) return;
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const touch = e.touches[0];
-            const deltaX = touch.clientX - startX;
-            const deltaY = touch.clientY - startY;
-            
-            draggedPiece.style.left = (startLeft + deltaX) + 'px';
-            draggedPiece.style.top = (startTop + deltaY) + 'px';
-        }
+    // Remove off-screen pipes
+    pipes.getChildren().forEach(pipe => { if(pipe.x < -50) pipe.destroy(); });
+}
 
-        function touchEnd(e) {
-            if (!draggedPiece || !isDragging) return;
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const touch = e.changedTouches[0];
-            
-            // Temporarily hide the dragged piece to detect the underlying slot
-            draggedPiece.style.visibility = 'hidden';
-            let slot = document.elementFromPoint(touch.clientX, touch.clientY);
-            draggedPiece.style.visibility = 'visible';
-            
-            if (slot) {
-                slot = slot.closest('.slot');
-            }
-            
-            if (slot) {
-                placePiece(slot);
-            } else {
-                resetPiecePosition(draggedPiece);
-            }
-            
-            draggedPiece.classList.remove('dragging');
-            draggedPiece = null;
-            isDragging = false;
-        }
+function flap() {
+    if(!gameStarted) { startGame(); return; }
+    if(gameOver) { restartGame(); return; }
+    bird.setVelocityY(-250);
+}
 
-        // Reset piece to its original position
-        function resetPiecePosition(piece) {
-            if (!piece) return;
-            
-            piece.style.position = '';
-            piece.style.left = '';
-            piece.style.top = '';
-            piece.style.width = '';
-            piece.style.height = '';
-            piece.style.zIndex = '';
-            piece.style.transition = '';
-            piece.style.visibility = '';
-            
-            // Return to original parent at original position
-            if (originalParent) {
-                if (originalIndex >= originalParent.children.length) {
-                    originalParent.appendChild(piece);
-                } else {
-                    originalParent.insertBefore(piece, originalParent.children[originalIndex]);
-                }
-            }
-        }
+function startGame() {
+    gameStarted = true;
+    gameOver = false;
+    score = 0;
+    updateScore();
+    pipeTimer.paused = false;
+    bird.setVelocity(0);
+    bird.setPosition(100,300);
+    bird.setAngle(0);
+    pipes.clear(true,true);
+    document.getElementById('start-screen').classList.add('hidden');
+}
 
-        // Place piece in slot
-        function placePiece(slot) {
-            if (!slot || !draggedPiece) return false;
-            
-            const row = parseInt(slot.dataset.row);
-            const col = parseInt(slot.dataset.col);
-            const pieceId = parseInt(draggedPiece.dataset.id);
-            const expectedRow = parseInt(draggedPiece.dataset.row);
-            const expectedCol = parseInt(draggedPiece.dataset.col);
-            
-            if (row === expectedRow && col === expectedCol && !placedPieces.has(pieceId)) {
-                slot.appendChild(draggedPiece);
-                draggedPiece.style.position = 'absolute';
-                draggedPiece.style.left = '0';
-                draggedPiece.style.top = '0';
-                draggedPiece.style.width = '100%';
-                draggedPiece.style.height = '100%';
-                draggedPiece.style.zIndex = '';
-                draggedPiece.style.transition = '';
-                draggedPiece.classList.add('placed');
-                placedPieces.add(pieceId);
-                checkWin();
-                playSound('drop');
-                return true;
-            } else {
-                resetPiecePosition(draggedPiece);
-                return false;
-            }
-        }
+function addPipe() {
+    if(gameOver) return;
+    const gapHeight = 180;
+    const minGapY = 150;
+    const maxGapY = 450;
+    const gapY = Phaser.Math.Between(minGapY,maxGapY);
+    const topY = gapY - gapHeight/2;
+    const bottomY = gapY + gapHeight/2;
 
-        function checkWin() {
-            if (placedPieces.size === totalPieces) {
-                playSound('win');
-                setTimeout(() => {
-                    alert('Congratulations! You solved the jigsaw puzzle!');
-                }, 500);
-            }
-        }
+    const topPipe = this.physics.add.sprite(800,topY,'pipe');
+    topPipe.setOrigin(0.5,1).setFlipY(true).setImmovable(true);
+    topPipe.body.allowGravity = false;
+    topPipe.body.velocity.x = -200;
+    pipes.add(topPipe);
 
-        function checkSolution() {
-            if (placedPieces.size === totalPieces) {
-                alert('Solution is correct!');
-            } else {
-                alert(`You have ${placedPieces.size}/${totalPieces} pieces placed. Keep going!`);
-            }
-            playSound('button');
-        }
+    const bottomPipe = this.physics.add.sprite(800,bottomY,'pipe');
+    bottomPipe.setOrigin(0.5,0).setImmovable(true);
+    bottomPipe.body.allowGravity = false;
+    bottomPipe.body.velocity.x = -200;
+    pipes.add(bottomPipe);
 
-        function showHint() {
-            if (placedPieces.size < totalPieces) {
-                const unplaced = piecePositions.find(p => !placedPieces.has(p.id));
-                if (unplaced) {
-                    const piece = document.querySelector(`[data-id="${unplaced.id}"]`);
-                    if (piece) {
-                        piece.style.boxShadow = '0 0 10px 3px yellow';
-                        setTimeout(() => {
-                            piece.style.boxShadow = '';
-                        }, 2000);
-                    }
-                    const slot = document.querySelector(`[data-row="${unplaced.row}"][data-col="${unplaced.col}"]`);
-                    if (slot) {
-                        slot.style.boxShadow = '0 0 10px 3px yellow';
-                        setTimeout(() => {
-                            slot.style.boxShadow = '';
-                        }, 2000);
-                    }
-                    playSound('button');
-                }
-            }
-        }
+    const scoreZone = this.add.zone(800-26,gapY,52,gapHeight);
+    this.physics.add.existing(scoreZone);
+    scoreZone.body.allowGravity = false;
+    scoreZone.body.velocity.x = -200;
+    this.physics.add.overlap(bird, scoreZone, scorePoint, null, this);
 
-        function autoSolve() {
-            const pieces = Array.from(document.querySelectorAll('.piece:not(.placed)'));
-            let index = 0;
-            const solveStep = () => {
-                if (index < pieces.length) {
-                    const piece = pieces[index];
-                    const pieceId = parseInt(piece.dataset.id);
-                    const pos = piecePositions.find(p => p.id === pieceId);
-                    const slot = document.querySelector(`[data-row="${pos.row}"][data-col="${pos.col}"]`);
-                    if (slot) {
-                        draggedPiece = piece;
-                        placePiece(slot);
-                        draggedPiece = null;
-                    }
-                    index++;
-                    setTimeout(solveStep, 500);
-                } else {
-                    checkWin();
-                }
-            };
-            solveStep();
-        }
+    // Collisions
+    this.physics.add.collider(bird, pipes, hitPipe, null, this);
+    this.physics.add.collider(bird, ground, hitGround, null, this);
+}
 
-        function newGame() {
-            showLoader();
-            setPuzzleImage();
-            setTimeout(() => {
-                placedPieces.clear();
-                createSlots();
-                createPieces();
-                hideLoader();
-                playSound('button');
-            }, 800);
-        }
+function scorePoint(bird, zone) {
+    if(zone.scored) return;
+    zone.scored = true;
+    score += 1;
+    updateScore();
+    zone.destroy();
+}
 
-        function showInstructions() {
-            document.getElementById('modal').classList.remove('hide');
-            playSound('button');
-        }
+function updateScore() {
+    scoreText.setText('Score: '+score);
+    document.getElementById('score').textContent = score;
+}
 
-        function hideInstructions() {
-            document.getElementById('modal').classList.add('hide');
-        }
+function hitPipe(){ endGame(); }
+function hitGround(){ endGame(); }
 
-        function showLoader() {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.classList.remove('hide');
-            }
-        }
+function endGame() {
+    gameOver = true;
+    pipeTimer.paused = true;
+    bird.setTint(0xff0000);
+    if(score > highScore){
+        highScore = score;
+        localStorage.setItem('flappyHighScore',highScore);
+        document.getElementById('high-score').textContent = highScore;
+    }
+    document.getElementById('final-score').textContent = score;
+    showGameOverScreen();
+}
 
-        function hideLoader() {
-            const loader = document.getElementById('loader');
-            if (loader) {
-                loader.classList.add('hide');
-            }
-        }
+function restartGame() {
+    startGame();
+    document.getElementById('game-over-screen').classList.add('hidden');
+}
 
-        window.addEventListener('load', init);
-    </script>
+function showStartScreen() {
+    document.getElementById('start-screen').classList.remove('hidden');
+    document.getElementById('start-btn').onclick = () => flap();
+}
+
+function showGameOverScreen() {
+    document.getElementById('game-over-screen').classList.remove('hidden');
+    document.getElementById('restart-btn').onclick = () => flap();
+    document.getElementById('menu-btn').onclick = () => {
+        document.getElementById('game-over-screen').classList.add('hidden');
+        showStartScreen();
+        gameOver = false;
+        score = 0;
+        updateScore();
+    };
+}
+
+game = new Phaser.Game(config);
+</script>
 </body>
 </html>

@@ -1,28 +1,7 @@
-<<<<<<< HEAD
-Word Search
+Write me a
+Animal Sounds Guess Game
 
-Find hidden words in a letter grid.
-Mechanics: Grid generation, word highlighting.
-
-Use dynamic words weather you can use any free API 
-=======
-# Brainsta_Games_server
-Brainsta Games server
-
-
-Hitori
-
-Shade cells in a grid to ensure no duplicate numbers in rows/columns.
-Mechanics: Shading logic, uniqueness checks.
-
-Hitori is a logic puzzle with simple rules and challenging solutions.
-The rules of Hitori are simple:
-You have to shade some of the cells of the grid according to the rules:
-- No number should appear unshaded more than once in a row or a column.
-- 2 black cells cannot be adjacent horizontally or vertically.
-- All non-shaded cells should be connected in a single group by vertical or horizontal motion.
->>>>>>> 5d4c0fd315980b169f989bb56ecadd5d2e86494d
-
+into HTML5 and use phaser.js if needed
 Theme:
 "Style this screen using a professional UI design with centerd align using full space of mobile screen. Apply the same background gradient and button color combinations (purple-to-white gradient background, blue primary buttons, purple secondary buttons, white input cards with rounded corners). Keep padding, spacing, and typography clean and modern. Ensure all buttons, modals, and loaders follow this color scheme for consistency." Background → LinearGradient ["#6a11cb", "#fff"] Primary Button → Blue (#3498db) Secondary Button → Purple (#6a11cb) Cards/Input → White with subtle shadow & rounded corners Loader Overlay → Dark translucent with white spinner Typography → Dark text on white cards, light text on buttons
 
@@ -34,8 +13,5 @@ Responsive Text: Adjusted font sizes to be proportional to the screen size.
 Fixed Mobile Layout: The game now fits completely on mobile screens without scrolling.
 Optimized Sizing: Further reduced element sizes to fit everything on screen.
 Tighter Spacing: Reduced spacing between all UI elements.
-<<<<<<< HEAD
 Use falticons if possibles for more attarctive Look and theme
-=======
-Use falticons if possibles for more attarctive Look and theme
->>>>>>> 5d4c0fd315980b169f989bb56ecadd5d2e86494d
+
