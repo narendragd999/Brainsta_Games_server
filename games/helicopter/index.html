@@ -3,494 +3,683 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Helicopter Obstacle Avoidance</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+    <title>Helicopter Rescue</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            touch-action: manipulation;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+            overflow: hidden;
             height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            overflow: hidden;
+            justify-content: center;
             color: white;
-            touch-action: none;
         }
         
         #game-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             height: 80vh;
-            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 3px solid #2c3e50;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
         }
         
         #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
         }
         
-        .ui-panel {
+        #ui-container {
             position: absolute;
-            padding: 15px;
-            background: rgba(106, 17, 203, 0.85);
-            border-radius: 12px;
-            backdrop-filter: blur(5px);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            text-align: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
             z-index: 10;
-            border: 2px solid rgba(255, 255, 255, 0.2);
         }
         
-        .score-display {
-            top: 20px;
-            right: 20px;
+        #score-display {
+            position: absolute;
+            top: 10px;
+            left: 10px;
             font-size: 24px;
             font-weight: bold;
-            min-width: 100px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
         
-        .controls-panel {
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
-            padding: 15px 25px;
-        }
-        
-        .control-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 30px;
-            color: white;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.2s;
-        }
-        
-        .control-btn:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .game-menu {
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 30px;
-            width: 80%;
-            max-width: 400px;
-        }
-        
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        p {
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        
-        .btn {
-            background: linear-gradient(to right, #ff9966, #ff5e62);
-            border: none;
-            padding: 12px 25px;
-            border-radius: 50px;
-            color: white;
-            font-size: 18px;
+        #lives-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
             font-weight: bold;
-            margin: 10px 0;
-            cursor: pointer;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #game-over, #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 20;
         }
         
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        #start-screen {
+            display: flex;
         }
         
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .game-over {
+        #game-over {
             display: none;
         }
         
-        @media (max-width: 768px) {
-            #game-container {
-                height: 100vh;
-                max-width: 100%;
-                border-radius: 0;
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            pointer-events: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        #instructions {
+            text-align: center;
+            max-width: 80%;
+            margin-top: 20px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            pointer-events: none;
+        }
+        
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            pointer-events: auto;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        @media (max-width: 500px) {
+            h1 {
+                font-size: 28px;
+            }
+            
+            button {
+                padding: 12px 25px;
+                font-size: 18px;
             }
             
             .control-btn {
-                width: 60px;
-                height: 60px;
+                width: 70px;
+                height: 70px;
                 font-size: 24px;
-            }
-            
-            .score-display {
-                font-size: 20px;
-                top: 10px;
-                right: 10px;
-            }
-            
-            .controls-panel {
-                bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <div id="game-canvas"></div>
+        <canvas id="game-canvas"></canvas>
         
-        <div class="ui-panel score-display">Score: 0</div>
-        
-        <div class="ui-panel controls-panel">
-            <div class="control-btn" id="left-btn">←</div>
-            <div class="control-btn" id="up-btn">↑</div>
-            <div class="control-btn" id="down-btn">↓</div>
-            <div class="control-btn" id="right-btn">→</div>
-        </div>
-        
-        <div class="ui-panel game-menu" id="start-menu">
-            <h1>Helicopter Rescue</h1>
-            <p>Navigate through obstacles and rescue the survivors!</p>
-            <p>Use arrow keys or touch controls to move the helicopter.</p>
-            <button class="btn" id="start-btn">Start Mission</button>
-        </div>
-        
-        <div class="ui-panel game-menu game-over" id="game-over-menu">
-            <h1>Mission Failed</h1>
-            <p>Your score: <span id="final-score">0</span></p>
-            <button class="btn" id="restart-btn">Try Again</button>
+        <div id="ui-container">
+            <div id="score-display">Score: 0</div>
+            <div id="lives-display">Lives: 3</div>
+            
+            <div id="start-screen">
+                <h1>Helicopter Rescue</h1>
+                <button id="start-button">Start Game</button>
+                <div id="instructions">
+                    <p>Rescue survivors and avoid obstacles!</p>
+                    <p>Use UP/DOWN buttons or tap above/below helicopter to move.</p>
+                </div>
+            </div>
+            
+            <div id="game-over">
+                <h1>Game Over</h1>
+                <div id="final-score">Score: 0</div>
+                <button id="restart-button">Play Again</button>
+            </div>
+            
+            <div id="controls">
+                <div class="control-btn" id="up-btn">↑</div>
+                <div class="control-btn" id="down-btn">↓</div>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Game configuration
-            const config = {
-                type: Phaser.AUTO,
-                width: window.innerWidth,
-                height: window.innerHeight,
-                parent: 'game-canvas',
-                physics: {
-                    default: 'arcade',
-                    arcade: {
-                        gravity: { y: 0 },
-                        debug: false
+        // Game variables
+        let canvas, ctx;
+        let gameActive = false;
+        let score = 0;
+        let lives = 3;
+        let gameSpeed = 3;
+        let frames = 0;
+        
+        // Helicopter properties
+        const helicopter = {
+            x: 100,
+            y: 300,
+            width: 80,
+            height: 40,
+            speed: 5,
+            isMovingUp: false,
+            isMovingDown: false
+        };
+        
+        // Game objects arrays
+        let obstacles = [];
+        let survivors = [];
+        let clouds = [];
+        
+        // Initialize the game
+        function init() {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Event listeners for buttons
+            document.getElementById('start-button').addEventListener('click', startGame);
+            document.getElementById('restart-button').addEventListener('click', restartGame);
+            
+            // Touch controls
+            document.getElementById('up-btn').addEventListener('touchstart', () => moveHelicopterUp());
+            document.getElementById('up-btn').addEventListener('touchend', () => stopHelicopter());
+            document.getElementById('down-btn').addEventListener('touchstart', () => moveHelicopterDown());
+            document.getElementById('down-btn').addEventListener('touchend', () => stopHelicopter());
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                    moveHelicopterUp();
+                } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                    moveHelicopterDown();
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || 
+                    e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+                    stopHelicopter();
+                }
+            });
+            
+            // Touch controls on canvas (tap above/below helicopter)
+            canvas.addEventListener('touchstart', (e) => {
+                if (!gameActive) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const touchY = e.touches[0].clientY - rect.top;
+                
+                if (touchY < helicopter.y) {
+                    moveHelicopterUp();
+                } else {
+                    moveHelicopterDown();
+                }
+                
+                e.preventDefault();
+            });
+            
+            canvas.addEventListener('touchend', (e) => {
+                stopHelicopter();
+                e.preventDefault();
+            });
+            
+            // Generate initial clouds
+            generateClouds();
+        }
+        
+        // Resize canvas to fit container
+        function resizeCanvas() {
+            const container = document.getElementById('game-container');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            
+            // Reset helicopter position
+            helicopter.y = canvas.height / 2;
+        }
+        
+        // Start the game
+        function startGame() {
+            document.getElementById('start-screen').style.display = 'none';
+            gameActive = true;
+            score = 0;
+            lives = 3;
+            gameSpeed = 3;
+            frames = 0;
+            obstacles = [];
+            survivors = [];
+            
+            updateScore();
+            updateLives();
+            
+            // Start game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Restart the game
+        function restartGame() {
+            document.getElementById('game-over').style.display = 'none';
+            startGame();
+        }
+        
+        // Game over
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('final-score').textContent = `Score: ${score}`;
+            document.getElementById('game-over').style.display = 'flex';
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameActive) return;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            drawBackground();
+            
+            // Update and draw clouds
+            updateClouds();
+            
+            // Update helicopter position
+            updateHelicopter();
+            
+            // Generate obstacles and survivors
+            generateObstacles();
+            generateSurvivors();
+            
+            // Update and draw obstacles
+            updateObstacles();
+            
+            // Update and draw survivors
+            updateSurvivors();
+            
+            // Draw helicopter
+            drawHelicopter();
+            
+            // Increase game speed gradually
+            if (frames % 500 === 0) {
+                gameSpeed += 0.5;
+            }
+            
+            frames++;
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Draw background
+        function drawBackground() {
+            // Sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#1E90FF');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Ground
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            
+            // Grass
+            ctx.fillStyle = '#2E8B57';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 10);
+        }
+        
+        // Generate clouds
+        function generateClouds() {
+            clouds = [];
+            for (let i = 0; i < 5; i++) {
+                clouds.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * (canvas.height / 2),
+                    width: 80 + Math.random() * 70,
+                    speed: 0.5 + Math.random() * 1
+                });
+            }
+        }
+        
+        // Update clouds
+        function updateClouds() {
+            for (let i = 0; i < clouds.length; i++) {
+                const cloud = clouds[i];
+                
+                // Draw cloud
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.width / 4, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width / 4, cloud.y - cloud.width / 8, cloud.width / 3, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.width / 2, cloud.y, cloud.width / 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Move cloud
+                cloud.x -= cloud.speed;
+                
+                // Reset cloud position when it goes off screen
+                if (cloud.x + cloud.width < 0) {
+                    cloud.x = canvas.width + cloud.width;
+                    cloud.y = Math.random() * (canvas.height / 2);
+                }
+            }
+        }
+        
+        // Update helicopter position
+        function updateHelicopter() {
+            if (helicopter.isMovingUp && helicopter.y > 0) {
+                helicopter.y -= helicopter.speed;
+            }
+            if (helicopter.isMovingDown && helicopter.y + helicopter.height < canvas.height - 50) {
+                helicopter.y += helicopter.speed;
+            }
+        }
+        
+        // Draw helicopter
+        function drawHelicopter() {
+            const heli = helicopter;
+            
+            // Helicopter body
+            ctx.fillStyle = '#FF6B6B';
+            ctx.fillRect(heli.x, heli.y, heli.width, heli.height);
+            
+            // Cockpit
+            ctx.fillStyle = '#87CEEB';
+            ctx.fillRect(heli.x + 10, heli.y + 5, heli.width - 60, heli.height - 10);
+            
+            // Tail
+            ctx.fillStyle = '#FF6B6B';
+            ctx.fillRect(heli.x + heli.width - 10, heli.y + 10, 30, 10);
+            
+            // Main rotor
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(heli.x - 10, heli.y + 5);
+            ctx.lineTo(heli.x + heli.width + 10, heli.y + 5);
+            ctx.stroke();
+            
+            // Tail rotor
+            ctx.beginPath();
+            ctx.moveTo(heli.x + heli.width + 20, heli.y + 5);
+            ctx.lineTo(heli.x + heli.width + 20, heli.y + 15);
+            ctx.stroke();
+            
+            // Rotor animation
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            const rotorAngle = frames * 0.5;
+            
+            // Main rotor blades
+            ctx.save();
+            ctx.translate(heli.x + heli.width / 2, heli.y + 5);
+            ctx.rotate(rotorAngle);
+            ctx.beginPath();
+            ctx.moveTo(-30, 0);
+            ctx.lineTo(30, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, -30);
+            ctx.lineTo(0, 30);
+            ctx.stroke();
+            ctx.restore();
+            
+            // Tail rotor blades
+            ctx.save();
+            ctx.translate(heli.x + heli.width + 20, heli.y + 10);
+            ctx.rotate(rotorAngle);
+            ctx.beginPath();
+            ctx.moveTo(-8, 0);
+            ctx.lineTo(8, 0);
+            ctx.stroke();
+            ctx.restore();
+        }
+        
+        // Generate obstacles
+        function generateObstacles() {
+            if (frames % 120 === 0) {
+                const obstacleType = Math.random() > 0.5 ? 'mountain' : 'building';
+                const gapSize = 150 + Math.random() * 100;
+                const gapPosition = Math.random() * (canvas.height - 50 - gapSize);
+                
+                obstacles.push({
+                    x: canvas.width,
+                    width: 40,
+                    gapPosition: gapPosition,
+                    gapSize: gapSize,
+                    type: obstacleType,
+                    passed: false
+                });
+            }
+        }
+        
+        // Update obstacles
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obstacle = obstacles[i];
+                
+                // Move obstacle
+                obstacle.x -= gameSpeed;
+                
+                // Draw obstacle based on type
+                if (obstacle.type === 'mountain') {
+                    // Mountain obstacle
+                    ctx.fillStyle = '#8B4513';
+                    ctx.beginPath();
+                    ctx.moveTo(obstacle.x, canvas.height - 50);
+                    ctx.lineTo(obstacle.x + obstacle.width, canvas.height - 50);
+                    ctx.lineTo(obstacle.x + obstacle.width / 2, obstacle.gapPosition);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(obstacle.x, obstacle.gapPosition + obstacle.gapSize);
+                    ctx.lineTo(obstacle.x + obstacle.width, obstacle.gapPosition + obstacle.gapSize);
+                    ctx.lineTo(obstacle.x + obstacle.width / 2, canvas.height - 50);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    // Building obstacle
+                    ctx.fillStyle = '#708090';
+                    ctx.fillRect(obstacle.x, 0, obstacle.width, obstacle.gapPosition);
+                    ctx.fillRect(obstacle.x, obstacle.gapPosition + obstacle.gapSize, obstacle.width, canvas.height - 50 - (obstacle.gapPosition + obstacle.gapSize));
+                }
+                
+                // Check for collision
+                if (checkCollision(helicopter, obstacle)) {
+                    lives--;
+                    updateLives();
+                    
+                    if (lives <= 0) {
+                        gameOver();
+                        return;
+                    } else {
+                        // Remove obstacle on collision
+                        obstacles.splice(i, 1);
+                        continue;
                     }
-                },
-                scene: {
-                    preload: preload,
-                    create: create,
-                    update: update
-                }
-            };
-            
-            // Game variables
-            let game;
-            let helicopter;
-            let obstacles;
-            let survivors;
-            let cursors;
-            let score = 0;
-            let scoreText;
-            let gameActive = false;
-            let obstacleTimer;
-            let survivorTimer;
-            let background;
-            
-            // Initialize Phaser game
-            game = new Phaser.Game(config);
-            
-            // Preload assets
-            function preload() {
-                // Load custom assets from root folder
-                this.load.image('helicopter', './helicopter_imresizer.png');
-                this.load.image('obstacle', './obstacle_imresizer.png');
-                this.load.image('survivor', './survivor_imresizer.png');
-                
-                // Create a gradient background programmatically
-                const gradient = this.make.graphics({x: 0, y: 0});
-                gradient.fillGradientStyle(0x6a11cb, 0x6a11cb, 0x2575fc, 0x2575fc);
-                gradient.fillRect(0, 0, config.width, config.height);
-                gradient.generateTexture('background', config.width, config.height);
-                gradient.destroy();
-            }
-            
-            // Create game objects
-            function create() {
-                // Create background
-                background = this.add.tileSprite(0, 0, config.width, config.height, 'background').setOrigin(0);
-                
-                // Create helicopter
-                helicopter = this.physics.add.sprite(config.width / 2, config.height / 2, 'helicopter');
-                helicopter.setCollideWorldBounds(true);
-                helicopter.setScale(0.8);
-                helicopter.body.setSize(30, 15);
-                helicopter.body.setOffset(5, 5);
-                
-                // Create obstacle group
-                obstacles = this.physics.add.group();
-                
-                // Create survivor group
-                survivors = this.physics.add.group();
-                
-                // Set up collisions
-                this.physics.add.overlap(helicopter, obstacles, hitObstacle, null, this);
-                this.physics.add.overlap(helicopter, survivors, rescueSurvivor, null, this);
-                
-                // Set up keyboard controls
-                cursors = this.input.keyboard.createCursorKeys();
-                
-                // Set up touch controls
-                document.getElementById('up-btn').addEventListener('touchstart', () => moveUp());
-                document.getElementById('up-btn').addEventListener('mousedown', () => moveUp());
-                document.getElementById('down-btn').addEventListener('touchstart', () => moveDown());
-                document.getElementById('down-btn').addEventListener('mousedown', () => moveDown());
-                document.getElementById('left-btn').addEventListener('touchstart', () => moveLeft());
-                document.getElementById('left-btn').addEventListener('mousedown', () => moveLeft());
-                document.getElementById('right-btn').addEventListener('touchstart', () => moveRight());
-                document.getElementById('right-btn').addEventListener('mousedown', () => moveRight());
-                
-                // Add event listeners for button releases
-                const buttons = document.querySelectorAll('.control-btn');
-                buttons.forEach(btn => {
-                    btn.addEventListener('touchend', stopHelicopter);
-                    btn.addEventListener('touchcancel', stopHelicopter);
-                    btn.addEventListener('mouseup', stopHelicopter);
-                    btn.addEventListener('mouseleave', stopHelicopter);
-                });
-                
-                // Create score text
-                scoreText = document.querySelector('.score-display');
-                
-                // Start button event listener
-                document.getElementById('start-btn').addEventListener('click', startGame.bind(this));
-                document.getElementById('restart-btn').addEventListener('click', restartGame.bind(this));
-                
-                // Hide game over menu initially
-                document.getElementById('game-over-menu').style.display = 'none';
-                
-                // Pause physics initially
-                this.physics.pause();
-            }
-            
-            // Update game state
-            function update() {
-                if (!gameActive) return;
-                
-                // Scroll the background
-                background.tilePositionX += 2;
-                
-                // Keyboard controls
-                if (cursors.left.isDown) {
-                    helicopter.setVelocityX(-200);
-                } else if (cursors.right.isDown) {
-                    helicopter.setVelocityX(200);
-                } else if (helicopter.body.velocity.x !== 0) {
-                    helicopter.setVelocityX(0);
                 }
                 
-                if (cursors.up.isDown) {
-                    helicopter.setVelocityY(-200);
-                } else if (cursors.down.isDown) {
-                    helicopter.setVelocityY(200);
-                } else if (helicopter.body.velocity.y !== 0) {
-                    helicopter.setVelocityY(0);
+                // Check if obstacle passed and update score
+                if (!obstacle.passed && obstacle.x + obstacle.width < helicopter.x) {
+                    obstacle.passed = true;
+                    score += 5;
+                    updateScore();
                 }
                 
-                // Rotate helicopter based on movement
-                if (helicopter.body.velocity.x !== 0 || helicopter.body.velocity.y !== 0) {
-                    helicopter.rotation = Math.atan2(helicopter.body.velocity.y, helicopter.body.velocity.x);
+                // Remove obstacle when off screen
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacles.splice(i, 1);
                 }
             }
-            
-            // Start the game
-            function startGame() {
-                gameActive = true;
-                score = 0;
-                updateScore();
-                
-                // Clear any existing objects
-                obstacles.clear(true, true);
-                survivors.clear(true, true);
-                
-                // Reset helicopter position
-                helicopter.setPosition(config.width / 2, config.height / 2);
-                helicopter.setVelocity(0, 0);
-                helicopter.rotation = 0;
-                
-                // Hide start menu
-                document.getElementById('start-menu').style.display = 'none';
-                document.getElementById('game-over-menu').style.display = 'none';
-                
-                // Start physics
-                this.physics.resume();
-                
-                // Start generating obstacles and survivors
-                obstacleTimer = this.time.addEvent({
-                    delay: 1500,
-                    callback: createObstacle,
-                    callbackScope: this,
-                    loop: true
-                });
-                
-                survivorTimer = this.time.addEvent({
-                    delay: 3000,
-                    callback: createSurvivor,
-                    callbackScope: this,
-                    loop: true
+        }
+        
+        // Generate survivors
+        function generateSurvivors() {
+            if (frames % 200 === 0) {
+                survivors.push({
+                    x: canvas.width,
+                    y: canvas.height - 70,
+                    width: 20,
+                    height: 20,
+                    rescued: false
                 });
             }
-            
-            // Restart the game
-            function restartGame() {
-                startGame.call(this);
-            }
-            
-            // Create an obstacle
-            function createObstacle() {
-                const obstacle = obstacles.create(config.width, Phaser.Math.Between(100, config.height - 100), 'obstacle');
-                obstacle.setVelocityX(-200);
-                obstacle.body.immovable = true;
+        }
+        
+        // Update survivors
+        function updateSurvivors() {
+            for (let i = survivors.length - 1; i >= 0; i--) {
+                const survivor = survivors[i];
                 
-                // Remove obstacle when it goes off screen
-                obstacle.checkWorldBounds = true;
-                obstacle.outOfBoundsKill = true;
-            }
-            
-            // Create a survivor
-            function createSurvivor() {
-                const survivor = survivors.create(config.width, Phaser.Math.Between(100, config.height - 100), 'survivor');
-                survivor.setVelocityX(-150);
+                // Move survivor
+                survivor.x -= gameSpeed;
                 
-                // Add a slight floating animation
-                this.tweens.add({
-                    targets: survivor,
-                    y: survivor.y + 20,
-                    duration: 1000,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: 'Sine.easeInOut'
-                });
+                // Draw survivor
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(survivor.x + survivor.width / 2, survivor.y + survivor.height / 2, survivor.width / 2, 0, Math.PI * 2);
+                ctx.fill();
                 
-                // Remove survivor when it goes off screen
-                survivor.checkWorldBounds = true;
-                survivor.outOfBoundsKill = true;
-            }
-            
-            // Handle obstacle collision
-            function hitObstacle(helicopter, obstacle) {
-                if (!gameActive) return;
+                // Draw arms and legs (simple stick figure)
+                ctx.strokeStyle = '#FFD700';
+                ctx.lineWidth = 2;
                 
-                this.physics.pause();
-                gameActive = false;
+                // Body
+                ctx.beginPath();
+                ctx.moveTo(survivor.x + survivor.width / 2, survivor.y + survivor.height / 2);
+                ctx.lineTo(survivor.x + survivor.width / 2, survivor.y + survivor.height);
+                ctx.stroke();
                 
-                // Show explosion effect
-                const explosion = this.add.sprite(helicopter.x, helicopter.y, 'helicopter');
-                explosion.setTint(0xff0000);
-                explosion.setScale(1.2);
+                // Arms
+                ctx.beginPath();
+                ctx.moveTo(survivor.x + survivor.width / 2, survivor.y + survivor.height / 2 + 5);
+                ctx.lineTo(survivor.x + survivor.width / 2 - 8, survivor.y + survivor.height / 2 + 10);
+                ctx.moveTo(survivor.x + survivor.width / 2, survivor.y + survivor.height / 2 + 5);
+                ctx.lineTo(survivor.x + survivor.width / 2 + 8, survivor.y + survivor.height / 2 + 10);
+                ctx.stroke();
                 
-                this.tweens.add({
-                    targets: explosion,
-                    alpha: 0,
-                    scaleX: 2,
-                    scaleY: 2,
-                    duration: 500,
-                    onComplete: () => {
-                        explosion.destroy();
-                    }
-                });
+                // Legs
+                ctx.beginPath();
+                ctx.moveTo(survivor.x + survivor.width / 2, survivor.y + survivor.height);
+                ctx.lineTo(survivor.x + survivor.width / 2 - 5, survivor.y + survivor.height + 10);
+                ctx.moveTo(survivor.x + survivor.width / 2, survivor.y + survivor.height);
+                ctx.lineTo(survivor.x + survivor.width / 2 + 5, survivor.y + survivor.height + 10);
+                ctx.stroke();
                 
-                // Show game over menu
-                document.getElementById('final-score').textContent = score;
-                document.getElementById('game-over-menu').style.display = 'block';
+                // Check for rescue
+                if (!survivor.rescued && 
+                    helicopter.x < survivor.x + survivor.width &&
+                    helicopter.x + helicopter.width > survivor.x &&
+                    helicopter.y < survivor.y + survivor.height &&
+                    helicopter.y + helicopter.height > survivor.y) {
+                    
+                    survivor.rescued = true;
+                    score += 10;
+                    updateScore();
+                    survivors.splice(i, 1);
+                    continue;
+                }
                 
-                // Clear timers
-                obstacleTimer.remove();
-                survivorTimer.remove();
+                // Remove survivor when off screen
+                if (survivor.x + survivor.width < 0) {
+                    survivors.splice(i, 1);
+                }
             }
-            
-            // Handle survivor rescue
-            function rescueSurvivor(helicopter, survivor) {
-                survivors.remove(survivor, true, true);
-                
-                // Add points
-                score += 100;
-                updateScore();
-                
-                // Show rescue effect
-                const rescueEffect = this.add.sprite(survivor.x, survivor.y, 'survivor');
-                rescueEffect.setTint(0xffffff);
-                
-                this.tweens.add({
-                    targets: rescueEffect,
-                    alpha: 0,
-                    scaleX: 1.5,
-                    scaleY: 1.5,
-                    duration: 500,
-                    onComplete: () => {
-                        rescueEffect.destroy();
-                    }
-                });
+        }
+        
+        // Check collision between helicopter and obstacle
+        function checkCollision(heli, obstacle) {
+            // Check if helicopter is within obstacle's x-range
+            if (heli.x + heli.width > obstacle.x && heli.x < obstacle.x + obstacle.width) {
+                // Check if helicopter is outside the gap
+                if (heli.y < obstacle.gapPosition || heli.y + heli.height > obstacle.gapPosition + obstacle.gapSize) {
+                    return true;
+                }
             }
-            
-            // Update score display
-            function updateScore() {
-                scoreText.textContent = `Score: ${score}`;
-            }
-            
-            // Touch control functions
-            function moveUp() {
-                if (!gameActive) return;
-                helicopter.setVelocityY(-200);
-            }
-            
-            function moveDown() {
-                if (!gameActive) return;
-                helicopter.setVelocityY(200);
-            }
-            
-            function moveLeft() {
-                if (!gameActive) return;
-                helicopter.setVelocityX(-200);
-            }
-            
-            function moveRight() {
-                if (!gameActive) return;
-                helicopter.setVelocityX(200);
-            }
-            
-            function stopHelicopter() {
-                if (!gameActive) return;
-                helicopter.setVelocity(0, 0);
-            }
-        });
+            return false;
+        }
+        
+        // Update score display
+        function updateScore() {
+            document.getElementById('score-display').textContent = `Score: ${score}`;
+        }
+        
+        // Update lives display
+        function updateLives() {
+            document.getElementById('lives-display').textContent = `Lives: ${lives}`;
+        }
+        
+        // Helicopter movement functions
+        function moveHelicopterUp() {
+            helicopter.isMovingUp = true;
+            helicopter.isMovingDown = false;
+        }
+        
+        function moveHelicopterDown() {
+            helicopter.isMovingDown = true;
+            helicopter.isMovingUp = false;
+        }
+        
+        function stopHelicopter() {
+            helicopter.isMovingUp = false;
+            helicopter.isMovingDown = false;
+        }
+        
+        // Initialize the game when page loads
+        window.onload = init;
     </script>
 </body>
 </html>
