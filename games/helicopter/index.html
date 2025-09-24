@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
         
@@ -22,6 +23,8 @@
             align-items: center;
             justify-content: center;
             color: white;
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         #game-container {
@@ -112,6 +115,7 @@
             pointer-events: auto;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             transition: all 0.2s;
+            touch-action: manipulation;
         }
         
         button:active {
@@ -137,17 +141,51 @@
         }
         
         .control-btn {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 30px;
+            font-size: 40px;
             pointer-events: auto;
             user-select: none;
             -webkit-user-select: none;
+            touch-action: manipulation;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        #touch-controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70%;
+            pointer-events: none;
+            z-index: 5;
+        }
+        
+        #up-touch-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            pointer-events: auto;
+        }
+        
+        #down-touch-area {
+            position: absolute;
+            bottom: 30%;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            pointer-events: auto;
         }
         
         @media (max-width: 500px) {
@@ -161,9 +199,9 @@
             }
             
             .control-btn {
-                width: 70px;
-                height: 70px;
-                font-size: 24px;
+                width: 80px;
+                height: 80px;
+                font-size: 30px;
             }
         }
     </style>
@@ -171,6 +209,11 @@
 <body>
     <div id="game-container">
         <canvas id="game-canvas"></canvas>
+        
+        <div id="touch-controls">
+            <div id="up-touch-area"></div>
+            <div id="down-touch-area"></div>
+        </div>
         
         <div id="ui-container">
             <div id="score-display">Score: 0</div>
@@ -182,6 +225,7 @@
                 <div id="instructions">
                     <p>Rescue survivors and avoid obstacles!</p>
                     <p>Use UP/DOWN buttons or tap above/below helicopter to move.</p>
+                    <p><strong>Easier mode:</strong> Larger gaps between obstacles</p>
                 </div>
             </div>
             
@@ -236,14 +280,62 @@
             document.getElementById('start-button').addEventListener('click', startGame);
             document.getElementById('restart-button').addEventListener('click', restartGame);
             
-            // Touch controls
-            document.getElementById('up-btn').addEventListener('touchstart', () => moveHelicopterUp());
-            document.getElementById('up-btn').addEventListener('touchend', () => stopHelicopter());
-            document.getElementById('down-btn').addEventListener('touchstart', () => moveHelicopterDown());
-            document.getElementById('down-btn').addEventListener('touchend', () => stopHelicopter());
+            // Touch controls for buttons
+            document.getElementById('up-btn').addEventListener('touchstart', (e) => {
+                moveHelicopterUp();
+                e.preventDefault();
+            });
+            document.getElementById('up-btn').addEventListener('touchend', (e) => {
+                stopHelicopter();
+                e.preventDefault();
+            });
+            document.getElementById('down-btn').addEventListener('touchstart', (e) => {
+                moveHelicopterDown();
+                e.preventDefault();
+            });
+            document.getElementById('down-btn').addEventListener('touchend', (e) => {
+                stopHelicopter();
+                e.preventDefault();
+            });
+            
+            // Mouse controls for buttons
+            document.getElementById('up-btn').addEventListener('mousedown', moveHelicopterUp);
+            document.getElementById('up-btn').addEventListener('mouseup', stopHelicopter);
+            document.getElementById('up-btn').addEventListener('mouseleave', stopHelicopter);
+            document.getElementById('down-btn').addEventListener('mousedown', moveHelicopterDown);
+            document.getElementById('down-btn').addEventListener('mouseup', stopHelicopter);
+            document.getElementById('down-btn').addEventListener('mouseleave', stopHelicopter);
+            
+            // Touch areas for easier control
+            document.getElementById('up-touch-area').addEventListener('touchstart', (e) => {
+                moveHelicopterUp();
+                e.preventDefault();
+            });
+            document.getElementById('up-touch-area').addEventListener('touchend', (e) => {
+                stopHelicopter();
+                e.preventDefault();
+            });
+            document.getElementById('down-touch-area').addEventListener('touchstart', (e) => {
+                moveHelicopterDown();
+                e.preventDefault();
+            });
+            document.getElementById('down-touch-area').addEventListener('touchend', (e) => {
+                stopHelicopter();
+                e.preventDefault();
+            });
+            
+            // Mouse controls for touch areas
+            document.getElementById('up-touch-area').addEventListener('mousedown', moveHelicopterUp);
+            document.getElementById('up-touch-area').addEventListener('mouseup', stopHelicopter);
+            document.getElementById('up-touch-area').addEventListener('mouseleave', stopHelicopter);
+            document.getElementById('down-touch-area').addEventListener('mousedown', moveHelicopterDown);
+            document.getElementById('down-touch-area').addEventListener('mouseup', stopHelicopter);
+            document.getElementById('down-touch-area').addEventListener('mouseleave', stopHelicopter);
             
             // Keyboard controls
             document.addEventListener('keydown', (e) => {
+                if (!gameActive) return;
+                
                 if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
                     moveHelicopterUp();
                 } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
@@ -258,24 +350,8 @@
                 }
             });
             
-            // Touch controls on canvas (tap above/below helicopter)
-            canvas.addEventListener('touchstart', (e) => {
-                if (!gameActive) return;
-                
-                const rect = canvas.getBoundingClientRect();
-                const touchY = e.touches[0].clientY - rect.top;
-                
-                if (touchY < helicopter.y) {
-                    moveHelicopterUp();
-                } else {
-                    moveHelicopterDown();
-                }
-                
-                e.preventDefault();
-            });
-            
-            canvas.addEventListener('touchend', (e) => {
-                stopHelicopter();
+            // Prevent context menu on long press
+            document.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
             });
             
@@ -487,11 +563,12 @@
             ctx.restore();
         }
         
-        // Generate obstacles
+        // Generate obstacles (with larger gaps for easier gameplay)
         function generateObstacles() {
             if (frames % 120 === 0) {
                 const obstacleType = Math.random() > 0.5 ? 'mountain' : 'building';
-                const gapSize = 150 + Math.random() * 100;
+                // Larger gap size for easier gameplay
+                const gapSize = 200 + Math.random() * 100;
                 const gapPosition = Math.random() * (canvas.height - 50 - gapSize);
                 
                 obstacles.push({
@@ -664,11 +741,13 @@
         
         // Helicopter movement functions
         function moveHelicopterUp() {
+            if (!gameActive) return;
             helicopter.isMovingUp = true;
             helicopter.isMovingDown = false;
         }
         
         function moveHelicopterDown() {
+            if (!gameActive) return;
             helicopter.isMovingDown = true;
             helicopter.isMovingUp = false;
         }
