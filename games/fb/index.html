@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flappy Bird</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body, html { width:100%; height:100%; overflow:hidden; background:#70c5ce; }
+  canvas { display:block; margin:0 auto; touch-action:none; }
+  #score { position:absolute; top:20px; left:50%; transform:translateX(-50%); font-size:2em; color:white; text-shadow:2px 2px 5px black; }
+  #gameOver { display:none; position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:2em; color:red; text-align:center; }
+  #restartBtn { margin-top:20px; padding:10px 20px; font-size:1em; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="score">0</div>
+<div id="gameOver">
+  Game Over<br>
+  <button id="restartBtn">Restart</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// Resize canvas
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Load images
+const images = {
+  bird: new Image(),
+  bg: new Image(),
+  ground: new Image(),
+  pipeTop: new Image(),
+  pipeBottom: new Image()
+};
+
+images.bird.src = 'bird.png';
+images.bg.src = 'background.png';
+images.ground.src = 'ground.png';
+images.pipeTop.src = 'pipe_top.png';
+images.pipeBottom.src = 'pipe_bottom.png';
+
+// Game variables
+let bird, pipes, score, gameOver, frameCount;
+let gravity, jump, maxVelocity;
+let pipeWidth, pipeGap;
+
+// Initialize game
+function initGame() {
+  gravity = canvas.height * 0.002;   // gravity relative to screen height
+  jump = -canvas.height * 0.04;      // jump relative to screen height
+  maxVelocity = canvas.height * 0.02; 
+  pipeGap = canvas.height * 0.25;    
+  pipeWidth = 52;
+
+  bird = { x: canvas.width/4, y: canvas.height/2, width: 34, height: 24, velocity: 0 };
+  pipes = [];
+  score = 0;
+  gameOver = false;
+  frameCount = 0;
+
+  document.getElementById('score').textContent = score;
+  document.getElementById('gameOver').style.display = 'none';
+  requestAnimationFrame(gameLoop);
+}
+
+// Flap
+function flap() { if(!gameOver) bird.velocity = jump; }
+window.addEventListener('touchstart', flap);
+window.addEventListener('mousedown', flap);
+document.getElementById('restartBtn').addEventListener('click', initGame);
+
+// Spawn pipe
+function spawnPipe() {
+  const topHeight = Math.random() * (canvas.height - pipeGap - 100) + 50;
+  pipes.push({ x: canvas.width, top: topHeight, bottom: topHeight + pipeGap, passed:false });
+}
+
+// Draw
+function drawBackground(){ ctx.drawImage(images.bg,0,0,canvas.width,canvas.height); }
+function drawGround(){ const groundH=canvas.height*0.1; ctx.drawImage(images.ground,0,canvas.height-groundH,canvas.width,groundH); }
+function drawBird(){ ctx.drawImage(images.bird, bird.x, bird.y, bird.width, bird.height); }
+function drawPipes(){ for(let pipe of pipes){ ctx.drawImage(images.pipeTop, pipe.x,0,pipeWidth,pipe.top); ctx.drawImage(images.pipeBottom, pipe.x,pipe.bottom,pipeWidth,canvas.height-pipe.bottom); } }
+
+// Collision
+function checkCollision() {
+  const groundH = canvas.height*0.1;
+  if(bird.y + bird.height > canvas.height - groundH || bird.y < 0) return true;
+  for(let pipe of pipes){
+    if(bird.x + bird.width > pipe.x && bird.x < pipe.x + pipeWidth && (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)) return true;
+  }
+  return false;
+}
+
+// Update game
+function update(){
+  if(gameOver) return;
+  frameCount++;
+  bird.velocity += gravity;
+  if(bird.velocity > maxVelocity) bird.velocity = maxVelocity;
+  bird.y += bird.velocity;
+
+  if(frameCount % 90 === 0) spawnPipe();
+
+  for(let pipe of pipes){
+    pipe.x -= 2;
+    if(!pipe.passed && pipe.x + pipeWidth < bird.x){ score++; pipe.passed=true; document.getElementById('score').textContent=score; }
+  }
+
+  pipes = pipes.filter(pipe => pipe.x + pipeWidth > 0);
+  if(checkCollision()){ gameOver=true; document.getElementById('gameOver').style.display='block'; }
+}
+
+// Draw everything
+function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawBackground(); drawPipes(); drawGround(); drawBird(); }
+
+// Game loop
+function gameLoop(){ update(); draw(); if(!gameOver) requestAnimationFrame(gameLoop); }
+
+// Start when images loaded
+let loaded=0;
+for(let key in images){
+  images[key].onload = ()=>{ loaded++; if(loaded===Object.keys(images).length) initGame(); }
+}
+</script>
+</body>
+</html>
