@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India States Quiz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #ffffff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            padding: 15px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .info-icon {
+            background: #6a11cb;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .info-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .state-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            cursor: move;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 70px;
+        }
+
+        .state-card.dragging {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+
+        .state-card.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .state-card.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6a11cb;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .hint-section {
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: none;
+        }
+
+        .hint-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .hint-text {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .close-modal {
+            background: #6a11cb;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .instructions-list {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .instructions-list li {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .loader.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        .game-complete {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .game-complete.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .complete-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .complete-stats {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .complete-stats div {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 400px) {
+            .game-board {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .state-card {
+                font-size: 0.8rem;
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="title">India States Quiz</div>
+            <div class="info-icon" id="infoBtn">
+                <i class="fas fa-info"></i>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <i class="fas fa-crosshairs"></i>
+                <span id="remaining">9 states remaining</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-clock"></i>
+                <span id="timer">02:30</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-lightbulb"></i>
+                <span id="hints">3 hints left</span>
+            </div>
+        </div>
+        
+        <div class="game-board" id="gameBoard">
+            <!-- State cards will be dynamically added here -->
+        </div>
+        
+        <div class="hint-section" id="hintSection">
+            <div class="hint-text" id="hintText">Hint: This state is known as the "Land of Five Rivers"</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="checkBtn">
+                <i class="fas fa-check-circle"></i> Check Solution
+            </button>
+            <button class="btn btn-secondary" id="hintBtn">
+                <i class="fas fa-lightbulb"></i> Get Hint
+            </button>
+            <button class="btn btn-primary" id="solveBtn">
+                <i class="fas fa-robot"></i> Auto Solve
+            </button>
+            <button class="btn btn-secondary" id="newGameBtn">
+                <i class="fas fa-redo"></i> New Game
+            </button>
+        </div>
+    </div>
+    
+    <div class="modal" id="instructionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">How to Play</div>
+                <div class="close-modal" id="closeInstructions">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <p>Test your knowledge of Indian states with this interactive quiz!</p>
+            <ul class="instructions-list">
+                <li>Drag and drop state names to their correct positions on the map.</li>
+                <li>Use the "Check Solution" button to verify your answers.</li>
+                <li>Get hints when you're stuck (limited to 3 per game).</li>
+                <li>Try to complete the quiz before time runs out!</li>
+                <li>Use "Auto Solve" if you want to see the correct solution.</li>
+            </ul>
+            <button class="btn btn-primary" id="startGameBtn" style="width: 100%;">
+                Start Game
+            </button>
+        </div>
+    </div>
+    
+    <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div>Loading Game...</div>
+    </div>
+    
+    <div class="modal" id="completeModal">
+        <div class="modal-content">
+            <div class="game-complete active">
+                <div class="complete-title">Quiz Complete!</div>
+                <div class="complete-stats">
+                    <div>
+                        <span>Time Taken:</span>
+                        <span id="finalTime">02:15</span>
+                    </div>
+                    <div>
+                        <span>Correct Answers:</span>
+                        <span id="correctCount">9/9</span>
+                    </div>
+                    <div>
+                        <span>Hints Used:</span>
+                        <span id="hintsUsed">1/3</span>
+                    </div>
+                    <div>
+                        <span>Score:</span>
+                        <span id="finalScore">850</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary" id="playAgainBtn" style="width: 100%;">
+                    <i class="fas fa-redo"></i> Play Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="dragSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+    <audio id="dropSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+    <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+    <audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+    <audio id="incorrectSound" src="https://www.soundjay.com/buttons/sounds/button-09.mp3" preload="auto"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game state
+            const gameState = {
+                states: [
+                    { name: "Maharashtra", capital: "Mumbai", region: "West", hint: "Known for Bollywood" },
+                    { name: "Karnataka", capital: "Bengaluru", region: "South", hint: "IT hub of India" },
+                    { name: "Tamil Nadu", capital: "Chennai", region: "South", hint: "Land of Temples" },
+                    { name: "Uttar Pradesh", capital: "Lucknow", region: "North", hint: "Most populous state" },
+                    { name: "Gujarat", capital: "Gandhinagar", region: "West", hint: "Land of the Lions" },
+                    { name: "Rajasthan", capital: "Jaipur", region: "North", hint: "Desert state" },
+                    { name: "West Bengal", capital: "Kolkata", region: "East", hint: "City of Joy" },
+                    { name: "Kerala", capital: "Thiruvananthapuram", region: "South", hint: "God's Own Country" },
+                    { name: "Punjab", capital: "Chandigarh", region: "North", hint: "Land of Five Rivers" }
+                ],
+                correctOrder: [],
+                currentOrder: [],
+                hintsUsed: 0,
+                maxHints: 3,
+                timeLeft: 150, // 2.5 minutes in seconds
+                timerInterval: null,
+                gameCompleted: false
+            };
+
+            // DOM elements
+            const gameBoard = document.getElementById('gameBoard');
+            const remainingEl = document.getElementById('remaining');
+            const timerEl = document.getElementById('timer');
+            const hintsEl = document.getElementById('hints');
+            const hintSection = document.getElementById('hintSection');
+            const hintText = document.getElementById('hintText');
+            const checkBtn = document.getElementById('checkBtn');
+            const hintBtn = document.getElementById('hintBtn');
+            const solveBtn = document.getElementById('solveBtn');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const infoBtn = document.getElementById('infoBtn');
+            const instructionsModal = document.getElementById('instructionsModal');
+            const closeInstructions = document.getElementById('closeInstructions');
+            const startGameBtn = document.getElementById('startGameBtn');
+            const loader = document.getElementById('loader');
+            const completeModal = document.getElementById('completeModal');
+            const finalTime = document.getElementById('finalTime');
+            const correctCount = document.getElementById('correctCount');
+            const hintsUsed = document.getElementById('hintsUsed');
+            const finalScore = document.getElementById('finalScore');
+            const playAgainBtn = document.getElementById('playAgainBtn');
+            
+            // Audio elements
+            const dragSound = document.getElementById('dragSound');
+            const dropSound = document.getElementById('dropSound');
+            const clickSound = document.getElementById('clickSound');
+            const correctSound = document.getElementById('correctSound');
+            const incorrectSound = document.getElementById('incorrectSound');
+
+            // Initialize the game
+            function initGame() {
+                // Show instructions modal first
+                instructionsModal.classList.add('active');
+                
+                // Reset game state
+                gameState.correctOrder = [...gameState.states];
+                gameState.currentOrder = shuffleArray([...gameState.states]);
+                gameState.hintsUsed = 0;
+                gameState.timeLeft = 150;
+                gameState.gameCompleted = false;
+                
+                // Update UI
+                updateRemainingCount();
+                updateHintsCount();
+                updateTimerDisplay();
+                
+                // Clear any existing timer
+                if (gameState.timerInterval) {
+                    clearInterval(gameState.timerInterval);
+                }
+            }
+
+            // Start the game
+            function startGame() {
+                // Hide instructions modal
+                instructionsModal.classList.remove('active');
+                
+                // Show loader briefly
+                loader.classList.add('active');
+                
+                setTimeout(() => {
+                    loader.classList.remove('active');
+                    renderGameBoard();
+                    
+                    // Start the timer
+                    startTimer();
+                }, 1000);
+            }
+
+            // Render the game board with state cards
+            function renderGameBoard() {
+                gameBoard.innerHTML = '';
+                
+                gameState.currentOrder.forEach((state, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'state-card';
+                    card.textContent = state.name;
+                    card.draggable = true;
+                    card.dataset.index = index;
+                    
+                    // Drag event listeners
+                    card.addEventListener('dragstart', handleDragStart);
+                    card.addEventListener('dragend', handleDragEnd);
+                    card.addEventListener('dragover', handleDragOver);
+                    card.addEventListener('drop', handleDrop);
+                    
+                    gameBoard.appendChild(card);
+                });
+            }
+
+            // Drag and drop functions
+            let draggedCard = null;
+
+            function handleDragStart(e) {
+                draggedCard = this;
+                this.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', this.dataset.index);
+                playSound(dragSound);
+            }
+
+            function handleDragEnd() {
+                this.classList.remove('dragging');
+                draggedCard = null;
+            }
+
+            function handleDragOver(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            }
+
+            function handleDrop(e) {
+                e.preventDefault();
+                if (draggedCard !== this) {
+                    const fromIndex = parseInt(draggedCard.dataset.index);
+                    const toIndex = parseInt(this.dataset.index);
+                    
+                    // Swap the states in the current order
+                    [gameState.currentOrder[fromIndex], gameState.currentOrder[toIndex]] = 
+                    [gameState.currentOrder[toIndex], gameState.currentOrder[fromIndex]];
+                    
+                    // Re-render the board
+                    renderGameBoard();
+                    playSound(dropSound);
+                    
+                    // Check if the game is complete
+                    checkGameCompletion();
+                }
+            }
+
+            // Check if the game is complete
+            function checkGameCompletion() {
+                const isComplete = gameState.currentOrder.every((state, index) => 
+                    state.name === gameState.correctOrder[index].name
+                );
+                
+                if (isComplete && !gameState.gameCompleted) {
+                    gameState.gameCompleted = true;
+                    clearInterval(gameState.timerInterval);
+                    showCompletionModal();
+                }
+                
+                updateRemainingCount();
+            }
+
+            // Update the remaining states count
+            function updateRemainingCount() {
+                let correctCount = 0;
+                gameState.currentOrder.forEach((state, index) => {
+                    if (state.name === gameState.correctOrder[index].name) {
+                        correctCount++;
+                    }
+                });
+                
+                const remaining = gameState.states.length - correctCount;
+                remainingEl.textContent = `${remaining} state${remaining !== 1 ? 's' : ''} remaining`;
+            }
+
+            // Update the hints count
+            function updateHintsCount() {
+                const hintsLeft = gameState.maxHints - gameState.hintsUsed;
+                hintsEl.textContent = `${hintsLeft} hint${hintsLeft !== 1 ? 's' : ''} left`;
+                
+                // Disable hint button if no hints left
+                hintBtn.disabled = hintsLeft <= 0;
+            }
+
+            // Start the game timer
+            function startTimer() {
+                gameState.timerInterval = setInterval(() => {
+                    gameState.timeLeft--;
+                    updateTimerDisplay();
+                    
+                    if (gameState.timeLeft <= 0) {
+                        clearInterval(gameState.timerInterval);
+                        if (!gameState.gameCompleted) {
+                            // Time's up!
+                            alert("Time's up! Try again.");
+                            initGame();
+                        }
+                    }
+                }, 1000);
+            }
+
+            // Update the timer display
+            function updateTimerDisplay() {
+                const minutes = Math.floor(gameState.timeLeft / 60);
+                const seconds = gameState.timeLeft % 60;
+                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color when time is running low
+                if (gameState.timeLeft < 30) {
+                    timerEl.style.color = '#e74c3c';
+                } else {
+                    timerEl.style.color = '#2c3e50';
+                }
+            }
+
+            // Provide a hint
+            function provideHint() {
+                if (gameState.hintsUsed >= gameState.maxHints) return;
+                
+                // Find a state that's not in the correct position
+                let hintIndex = -1;
+                for (let i = 0; i < gameState.currentOrder.length; i++) {
+                    if (gameState.currentOrder[i].name !== gameState.correctOrder[i].name) {
+                        hintIndex = i;
+                        break;
+                    }
+                }
+                
+                if (hintIndex !== -1) {
+                    const state = gameState.correctOrder[hintIndex];
+                    hintText.textContent = `Hint: ${state.hint}`;
+                    hintSection.classList.add('active');
+                    
+                    gameState.hintsUsed++;
+                    updateHintsCount();
+                    
+                    // Auto-hide the hint after 5 seconds
+                    setTimeout(() => {
+                        hintSection.classList.remove('active');
+                    }, 5000);
+                }
+            }
+
+            // Check the solution
+            function checkSolution() {
+                let allCorrect = true;
+                
+                gameState.currentOrder.forEach((state, index) => {
+                    const card = gameBoard.children[index];
+                    if (state.name === gameState.correctOrder[index].name) {
+                        card.classList.remove('incorrect');
+                        card.classList.add('correct');
+                    } else {
+                        card.classList.remove('correct');
+                        card.classList.add('incorrect');
+                        allCorrect = false;
+                    }
+                });
+                
+                if (allCorrect) {
+                    playSound(correctSound);
+                    gameState.gameCompleted = true;
+                    clearInterval(gameState.timerInterval);
+                    setTimeout(() => {
+                        showCompletionModal();
+                    }, 1000);
+                } else {
+                    playSound(incorrectSound);
+                }
+                
+                updateRemainingCount();
+            }
+
+            // Auto-solve the puzzle
+            function autoSolve() {
+                gameState.currentOrder = [...gameState.correctOrder];
+                renderGameBoard();
+                checkSolution();
+            }
+
+            // Show completion modal
+            function showCompletionModal() {
+                // Calculate score based on time and hints used
+                const timeBonus = Math.max(0, gameState.timeLeft) * 5;
+                const hintPenalty = gameState.hintsUsed * 50;
+                const score = Math.max(0, 500 + timeBonus - hintPenalty);
+                
+                // Update modal content
+                const minutes = Math.floor((150 - gameState.timeLeft) / 60);
+                const seconds = (150 - gameState.timeLeft) % 60;
+                finalTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                correctCount.textContent = `${gameState.states.length}/${gameState.states.length}`;
+                hintsUsed.textContent = `${gameState.hintsUsed}/${gameState.maxHints}`;
+                finalScore.textContent = score;
+                
+                // Show modal
+                completeModal.classList.add('active');
+            }
+
+            // Utility functions
+            function shuffleArray(array) {
+                const newArray = [...array];
+                for (let i = newArray.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                }
+                return newArray;
+            }
+
+            function playSound(sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio play failed:", e));
+            }
+
+            // Event listeners
+            checkBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                checkSolution();
+            });
+
+            hintBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                provideHint();
+            });
+
+            solveBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                autoSolve();
+            });
+
+            newGameBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                initGame();
+            });
+
+            infoBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                instructionsModal.classList.add('active');
+            });
+
+            closeInstructions.addEventListener('click', function() {
+                playSound(clickSound);
+                instructionsModal.classList.remove('active');
+            });
+
+            startGameBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                startGame();
+            });
+
+            playAgainBtn.addEventListener('click', function() {
+                playSound(clickSound);
+                completeModal.classList.remove('active');
+                initGame();
+            });
+
+            // Initialize the game when the page loads
+            initGame();
+        });
+    </script>
+</body>
+</html>
