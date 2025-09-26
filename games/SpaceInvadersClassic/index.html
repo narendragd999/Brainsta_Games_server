@@ -34,6 +34,8 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             border: 2px solid #4a4a8a;
+            display: flex;
+            flex-direction: column;
         }
         
         .game-header {
@@ -43,6 +45,7 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #4a4a8a;
+            flex-shrink: 0;
         }
         
         .game-title {
@@ -80,15 +83,20 @@
         .game-screen {
             position: relative;
             width: 100%;
-            height: 500px;
+            height: 0;
+            padding-bottom: 125%; /* 4:5 aspect ratio */
             overflow: hidden;
+            flex-grow: 1;
         }
         
         #gameCanvas {
-            background: #0a0a1a;
-            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
+            background: #0a0a1a;
+            display: block;
         }
         
         .controls {
@@ -97,6 +105,7 @@
             padding: 15px;
             background: rgba(15, 15, 40, 0.9);
             border-top: 2px solid #4a4a8a;
+            flex-shrink: 0;
         }
         
         .btn {
@@ -138,6 +147,7 @@
             z-index: 10;
             text-align: center;
             padding: 20px;
+            overflow-y: auto;
         }
         
         .title {
@@ -150,26 +160,59 @@
         .subtitle {
             font-size: 1.2rem;
             color: #8ab4f8;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         
-        .instructions {
+        .instructions-container {
             background: rgba(20, 20, 50, 0.7);
             padding: 15px;
             border-radius: 10px;
-            margin-bottom: 30px;
-            max-width: 320px;
+            margin-bottom: 20px;
+            max-width: 100%;
+            width: 100%;
+            box-sizing: border-box;
         }
         
-        .instructions h3 {
+        .instructions-title {
             color: #6ce5ff;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
         }
         
-        .instructions p {
-            margin: 8px 0;
+        .control-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px;
+            background: rgba(30, 30, 70, 0.5);
+            border-radius: 8px;
+        }
+        
+        .control-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(108, 229, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            border: 1px solid #6ce5ff;
+            flex-shrink: 0;
+        }
+        
+        .control-text {
+            flex: 1;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .game-info {
             font-size: 0.9rem;
             line-height: 1.4;
+            margin: 8px 0;
+            text-align: left;
         }
         
         .challenges {
@@ -178,6 +221,7 @@
             gap: 10px;
             justify-content: center;
             margin: 20px 0;
+            width: 100%;
         }
         
         .challenge {
@@ -186,6 +230,9 @@
             border-radius: 6px;
             font-size: 0.8rem;
             border-left: 3px solid #6ce5ff;
+            flex: 1;
+            min-width: 45%;
+            text-align: center;
         }
         
         .hidden {
@@ -200,18 +247,20 @@
             color: #6cff8d;
         }
         
-        /* New styles for icon-based interface */
-        .start-screen {
+        .start-screen-content {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: 30px;
+            justify-content: flex-start;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            overflow-y: auto;
         }
         
         .play-icon {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             background: linear-gradient(135deg, #6ce5ff, #00aaff);
             border-radius: 50%;
             display: flex;
@@ -220,146 +269,133 @@
             cursor: pointer;
             box-shadow: 0 0 25px rgba(108, 229, 255, 0.7);
             transition: all 0.3s ease;
+            margin: 20px 0;
+            flex-shrink: 0;
         }
         
-        .play-icon:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 35px rgba(108, 229, 255, 0.9);
+        .play-icon:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 15px rgba(108, 229, 255, 0.5);
         }
         
         .play-icon::after {
             content: '';
             width: 0;
             height: 0;
-            border-left: 30px solid white;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
+            border-left: 24px solid white;
+            border-top: 16px solid transparent;
+            border-bottom: 16px solid transparent;
             margin-left: 5px;
         }
         
         .game-title-large {
-            font-size: 3rem;
+            font-size: 2.2rem;
             color: #6ce5ff;
             text-shadow: 0 0 15px #00aaff;
-            margin-bottom: 5px;
-        }
-        
-        .info-icon {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(108, 229, 255, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid #6ce5ff;
-            color: #6ce5ff;
-            font-weight: bold;
-            font-size: 1.5rem;
-        }
-        
-        .info-icon:hover {
-            background: rgba(108, 229, 255, 0.3);
-        }
-        
-        .modal {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(10, 10, 35, 0.95);
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .modal-content {
-            background: rgba(20, 20, 50, 0.9);
-            border-radius: 12px;
-            padding: 25px;
-            max-width: 350px;
-            width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 2px solid #4a4a8a;
-            position: relative;
-        }
-        
-        .close-modal {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: #6ce5ff;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        
-        .modal-title {
-            color: #6ce5ff;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 1.8rem;
-        }
-        
-        .control-item {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            padding: 10px;
-            background: rgba(30, 30, 70, 0.5);
-            border-radius: 8px;
-        }
-        
-        .control-icon {
-            width: 50px;
-            height: 50px;
-            background: rgba(108, 229, 255, 0.2);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.5rem;
-            border: 1px solid #6ce5ff;
-        }
-        
-        .control-text {
-            flex: 1;
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
         
         @media (max-height: 700px) {
             .game-screen {
-                height: 400px;
+                padding-bottom: 110%;
+            }
+            
+            .game-title-large {
+                font-size: 1.8rem;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .play-icon {
+                width: 70px;
+                height: 70px;
+                margin: 15px 0;
+            }
+            
+            .play-icon::after {
+                border-left: 20px solid white;
+                border-top: 14px solid transparent;
+                border-bottom: 14px solid transparent;
+            }
+            
+            .instructions-container {
+                padding: 12px;
+                margin-bottom: 15px;
             }
         }
         
         @media (max-height: 600px) {
             .game-screen {
-                height: 350px;
+                padding-bottom: 100%;
             }
             
             .game-title-large {
-                font-size: 2.5rem;
+                font-size: 1.6rem;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 1rem;
+                margin-bottom: 15px;
             }
             
             .play-icon {
-                width: 80px;
-                height: 80px;
+                width: 60px;
+                height: 60px;
+                margin: 10px 0;
             }
             
             .play-icon::after {
-                border-left: 24px solid white;
-                border-top: 16px solid transparent;
-                border-bottom: 16px solid transparent;
+                border-left: 16px solid white;
+                border-top: 12px solid transparent;
+                border-bottom: 12px solid transparent;
+            }
+            
+            .instructions-container {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            
+            .control-item {
+                margin: 8px 0;
+                padding: 6px;
+            }
+            
+            .control-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+                margin-right: 10px;
+            }
+            
+            .control-text {
+                font-size: 0.8rem;
+            }
+        }
+        
+        @media (max-width: 350px) {
+            .game-title {
+                font-size: 1.2rem;
+            }
+            
+            .score-box {
+                min-width: 60px;
+                padding: 4px 8px;
+            }
+            
+            .score-value {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -388,52 +424,45 @@
             <canvas id="gameCanvas"></canvas>
             
             <div id="startScreen" class="screen">
-                <div class="start-screen">
+                <div class="start-screen-content">
                     <h1 class="game-title-large">SPACE INVADERS</h1>
                     <p class="subtitle">Defend Earth from alien invasion!</p>
                     
-                    <div class="play-icon" id="playBtn"></div>
-                    
-                    <div class="info-icon" id="infoBtn">i</div>
-                </div>
-            </div>
-            
-            <!-- <div id="instructionsModal" class="modal hidden">
-                <div class="modal-content">
-                    <button class="close-modal" id="closeModal">&times;</button>
-                    <h2 class="modal-title">HOW TO PLAY</h2>
-                    
-                    <div class="control-item">
-                        <div class="control-icon">←</div>
-                        <div class="control-text">Move spaceship LEFT</div>
-                    </div>
-                    
-                    <div class="control-item">
-                        <div class="control-icon">→</div>
-                        <div class="control-text">Move spaceship RIGHT</div>
-                    </div>
-                    
-                    <div class="control-item">
-                        <div class="control-icon" style="color: #ff4a4a;">FIRE</div>
-                        <div class="control-text">Shoot at aliens</div>
-                    </div>
-                    
-                    <div class="instructions">
-                        <p>Destroy all aliens to advance to the next level.</p>
-                        <p>Avoid alien bombs and collisions with aliens.</p>
-                        <p>Complete all 5 levels to win the game!</p>
+                    <div class="instructions-container">
+                        <h3 class="instructions-title">HOW TO PLAY</h3>
+                        
+                        <div class="control-item">
+                            <div class="control-icon">←</div>
+                            <div class="control-text">Move spaceship LEFT</div>
+                        </div>
+                        
+                        <div class="control-item">
+                            <div class="control-icon">→</div>
+                            <div class="control-text">Move spaceship RIGHT</div>
+                        </div>
+                        
+                        <div class="control-item">
+                            <div class="control-icon" style="color: #ff4a4a; font-size: 0.9rem;">FIRE</div>
+                            <div class="control-text">Shoot at aliens</div>
+                        </div>
+                        
+                        <div class="game-info">
+                            <p>Destroy all aliens to advance to the next level.</p>
+                            <p>Avoid alien bombs and collisions with aliens.</p>
+                            <p>Complete all 5 levels to win the game!</p>
+                        </div>
                     </div>
                     
                     <div class="challenges">
-                        <div class="challenge">✓ Destroy all aliens</div>
-                        <div class="challenge">✓ Complete 5 levels</div>
-                        <div class="challenge">✓ Score 10,000 points</div>
-                        <div class="challenge">✓ Survive without losing lives</div>
+                        <div class="challenge">Destroy all aliens</div>
+                        <div class="challenge">Complete 5 levels</div>
+                        <div class="challenge">Score 10,000 points</div>
+                        <div class="challenge">Survive without losing lives</div>
                     </div>
                     
-                    <button id="startFromModal" class="btn" style="width: 100%; margin-top: 20px;">START MISSION</button>
+                    <div class="play-icon" id="playBtn"></div>
                 </div>
-            </div> -->
+            </div>
             
             <div id="gameOverScreen" class="screen hidden">
                 <h1 class="title game-over">MISSION FAILED</h1>
@@ -617,9 +646,6 @@
             
             // Button controls
             document.getElementById('playBtn').addEventListener('click', startGame);
-            document.getElementById('infoBtn').addEventListener('click', showInstructions);
-            document.getElementById('closeModal').addEventListener('click', hideInstructions);
-            document.getElementById('startFromModal').addEventListener('click', startGameFromModal);
             document.getElementById('restartBtn').addEventListener('click', restartGame);
             document.getElementById('nextLevelBtn').addEventListener('click', nextLevel);
             
@@ -630,22 +656,6 @@
                     shootBullet();
                 }
             });
-        }
-        
-        // Show instructions modal
-        function showInstructions() {
-            document.getElementById('instructionsModal').classList.remove('hidden');
-        }
-        
-        // Hide instructions modal
-        function hideInstructions() {
-            document.getElementById('instructionsModal').classList.add('hidden');
-        }
-        
-        // Start the game from the modal
-        function startGameFromModal() {
-            hideInstructions();
-            startGame();
         }
         
         // Start the game
