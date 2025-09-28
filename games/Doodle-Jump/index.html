@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Fixed Doodle Jump</title>
+    <title>Doodle Jump Deluxe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,12 +13,14 @@
         }
         
         body {
-            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #98FB98 100%);
-            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            font-family: 'Nunito', sans-serif;
             overflow: hidden;
             touch-action: none;
             -webkit-user-select: none;
             user-select: none;
+            height: 100vh;
+            width: 100vw;
         }
         
         #gameContainer {
@@ -30,40 +33,77 @@
         }
         
         #gameCanvas {
-            border: 3px solid #333;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.5);
             background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #87CEEB 100%);
-            max-width: 100vw;
-            max-height: 100vh;
+            width: 100%;
+            height: 100%;
             touch-action: none;
+            max-width: 500px;
+            max-height: 90vh;
         }
         
         #ui {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            right: 20px;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             z-index: 10;
             color: white;
-            font-size: 18px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-size: 16px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        #score {
-            font-size: 24px;
+        .ui-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .ui-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 3px;
+        }
+        
+        .ui-value {
+            font-size: 18px;
             font-weight: bold;
+            font-family: 'Fredoka One', cursive;
+        }
+        
+        #combo {
+            color: #FFD700;
+            font-weight: bold;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: none;
         }
         
         #powerUpIndicator {
             position: absolute;
-            top: 60px;
-            left: 20px;
-            right: 20px;
+            top: 80px;
+            left: 15px;
+            right: 15px;
             text-align: center;
-            color: #FFD700;
-            font-size: 16px;
+            color: white;
+            font-size: 14px;
             font-weight: bold;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: none;
+            z-index: 10;
         }
         
         #gameOverScreen {
@@ -71,29 +111,86 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.85);
             color: white;
             padding: 30px;
-            border-radius: 15px;
+            border-radius: 20px;
             text-align: center;
             display: none;
             z-index: 100;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #gameOverScreen h2 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #FFD700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        #gameOverScreen p {
+            margin: 8px 0;
+            font-size: 18px;
+        }
+        
+        #finalScore {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        #finalHeight {
+            color: #2196F3;
+            font-weight: bold;
+        }
+        
+        #bestScore {
+            color: #FF9800;
+            font-weight: bold;
         }
         
         #restartBtn {
-            background: #4CAF50;
+            background: linear-gradient(to right, #4CAF50, #45a049);
             color: white;
             border: none;
             padding: 15px 30px;
             font-size: 18px;
-            border-radius: 8px;
+            border-radius: 50px;
             cursor: pointer;
-            margin-top: 15px;
-            font-family: inherit;
+            margin-top: 20px;
+            font-family: 'Fredoka One', cursive;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
         #restartBtn:hover {
-            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        #restartBtn:active {
+            transform: translateY(1px);
+        }
+        
+        #restartBtn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        #restartBtn:hover::after {
+            left: 100%;
         }
         
         #instructions {
@@ -105,32 +202,248 @@
             color: white;
             font-size: 14px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+        }
+
+        #mobileControls {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            right: 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .controlBtn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            font-size: 24px;
+            padding: 15px;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            touch-action: manipulation;
+            user-select: none;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .controlBtn:active {
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(0.95);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        #fireBtn {
+            font-size: 24px;
+            background: linear-gradient(to bottom, #FF5722, #E64A19);
+            color: white;
+        }
+
+        #leftBtn, #rightBtn {
+            background: linear-gradient(to bottom, #2196F3, #1976D2);
+            color: white;
+        }
+
+        #pauseBtn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #startScreen h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 42px;
+            margin-bottom: 20px;
+            color: #FFD700;
+            text-shadow: 0 3px 6px rgba(0,0,0,0.5);
+        }
+        
+        #startScreen p {
+            margin: 10px 0;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+        
+        #startBtn {
+            background: linear-gradient(to right, #FF5722, #E64A19);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            font-family: 'Fredoka One', cursive;
+            box-shadow: 0 6px 20px rgba(255, 87, 34, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        #startBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 87, 34, 0.7);
+        }
+        
+        .power-up-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            vertical-align: middle;
+            border-radius: 4px;
         }
         
         @media (max-width: 768px) {
+            #gameCanvas {
+                border-radius: 0;
+                max-width: 100%;
+                max-height: 100%;
+            }
+            
             #ui {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .ui-value {
                 font-size: 16px;
             }
-            #score {
-                font-size: 20px;
-            }
+            
             #instructions {
                 font-size: 12px;
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
             }
+            
+            #mobileControls {
+                display: flex;
+                bottom: 90px;
+            }
+            
+            .controlBtn {
+                width: 65px;
+                height: 65px;
+            }
+            
+            #gameOverScreen {
+                width: 90%;
+                padding: 25px;
+            }
+            
+            #gameOverScreen h2 {
+                font-size: 28px;
+            }
+            
+            #startScreen h1 {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            #instructions {
+                display: none;
+            }
+            
+            #mobileControls {
+                bottom: 20px;
+            }
+        }
+
+        /* Animation for combo text */
+        @keyframes comboPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .combo-active {
+            animation: comboPulse 0.5s ease;
+        }
+        
+        /* Animation for new high score */
+        @keyframes highScoreGlow {
+            0% { text-shadow: 0 0 5px #FFD700; }
+            50% { text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
+            100% { text-shadow: 0 0 5px #FFD700; }
+        }
+        
+        .high-score {
+            animation: highScoreGlow 2s infinite;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="400" height="700"></canvas>
+        <canvas id="gameCanvas"></canvas>
+        
+        <button id="pauseBtn">⏸️</button>
         
         <div id="ui">
-            <div id="score">Score: 0</div>
-            <div id="height">Height: 0m</div>
-            <div id="combo" style="color: #FFD700;"></div>
+            <div class="ui-section">
+                <div class="ui-label">SCORE</div>
+                <div id="score" class="ui-value">0</div>
+            </div>
+            <div class="ui-section">
+                <div class="ui-label">HEIGHT</div>
+                <div id="height" class="ui-value">0m</div>
+            </div>
+            <div class="ui-section">
+                <div class="ui-label">COMBO</div>
+                <div id="combo" class="ui-value">x1</div>
+            </div>
         </div>
         
         <div id="powerUpIndicator"></div>
+
+        <div id="mobileControls">
+            <button id="leftBtn" class="controlBtn">←</button>
+            <button id="fireBtn" class="controlBtn">🔥</button>
+            <button id="rightBtn" class="controlBtn">→</button>
+        </div>
         
         <div id="gameOverScreen">
             <h2>Game Over!</h2>
@@ -141,15 +454,21 @@
         </div>
         
         <div id="instructions">
-            Arrow Keys or Tilt to move • Player only jumps when landing on platforms from above
+            Use Arrow Keys, Tilt, or Buttons to move • Tap Fire to shoot • Jump only when landing on platforms from above
+        </div>
+        
+        <div id="startScreen">
+            <h1>Doodle Jump Deluxe</h1>
+            <p>Jump from platform to platform, avoid monsters, collect power-ups, and reach new heights!</p>
+            <p>Use arrow keys or tilt your device to move left and right.</p>
+            <p>Tap the fire button to shoot monsters.</p>
+            <button id="startBtn">Start Game</button>
         </div>
     </div>
 
     <script>
         // Game Configuration
         const CONFIG = {
-            CANVAS_WIDTH: 400,
-            CANVAS_HEIGHT: 700,
             GRAVITY: 0.4,
             JUMP_VELOCITY: -15,
             PLAYER_SPEED: 5,
@@ -168,13 +487,8 @@
         let deviceOrientation = { beta: 0, gamma: 0 };
         let touchStartX = 0;
         let isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        // Example Player SVG as PNG base64
-        const doodleBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAACMw0OaAAAAAXNSR0IArs4c6QAAAyJJREFUaEPtmsENAiEMBd/9r1yl3IhVlEPxpPovDA5BaWL3HgE00yzgpyH1WkH1WkX1UggDy6HB78e7psuXK9hVmk8m8j+DWzqgpZTNvtwAQLN2bhfVosk+JH4dAbAAXfBa7fRYdlk+4AgiwMIC5w/hvPqKDxm8gQAdb1ByX9h6dvgf8AOBiArwRQATMN9KFSBywD2AGAYQpTDOgBcwSShP+B0UFw7M1uTf4Nb9v1cVJGx+pV7qbvVq0D8IQXQEA1CFGoAJsGm88MIYBWfWCBADywEMFqvFRwCYQClMmgBoZk6mCoQZvsBsMY1vmfOBCgC0gzFSSQCSy9XFlYAaoGVhKbePrGZTkrjOUCKoUC9JTAFrAu4Er0tWlGWAUMuMCIgkFhZBZYiXKSqrD5oJQJnABLoErguJGUgqCytCZICQrSQFyK+p1kRwFQCTpKzIdd7s1w4Aa4BRySRw9E+qDCNPYH2M6HoQpUaM+9Zs5M3wZ0TdSmN6ZTqwBGEXnQyGHf5wYAAAAASUVORK5CYII=';
-        // Example Platform SVG as PNG base64
-        const platformBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAABPUlEQVR4Xu3XvQmDMAwA0b7Q/2Lby00t8Zc3CTQpSxD/S8jWhzIuhzYTWU6wBs9XAJaw5ILXShiajRBIX5YiH5DDtXsApD8A5txmfhvc01TMzKzq8AG3T/Iq3VE8ENWcACgjoSmKT5iWqUGgArHqR3zGA5VKB/4shrQcR2M0TJacwoJAgN7txE3tRW9swI7A9S1F2DkQiXFDKHqB2diHMPMj3Aaxt4CN5rgNw9yA+C4KnozMCe517ocmyZtAvdH7TWt8nssCvgeHG8+J+91Yb0Kkln7gl8d/G4t6uI1AScsRpHXAAAAAElFTkSuQmCC';
-
-        
+        let canvasWidth, canvasHeight;
+        let isPaused = false;
 
         // Game State
         const gameState = {
@@ -201,10 +515,10 @@
 
         // Power-up Types
         const POWER_UP_TYPES = {
-            JETPACK: { color: '#FF4444', duration: 180, effect: 'jetpack' },
-            PROPELLER: { color: '#44FF44', duration: 240, effect: 'propeller' },
-            SHIELD: { color: '#4444FF', duration: 300, effect: 'shield' },
-            SPRING_SHOES: { color: '#FF44FF', duration: 360, effect: 'springShoes' }
+            JETPACK: { color: '#FF4444', duration: 180, effect: 'jetpack', icon: '🚀' },
+            PROPELLER: { color: '#44FF44', duration: 240, effect: 'propeller', icon: '🌀' },
+            SHIELD: { color: '#4444FF', duration: 300, effect: 'shield', icon: '🛡️' },
+            SPRING_SHOES: { color: '#FF44FF', duration: 360, effect: 'springShoes', icon: '👟' }
         };
 
         // Enhanced Player Class with Fixed Movement
@@ -236,9 +550,11 @@
                     this.powerUpTimer--;
                     if (this.powerUpTimer <= 0) {
                         this.activePowerUp = null;
-                        document.getElementById('powerUpIndicator').textContent = '';
+                        document.getElementById('powerUpIndicator').style.display = 'none';
                     } else {
                         this.applyPowerUpEffect();
+                        document.getElementById('powerUpIndicator').textContent = 
+                            `${POWER_UP_TYPES[this.activePowerUp.toUpperCase()].icon} ${this.activePowerUp.toUpperCase()} (${Math.ceil(this.powerUpTimer/60)}s)`;
                     }
                 }
 
@@ -261,8 +577,8 @@
 
                 // Screen wrapping
                 if (this.x < -this.width/2) {
-                    this.x = CONFIG.CANVAS_WIDTH - this.width/2;
-                } else if (this.x > CONFIG.CANVAS_WIDTH - this.width/2) {
+                    this.x = canvasWidth - this.width/2;
+                } else if (this.x > canvasWidth - this.width/2) {
                     this.x = -this.width/2;
                 }
 
@@ -276,8 +592,8 @@
                 this.animationFrame = (this.animationFrame + 0.2) % 4;
 
                 // Update camera only when moving upward and above midpoint
-                if (this.velocityY < 0 && this.y < gameState.camera.y + CONFIG.CANVAS_HEIGHT * 0.4) {
-                    gameState.camera.y = this.y - CONFIG.CANVAS_HEIGHT * 0.4;
+                if (this.velocityY < 0 && this.y < gameState.camera.y + canvasHeight * 0.4) {
+                    gameState.camera.y = this.y - canvasHeight * 0.4;
                 }
 
                 // Update height score
@@ -323,13 +639,20 @@
 
                 // Combo system
                 gameState.combo = Math.min(gameState.combo + 1, 10);
+                document.getElementById('combo').textContent = `x${gameState.combo + 1}`;
+                document.getElementById('combo').style.display = 'block';
+                document.getElementById('combo').classList.add('combo-active');
+                setTimeout(() => {
+                    document.getElementById('combo').classList.remove('combo-active');
+                }, 500);
             }
 
             setPowerUp(type) {
                 this.activePowerUp = type;
                 this.powerUpTimer = POWER_UP_TYPES[type.toUpperCase()].duration;
-                document.getElementById('powerUpIndicator').textContent = 
-                    `Power-up: ${type.toUpperCase()} (${Math.floor(this.powerUpTimer/60)}s)`;
+                document.getElementById('powerUpIndicator').style.display = 'block';
+                document.getElementById('powerUpIndicator').innerHTML = 
+                    `<span class="power-up-icon" style="background-color: ${POWER_UP_TYPES[type.toUpperCase()].color}"></span> ${POWER_UP_TYPES[type.toUpperCase()].icon} ${type.toUpperCase()} (${Math.ceil(this.powerUpTimer/60)}s)`;
             }
 
             takeDamage() {
@@ -355,8 +678,11 @@
                     ctx.stroke();
                 }
 
-                // Draw player body
-                ctx.fillStyle = '#4CAF50';
+                // Draw player body with gradient
+                let gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                gradient.addColorStop(0, '#4CAF50');
+                gradient.addColorStop(1, '#388E3C');
+                ctx.fillStyle = gradient;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
 
                 // Draw face
@@ -428,7 +754,7 @@
             update() {
                 if (this.properties.isMoving && !this.isBroken) {
                     this.x += this.properties.speed * this.moveDirection;
-                    if (this.x <= 0 || this.x >= CONFIG.CANVAS_WIDTH - this.width) {
+                    if (this.x <= 0 || this.x >= canvasWidth - this.width) {
                         this.moveDirection *= -1;
                     }
                 }
@@ -467,7 +793,11 @@
 
                 let yOffset = this.bounceAnimation > 0 ? Math.sin(this.bounceAnimation * 0.5) * 3 : 0;
                 
-                ctx.fillStyle = this.properties.color;
+                // Create gradient for platform
+                let gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                gradient.addColorStop(0, this.properties.color);
+                gradient.addColorStop(1, this.darkenColor(this.properties.color, 20));
+                ctx.fillStyle = gradient;
                 
                 if (this.type === 'SPRING') {
                     ctx.fillRect(this.x, this.y + yOffset, this.width, this.height);
@@ -498,6 +828,17 @@
                 if (this.isBroken) {
                     ctx.restore();
                 }
+            }
+
+            darkenColor(color, percent) {
+                let num = parseInt(color.slice(1), 16),
+                    amt = Math.round(2.55 * percent),
+                    R = (num >> 16) - amt,
+                    G = (num >> 8 & 0x00FF) - amt,
+                    B = (num & 0x0000FF) - amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
             }
         }
 
@@ -553,20 +894,34 @@
             draw() {
                 let bobY = this.y + Math.sin(this.bobOffset) * 3;
                 
-                ctx.fillStyle = POWER_UP_TYPES[this.type].color;
+                // Create gradient for power-up
+                let gradient = ctx.createLinearGradient(this.x, bobY, this.x, bobY + this.height);
+                gradient.addColorStop(0, POWER_UP_TYPES[this.type].color);
+                gradient.addColorStop(1, this.darkenColor(POWER_UP_TYPES[this.type].color, 20));
+                ctx.fillStyle = gradient;
                 ctx.fillRect(this.x, bobY, this.width, this.height);
                 
+                // Add border
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x, bobY, this.width, this.height);
+                
                 ctx.fillStyle = '#FFFFFF';
-                ctx.font = '14px Arial';
+                ctx.font = 'bold 16px Arial';
                 ctx.textAlign = 'center';
-                let icon = '';
-                switch (this.type) {
-                    case 'JETPACK': icon = 'J'; break;
-                    case 'PROPELLER': icon = 'P'; break;
-                    case 'SHIELD': icon = 'S'; break;
-                    case 'SPRING_SHOES': icon = 'B'; break;
-                }
-                ctx.fillText(icon, this.x + this.width/2, bobY + this.height/2 + 5);
+                ctx.textBaseline = 'middle';
+                ctx.fillText(POWER_UP_TYPES[this.type].icon, this.x + this.width/2, bobY + this.height/2);
+            }
+
+            darkenColor(color, percent) {
+                let num = parseInt(color.slice(1), 16),
+                    amt = Math.round(2.55 * percent),
+                    R = (num >> 16) - amt,
+                    G = (num >> 8 & 0x00FF) - amt,
+                    B = (num & 0x0000FF) - amt;
+                return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                    (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                    (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
             }
         }
 
@@ -587,7 +942,7 @@
                 this.x += this.velocityX;
                 this.animationFrame += 0.1;
                 
-                if (this.x <= 0 || this.x >= CONFIG.CANVAS_WIDTH - this.width) {
+                if (this.x <= 0 || this.x >= canvasWidth - this.width) {
                     this.velocityX *= -1;
                 }
 
@@ -604,7 +959,11 @@
             }
 
             draw() {
-                ctx.fillStyle = '#8B0000';
+                // Create gradient for monster
+                let gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                gradient.addColorStop(0, '#8B0000');
+                gradient.addColorStop(1, '#600000');
+                ctx.fillStyle = gradient;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
                 
                 ctx.fillStyle = '#FF0000';
@@ -641,21 +1000,23 @@
             }
 
             draw() {
-                ctx.fillStyle = '#FFFF00';
+                // Create gradient for bullet
+                let gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                gradient.addColorStop(0, '#FFFF00');
+                gradient.addColorStop(1, '#FFA500');
+                ctx.fillStyle = gradient;
                 ctx.fillRect(this.x, this.y, this.width, this.height);
-                ctx.fillStyle = '#FFA500';
-                ctx.fillRect(this.x + 1, this.y + 1, this.width - 2, this.height - 2);
             }
         }
 
         // Main Game Class
         class Game {
             constructor() {
-                this.player = new Player(CONFIG.CANVAS_WIDTH / 2 - 30, CONFIG.CANVAS_HEIGHT - 150);
+                this.player = new Player(canvasWidth / 2 - 30, canvasHeight - 150);
                 this.platforms = [];
                 this.startY = this.player.y;
                 this.difficultyLevel = 1;
-                this.lastPlatformY = CONFIG.CANVAS_HEIGHT - 50;
+                this.lastPlatformY = canvasHeight - 50;
                 this.keys = {};
                 this.shootCooldown = 0;
                 
@@ -665,7 +1026,7 @@
 
             generateInitialPlatforms() {
                 // Starting platform
-                this.platforms.push(new Platform(CONFIG.CANVAS_WIDTH / 2 - 35, CONFIG.CANVAS_HEIGHT - 50, 'NORMAL'));
+                this.platforms.push(new Platform(canvasWidth / 2 - 35, canvasHeight - 50, 'NORMAL'));
                 
                 for (let i = 1; i < CONFIG.MAX_PLATFORMS; i++) {
                     this.generateRandomPlatform();
@@ -673,7 +1034,7 @@
             }
 
             generateRandomPlatform() {
-                let x = Math.random() * (CONFIG.CANVAS_WIDTH - 100) + 50;
+                let x = Math.random() * (canvasWidth - 100) + 50;
                 this.lastPlatformY -= CONFIG.PLATFORM_GAP + Math.random() * 40 - 20;
                 
                 let type = 'NORMAL';
@@ -703,6 +1064,72 @@
             }
 
             setupEventListeners() {
+                // Mobile button controls
+                let leftPressed = false;
+                let rightPressed = false;
+
+                const leftBtn = document.getElementById('leftBtn');
+                const rightBtn = document.getElementById('rightBtn');
+                const fireBtn = document.getElementById('fireBtn');
+                const pauseBtn = document.getElementById('pauseBtn');
+                const startBtn = document.getElementById('startBtn');
+
+                leftBtn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    leftPressed = true;
+                });
+                leftBtn.addEventListener('pointerup', (e) => {
+                    e.preventDefault();
+                    leftPressed = false;
+                });
+                leftBtn.addEventListener('pointerleave', (e) => {
+                    e.preventDefault();
+                    leftPressed = false;
+                });
+                leftBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    leftPressed = false;
+                });
+
+                rightBtn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    rightPressed = true;
+                });
+                rightBtn.addEventListener('pointerup', (e) => {
+                    e.preventDefault();
+                    rightPressed = false;
+                });
+                rightBtn.addEventListener('pointerleave', (e) => {
+                    e.preventDefault();
+                    rightPressed = false;
+                });
+                rightBtn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    rightPressed = false;
+                });
+
+                fireBtn.addEventListener('pointerdown', (e) => {
+                    e.preventDefault();
+                    this.shoot();
+                });
+                fireBtn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.shoot();
+                });
+
+                pauseBtn.addEventListener('click', () => {
+                    this.togglePause();
+                });
+
+                startBtn.addEventListener('click', () => {
+                    document.getElementById('startScreen').style.display = 'none';
+                    gameState.isPlaying = true;
+                });
+
+                // Expose pressed states to handleInput
+                this.leftPressed = () => leftPressed;
+                this.rightPressed = () => rightPressed;
+
                 // Keyboard controls
                 document.addEventListener('keydown', (e) => {
                     this.keys[e.key] = true;
@@ -710,13 +1137,16 @@
                         this.shoot();
                         e.preventDefault();
                     }
+                    if (e.key === 'Escape' || e.key === 'p') {
+                        this.togglePause();
+                    }
                 });
                 
                 document.addEventListener('keyup', (e) => {
                     this.keys[e.key] = false;
                 });
 
-                // Touch controls
+                // Touch controls for swipe (kept for additional control)
                 canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     touchStartX = e.touches[0].clientX;
@@ -744,7 +1174,7 @@
                     if (e.buttons === 1) {
                         let rect = canvas.getBoundingClientRect();
                         let mouseX = e.clientX - rect.left;
-                        let canvasMouseX = mouseX * (CONFIG.CANVAS_WIDTH / rect.width);
+                        let canvasMouseX = mouseX * (canvasWidth / rect.width);
                         
                         let deltaX = canvasMouseX - (this.player.x + this.player.width/2);
                         this.player.velocityX += deltaX * 0.01;
@@ -765,8 +1195,13 @@
                 });
             }
 
+            togglePause() {
+                isPaused = !isPaused;
+                document.getElementById('pauseBtn').textContent = isPaused ? '▶️' : '⏸️';
+            }
+
             shoot() {
-                if (this.shootCooldown <= 0) {
+                if (this.shootCooldown <= 0 && gameState.isPlaying && !isPaused) {
                     gameState.bullets.push(new Bullet(
                         this.player.x + this.player.width/2 - 3,
                         this.player.y
@@ -776,6 +1211,8 @@
             }
 
             handleInput() {
+                if (!gameState.isPlaying || isPaused) return;
+
                 // Keyboard movement
                 if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) {
                     this.player.velocityX -= 0.8;
@@ -784,6 +1221,18 @@
                 if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) {
                     this.player.velocityX += 0.8;
                     this.player.direction = 1;
+                }
+
+                // Mobile button movement
+                if (isMobile) {
+                    if (this.leftPressed()) {
+                        this.player.velocityX -= 0.8;
+                        this.player.direction = -1;
+                    }
+                    if (this.rightPressed()) {
+                        this.player.velocityX += 0.8;
+                        this.player.direction = 1;
+                    }
                 }
 
                 // Mobile tilt controls
@@ -889,7 +1338,7 @@
             }
 
             update() {
-                if (!gameState.isPlaying) return;
+                if (!gameState.isPlaying || isPaused) return;
 
                 this.handleInput();
                 
@@ -909,7 +1358,7 @@
                 }
 
                 this.platforms = this.platforms.filter(platform => 
-                    platform.y < gameState.camera.y + CONFIG.CANVAS_HEIGHT + 200
+                    platform.y < gameState.camera.y + canvasHeight + 200
                 );
 
                 gameState.powerUps = gameState.powerUps.filter(powerUp => 
@@ -921,12 +1370,17 @@
 
                 this.difficultyLevel = Math.floor(gameState.height / 100) + 1;
 
-                if (this.player.y > gameState.camera.y + CONFIG.CANVAS_HEIGHT + 100) {
+                if (this.player.y > gameState.camera.y + canvasHeight + 100) {
                     this.gameOver();
                 }
 
                 if (gameState.combo > 0 && Math.random() < 0.01) {
                     gameState.combo = Math.max(0, gameState.combo - 1);
+                    if (gameState.combo === 0) {
+                        document.getElementById('combo').style.display = 'none';
+                    } else {
+                        document.getElementById('combo').textContent = `x${gameState.combo + 1}`;
+                    }
                 }
             }
 
@@ -935,7 +1389,7 @@
                 ctx.translate(0, -gameState.camera.y);
                 
                 // Background
-                let bgGradient = ctx.createLinearGradient(0, gameState.camera.y, 0, gameState.camera.y + CONFIG.CANVAS_HEIGHT);
+                let bgGradient = ctx.createLinearGradient(0, gameState.camera.y, 0, gameState.camera.y + canvasHeight);
                 if (gameState.height < 100) {
                     bgGradient.addColorStop(0, '#1e3c72');
                     bgGradient.addColorStop(0.5, '#2a5298');
@@ -951,14 +1405,14 @@
                 }
                 
                 ctx.fillStyle = bgGradient;
-                ctx.fillRect(0, gameState.camera.y, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+                ctx.fillRect(0, gameState.camera.y, canvasWidth, canvasHeight);
 
                 // Stars in space
                 if (gameState.height > 200) {
                     ctx.fillStyle = '#FFFFFF';
                     for (let i = 0; i < 50; i++) {
-                        let starX = (i * 137) % CONFIG.CANVAS_WIDTH;
-                        let starY = gameState.camera.y + (i * 197) % CONFIG.CANVAS_HEIGHT;
+                        let starX = (i * 137) % canvasWidth;
+                        let starY = gameState.camera.y + (i * 197) % canvasHeight;
                         ctx.fillRect(starX, starY, 2, 2);
                     }
                 }
@@ -991,20 +1445,19 @@
             }
 
             updateUI() {
-                document.getElementById('score').textContent = `Score: ${gameState.score}`;
-                document.getElementById('height').textContent = `Height: ${gameState.height}m`;
+                document.getElementById('score').textContent = gameState.score;
+                document.getElementById('height').textContent = `${gameState.height}m`;
                 
                 if (gameState.combo > 0) {
-                    document.getElementById('combo').textContent = `Combo: x${gameState.combo + 1}`;
-                } else {
-                    document.getElementById('combo').textContent = '';
+                    document.getElementById('combo').textContent = `x${gameState.combo + 1}`;
                 }
             }
 
             gameOver() {
                 gameState.isPlaying = false;
                 
-                if (gameState.score > gameState.bestScore) {
+                let isNewHighScore = gameState.score > gameState.bestScore;
+                if (isNewHighScore) {
                     gameState.bestScore = gameState.score;
                     localStorage.setItem('doodleJumpBest', gameState.bestScore);
                 }
@@ -1012,6 +1465,13 @@
                 document.getElementById('finalScore').textContent = `Final Score: ${gameState.score}`;
                 document.getElementById('finalHeight').textContent = `Max Height: ${gameState.height}m`;
                 document.getElementById('bestScore').textContent = `Best Score: ${gameState.bestScore}`;
+                
+                if (isNewHighScore) {
+                    document.getElementById('bestScore').classList.add('high-score');
+                } else {
+                    document.getElementById('bestScore').classList.remove('high-score');
+                }
+                
                 document.getElementById('gameOverScreen').style.display = 'block';
             }
 
@@ -1026,18 +1486,22 @@
                 gameState.powerUps = [];
                 gameState.monsters = [];
 
-                this.player = new Player(CONFIG.CANVAS_WIDTH / 2 - 30, CONFIG.CANVAS_HEIGHT - 150);
+                this.player = new Player(canvasWidth / 2 - 30, canvasHeight - 150);
                 this.startY = this.player.y;
                 
                 this.platforms = [];
-                this.lastPlatformY = CONFIG.CANVAS_HEIGHT - 50;
+                this.lastPlatformY = canvasHeight - 50;
                 this.generateInitialPlatforms();
                 
                 this.difficultyLevel = 1;
                 this.shootCooldown = 0;
+                isPaused = false;
+                document.getElementById('pauseBtn').textContent = '⏸️';
 
                 document.getElementById('gameOverScreen').style.display = 'none';
-                document.getElementById('powerUpIndicator').textContent = '';
+                document.getElementById('powerUpIndicator').style.display = 'none';
+                document.getElementById('combo').style.display = 'none';
+                document.getElementById('bestScore').classList.remove('high-score');
             }
         }
 
@@ -1046,8 +1510,13 @@
             const deltaTime = currentTime - lastTime;
             lastTime = currentTime;
 
-            if (game && gameState.isPlaying) {
+            if (game && gameState.isPlaying && !isPaused) {
                 game.update();
+                
+                // Clear canvas with a slight fade effect for smoother visuals
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                
                 game.draw();
             }
 
@@ -1060,16 +1529,27 @@
             ctx = canvas.getContext('2d');
             
             function resizeCanvas() {
-                let containerWidth = window.innerWidth;
-                let containerHeight = window.innerHeight;
-                let aspectRatio = CONFIG.CANVAS_WIDTH / CONFIG.CANVAS_HEIGHT;
+                canvasWidth = window.innerWidth;
+                canvasHeight = window.innerHeight;
                 
-                if (containerWidth / containerHeight > aspectRatio) {
-                    canvas.style.height = containerHeight * 0.9 + 'px';
-                    canvas.style.width = (containerHeight * 0.9 * aspectRatio) + 'px';
+                // For mobile, use full screen
+                if (isMobile) {
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
                 } else {
-                    canvas.style.width = containerWidth * 0.9 + 'px';
-                    canvas.style.height = (containerWidth * 0.9 / aspectRatio) + 'px';
+                    // For desktop, maintain aspect ratio but use maximum available space
+                    const aspectRatio = 400 / 700; // Original game aspect ratio
+                    
+                    if (canvasWidth / canvasHeight > aspectRatio) {
+                        canvas.height = canvasHeight * 0.9;
+                        canvas.width = canvas.height * aspectRatio;
+                    } else {
+                        canvas.width = canvasWidth * 0.9;
+                        canvas.height = canvas.width / aspectRatio;
+                    }
+                    
+                    canvasWidth = canvas.width;
+                    canvasHeight = canvas.height;
                 }
             }
             
@@ -1079,7 +1559,6 @@
             canvas.addEventListener('contextmenu', (e) => e.preventDefault());
             
             game = new Game();
-            gameState.isPlaying = true;
             
             requestAnimationFrame(gameLoop);
         }
@@ -1088,7 +1567,11 @@
 
         // Prevent mobile scrolling
         document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
+            if (e.target === canvas || e.target.closest('#gameContainer')) {
+                // Allow touchmove on canvas for swipe
+            } else {
+                e.preventDefault();
+            }
         }, { passive: false });
 
         document.addEventListener('gesturestart', (e) => e.preventDefault());
