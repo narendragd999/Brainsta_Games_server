@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Doodle Jump Deluxe</title>
+    <title>Doodle Jump Deluxe - Android Fixed</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -489,6 +489,7 @@
         let isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         let canvasWidth, canvasHeight;
         let isPaused = false;
+        let isAndroid = /Android/i.test(navigator.userAgent);
 
         // Game State
         const gameState = {
@@ -501,7 +502,8 @@
             particles: [],
             bullets: [],
             powerUps: [],
-            monsters: []
+            monsters: [],
+            playerInstances: [] // Track player instances to prevent duplication
         };
 
         // Platform Types
@@ -539,6 +541,24 @@
                 this.invulnerabilityTimer = 0;
                 this.animationFrame = 0;
                 this.jumpCount = 0;
+                this.id = Date.now() + Math.random(); // Unique ID for each player
+                
+                // Track this instance
+                gameState.playerInstances.push(this.id);
+                
+                // Android-specific: Ensure only one player exists
+                if (isAndroid && gameState.playerInstances.length > 1) {
+                    console.log("Multiple player instances detected on Android, cleaning up");
+                    this.cleanupExtraPlayers();
+                }
+            }
+            
+            cleanupExtraPlayers() {
+                // Keep only the latest player instance
+                if (gameState.playerInstances.length > 1) {
+                    const currentPlayerId = this.id;
+                    gameState.playerInstances = gameState.playerInstances.filter(id => id === currentPlayerId);
+                }
             }
 
             update() {
@@ -575,17 +595,15 @@
                 this.velocityX *= 0.92;
                 this.x += this.velocityX;
 
+                // Screen wrapping - Android fix: more precise boundary checking
+                if (this.x < -this.width) {
+                    this.x = canvasWidth;
+                } else if (this.x > canvasWidth) {
+                    this.x = -this.width;
+                }
+
                 // Apply vertical movement
                 this.y += this.velocityY;
-
-                // Screen wrapping only if not falling off screen
-                if (!(this.y > gameState.camera.y + canvasHeight + 50 && this.velocityY > 0)) {
-                    if (this.x < -this.width/2) {
-                        this.x = canvasWidth - this.width/2;
-                    } else if (this.x > canvasWidth - this.width/2) {
-                        this.x = -this.width/2;
-                    }
-                }
 
                 // Reset ground status (will be set by collision detection)
                 this.isOnGround = false;
@@ -664,6 +682,11 @@
             }
 
             draw() {
+                // Android-specific: Double-check we're the only player instance
+                if (isAndroid && gameState.playerInstances[gameState.playerInstances.length - 1] !== this.id) {
+                    return; // Don't draw if we're not the current player
+                }
+                
                 ctx.save();
                 
                 // Draw invulnerability effect
@@ -735,6 +758,14 @@
                 ctx.fillStyle = '#FF44FF';
                 ctx.fillRect(this.x + 5, this.y + this.height - 10, 20, 10);
                 ctx.fillRect(this.x + this.width - 25, this.y + this.height - 10, 20, 10);
+            }
+            
+            // Clean up when player is replaced
+            destroy() {
+                const index = gameState.playerInstances.indexOf(this.id);
+                if (index > -1) {
+                    gameState.playerInstances.splice(index, 1);
+                }
             }
         }
 
@@ -1014,6 +1045,11 @@
         // Main Game Class
         class Game {
             constructor() {
+                // Android-specific: Clear any existing player instances
+                if (isAndroid) {
+                    gameState.playerInstances = [];
+                }
+                
                 this.player = new Player(canvasWidth / 2 - 30, canvasHeight - 150);
                 this.platforms = [];
                 this.startY = this.player.y;
@@ -1076,54 +1112,70 @@
                 const pauseBtn = document.getElementById('pauseBtn');
                 const startBtn = document.getElementById('startBtn');
 
-                leftBtn.addEventListener('pointerdown', (e) => {
+                // Android-specific: Prevent multiple event listeners
+                if (isAndroid) {
+                    // Remove any existing event listeners
+                    leftBtn.replaceWith(leftBtn.cloneNode(true));
+                    rightBtn.replaceWith(rightBtn.cloneNode(true));
+                    fireBtn.replaceWith(fireBtn.cloneNode(true));
+                    pauseBtn.replaceWith(pauseBtn.cloneNode(true));
+                    startBtn.replaceWith(startBtn.cloneNode(true));
+                }
+
+                const newLeftBtn = document.getElementById('leftBtn');
+                const newRightBtn = document.getElementById('rightBtn');
+                const newFireBtn = document.getElementById('fireBtn');
+                const newPauseBtn = document.getElementById('pauseBtn');
+                const newStartBtn = document.getElementById('startBtn');
+
+                newLeftBtn.addEventListener('pointerdown', (e) => {
                     e.preventDefault();
                     leftPressed = true;
                 });
-                leftBtn.addEventListener('pointerup', (e) => {
+                newLeftBtn.addEventListener('pointerup', (e) => {
                     e.preventDefault();
                     leftPressed = false;
                 });
-                leftBtn.addEventListener('pointerleave', (e) => {
+                newLeftBtn.addEventListener('pointerleave', (e) => {
                     e.preventDefault();
                     leftPressed = false;
                 });
-                leftBtn.addEventListener('touchend', (e) => {
+                newLeftBtn.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     leftPressed = false;
                 });
 
-                rightBtn.addEventListener('pointerdown', (e) => {
+                newRightBtn.addEventListener('pointerdown', (e) => {
                     e.preventDefault();
                     rightPressed = true;
                 });
-                rightBtn.addEventListener('pointerup', (e) => {
+                newRightBtn.addEventListener('pointerup', (e) => {
                     e.preventDefault();
                     rightPressed = false;
                 });
-                rightBtn.addEventListener('pointerleave', (e) => {
+                newRightBtn.addEventListener('pointerleave', (e) => {
                     e.preventDefault();
                     rightPressed = false;
                 });
-                rightBtn.addEventListener('touchend', (e) => {
+                newRightBtn.addEventListener('touchend', (e) => {
                     e.preventDefault();
                     rightPressed = false;
                 });
 
-                fireBtn.addEventListener('pointerdown', (e) => {
+                newFireBtn.addEventListener('pointerdown', (e) => {
                     e.preventDefault();
                     this.shoot();
                 });
-                fireBtn.addEventListener('touchstart', (e) => {
+                newFireBtn.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     this.shoot();
                 });
 
-                pauseBtn.addEventListener('click', () => {
+                newPauseBtn.addEventListener('click', () => {
                     this.togglePause();
                 });
 
-                startBtn.addEventListener('click', () => {
+                newStartBtn.addEventListener('click', () => {
                     document.getElementById('startScreen').style.display = 'none';
                     gameState.isPlaying = true;
                 });
@@ -1387,6 +1439,11 @@
             }
 
             draw() {
+                // Android-specific: Clear the canvas more aggressively to prevent ghosting
+                if (isAndroid) {
+                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                }
+                
                 ctx.save();
                 ctx.translate(0, -gameState.camera.y);
                 
@@ -1440,7 +1497,21 @@
                     particle.draw();
                 }
 
-                this.player.draw();
+                // Android-specific: Ensure only one player is drawn
+                if (isAndroid) {
+                    // Check if we have multiple player instances
+                    if (gameState.playerInstances.length > 1) {
+                        console.warn("Multiple player instances detected:", gameState.playerInstances.length);
+                        // Draw only the latest player
+                        if (this.player.id === gameState.playerInstances[gameState.playerInstances.length - 1]) {
+                            this.player.draw();
+                        }
+                    } else {
+                        this.player.draw();
+                    }
+                } else {
+                    this.player.draw();
+                }
 
                 ctx.restore();
                 this.updateUI();
@@ -1488,6 +1559,14 @@
                 gameState.powerUps = [];
                 gameState.monsters = [];
 
+                // Android-specific: Clean up player instances
+                if (isAndroid) {
+                    if (this.player) {
+                        this.player.destroy();
+                    }
+                    gameState.playerInstances = [];
+                }
+
                 this.player = new Player(canvasWidth / 2 - 30, canvasHeight - 150);
                 this.startY = this.player.y;
                 
@@ -1516,7 +1595,12 @@
                 game.update();
                 
                 // Clear canvas with a slight fade effect for smoother visuals
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                // Android-specific: Use more aggressive clearing
+                if (isAndroid) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                } else {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                }
                 ctx.fillRect(0, 0, canvasWidth, canvasHeight);
                 
                 game.draw();
