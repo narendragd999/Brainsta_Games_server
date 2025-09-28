@@ -113,6 +113,7 @@
             max-width: 280px;
             z-index: 100;
             box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
         }
         
         #instructions-popup p {
@@ -129,6 +130,7 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
+            pointer-events: auto;
         }
         
         #message {
@@ -218,7 +220,7 @@
             }
             
             #controls {
-                bottom: 20px;
+                bottom: 40px;
             }
             
             .control-btn {
@@ -272,9 +274,9 @@
             <button id="restart-btn">Restart Game</button>
             
             <div id="controls">
-                <div class="control-btn" id="left-btn">←</div>                
-                <div class="control-btn" id="down-btn">↓</div>
+                <div class="control-btn" id="left-btn">←</div>
                 <div class="control-btn" id="up-btn">↑</div>
+                <div class="control-btn" id="down-btn">↓</div>
                 <div class="control-btn" id="right-btn">→</div>
             </div>
         </div>
@@ -284,6 +286,52 @@
         // Easing function for smooth animation
         function easeInOutCubic(t) {
             return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+        
+        // Audio context for sound effects
+        let audioContext = null;
+        let audioUnlocked = false;
+        
+        function unlockAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.resume().then(() => {
+                    console.log('Audio context resumed');
+                }).catch(e => console.log('Audio resume failed:', e));
+            }
+            audioUnlocked = true;
+        }
+        
+        function playTone(frequency, duration, type = 'sine', volume = 0.1) {
+            if (!audioUnlocked || !audioContext || audioContext.state === 'suspended') return;
+            try {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.log('Audio play error:', e);
+            }
+        }
+        
+        function playJumpSound() {
+            playTone(800, 0.1, 'sine', 0.1);
+        }
+        
+        function playCollisionSound() {
+            playTone(200, 0.3, 'square', 0.1);
+        }
+        
+        function playLevelCompleteSound() {
+            playTone(600, 0.1, 'sine', 0.2);
+            setTimeout(() => playTone(700, 0.1, 'sine', 0.2), 100);
+            setTimeout(() => playTone(800, 0.2, 'sine', 0.2), 200);
         }
         
         // Game variables
@@ -515,6 +563,7 @@
                     // Check for level complete
                     if (gameState.frog.y < gameState.safeZoneHeight) {
                         // Level up
+                        playLevelCompleteSound();
                         gameState.level++;
                         updateLevelDisplay();
                         updateDifficulty();
@@ -602,6 +651,7 @@
         
         // Handle collision
         function handleCollision() {
+            playCollisionSound();
             gameState.score = Math.max(0, gameState.score - 15);
             scoreElement.textContent = `Score: ${gameState.score}`;
             
@@ -653,6 +703,8 @@
             gameState.animStartTime = now;
             gameState.animating = true;
             gameState.willScore = dy < 0;
+            
+            playJumpSound();
         }
         
         // Show message
@@ -708,16 +760,30 @@
         setupButton('down-btn', 0, 1);
         
         // Instructions button
-        document.getElementById('instructions-btn').addEventListener('click', () => {
+        document.getElementById('instructions-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            unlockAudio(); // Unlock audio on interaction
             document.getElementById('instructions-popup').style.display = 'block';
         });
         
-        document.getElementById('close-instructions').addEventListener('click', () => {
+        document.getElementById('close-instructions').addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             document.getElementById('instructions-popup').style.display = 'none';
         });
         
+        // Also close popup on outside click
+        document.getElementById('instructions-popup').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('instructions-popup')) {
+                document.getElementById('instructions-popup').style.display = 'none';
+            }
+        });
+        
         // Restart button
-        restartBtn.addEventListener('click', initGame);
+        restartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            initGame();
+        });
         
         // Handle window resize
         function handleResize() {
