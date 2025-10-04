@@ -20,6 +20,7 @@
   .tiltBtn{background:var(--muted);color:var(--text);padding:8px 12px;border-radius:12px;border:none;cursor:pointer;transition:background 0.2s, transform 0.2s;}
   .tiltBtn:hover{background:rgba(255,255,255,0.12);}
   .tiltBtn.active{background:var(--accent);color:#000;}
+  #tiltSens{width:80px;}
   .controls{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;pointer-events:auto;}
   .btn{width:80px;height:80px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;touch-action:none;transition:background 0.2s, transform 0.1s;}
   .btn:hover{background:rgba(255,255,255,0.12);}
@@ -56,6 +57,7 @@
         <div style="display:flex;gap:12px;align-items:center">
           <div id="fpsBox" class="smallMuted">FPS: --</div>
           <button id="tiltBtn" class="tiltBtn">Tilt On</button>
+          <input type="range" id="tiltSens" min="0.5" max="2.5" step="0.1" value="1" style="width:80px;">
           <button id="startBtn" class="startBtn">Start Game</button>
         </div>
       </div>
@@ -94,6 +96,7 @@
   const ctx = canvas.getContext('2d', { alpha: false });
   const startBtn = document.getElementById('startBtn');
   const tiltBtn = document.getElementById('tiltBtn');
+  const tiltSens = document.getElementById('tiltSens');
   const centerStart = document.getElementById('centerStart');
   const centerOverlay = document.getElementById('centerOverlay');
   const centerMessage = document.getElementById('centerMessage');
@@ -115,17 +118,17 @@
   canvas.width = W; canvas.height = H;
 
   // Assets (updated online URLs for better sized PNGs with transparent backgrounds)
+   // Assets (updated online URLs for better sized PNGs with transparent backgrounds)
   const ASSETS = {
     car: 'images/car5.png',
-    cone: 'https://assets.stickpng.com/images/580b585b2edbce24c47b2be1.png',
+    cone: 'images/Trucks2-down.png',
     truck: 'images/Trucks.png',
     barrel: 'images/Trucks.png',
-    heartPickup: 'https://static.vecteezy.com/system/resources/previews/018/972/339/non_2x/cartoon-red-heart-icon-game-isolated-icon-png.png',
-    boltPickup: 'https://image.similarpng.com/file/similarpng/very-thumbnail/2021/01/Yellow-lightning-bolt-illustration-on-transparent-background-PNG.png',
-    tree: 'https://png.pngtree.com/png-clipart/20230120/ourmid/pngtree-realistic-big-tree-side-view-for-plan-png-image_6569663.png',
+    heartPickup: 'images/heart.png',
+    boltPickup: 'images/yellow-bolt.png',
+    tree: 'images/tree.png',
     music: 'audio/racing-music.mp3' // Placeholder; replace with actual if available
   };
-
   // Game state
   let images = {};
   let audio = null;
@@ -144,12 +147,15 @@
   let nextSpawn = 1000;
   let fpsMeasure = { last: performance.now(), frames: 0, value: 0 };
   let tiltFromSensor = 0;
+  let smoothedTilt = 0;
   let sensorEnabled = false;
+  let sensitivity = 1.0;
 
   // Params
   const params = {
     baseSpeed: 700, maxSpeed: 2000, accel: 2200, decel: 1200,
-    roadWidthRatio: 0.75, laneCount: 3, spawnInterval: 1200, spawnJitter: 900, pickupChance: 0.18
+    roadWidthRatio: 0.75, laneCount: 3, spawnInterval: 1200, spawnJitter: 900, pickupChance: 0.18,
+    smoothingAlpha: 0.15
   };
 
   // Car
@@ -244,6 +250,7 @@
     const roadW = W * params.roadWidthRatio;
     car.w = roadW * 0.18; car.h = car.w * carSprite.aspect; car.x = W*0.5; car.y = H - car.h * 1.5; car.speedFactor = 0.6; car.tilt = 0; car.targetTilt = 0;
     tiltFromSensor = 0;
+    smoothedTilt = 0;
     for(let i=0;i<40;i++) laneLines.push({y:i * -120, h:80});
     for(let i=0;i<18;i++) spawnTree(true);
     updateLivesUI();
@@ -464,31 +471,36 @@
       if(audio && audio.paused) audio.play().catch(() => {});
     }, {once: true});
 
-    // Tilt sensor controls
-    const handleMotion = (event) => {
-      const acc = event.accelerationIncludingGravity;
-      if (acc) {
-        tiltFromSensor = -(acc.x || 0) / 9.8;
-        tiltFromSensor = Math.max(-1, Math.min(1, tiltFromSensor));
-      }
+    // Sensitivity slider
+    tiltSens.addEventListener('input', (e) => {
+      sensitivity = parseFloat(e.target.value);
+    });
+
+    // Tilt sensor controls using DeviceOrientation for gyroscope-like steering (gamma for left-right tilt)
+    const handleOrientation = (event) => {
+      const gamma = event.gamma || 0;
+      let rawTilt = gamma / 90; // Normalize to -1 to 1
+      rawTilt *= sensitivity;
+      tiltFromSensor = Math.max(-1, Math.min(1, rawTilt));
     };
 
     tiltBtn.addEventListener('click', async () => {
       if (sensorEnabled) {
-        window.removeEventListener('devicemotion', handleMotion);
+        window.removeEventListener('deviceorientation', handleOrientation);
         sensorEnabled = false;
         tiltBtn.innerText = 'Tilt On';
         tiltBtn.classList.remove('active');
         tiltFromSensor = 0;
+        smoothedTilt = 0;
       } else {
         try {
-          if (typeof DeviceMotionEvent.requestPermission === 'function') {
-            const permissionState = await DeviceMotionEvent.requestPermission();
+          if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            const permissionState = await DeviceOrientationEvent.requestPermission();
             if (permissionState !== 'granted') {
               return;
             }
           }
-          window.addEventListener('devicemotion', handleMotion);
+          window.addEventListener('deviceorientation', handleOrientation);
           sensorEnabled = true;
           tiltBtn.innerText = 'Tilt Off';
           tiltBtn.classList.add('active');
@@ -505,10 +517,13 @@
     else car.speedFactor -= params.decel * dt / params.maxSpeed;
     car.speedFactor = Math.max(0.12, Math.min(1.6, car.speedFactor));
 
+    // Smoother tilt integration
+    smoothedTilt = params.smoothingAlpha * tiltFromSensor + (1 - params.smoothingAlpha) * smoothedTilt;
+
     const moveSpeed = 1600 * dt; // Fixed lateral speed, independent of forward speed for smoother navigation
 
-    // Steering input combining buttons and sensor
-    let steeringInput = tiltFromSensor;
+    // Steering input combining buttons and smoothed sensor
+    let steeringInput = smoothedTilt;
     if (input.left) steeringInput -= 1;
     if (input.right) steeringInput += 1;
     steeringInput = Math.max(-1, Math.min(1, steeringInput));
