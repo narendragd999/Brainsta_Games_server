@@ -8,9 +8,9 @@
   :root{
     --bg1: #0a1f2b; --bg2: #0d3a4e; --card: rgba(0,0,0,0.55); --accent: #ff9500; --muted: rgba(255,255,255,0.08); --text: #fff; --shadow: rgba(0,0,0,0.7);
   }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,'Noto Sans',sans-serif;}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--text);font-family:Inter,system-ui,Segoe UI,Roboto,'Noto Sans',sans-serif; user-select: none;}
   #gameWrap{height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:8px;box-sizing:border-box;}
-  canvas{border-radius:16px;box-shadow:0 16px 50px var(--shadow);background:linear-gradient(#0a1f2b,#0e3c50);max-width:100%;height:auto;display:block;transition:transform 0.1s ease;}
+  canvas{border-radius:16px;box-shadow:0 16px 50px var(--shadow);background:linear-gradient(#0a1f2b,#0e3c50);max-width:100%;height:auto;display:block;transition:transform 0.1s ease; user-select: none;}
   .overlay{position:absolute;inset:12px;pointer-events:none;display:flex;flex-direction:column;gap:12px;}
   .topBar{display:flex;justify-content:space-between;align-items:center;pointer-events:auto;}
   .hud{display:flex;gap:12px;align-items:center;}
@@ -107,12 +107,12 @@
   // Assets (updated online URLs for better sized PNGs with transparent backgrounds)
   const ASSETS = {
     car: 'images/car5.png',
-    cone: 'https://assets.stickpng.com/images/580b585b2edbce24c47b2be1.png',
+    cone: 'images/Trucks2-down.png',
     truck: 'images/Trucks.png',
     barrel: 'images/Trucks.png',
-    heartPickup: 'https://static.vecteezy.com/system/resources/previews/018/972/339/non_2x/cartoon-red-heart-icon-game-isolated-icon-png.png',
-    boltPickup: 'https://image.similarpng.com/file/similarpng/very-thumbnail/2021/01/Yellow-lightning-bolt-illustration-on-transparent-background-PNG.png',
-    tree: 'https://png.pngtree.com/png-clipart/20230120/ourmid/pngtree-realistic-big-tree-side-view-for-plan-png-image_6569663.png',
+    heartPickup: 'images/heart.png',
+    boltPickup: 'images/yellow-bolt.png',
+    tree: 'images/tree.png',
     music: 'audio/racing-music.mp3' // Placeholder; replace with actual if available
   };
 
@@ -137,7 +137,7 @@
   // Params
   const params = {
     baseSpeed: 700, maxSpeed: 2000, accel: 2200, decel: 1200,
-    roadWidthRatio: 0.65, laneCount: 3, spawnInterval: 1200, spawnJitter: 900, pickupChance: 0.18
+    roadWidthRatio: 0.75, laneCount: 3, spawnInterval: 1200, spawnJitter: 900, pickupChance: 0.18
   };
 
   // Car
@@ -228,7 +228,7 @@
   // Reset
   function resetGame(){
     score = 0; lives = 3; invuln = false; invulnTimer = 0; screenShake = 0;
-    obstacles = []; pickups = []; laneLines = []; trees = []; nextSpawn = 800;
+    obstacles = []; pickups = []; laneLines = []; trees = []; nextSpawn = 2000;
     const roadW = W * params.roadWidthRatio;
     car.w = roadW * 0.18; car.h = car.w * carSprite.aspect; car.x = W*0.5; car.y = H - car.h * 1.5; car.speedFactor = 0.6; car.tilt = 0; car.targetTilt = 0;
     for(let i=0;i<40;i++) laneLines.push({y:i * -120, h:80});
@@ -244,9 +244,20 @@
 
   // Spawners
   function spawnTree(init=false){
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const margin = 40 + Math.random()*30;
-    const x = W*0.5 + side * ((W * (1 - params.roadWidthRatio))/2 + margin + Math.random()*120);
+    const roadLeft = (W - W*params.roadWidthRatio)/2;
+    const roadRight = W - roadLeft;
+    const buffer = 60; // Approximate max half-tree width to prevent overlap
+    const side = Math.random() < 0.5 ? 'left' : 'right';
+    let x;
+    if(side === 'left'){
+      const minX = 10;
+      const maxX = roadLeft - buffer;
+      x = minX + Math.random() * (maxX - minX);
+    } else {
+      const minX = roadRight + buffer;
+      const maxX = W - 10;
+      x = minX + Math.random() * (maxX - minX);
+    }
     const y = init ? Math.random() * H : -150;
     const scale = 0.5 + Math.random()*0.8;
     trees.push({x,y,scale, speedMult: 0.9 + Math.random()*0.6});
@@ -261,8 +272,8 @@
     const jitter = (Math.random()*laneW - laneW/2) * 0.25;
     const x = baseX + jitter;
     const y = init ? Math.random()*H*0.8 : -200;
-    const scale = t === 'truck' ? 0.8 + Math.random()*0.2 : (t === 'barrel'?0.6 + Math.random()*0.3 : 0.45 + Math.random()*0.35);
-    let w = (W*params.roadWidthRatio / params.laneCount) * (t === 'truck' ? 0.75 : 0.45) * scale;
+    const scale = t === 'truck' ? 0.6 : (t === 'barrel'?0.6 + Math.random()*0.3 : 0.45 + Math.random()*0.35);
+    let w = (W*params.roadWidthRatio / params.laneCount) * (t === 'truck' ? 0.6 : 0.45) * scale;
     let h = w * (t === 'truck' ? 0.55 : (t==='barrel'?0.85:0.8));
     if(images[t] && images[t].aspect) h = w * images[t].aspect;
     obstacles.push({type: t, x, y, w, h, hit:false});
@@ -447,7 +458,7 @@
     else car.speedFactor -= params.decel * dt / params.maxSpeed;
     car.speedFactor = Math.max(0.12, Math.min(1.6, car.speedFactor));
 
-    const moveSpeed = 2400 * dt * (0.3 + Math.min(1.4, car.speedFactor) * 0.7);
+    const moveSpeed = 1600 * dt; // Fixed lateral speed, independent of forward speed for smoother navigation
     if(input.left){ car.x -= moveSpeed; car.targetTilt = -1; }
     else if(input.right){ car.x += moveSpeed; car.targetTilt = 1; }
     else car.targetTilt = 0;
@@ -584,7 +595,7 @@
 
   // Init
   bindControls();
-  loadAssets().then(()=> { initAudio(); resetGame(); centerStart.addEventListener('click', ()=> startGame()); startBtn.addEventListener('click', ()=> { if(!running){ startGame(); } else { resetGame(); startGame(); } }); for(let i=0;i<6;i++) spawnObstacle(true); requestAnimationFrame(frame); });
+  loadAssets().then(()=> { initAudio(); resetGame(); centerStart.addEventListener('click', ()=> startGame()); startBtn.addEventListener('click', ()=> { if(!running){ startGame(); } else { resetGame(); startGame(); } }); requestAnimationFrame(frame); });
 
   document.addEventListener('touchmove', (e) => { if(e.target.closest('.controls') || e.target.closest('.mobileControls') || e.target === canvas) e.preventDefault(); }, {passive:false});
   window.addEventListener('orientationchange', ()=> setTimeout(resizeToWindow, 250));
