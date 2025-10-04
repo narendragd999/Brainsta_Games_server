@@ -18,17 +18,22 @@
   .startBtn{background:var(--accent);color:#000;padding:12px 18px;border-radius:16px;font-weight:800;border:none;cursor:pointer;pointer-events:auto;transition:transform 0.2s, background 0.2s;}
   .startBtn:hover{transform:scale(1.05);background:#ffb733;}
   .controls{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;pointer-events:auto;}
-  .btn{width:80px;height:80px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;touch-action:none;transition:background 0.2s;}
+  .btn{width:80px;height:80px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;touch-action:none;transition:background 0.2s, transform 0.1s;}
   .btn:hover{background:rgba(255,255,255,0.12);}
   .btn.big{width:120px;height:80px;border-radius:20px;}
+  .btn.active, .mobileControls .ctrl.active {
+    background: var(--accent);
+    color: #000;
+    transform: scale(0.95);
+  }
   .lives{display:flex;gap:8px;align-items:center;}
   .heart{width:32px;height:32px;opacity:0.95;}
   .overlayCenter{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;}
-  .card{background:transparent;padding:24px;border-radius:16px;backdrop-filter:blur(8px);text-align:center;transition:opacity 0.3s;}
+  .card{background:var(--card);padding:24px;border-radius:16px;backdrop-filter:blur(8px);text-align:center;box-shadow:0 8px 24px var(--shadow);transition:opacity 0.3s;}
   .footer{position:absolute;bottom:12px;left:12px;font-size:12px;opacity:0.6;}
   .smallMuted{opacity:0.9;font-size:12px;}
   .mobileControls{display:none;position:absolute;bottom:48px;left:0;right:0;justify-content:space-around;padding:0 28px;pointer-events:auto;}
-  .mobileControls .ctrl{width:92px;height:92px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:32px;user-select:none;touch-action:none;transition:background 0.2s;}
+  .mobileControls .ctrl{width:100px;height:100px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:36px;user-select:none;touch-action:none;transition:background 0.2s, transform 0.1s;}
   .mobileControls .ctrl:hover{background:rgba(255,255,255,0.12);}
   @media (max-width:720px){ .mobileControls{display:flex} .controls{display:none} .scoreCard{padding:10px 12px} }
   #highScoreBox{margin-left:12px;}
@@ -107,12 +112,12 @@
   // Assets (updated online URLs for better sized PNGs with transparent backgrounds)
   const ASSETS = {
     car: 'images/car5.png',
-    cone: 'images/Trucks2-down.png',
+    cone: 'https://assets.stickpng.com/images/580b585b2edbce24c47b2be1.png',
     truck: 'images/Trucks.png',
     barrel: 'images/Trucks.png',
-    heartPickup: 'images/heart.png',
-    boltPickup: 'images/yellow-bolt.png',
-    tree: 'images/tree.png',
+    heartPickup: 'https://static.vecteezy.com/system/resources/previews/018/972/339/non_2x/cartoon-red-heart-icon-game-isolated-icon-png.png',
+    boltPickup: 'https://image.similarpng.com/file/similarpng/very-thumbnail/2021/01/Yellow-lightning-bolt-illustration-on-transparent-background-PNG.png',
+    tree: 'https://png.pngtree.com/png-clipart/20230120/ourmid/pngtree-realistic-big-tree-side-view-for-plan-png-image_6569663.png',
     music: 'audio/racing-music.mp3' // Placeholder; replace with actual if available
   };
 
