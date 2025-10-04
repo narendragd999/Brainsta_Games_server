@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flappy Bird Pro - Upgraded</title>
+  <title>Flappy Bird Pro - Fixed Start Screen</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Press+Start+2P&display=swap');
     body {
@@ -132,35 +132,70 @@ birdSprite.src="assets/bird_sprite.png";
 birdSprite.onload=()=>{ SPRITE_FRAME_WIDTH=birdSprite.width/3; SPRITE_FRAME_HEIGHT=birdSprite.height; assetLoaded(); };
 const pipeTopImg=new Image(); pipeTopImg.src="assets/pipe-green.png"; pipeTopImg.onload=assetLoaded;
 const pipeBottomImg=new Image(); pipeBottomImg.src="assets/pipe-green.png"; pipeBottomImg.onload=assetLoaded;
-const backgroundImg=new Image(); backgroundImg.src="assets/background-day.png"; backgroundImg.onload=assetLoaded;
-const groundImg=new Image(); groundImg.src="assets/base.png"; groundImg.onload=assetLoaded;
-const jumpSound=new Audio("assets/jump.wav");
-const scoreSound=new Audio("assets/score.wav");
-const hitSound=new Audio("assets/hit.wav");
+const backgroundImg=new Image(); backgroundImg.src="assets/bg.png"; backgroundImg.onload=assetLoaded;
+const groundImg=new Image(); groundImg.src="assets/ground.png"; groundImg.onload=assetLoaded;
+const jumpSound=new Audio("audio/swoosh.wav");
+const scoreSound=new Audio("audio/point.wav");
+const hitSound=new Audio("audio/die.wav");
 
 let assetsLoadedCount=0;
 const totalAssets=5+3;
-function assetLoaded(){ assetsLoadedCount++; if(assetsLoadedCount>=totalAssets){ loadingScreen.style.display='none'; startScreen.classList.add('active'); highScoreValue.textContent=bestScore; } }
+function assetLoaded(){ 
+  assetsLoadedCount++; 
+  if(assetsLoadedCount>=totalAssets){ 
+    loadingScreen.style.display='none'; 
+    startScreen.classList.add('active'); 
+    startScreen.style.display='none'; 
+    highScoreValue.textContent=bestScore; 
+  } 
+}
 [jumpSound,scoreSound,hitSound].forEach(snd=>{ snd.addEventListener('canplaythrough',assetLoaded); snd.addEventListener('error',assetLoaded); snd.load(); });
 
 function playSound(snd){ if(snd.readyState>=2){ snd.currentTime=0; snd.play().catch(()=>{}); } }
 
+// Fixed handleJump
 function handleJump(e){
-  if(!gameRunning&&!gameOver&&loadingScreen.style.display==='none'){ startGame(); e.preventDefault(); }
-  else if(gameRunning&&(e.code==="Space"||e.type==="click"||e.type==="touchstart")){ bird.velocityY=JUMP_STRENGTH; playSound(jumpSound); e.preventDefault(); }
+  if(gameRunning){
+    if(e.code==="Space" || e.type==="click" || e.type==="touchstart"){
+      bird.velocityY = JUMP_STRENGTH;
+      playSound(jumpSound);
+      e.preventDefault();
+    }
+  } else if(!gameRunning && !gameOver && loadingScreen.style.display==='none'){
+    startGame();
+    e.preventDefault();
+  }
 }
 
 function startGame(){
   if(gameRunning) return;
-  startScreen.classList.remove("active"); gameOverScreen.classList.remove("active");
-  gameRunning=true; gameOver=false; score=0; currentScoreSpan.textContent=score;
+  startScreen.classList.remove("active");
+  startScreen.style.display='none';
+  gameOverScreen.classList.remove("active");
+
+  gameRunning=true; 
+  gameOver=false; 
+  score=0; 
+  currentScoreSpan.textContent=score;
+
   bird={x:50,y:GAME_HEIGHT/2-BIRD_HEIGHT/2,velocityY:0};
-  pipes=[]; floatingTexts=[]; backgroundX=groundX=0; birdFrame=0; lastBirdFrameTime=performance.now();
-  lastPipeSpawnTime=performance.now(); PIPE_GAP=130; PIPE_SPEED=2;
+  pipes=[]; 
+  floatingTexts=[]; 
+  backgroundX=groundX=0; 
+  birdFrame=0; 
+  lastBirdFrameTime=performance.now();
+  lastPipeSpawnTime=performance.now(); 
+  PIPE_GAP=130; 
+  PIPE_SPEED=2;
+
   animationFrameId=requestAnimationFrame(gameLoop);
 }
 
-function restartGame(){ cancelAnimationFrame(animationFrameId); startGame(); }
+function restartGame(){ 
+  cancelAnimationFrame(animationFrameId); 
+  startScreen.style.display = 'none';
+  startGame(); 
+}
 
 function generatePipe(){
   const minHeight=60; const maxTop=GAME_HEIGHT-PIPE_GAP-minHeight-GROUND_HEIGHT;
