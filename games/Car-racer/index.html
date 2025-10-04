@@ -129,6 +129,7 @@
     tree: 'images/tree.png',
     music: 'audio/racing-music.mp3' // Placeholder; replace with actual if available
   };
+
   // Game state
   let images = {};
   let audio = null;
@@ -476,17 +477,19 @@
       sensitivity = parseFloat(e.target.value);
     });
 
-    // Tilt sensor controls using DeviceOrientation for gyroscope-like steering (gamma for left-right tilt)
-    const handleOrientation = (event) => {
-      const gamma = event.gamma || 0;
-      let rawTilt = gamma / 90; // Normalize to -1 to 1
-      rawTilt *= sensitivity;
-      tiltFromSensor = Math.max(-1, Math.min(1, rawTilt));
+    // Tilt sensor controls using DeviceMotionEvent for more reliable tilt detection
+    const handleMotion = (event) => {
+      const acc = event.accelerationIncludingGravity;
+      if (acc) {
+        let rawTilt = -(acc.x || 0) / 9.8; // Negative for intuitive left-right (tilt left -> negative)
+        rawTilt *= sensitivity;
+        tiltFromSensor = Math.max(-1, Math.min(1, rawTilt));
+      }
     };
 
     tiltBtn.addEventListener('click', async () => {
       if (sensorEnabled) {
-        window.removeEventListener('deviceorientation', handleOrientation);
+        window.removeEventListener('devicemotion', handleMotion);
         sensorEnabled = false;
         tiltBtn.innerText = 'Tilt On';
         tiltBtn.classList.remove('active');
@@ -494,18 +497,21 @@
         smoothedTilt = 0;
       } else {
         try {
-          if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-            const permissionState = await DeviceOrientationEvent.requestPermission();
+          if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            const permissionState = await DeviceMotionEvent.requestPermission();
             if (permissionState !== 'granted') {
+              alert('Motion sensor permission denied. Tilt controls will not work.');
               return;
             }
           }
-          window.addEventListener('deviceorientation', handleOrientation);
+          window.addEventListener('devicemotion', handleMotion);
           sensorEnabled = true;
           tiltBtn.innerText = 'Tilt Off';
           tiltBtn.classList.add('active');
+          console.log('Tilt controls enabled. Tilt your device to steer.');
         } catch (err) {
           console.error('Failed to enable tilt controls:', err);
+          alert('Failed to enable tilt controls. Please check device permissions.');
         }
       }
     });
