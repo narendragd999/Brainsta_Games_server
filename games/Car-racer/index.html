@@ -17,6 +17,9 @@
   .scoreCard{background:var(--card);padding:12px 16px;border-radius:16px;font-weight:800;backdrop-filter:blur(8px);box-shadow:0 4px 12px var(--shadow);}
   .startBtn{background:var(--accent);color:#000;padding:12px 18px;border-radius:16px;font-weight:800;border:none;cursor:pointer;pointer-events:auto;transition:transform 0.2s, background 0.2s;}
   .startBtn:hover{transform:scale(1.05);background:#ffb733;}
+  .tiltBtn{background:var(--muted);color:var(--text);padding:8px 12px;border-radius:12px;border:none;cursor:pointer;transition:background 0.2s, transform 0.2s;}
+  .tiltBtn:hover{background:rgba(255,255,255,0.12);}
+  .tiltBtn.active{background:var(--accent);color:#000;}
   .controls{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:14px;pointer-events:auto;}
   .btn{width:80px;height:80px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;touch-action:none;transition:background 0.2s, transform 0.1s;}
   .btn:hover{background:rgba(255,255,255,0.12);}
@@ -52,6 +55,7 @@
         </div>
         <div style="display:flex;gap:12px;align-items:center">
           <div id="fpsBox" class="smallMuted">FPS: --</div>
+          <button id="tiltBtn" class="tiltBtn">Tilt On</button>
           <button id="startBtn" class="startBtn">Start Game</button>
         </div>
       </div>
@@ -89,6 +93,7 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d', { alpha: false });
   const startBtn = document.getElementById('startBtn');
+  const tiltBtn = document.getElementById('tiltBtn');
   const centerStart = document.getElementById('centerStart');
   const centerOverlay = document.getElementById('centerOverlay');
   const centerMessage = document.getElementById('centerMessage');
@@ -138,6 +143,8 @@
   let trees = [];
   let nextSpawn = 1000;
   let fpsMeasure = { last: performance.now(), frames: 0, value: 0 };
+  let tiltFromSensor = 0;
+  let sensorEnabled = false;
 
   // Params
   const params = {
@@ -236,6 +243,7 @@
     obstacles = []; pickups = []; laneLines = []; trees = []; nextSpawn = 2000;
     const roadW = W * params.roadWidthRatio;
     car.w = roadW * 0.18; car.h = car.w * carSprite.aspect; car.x = W*0.5; car.y = H - car.h * 1.5; car.speedFactor = 0.6; car.tilt = 0; car.targetTilt = 0;
+    tiltFromSensor = 0;
     for(let i=0;i<40;i++) laneLines.push({y:i * -120, h:80});
     for(let i=0;i<18;i++) spawnTree(true);
     updateLivesUI();
@@ -455,6 +463,40 @@
     document.addEventListener('touchstart', () => {
       if(audio && audio.paused) audio.play().catch(() => {});
     }, {once: true});
+
+    // Tilt sensor controls
+    const handleMotion = (event) => {
+      const acc = event.accelerationIncludingGravity;
+      if (acc) {
+        tiltFromSensor = -(acc.x || 0) / 9.8;
+        tiltFromSensor = Math.max(-1, Math.min(1, tiltFromSensor));
+      }
+    };
+
+    tiltBtn.addEventListener('click', async () => {
+      if (sensorEnabled) {
+        window.removeEventListener('devicemotion', handleMotion);
+        sensorEnabled = false;
+        tiltBtn.innerText = 'Tilt On';
+        tiltBtn.classList.remove('active');
+        tiltFromSensor = 0;
+      } else {
+        try {
+          if (typeof DeviceMotionEvent.requestPermission === 'function') {
+            const permissionState = await DeviceMotionEvent.requestPermission();
+            if (permissionState !== 'granted') {
+              return;
+            }
+          }
+          window.addEventListener('devicemotion', handleMotion);
+          sensorEnabled = true;
+          tiltBtn.innerText = 'Tilt Off';
+          tiltBtn.classList.add('active');
+        } catch (err) {
+          console.error('Failed to enable tilt controls:', err);
+        }
+      }
+    });
   }
 
   // Update
@@ -464,9 +506,15 @@
     car.speedFactor = Math.max(0.12, Math.min(1.6, car.speedFactor));
 
     const moveSpeed = 1600 * dt; // Fixed lateral speed, independent of forward speed for smoother navigation
-    if(input.left){ car.x -= moveSpeed; car.targetTilt = -1; }
-    else if(input.right){ car.x += moveSpeed; car.targetTilt = 1; }
-    else car.targetTilt = 0;
+
+    // Steering input combining buttons and sensor
+    let steeringInput = tiltFromSensor;
+    if (input.left) steeringInput -= 1;
+    if (input.right) steeringInput += 1;
+    steeringInput = Math.max(-1, Math.min(1, steeringInput));
+    car.targetTilt = steeringInput;
+    car.x += steeringInput * moveSpeed;
+
     car.tilt += (car.targetTilt - car.tilt) * Math.min(1, dt * 8);
 
     const leftBound = (W - W*params.roadWidthRatio)/2 + car.w*0.5 + 10;
