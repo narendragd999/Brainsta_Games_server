@@ -27,7 +27,7 @@
   .card{background:var(--card);padding:24px;border-radius:16px;backdrop-filter:blur(8px);text-align:center;box-shadow:0 8px 24px var(--shadow);transition:opacity 0.3s;}
   .footer{position:absolute;bottom:12px;left:12px;font-size:12px;opacity:0.6;}
   .smallMuted{opacity:0.9;font-size:12px;}
-  .mobileControls{display:none;position:absolute;bottom:24px;left:0;right:0;justify-content:space-around;padding:0 28px;pointer-events:auto;}
+  .mobileControls{display:none;position:absolute;bottom:48px;left:0;right:0;justify-content:space-around;padding:0 28px;pointer-events:auto;}
   .mobileControls .ctrl{width:92px;height:92px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:32px;user-select:none;touch-action:none;transition:background 0.2s;}
   .mobileControls .ctrl:hover{background:rgba(255,255,255,0.12);}
   @media (max-width:720px){ .mobileControls{display:flex} .controls{display:none} .scoreCard{padding:10px 12px} }
@@ -137,7 +137,7 @@
   // Params
   const params = {
     baseSpeed: 700, maxSpeed: 2000, accel: 2200, decel: 1200,
-    roadWidthRatio: 0.56, laneCount: 3, spawnInterval: 1200, spawnJitter: 900, pickupChance: 0.18
+    roadWidthRatio: 0.65, laneCount: 3, spawnInterval: 1200, spawnJitter: 900, pickupChance: 0.18
   };
 
   // Car
@@ -248,7 +248,7 @@
     const margin = 40 + Math.random()*30;
     const x = W*0.5 + side * ((W * (1 - params.roadWidthRatio))/2 + margin + Math.random()*120);
     const y = init ? Math.random() * H : -150;
-    const scale = 0.7 + Math.random()*1.2;
+    const scale = 0.5 + Math.random()*0.8;
     trees.push({x,y,scale, speedMult: 0.9 + Math.random()*0.6});
   }
   function spawnObstacle(init=false){
@@ -261,8 +261,8 @@
     const jitter = (Math.random()*laneW - laneW/2) * 0.25;
     const x = baseX + jitter;
     const y = init ? Math.random()*H*0.8 : -200;
-    const scale = t === 'truck' ? 1.0 + Math.random()*0.2 : (t === 'barrel'?0.6 + Math.random()*0.3 : 0.45 + Math.random()*0.35);
-    let w = (W*params.roadWidthRatio / params.laneCount) * (t === 'truck' ? 0.95 : 0.45) * scale;
+    const scale = t === 'truck' ? 0.8 + Math.random()*0.2 : (t === 'barrel'?0.6 + Math.random()*0.3 : 0.45 + Math.random()*0.35);
+    let w = (W*params.roadWidthRatio / params.laneCount) * (t === 'truck' ? 0.75 : 0.45) * scale;
     let h = w * (t === 'truck' ? 0.55 : (t==='barrel'?0.85:0.8));
     if(images[t] && images[t].aspect) h = w * images[t].aspect;
     obstacles.push({type: t, x, y, w, h, hit:false});
@@ -328,7 +328,7 @@
   function drawTree(tr){
     const img = images.tree;
     if(img){
-      const tw = 120 * tr.scale;
+      const tw = 80 * tr.scale;
       const th = tw * img.aspect;
       ctx.drawImage(img, tr.x - tw/2, tr.y - th, tw, th);
       return;
@@ -412,15 +412,28 @@
       if(e.key === 'ArrowUp' || e.key === 'w') input.accel = false;
     });
 
-    // Canvas swipe for mobile
-    let tsx = null;
-    canvas.addEventListener('touchstart', (e)=>{ if(e.touches && e.touches[0]) tsx = e.touches[0].clientX; }, {passive:true});
+    // Canvas swipe for mobile left/right, and touch for accel
+    let tsx = null, isSwiping = false;
+    canvas.addEventListener('touchstart', (e)=>{
+      if(e.touches && e.touches[0]) {
+        tsx = e.touches[0].clientX;
+        input.accel = true;
+        isSwiping = false;
+      }
+    }, {passive:false});
     canvas.addEventListener('touchmove', (e)=>{
       if(!e.touches || !e.touches[0] || tsx === null) return;
       const dx = e.touches[0].clientX - tsx;
-      if(Math.abs(dx) > 20){ if(dx < 0){ input.left = true; input.right = false; } else { input.right = true; input.left = false; } }
-    }, {passive:true});
-    canvas.addEventListener('touchend', ()=>{ input.left = input.right = false; tsx = null; });
+      if(Math.abs(dx) > 20){
+        isSwiping = true;
+        if(dx < 0){ input.left = true; input.right = false; } else { input.right = true; input.left = false; }
+      }
+      e.preventDefault();
+    }, {passive:false});
+    canvas.addEventListener('touchend', ()=>{
+      input.left = input.right = input.accel = false;
+      tsx = null;
+    });
     
     // Unlock audio on first touch
     document.addEventListener('touchstart', () => {
