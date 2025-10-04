@@ -25,20 +25,29 @@
     }
     #game-container {
       position: relative;
-      width: 100%; /* Fill available width */
-      height: 100%; /* Fill available height */
+      /* On larger screens, constrain to original game dimensions */
+      max-width: 360px;
+      max-height: 640px;
+      /* For smaller screens, allow it to fill, but maintain aspect ratio */
+      width: 100vw; /* Take full viewport width */
+      height: 100dvh; /* Take full viewport height */
+      aspect-ratio: 360 / 640; /* Crucial to maintain aspect ratio on all screen sizes */
+      margin: auto; /* Center the container */
+
       overflow: hidden;
       border: 8px solid #3d2c1f;
       border-radius: 15px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3), 0 0 0 2px #a0816f inset;
-      margin: auto;
-      /* Adjust canvas dimensions dynamically via JS, no max-width/height here */
+
+      /* To make sure it always scales down without going over max-width/height */
+      object-fit: contain; /* ensures the content inside scales down if needed */
     }
     canvas {
       display: block;
-      width: 100%;
-      height: 100%;
+      width: 100%; /* Canvas fills its parent #game-container */
+      height: 100%; /* Canvas fills its parent #game-container */
       background: transparent;
+      /* Canvas internal resolution will be handled by JS */
     }
     .game-overlay {
       position:absolute; top:0; left:0; width:100%; height:100%;
@@ -59,7 +68,6 @@
     .game-button:hover { transform:translateY(-3px); box-shadow:0 9px 0 #d68900; }
     .game-button:active { transform:translateY(2px); box-shadow:0 3px 0 #d68900; }
 
-    /* Score display for current score (top-left) */
     #score-display {
       position:absolute;
       top:15px;
@@ -76,18 +84,17 @@
       flex-direction:column;
       align-items: flex-start;
       box-sizing: border-box;
-      white-space: nowrap; /* Prevent score wrapping */
+      white-space: nowrap;
     }
-    #current-score { font-size:1.2em; margin-bottom:0; } /* Adjusted margin */
+    #current-score { font-size:1.2em; margin-bottom:0; }
 
-    /* New High Score display (top-right) */
     #high-score-display {
       position:absolute;
       top:15px;
       right:15px;
-      color:#ffeb3b; /* High score color */
+      color:#ffeb3b;
       font-family:'Press Start 2P', cursive;
-      font-size:1.2em; /* Smaller font size for high score */
+      font-size:1.2em;
       text-shadow:2px 2px #333;
       background:rgba(0,0,0,0.4);
       padding:8px 18px;
@@ -95,9 +102,9 @@
       z-index:50;
       display:flex;
       align-items:center;
-      gap: 5px; /* Space between trophy and score */
+      gap: 5px;
       box-sizing: border-box;
-      white-space: nowrap; /* Prevent score wrapping */
+      white-space: nowrap;
     }
 
     #loading-screen {
@@ -116,7 +123,7 @@
 </head>
 <body>
 <div id="game-container">
-  <canvas id="gameCanvas"></canvas> <!-- Removed width/height from HTML to control with JS -->
+  <canvas id="gameCanvas"></canvas>
 
   <div id="loading-screen"><div class="spinner"></div><p>लोड हो रहा है...</p></div>
 
@@ -133,12 +140,10 @@
     <button id="restartButton" class="game-button">फिर से खेलें</button>
   </div>
 
-  <!-- Score display for current score (top-left) -->
   <div id="score-display">
     स्कोर: <span id="current-score">0</span>
   </div>
 
-  <!-- High Score display (top-right) -->
   <div id="high-score-display">
     🏆 <span id="high-score-value">0</span>
   </div>
@@ -155,19 +160,21 @@ const restartButton=document.getElementById('restartButton');
 const currentScoreSpan=document.getElementById('current-score');
 const finalScoreSpan=document.getElementById('final-score');
 const bestScoreSpan=document.getElementById('best-score');
-const highScoreValue=document.getElementById('high-score-value'); // This now refers to the value in the new high-score-display
+const highScoreValue=document.getElementById('high-score-value');
 
 const BASE_GAME_WIDTH=360; // Original logical game width
 const BASE_GAME_HEIGHT=640; // Original logical game height
 
-// Scaled game dimensions (will be updated)
-let GAME_WIDTH = BASE_GAME_WIDTH;
-let GAME_HEIGHT = BASE_GAME_HEIGHT;
-let scaleFactor = 1;
+// GAME_WIDTH and GAME_HEIGHT now refer to the CANVAS's internal resolution,
+// which will always be BASE_GAME_WIDTH/HEIGHT for consistent game logic.
+// The CSS handles visual scaling.
+const GAME_WIDTH = BASE_GAME_WIDTH;
+const GAME_HEIGHT = BASE_GAME_HEIGHT;
+let currentScaleFactor = 1; // Used for drawing coordinates if ctx.scale isn't enough, but ctx.scale is generally preferred.
 
 const BIRD_WIDTH=34, BIRD_HEIGHT=24;
-const GRAVITY=0.20, JUMP_STRENGTH=-4.5;
-let PIPE_WIDTH=52, PIPE_HEIGHT=320, PIPE_GAP=130, PIPE_SPEED=2.2;
+const GRAVITY=0.25, JUMP_STRENGTH=-5.5;
+let PIPE_WIDTH=52, PIPE_HEIGHT=320, PIPE_GAP=130, PIPE_SPEED=2;
 const PIPE_SPAWN_INTERVAL=1700, GROUND_HEIGHT=112;
 const BIRD_ANIMATION_FRAMES=3, BIRD_ANIMATION_SPEED=100;
 
@@ -224,52 +231,28 @@ function assetLoaded(){
     loadingScreen.style.display='none';
     startScreen.classList.add('active');
     highScoreValue.textContent=bestScore;
-    resizeGame(); // Perform initial resize after assets load
+    resizeCanvas(); // Initial canvas setup (resolution for drawing)
   }
 }
 [jumpSound,scoreSound,hitSound].forEach(snd=>{ snd.addEventListener('canplaythrough',assetLoaded); snd.addEventListener('error',assetLoaded); snd.load(); });
 
-// === RESIZING LOGIC ===
-function resizeGame() {
-  const container = document.getElementById('game-container');
-  const containerWidth = container.offsetWidth;
-  const containerHeight = container.offsetHeight;
-
-  const widthRatio = containerWidth / BASE_GAME_WIDTH;
-  const heightRatio = containerHeight / BASE_GAME_HEIGHT;
-
-  // Determine scaling factor to fit the whole game within the container while maintaining aspect ratio
-  // Choose the smaller ratio to ensure entire game fits without cropping
-  scaleFactor = Math.min(widthRatio, heightRatio);
-
-  GAME_WIDTH = BASE_GAME_WIDTH * scaleFactor;
-  GAME_HEIGHT = BASE_GAME_HEIGHT * scaleFactor;
-
-  canvas.width = GAME_WIDTH;
-  canvas.height = GAME_HEIGHT;
-
-  // Ensure high-resolution drawing on retina displays
+// === CANVAS RESIZING LOGIC ===
+function resizeCanvas() {
   const dpr = window.devicePixelRatio || 1;
-  canvas.style.width = `${GAME_WIDTH}px`;
-  canvas.style.height = `${GAME_HEIGHT}px`;
-  canvas.width = GAME_WIDTH * dpr;
-  canvas.height = GAME_HEIGHT * dpr;
+  // Set the canvas's internal resolution to the base game dimensions
+  canvas.width = BASE_GAME_WIDTH * dpr;
+  canvas.height = BASE_GAME_HEIGHT * dpr;
+
+  // Scale the drawing context so everything is drawn at the base resolution,
+  // but appears sharper on high-DPI screens.
   ctx.scale(dpr, dpr);
 
-  // When scaling, it's essential to restart the game or re-initialize positions
-  // to avoid glitches, especially if game is already running.
-  // For simplicity here, we'll only call it after assets are loaded or on window resize.
-  // If game is active, it would need a full reset.
-  if (gameRunning) {
-    // A full game restart might be too jarring.
-    // Instead, if the game is running, you'd ideally recalculate bird, pipe positions
-    // based on the new scaleFactor. For now, we'll just let it draw.
-    // This part might need further refinement for a seamless resize during gameplay.
-  }
+  // The CSS will handle the visual size of the canvas element itself
+  // to fit within #game-container, maintaining aspect ratio.
 }
 
-window.addEventListener('resize', resizeGame);
-// === END RESIZING LOGIC ===
+window.addEventListener('resize', resizeCanvas); // Update canvas resolution on window resize
+// === END CANVAS RESIZING LOGIC ===
 
 
 function playSound(snd){ if(snd.readyState>=2){ snd.currentTime=0; snd.play().catch(()=>{}); } }
@@ -301,16 +284,16 @@ function startGame(){
   score=0;
   currentScoreSpan.textContent=score;
 
-  // Initial bird position scaled
-  bird={x:50 * scaleFactor, y: (BASE_GAME_HEIGHT/2 - BIRD_HEIGHT/2) * scaleFactor, velocityY:0};
+  // Bird position is now relative to BASE_GAME_WIDTH/HEIGHT, no need to scale here
+  bird={x:50, y: BASE_GAME_HEIGHT/2 - BIRD_HEIGHT/2, velocityY:0};
   pipes=[];
   floatingTexts=[];
   backgroundX=groundX=0;
   birdFrame=0;
   lastBirdFrameTime=performance.now();
   lastPipeSpawnTime=performance.now();
-  PIPE_GAP=130; // Base gap, pipes will be drawn scaled
-  PIPE_SPEED=2; // Base speed, will be applied with scale
+  PIPE_GAP=130;
+  PIPE_SPEED=2;
 
   animationFrameId=requestAnimationFrame(gameLoop);
 }
@@ -321,48 +304,48 @@ function restartGame(){
 }
 
 function generatePipe(){
-  const minHeight=60 * scaleFactor;
-  const maxTop=(BASE_GAME_HEIGHT - PIPE_GAP - GROUND_HEIGHT) * scaleFactor - minHeight; // Adjusted for scaled dimensions
+  const minHeight=60;
+  const maxTop=BASE_GAME_HEIGHT - PIPE_GAP - minHeight - GROUND_HEIGHT;
   const topHeight=Math.floor(Math.random()*(maxTop-minHeight+1))+minHeight;
-  const bottomY=topHeight + (PIPE_GAP * scaleFactor);
-  pipes.push({x:GAME_WIDTH,topHeight,bottomY,passed:false});
+  const bottomY=topHeight + PIPE_GAP;
+  pipes.push({x:BASE_GAME_WIDTH,topHeight,bottomY,passed:false});
 }
 
 function update(){
   if(!gameRunning||gameOver) return;
 
-  // Apply gravity and jump strength scaled
-  bird.velocityY+=GRAVITY * scaleFactor;
+  // Physics logic remains on BASE_GAME_WIDTH/HEIGHT
+  bird.velocityY+=GRAVITY;
   bird.y+=bird.velocityY;
 
-  // Check collision with ground/ceiling scaled
-  if(bird.y + (BIRD_HEIGHT * scaleFactor) > GAME_HEIGHT - (GROUND_HEIGHT * scaleFactor) || bird.y < 0){
+  // Collision with ground/ceiling
+  if(bird.y + BIRD_HEIGHT > BASE_GAME_HEIGHT - GROUND_HEIGHT || bird.y < 0){
     endGame(); return;
   }
   if(performance.now()-lastPipeSpawnTime>PIPE_SPAWN_INTERVAL){ generatePipe(); lastPipeSpawnTime=performance.now(); }
 
   for(let p of pipes){
-    p.x-=(PIPE_SPEED * scaleFactor); // Apply pipe speed scaled
-    const birdRight=bird.x+(BIRD_WIDTH * scaleFactor);
-    const birdBottom=bird.y+(BIRD_HEIGHT * scaleFactor);
-    const pipeRight=p.x+(PIPE_WIDTH * scaleFactor);
+    p.x-=PIPE_SPEED;
+    const birdRight=bird.x+BIRD_WIDTH;
+    const birdBottom=bird.y+BIRD_HEIGHT;
+    const pipeRight=p.x+PIPE_WIDTH;
 
-    // Collision detection with scaled elements
+    // Collision detection
     if(birdRight > p.x && bird.x < pipeRight){
       if(bird.y < p.topHeight || birdBottom > p.bottomY){ endGame(); return; }
     }
-    if(p.x + (PIPE_WIDTH * scaleFactor) < bird.x && !p.passed){
+    if(p.x + PIPE_WIDTH < bird.x && !p.passed){
       score++;
       p.passed=true;
       currentScoreSpan.textContent=score;
       playSound(scoreSound);
-      addFloatingText("+1",bird.x+(BIRD_WIDTH * scaleFactor)/2,bird.y);
+      addFloatingText("+1",bird.x+BIRD_WIDTH/2,bird.y);
       updateDifficulty();
     }
   }
-  pipes=pipes.filter(p=>p.x+(PIPE_WIDTH * scaleFactor) > 0);
-  backgroundX=(backgroundX-(PIPE_SPEED * scaleFactor)*0.5)%(GAME_WIDTH);
-  groundX=(groundX-(PIPE_SPEED * scaleFactor))%(GAME_WIDTH);
+  pipes=pipes.filter(p=>p.x+PIPE_WIDTH > 0);
+  backgroundX=(backgroundX-PIPE_SPEED*0.5)%(BASE_GAME_WIDTH);
+  groundX=(groundX-PIPE_SPEED)%(BASE_GAME_WIDTH);
 }
 
 function updateDifficulty(){
@@ -377,13 +360,13 @@ function addFloatingText(text,x,y){ floatingTexts.push({text,x,y,alpha:1,startY:
 function drawFloatingTexts(){
   if (floatingTexts.length === 0) return;
 
-  ctx.font=`${14 * scaleFactor}px 'Press Start 2P'`; // Scale font size
+  ctx.font="14px 'Press Start 2P'"; // Font size is fixed, not scaled by ctx.scale
   ctx.textAlign="center";
   for(let i = floatingTexts.length - 1; i >= 0; i--){
     const t = floatingTexts[i];
     ctx.fillStyle=`rgba(255,255,255,${t.alpha})`;
-    ctx.fillText(t.text,t.x,t.y);
-    t.y-=0.8 * scaleFactor; // Scale text movement
+    ctx.fillText(t.text,t.x,t.y); // Coordinates are already base game units
+    t.y-=0.8;
     t.alpha-=0.03;
     if(t.alpha<=0)floatingTexts.splice(i,1);
   }
@@ -394,7 +377,7 @@ function drawBird(){
   if (!scaledBirdSprite) return;
 
   ctx.save();
-  ctx.translate(bird.x+(BIRD_WIDTH * scaleFactor)/2,bird.y+(BIRD_HEIGHT * scaleFactor)/2);
+  ctx.translate(bird.x+BIRD_WIDTH/2,bird.y+BIRD_HEIGHT/2);
   let angle=Math.max(-Math.PI/4,Math.min(Math.PI/3,(bird.velocityY/15)*Math.PI/6));
   ctx.rotate(angle);
   const now=performance.now();
@@ -405,30 +388,29 @@ function drawBird(){
                 0,
                 BIRD_WIDTH,
                 BIRD_HEIGHT,
-                -(BIRD_WIDTH * scaleFactor)/2,
-                -(BIRD_HEIGHT * scaleFactor)/2,
-                BIRD_WIDTH * scaleFactor,
-                BIRD_HEIGHT * scaleFactor);
+                -BIRD_WIDTH/2,
+                -BIRD_HEIGHT/2,
+                BIRD_WIDTH,
+                BIRD_HEIGHT);
   ctx.restore();
 }
 
 function draw(){
   ctx.clearRect(0,0,GAME_WIDTH,GAME_HEIGHT);
-  // Background images need to be drawn scaled to fill new canvas size
-  ctx.drawImage(backgroundImg,backgroundX,0,BASE_GAME_WIDTH * scaleFactor,BASE_GAME_HEIGHT * scaleFactor);
-  ctx.drawImage(backgroundImg,backgroundX+(BASE_GAME_WIDTH * scaleFactor),0,BASE_GAME_WIDTH * scaleFactor,BASE_GAME_HEIGHT * scaleFactor);
+  // Drawing all elements at their BASE_GAME_WIDTH/HEIGHT coordinates
+  ctx.drawImage(backgroundImg,backgroundX,0,BASE_GAME_WIDTH,BASE_GAME_HEIGHT);
+  ctx.drawImage(backgroundImg,backgroundX+BASE_GAME_WIDTH,0,BASE_GAME_WIDTH,BASE_GAME_HEIGHT);
 
   for(let p of pipes){
-    ctx.drawImage(pipeTopImg,p.x,p.topHeight-(PIPE_HEIGHT * scaleFactor),(PIPE_WIDTH * scaleFactor),(PIPE_HEIGHT * scaleFactor));
-    ctx.drawImage(pipeBottomImg,p.x,p.bottomY,(PIPE_WIDTH * scaleFactor),(PIPE_HEIGHT * scaleFactor));
+    ctx.drawImage(pipeTopImg,p.x,p.topHeight-PIPE_HEIGHT,PIPE_WIDTH,PIPE_HEIGHT);
+    ctx.drawImage(pipeBottomImg,p.x,p.bottomY,PIPE_WIDTH,PIPE_HEIGHT);
   }
 
   drawBird();
   drawFloatingTexts();
 
-  // Ground images need to be drawn scaled
-  ctx.drawImage(groundImg,groundX,GAME_HEIGHT-(GROUND_HEIGHT * scaleFactor),BASE_GAME_WIDTH * scaleFactor,(GROUND_HEIGHT * scaleFactor));
-  ctx.drawImage(groundImg,groundX+(BASE_GAME_WIDTH * scaleFactor),GAME_HEIGHT-(GROUND_HEIGHT * scaleFactor),BASE_GAME_WIDTH * scaleFactor,(GROUND_HEIGHT * scaleFactor));
+  ctx.drawImage(groundImg,groundX,BASE_GAME_HEIGHT-GROUND_HEIGHT,BASE_GAME_WIDTH,GROUND_HEIGHT);
+  ctx.drawImage(groundImg,groundX+BASE_GAME_WIDTH,BASE_GAME_HEIGHT-GROUND_HEIGHT,BASE_GAME_WIDTH,GROUND_HEIGHT);
 }
 
 function gameLoop(currentTime=0){
@@ -465,6 +447,7 @@ startButton.addEventListener("click",startGame);
 restartButton.addEventListener("click",restartGame);
 
 // Initial setup
-highScoreValue.textContent=bestScore; // Set the high score in the new display</script>
+highScoreValue.textContent=bestScore;
+</script>
 </body>
 </html>
