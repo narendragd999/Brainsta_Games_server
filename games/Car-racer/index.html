@@ -27,7 +27,7 @@
   .card{background:var(--card);padding:24px;border-radius:16px;backdrop-filter:blur(8px);text-align:center;box-shadow:0 8px 24px var(--shadow);transition:opacity 0.3s;}
   .footer{position:absolute;bottom:12px;left:12px;font-size:12px;opacity:0.6;}
   .smallMuted{opacity:0.9;font-size:12px;}
-  .mobileControls{display:none;position:absolute;bottom:24px;left:0;right:0;justify-content:space-between;padding:0 28px;pointer-events:auto;}
+  .mobileControls{display:none;position:absolute;bottom:24px;left:0;right:0;justify-content:space-around;padding:0 28px;pointer-events:auto;}
   .mobileControls .ctrl{width:92px;height:92px;border-radius:20px;background:var(--muted);display:flex;align-items:center;justify-content:center;font-size:32px;user-select:none;touch-action:none;transition:background 0.2s;}
   .mobileControls .ctrl:hover{background:rgba(255,255,255,0.12);}
   @media (max-width:720px){ .mobileControls{display:flex} .controls{display:none} .scoreCard{padding:10px 12px} }
@@ -63,7 +63,7 @@
 
     <div class="mobileControls" id="mobileControls" aria-hidden="true" style="pointer-events:none">
       <div class="ctrl" id="mLeft">◀</div>
-      <div style="width:52px"></div>
+      <div class="ctrl" id="mAccel">▲</div>
       <div class="ctrl" id="mRight">▶</div>
     </div>
 
@@ -97,6 +97,7 @@
   const accelBtn = document.getElementById('accelBtn');
   const mLeft = document.getElementById('mLeft');
   const mRight = document.getElementById('mRight');
+  const mAccel = document.getElementById('mAccel');
   const mobileControls = document.getElementById('mobileControls');
 
   // Logical canvas
@@ -111,6 +112,7 @@
     barrel: 'images/Trucks.png',
     heartPickup: 'https://static.vecteezy.com/system/resources/previews/018/972/339/non_2x/cartoon-red-heart-icon-game-isolated-icon-png.png',
     boltPickup: 'https://image.similarpng.com/file/similarpng/very-thumbnail/2021/01/Yellow-lightning-bolt-illustration-on-transparent-background-PNG.png',
+    tree: 'https://png.pngtree.com/png-clipart/20230120/ourmid/pngtree-realistic-big-tree-side-view-for-plan-png-image_6569663.png',
     music: 'audio/racing-music.mp3' // Placeholder; replace with actual if available
   };
 
@@ -182,7 +184,8 @@
       loadImage('truck', ASSETS.truck),
       loadImage('barrel', ASSETS.barrel),
       loadImage('heartPickup', ASSETS.heartPickup),
-      loadImage('boltPickup', ASSETS.boltPickup)
+      loadImage('boltPickup', ASSETS.boltPickup),
+      loadImage('tree', ASSETS.tree)
     ]);
     // Sprite detection for car
     const c = images.car;
@@ -246,7 +249,7 @@
     const x = W*0.5 + side * ((W * (1 - params.roadWidthRatio))/2 + margin + Math.random()*120);
     const y = init ? Math.random() * H : -150;
     const scale = 0.7 + Math.random()*1.2;
-    trees.push({x,y,scale,tw:40*scale,th:80*scale, speedMult: 0.9 + Math.random()*0.6});
+    trees.push({x,y,scale, speedMult: 0.9 + Math.random()*0.6});
   }
   function spawnObstacle(init=false){
     const types = ['cone','truck','barrel'];
@@ -321,6 +324,34 @@
     ctx.restore();
   }
 
+  // Draw tree
+  function drawTree(tr){
+    const img = images.tree;
+    if(img){
+      const tw = 120 * tr.scale;
+      const th = tw * img.aspect;
+      ctx.drawImage(img, tr.x - tw/2, tr.y - th, tw, th);
+      return;
+    }
+    // Improved fallback
+    ctx.save(); ctx.translate(tr.x, tr.y);
+    // Trunk
+    ctx.fillStyle = '#3b2b1f'; roundRect(ctx, -10*tr.scale, -20*tr.scale, 20*tr.scale, 100*tr.scale, 8*tr.scale);
+    // Branches
+    ctx.fillStyle = '#3b2b1f';
+    ctx.beginPath(); ctx.moveTo(0, 20*tr.scale); ctx.lineTo(30*tr.scale, -10*tr.scale); ctx.lineTo(0, -20*tr.scale); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0, 40*tr.scale); ctx.lineTo(-30*tr.scale, 10*tr.scale); ctx.lineTo(0, 0); ctx.fill();
+    // Leaves
+    ctx.fillStyle = '#1f7a3c'; 
+    ctx.beginPath(); ctx.ellipse(0, -40*tr.scale, 30*tr.scale, 25*tr.scale, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#2a8a4e'; 
+    ctx.beginPath(); ctx.ellipse(20*tr.scale, -30*tr.scale, 25*tr.scale, 20*tr.scale, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-20*tr.scale, -30*tr.scale, 25*tr.scale, 20*tr.scale, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1f7a3c'; 
+    ctx.beginPath(); ctx.ellipse(0, -60*tr.scale, 20*tr.scale, 15*tr.scale, 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
   // Lives UI
   function updateLivesUI(){
     livesBox.innerHTML = '';
@@ -355,7 +386,7 @@
   function bindControls(){
     const btns = [
       {el:leftBtn, name:'left'}, {el:rightBtn, name:'right'}, {el:accelBtn, name:'accel'},
-      {el:mLeft, name:'left'}, {el:mRight, name:'right'}
+      {el:mLeft, name:'left'}, {el:mRight, name:'right'}, {el:mAccel, name:'accel'}
     ];
     btns.forEach(({el,name})=>{
       if(!el) return;
@@ -390,6 +421,11 @@
       if(Math.abs(dx) > 20){ if(dx < 0){ input.left = true; input.right = false; } else { input.right = true; input.left = false; } }
     }, {passive:true});
     canvas.addEventListener('touchend', ()=>{ input.left = input.right = false; tsx = null; });
+    
+    // Unlock audio on first touch
+    document.addEventListener('touchstart', () => {
+      if(audio && audio.paused) audio.play().catch(() => {});
+    }, {once: true});
   }
 
   // Update
@@ -484,7 +520,7 @@
     ctx.strokeStyle = '#f2e6b3'; ctx.lineWidth = 8; ctx.lineCap = 'round';
     for(let i=1;i<params.laneCount;i++){ const lx = rx + i*laneW; ctx.beginPath(); for(let j=0;j<laneLines.length;j++){ const node = laneLines[j]; const dashH = node.h; const dashY = (node.y) % (dashH + 60); ctx.moveTo(lx, dashY); ctx.lineTo(lx, dashY + dashH); } ctx.stroke(); }
 
-    for(let i=0;i<trees.length;i++){ const tr = trees[i]; ctx.save(); ctx.translate(tr.x, tr.y); ctx.fillStyle = '#3b2b1f'; roundRect(ctx, -8*tr.scale, 0, 16*tr.scale, 32*tr.scale, 6*tr.scale); ctx.fillStyle = '#1f7a3c'; ctx.beginPath(); ctx.ellipse(0, -10*tr.scale, 26*tr.scale, 22*tr.scale, 0, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(0, -28*tr.scale, 18*tr.scale, 14*tr.scale, 0, 0, Math.PI*2); ctx.fill(); ctx.restore(); }
+    for(let i=0;i<trees.length;i++) drawTree(trees[i]);
 
     for(let i=0;i<obstacles.length;i++) drawObstacle(obstacles[i]);
     for(let i=0;i<pickups.length;i++) drawPickup(pickups[i]);
