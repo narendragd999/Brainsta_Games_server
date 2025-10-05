@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Helix Jump Clone</title>
+    <title>Helix Jump</title>
     <style>
         * {
             margin: 0;
@@ -16,24 +16,27 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            font-family: 'Arial', sans-serif;
             overflow: hidden;
-            color: white;
         }
         
         #game-container {
             position: relative;
-            width: 360px;
-            height: 640px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
+            width: 375px;
+            height: 667px;
+            background: linear-gradient(to bottom, #1a1a2e, #0f3460);
+            border-radius: 20px;
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
         
         #game-canvas {
-            background: linear-gradient(to bottom, #0f3460, #1a1a2e);
-            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
         
         #ui-overlay {
@@ -42,21 +45,11 @@
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 100;
             pointer-events: none;
         }
         
-        #score-display {
-            position: absolute;
-            top: 20px;
-            left: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        }
-        
-        #game-over, #start-screen {
+        .screen {
             position: absolute;
             top: 0;
             left: 0;
@@ -66,399 +59,569 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
             text-align: center;
-            pointer-events: auto;
+            padding: 20px;
+            transition: opacity 0.3s;
         }
         
-        #start-screen {
-            display: flex;
-        }
-        
-        #game-over {
+        .hidden {
             display: none;
         }
         
         h1 {
-            font-size: 42px;
+            font-size: 48px;
             margin-bottom: 20px;
-            color: #e94560;
-            text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+            color: #ff3366;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
         }
         
-        h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
-            color: #e94560;
+        .score-display {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #fff;
         }
         
-        p {
-            font-size: 18px;
-            margin-bottom: 30px;
-            max-width: 80%;
-            line-height: 1.5;
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 30px;
+            width: 80%;
         }
         
-        .btn {
-            background: #e94560;
+        button {
+            margin: 10px 0;
+            padding: 15px;
+            font-size: 20px;
+            background: linear-gradient(45deg, #ff3366, #ff6b6b);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 18px;
             border-radius: 30px;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 4px 0 #b02a46;
-            margin-top: 20px;
             pointer-events: auto;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 51, 102, 0.4);
         }
         
-        .btn:hover {
-            background: #ff5773;
+        button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 0 #b02a46;
+            box-shadow: 0 7px 20px rgba(255, 51, 102, 0.6);
         }
         
-        .btn:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 0 #b02a46;
-        }
-        
-        #instructions {
+        #hud {
             position: absolute;
-            bottom: 20px;
-            left: 0;
+            top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 24px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 0 50px;
+        }
+        
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            color: white;
+            pointer-events: auto;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.2s;
+        }
+        
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+        
+        #logo {
+            position: absolute;
+            top: 70px;
             width: 100%;
             text-align: center;
-            font-size: 14px;
-            color: #a0a0a0;
+            font-size: 36px;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.8);
+            z-index: 5;
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <canvas id="game-canvas" width="360" height="640"></canvas>
-        
+        <canvas id="game-canvas"></canvas>
         <div id="ui-overlay">
-            <div id="score-display">Score: 0</div>
-            
-            <div id="start-screen">
+            <div id="menu-screen" class="screen">
                 <h1>HELIX JUMP</h1>
-                <p>Guide the ball through the gaps in the rotating helix. Avoid the colored sections!</p>
-                <button class="btn" id="start-btn">START GAME</button>
-                <div id="instructions">Use LEFT and RIGHT arrow keys or tap sides to rotate</div>
+                <div class="score-display">SCORE: <span id="last-score">1250</span></div>
+                <div class="score-display">HIGH SCORE: <span id="high-score">3450</span></div>
+                <div class="button-container">
+                    <button id="play-button">PLAY</button>
+                    <button id="leaderboard-button">LEADERBOARD</button>
+                    <button id="shop-button">SHOP</button>
+                </div>
             </div>
-            
-            <div id="game-over">
-                <h2>GAME OVER</h2>
-                <p>Your score: <span id="final-score">0</span></p>
-                <button class="btn" id="restart-btn">PLAY AGAIN</button>
+            <div id="game-over-screen" class="screen hidden">
+                <h1>GAME OVER</h1>
+                <div class="score-display">SCORE: <span id="final-score">0</span></div>
+                <div class="score-display">HIGH SCORE: <span id="final-high-score">0</span></div>
+                <div class="button-container">
+                    <button id="restart-button">PLAY AGAIN</button>
+                    <button id="menu-button">MENU</button>
+                </div>
+            </div>
+            <div id="hud">
+                <div>SCORE: <span id="current-score">0</span></div>
+                <div>HIGH: <span id="current-high-score">3450</span></div>
+            </div>
+            <div id="logo">HELIX JUMP</div>
+            <div id="controls">
+                <div class="control-btn" id="left-btn">←</div>
+                <div class="control-btn" id="right-btn">→</div>
             </div>
         </div>
     </div>
 
     <script>
         // Game variables
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        const scoreDisplay = document.getElementById('score-display');
-        const finalScore = document.getElementById('final-score');
-        const startScreen = document.getElementById('start-screen');
-        const gameOverScreen = document.getElementById('game-over');
-        const startBtn = document.getElementById('start-btn');
-        const restartBtn = document.getElementById('restart-btn');
-        
-        // Game constants
-        const BALL_RADIUS = 12;
-        const PLATFORM_RADIUS = 150;
-        const PLATFORM_HEIGHT = 20;
-        const GAP_SIZE = 70; // degrees
-        const ROTATION_SPEED = 0.5;
-        const GRAVITY = 0.4;
-        const BOUNCE_FACTOR = 0.7;
-        const PLATFORM_SPACING = 80;
-        const COLORS = ['#e94560', '#00b4d8', '#ff9e00', '#9d4edd'];
-        
-        // Game state
-        let gameRunning = false;
+        let canvas, ctx;
+        let ball = { x: 0, y: 0, radius: 15, color: '#ff3366', velocityY: 0 };
+        let helix = { rotation: 0, levels: [], radius: 120 };
         let score = 0;
-        let ball, platforms = [];
-        let helixRotation = 0;
-        let keys = {};
-        let touchStartX = 0;
-        
-        // Ball class
-        class Ball {
-            constructor() {
-                this.x = canvas.width / 2;
-                this.y = canvas.height / 4;
-                this.radius = BALL_RADIUS;
-                this.velocityY = 0;
-                this.color = '#ffd166';
-            }
+        let highScore = parseInt(localStorage.getItem('helixJumpHighScore')) || 3450;
+        let isGameOver = false;
+        let isPlaying = false;
+        let cameraY = 0;
+        let gameSpeed = 3;
+        let rotationSpeed = 0;
+        let gravity = 0.5;
+        let combo = 0;
+        let lastBounceLevel = -1;
+
+        // Initialize the game
+        function init() {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = 375;
+            canvas.height = 667;
             
-            update() {
-                this.velocityY += GRAVITY;
-                this.y += this.velocityY;
-                
-                // Check if ball falls off the bottom
-                if (this.y > canvas.height + this.radius) {
-                    endGame();
-                    return false;
-                }
-                return true;
-            }
-            
-            bounce() {
-                this.velocityY = -this.velocityY * BOUNCE_FACTOR;
-            }
-            
-            draw() {
-                // Draw ball with gradient for 3D effect
-                const gradient = ctx.createRadialGradient(
-                    this.x - 3, this.y - 3, 1,
-                    this.x, this.y, this.radius
-                );
-                gradient.addColorStop(0, '#fff9c4');
-                gradient.addColorStop(1, this.color);
-                
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-                
-                // Draw highlight
-                ctx.beginPath();
-                ctx.arc(this.x - 4, this.y - 4, this.radius / 3, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-                ctx.fill();
-            }
-        }
-        
-        // Platform class
-        class Platform {
-            constructor(y, gapAngle) {
-                this.y = y;
-                this.gapAngle = gapAngle; // Angle where the gap starts (in degrees)
-                this.gapSize = GAP_SIZE; // Size of gap in degrees
-                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-            }
-            
-            draw(rotation) {
-                const centerX = canvas.width / 2;
-                const centerY = this.y;
-                
-                // Draw the platform as a circular ring with a gap
-                ctx.lineWidth = PLATFORM_HEIGHT;
-                ctx.strokeStyle = this.color;
-                
-                ctx.beginPath();
-                // Draw arc with gap
-                const startAngle = (this.gapAngle + rotation + this.gapSize) * Math.PI / 180;
-                const endAngle = (this.gapAngle + rotation + 360) * Math.PI / 180;
-                
-                ctx.arc(centerX, centerY, PLATFORM_RADIUS, startAngle, endAngle);
-                ctx.stroke();
-                
-                // Draw inner and outer borders for better visual
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                
-                // Outer border
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, PLATFORM_RADIUS + PLATFORM_HEIGHT/2, 0, Math.PI * 2);
-                ctx.stroke();
-                
-                // Inner border
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, PLATFORM_RADIUS - PLATFORM_HEIGHT/2, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            
-            checkCollision(ball, rotation) {
-                // Check if ball is at the same height as the platform
-                if (Math.abs(ball.y - this.y) < ball.radius + PLATFORM_HEIGHT/2) {
-                    // Calculate distance from center
-                    const dx = ball.x - canvas.width / 2;
-                    const dy = ball.y - this.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    // Check if ball is within the platform ring
-                    if (distance > PLATFORM_RADIUS - PLATFORM_HEIGHT/2 && 
-                        distance < PLATFORM_RADIUS + PLATFORM_HEIGHT/2) {
-                        
-                        // Calculate angle of ball relative to platform center
-                        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-                        if (angle < 0) angle += 360;
-                        
-                        // Adjust for platform rotation
-                        let adjustedAngle = (angle - rotation) % 360;
-                        if (adjustedAngle < 0) adjustedAngle += 360;
-                        
-                        // Check if ball is in the gap
-                        const gapStart = this.gapAngle;
-                        const gapEnd = (this.gapAngle + this.gapSize) % 360;
-                        
-                        if (gapStart < gapEnd) {
-                            if (adjustedAngle >= gapStart && adjustedAngle <= gapEnd) {
-                                return false; // No collision - ball is in gap
-                            }
-                        } else {
-                            if (adjustedAngle >= gapStart || adjustedAngle <= gapEnd) {
-                                return false; // No collision - ball is in gap
-                            }
-                        }
-                        
-                        // Ball hit the platform
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }
-        
-        // Initialize game
-        function initGame() {
-            ball = new Ball();
-            platforms = [];
-            score = 0;
-            helixRotation = 0;
-            updateScore();
-            
-            // Create initial platforms
-            for (let i = 0; i < 15; i++) {
-                const y = canvas.height - i * PLATFORM_SPACING;
-                const gapAngle = Math.random() * 360;
-                platforms.push(new Platform(y, gapAngle));
-            }
-            
-            gameRunning = true;
-            startScreen.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-            
-            // Start game loop
+            resetGame();
             gameLoop();
+            
+            // Set up event listeners
+            document.getElementById('play-button').addEventListener('click', startGame);
+            document.getElementById('restart-button').addEventListener('click', restartGame);
+            document.getElementById('menu-button').addEventListener('click', showMenu);
+            document.getElementById('leaderboard-button').addEventListener('click', showLeaderboard);
+            document.getElementById('shop-button').addEventListener('click', showShop);
+            
+            document.getElementById('left-btn').addEventListener('mousedown', () => rotateHelix(-1));
+            document.getElementById('left-btn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                rotateHelix(-1);
+            });
+            
+            document.getElementById('right-btn').addEventListener('mousedown', () => rotateHelix(1));
+            document.getElementById('right-btn').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                rotateHelix(1);
+            });
+            
+            document.getElementById('left-btn').addEventListener('mouseup', stopRotation);
+            document.getElementById('left-btn').addEventListener('touchend', stopRotation);
+            document.getElementById('right-btn').addEventListener('mouseup', stopRotation);
+            document.getElementById('right-btn').addEventListener('touchend', stopRotation);
+            
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') rotateHelix(-1);
+                if (e.key === 'ArrowRight') rotateHelix(1);
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') stopRotation();
+            });
+            
+            // Update menu scores
+            updateMenuScores();
         }
-        
-        // Update score display
-        function updateScore() {
-            scoreDisplay.textContent = `Score: ${score}`;
+
+        // Reset game state
+        function resetGame() {
+            ball.x = canvas.width / 2;
+            ball.y = 100;
+            ball.velocityY = 0;
+            helix.rotation = 0;
+            helix.levels = [];
+            score = 0;
+            cameraY = 0;
+            isGameOver = false;
+            combo = 0;
+            lastBounceLevel = -1;
+            
+            // Create initial helix levels
+            for (let i = 0; i < 20; i++) {
+                createHelixLevel(i * 80);
+            }
+            
+            updateScoreDisplay();
         }
-        
-        // End game
-        function endGame() {
-            gameRunning = false;
-            finalScore.textContent = score;
-            gameOverScreen.style.display = 'flex';
+
+        // Create a helix level
+        function createHelixLevel(y) {
+            const segmentCount = 12;
+            const gapSize = 2; // Number of segments to leave as gap
+            const gapStart = Math.floor(Math.random() * segmentCount);
+            
+            // Determine if this level should have dangerous segments
+            const hasDanger = Math.random() > 0.7; // 30% chance of danger segments
+            const dangerStart = hasDanger ? Math.floor(Math.random() * segmentCount) : -1;
+            
+            const level = {
+                y: y,
+                segments: [],
+                gapStart: gapStart,
+                gapSize: gapSize,
+                dangerStart: dangerStart
+            };
+            
+            for (let i = 0; i < segmentCount; i++) {
+                // Skip segments in the gap
+                if (i >= gapStart && i < gapStart + gapSize) continue;
+                
+                const angle = (i / segmentCount) * Math.PI * 2;
+                let color = '#3366ff'; // Default safe color (blue)
+                
+                // Check if this segment is in the danger zone
+                if (hasDanger && i >= dangerStart && i < dangerStart + 3) {
+                    color = '#ff4444'; // Danger color (red)
+                }
+                
+                const segment = {
+                    angle: angle,
+                    color: color
+                };
+                level.segments.push(segment);
+            }
+            
+            helix.levels.push(level);
         }
-        
-        // Game loop
+
+        // Main game loop
         function gameLoop() {
-            if (!gameRunning) return;
-            
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Handle rotation based on keys or touch
-            if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
-                helixRotation -= ROTATION_SPEED;
-            }
-            if (keys['ArrowRight'] || keys['d'] || keys['D']) {
-                helixRotation += ROTATION_SPEED;
-            }
-            
-            // Update ball
-            if (!ball.update()) {
+            if (!isPlaying) {
+                requestAnimationFrame(gameLoop);
                 return;
             }
             
-            // Update platforms and check collisions
-            let platformPassed = false;
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Update game state
+        function update() {
+            if (isGameOver) return;
             
-            for (let i = 0; i < platforms.length; i++) {
-                const platform = platforms[i];
-                
-                // Move platform down (simulate ball falling)
-                platform.y += 2;
-                
-                // Check if platform is off screen
-                if (platform.y > canvas.height + 100) {
-                    // Recycle platform to the top
-                    platform.y = -100;
-                    platform.gapAngle = Math.random() * 360;
-                    platform.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+            // Rotate helix
+            helix.rotation += rotationSpeed;
+            
+            // Apply gravity to ball
+            ball.velocityY += gravity;
+            ball.y += ball.velocityY;
+            
+            // Move camera to follow ball
+            cameraY = ball.y - canvas.height * 0.3;
+            
+            // Check collision with helix levels
+            for (let level of helix.levels) {
+                // Only check levels near the ball
+                if (Math.abs(ball.y - level.y) < 30) {
+                    const ballAngle = Math.atan2(ball.x - canvas.width/2, ball.y - level.y);
+                    let adjustedAngle = ballAngle - helix.rotation;
+                    if (adjustedAngle < 0) adjustedAngle += Math.PI * 2;
                     
-                    // Increase score when recycling a platform
-                    if (platformPassed) {
-                        score++;
-                        updateScore();
+                    // Check if ball is in a gap
+                    const segmentCount = 12;
+                    const segmentIndex = Math.floor(adjustedAngle / (Math.PI * 2) * segmentCount);
+                    const gapStart = level.gapStart;
+                    const gapEnd = gapStart + level.gapSize;
+                    
+                    const isInGap = segmentIndex >= gapStart && segmentIndex < gapEnd;
+                    
+                    if (!isInGap) {
+                        // Check if ball hit a segment
+                        for (let segment of level.segments) {
+                            const segmentIndexCheck = Math.floor(segment.angle / (Math.PI * 2) * segmentCount);
+                            if (segmentIndex === segmentIndexCheck) {
+                                if (segment.color === '#ff4444') {
+                                    // Hit a dangerous segment - game over
+                                    gameOver();
+                                    return;
+                                } else {
+                                    // Hit a safe segment - bounce
+                                    if (ball.y < level.y) {
+                                        ball.y = level.y - 20;
+                                        ball.velocityY = -15; // Bounce force
+                                        
+                                        // Check for combo
+                                        const levelIndex = helix.levels.indexOf(level);
+                                        if (levelIndex !== lastBounceLevel) {
+                                            combo++;
+                                            lastBounceLevel = levelIndex;
+                                        } else {
+                                            combo = 1;
+                                        }
+                                        
+                                        // Add score with combo multiplier
+                                        score += 5 * combo;
+                                        updateScoreDisplay();
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Ball is in a gap - check if it's falling through
+                        if (ball.y > level.y - 10 && ball.y < level.y + 10) {
+                            // Add score for falling through a gap
+                            score += 2;
+                            updateScoreDisplay();
+                        }
                     }
-                    platformPassed = true;
                 }
-                
-                // Check collision
-                if (platform.checkCollision(ball, helixRotation)) {
-                    ball.bounce();
+            }
+            
+            // Add score for progress
+            score += 0.1;
+            updateScoreDisplay();
+            
+            // Generate new levels as needed
+            const farthestLevel = helix.levels[helix.levels.length - 1];
+            if (farthestLevel.y < ball.y + canvas.height) {
+                createHelixLevel(farthestLevel.y + 80);
+            }
+            
+            // Remove levels that are far behind
+            helix.levels = helix.levels.filter(level => level.y > cameraY - 200);
+            
+            // Check if ball fell off bottom
+            if (ball.y > cameraY + canvas.height + 100) {
+                gameOver();
+            }
+            
+            // Gradually increase game speed
+            gameSpeed += 0.0005;
+        }
+
+        // Render the game
+        function render() {
+            // Clear canvas
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background elements
+            drawBackground();
+            
+            // Draw helix levels
+            for (let level of helix.levels) {
+                if (level.y > cameraY - 100 && level.y < cameraY + canvas.height + 100) {
+                    drawHelixLevel(level);
                 }
-                
-                // Draw platform
-                platform.draw(helixRotation);
             }
             
             // Draw ball
-            ball.draw();
+            drawBall();
             
-            // Draw center column
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            // Draw combo if applicable
+            if (combo > 1) {
+                drawCombo();
+            }
+        }
+
+        // Draw background elements
+        function drawBackground() {
+            // Draw central column
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(canvas.width/2 - 10, 0, 20, canvas.height);
+            
+            // Draw gradient overlay
+            const gradient = ctx.createRadialGradient(
+                canvas.width/2, cameraY + canvas.height/2, 50,
+                canvas.width/2, cameraY + canvas.height/2, 200
+            );
+            gradient.addColorStop(0, 'rgba(26, 26, 46, 0)');
+            gradient.addColorStop(1, 'rgba(15, 52, 96, 0.7)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Draw a helix level
+        function drawHelixLevel(level) {
+            const centerX = canvas.width / 2;
+            const screenY = level.y - cameraY;
+            
+            // Draw level base
+            ctx.strokeStyle = '#333366';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
+            ctx.arc(centerX, screenY, helix.radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Draw segments
+            for (let segment of level.segments) {
+                const startAngle = segment.angle + helix.rotation;
+                const endAngle = startAngle + (Math.PI * 2 / 12);
+                
+                ctx.strokeStyle = segment.color;
+                ctx.lineWidth = 15;
+                ctx.beginPath();
+                ctx.arc(centerX, screenY, helix.radius, startAngle, endAngle);
+                ctx.stroke();
+                
+                // Add glow to dangerous segments
+                if (segment.color === '#ff4444') {
+                    ctx.shadowColor = '#ff4444';
+                    ctx.shadowBlur = 10;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            
+            // Draw level platform
+            ctx.fillStyle = 'rgba(100, 100, 150, 0.3)';
+            ctx.beginPath();
+            ctx.arc(centerX, screenY, helix.radius - 10, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw the ball
+        function drawBall() {
+            const screenY = ball.y - cameraY;
+            
+            // Ball shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.arc(ball.x, screenY + 3, ball.radius, 0, Math.PI * 2);
             ctx.fill();
             
-            // Continue game loop
-            requestAnimationFrame(gameLoop);
+            // Ball with gradient
+            const gradient = ctx.createRadialGradient(
+                ball.x - 5, screenY - 5, 0,
+                ball.x, screenY, ball.radius
+            );
+            gradient.addColorStop(0, '#ff6b6b');
+            gradient.addColorStop(1, '#ff3366');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(ball.x, screenY, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Ball highlight
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.arc(ball.x - 4, screenY - 4, ball.radius / 3, 0, Math.PI * 2);
+            ctx.fill();
         }
-        
-        // Event listeners
-        startBtn.addEventListener('click', initGame);
-        restartBtn.addEventListener('click', initGame);
-        
-        // Keyboard controls
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-        });
-        
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
-        
-        // Touch controls for mobile
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-        });
-        
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (!gameRunning) return;
+
+        // Draw combo indicator
+        function drawCombo() {
+            const screenY = ball.y - cameraY;
             
-            const touchX = e.touches[0].clientX;
-            const deltaX = touchX - touchStartX;
+            ctx.fillStyle = '#ffff00';
+            ctx.font = 'bold 20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(`COMBO x${combo}`, ball.x, screenY - 30);
+        }
+
+        // Rotate the helix
+        function rotateHelix(direction) {
+            rotationSpeed = direction * 0.05;
+        }
+
+        // Stop helix rotation
+        function stopRotation() {
+            rotationSpeed = 0;
+        }
+
+        // Start the game
+        function startGame() {
+            document.getElementById('menu-screen').classList.add('hidden');
+            isPlaying = true;
+            resetGame();
+        }
+
+        // Restart the game
+        function restartGame() {
+            document.getElementById('game-over-screen').classList.add('hidden');
+            isPlaying = true;
+            resetGame();
+        }
+
+        // Show menu
+        function showMenu() {
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+            updateMenuScores();
+        }
+
+        // Game over
+        function gameOver() {
+            isGameOver = true;
+            isPlaying = false;
             
-            if (deltaX > 10) {
-                helixRotation += ROTATION_SPEED * 2;
-                touchStartX = touchX;
-            } else if (deltaX < -10) {
-                helixRotation -= ROTATION_SPEED * 2;
-                touchStartX = touchX;
+            // Update high score
+            if (score > highScore) {
+                highScore = Math.floor(score);
+                localStorage.setItem('helixJumpHighScore', highScore);
             }
-        });
-        
-        // Prevent scrolling on touch devices
-        document.body.addEventListener('touchmove', (e) => {
-            if (e.target === canvas) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+            
+            // Show game over screen
+            document.getElementById('final-score').textContent = Math.floor(score);
+            document.getElementById('final-high-score').textContent = highScore;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+        // Update score display
+        function updateScoreDisplay() {
+            document.getElementById('current-score').textContent = Math.floor(score);
+            document.getElementById('current-high-score').textContent = highScore;
+        }
+
+        // Update menu scores
+        function updateMenuScores() {
+            document.getElementById('last-score').textContent = Math.floor(score);
+            document.getElementById('high-score').textContent = highScore;
+        }
+
+        // Show leaderboard (placeholder)
+        function showLeaderboard() {
+            alert('Leaderboard feature would be implemented here!');
+        }
+
+        // Show shop (placeholder)
+        function showShop() {
+            alert('Shop feature would be implemented here!');
+        }
+
+        // Initialize the game when page loads
+        window.onload = init;
     </script>
 </body>
 </html>
