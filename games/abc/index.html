@@ -1,1003 +1,921 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>Color Switch — Levels & Lives</title>
-<style>
-  :root{
-    --primary:#3498db;
-    --accent:#6a11cb;
-    --card:#ffffff;
-    --bg-start:#1a1a2e;
-    --bg-end:#16213e;
-    --text-dark:#222;
-  }
-  html,body{
-    height:100%;
-    margin:0;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    background: linear-gradient(to bottom, var(--bg-start), var(--bg-end));
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
-    touch-action: manipulation;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Flick Soccer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: none;
+        }
 
-  .stage {
-    position:relative;
-    width:100%;
-    height:100%;
-    max-width:1000px;
-    max-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-  }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            font-family: 'Arial', sans-serif;
+        }
 
-  canvas {
-    width:100%;
-    height:100%;
-    display:block;
-    touch-action: none;
-  }
+        #gameContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #2c3e50;
+            overflow: hidden;
+        }
 
-  .topbar {
-    position:absolute;
-    top:10px;
-    left:12px;
-    right:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    pointer-events:none;
-    z-index:10;
-  }
-  .card {
-    pointer-events:auto;
-    background: var(--card);
-    color: var(--text-dark);
-    padding:8px 12px;
-    border-radius:12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    display:flex;
-    gap:10px;
-    align-items:center;
-    font-weight:600;
-    font-size:16px;
-  }
-  .score {
-    min-width:86px;
-    text-align:center;
-  }
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #74b9ff, #0984e3);
+        }
 
-  .lives {
-    display:flex;
-    gap:5px;
-    align-items:center;
-  }
-  .life {
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#e74c3c;
-  }
-  .life.lost {
-    background:#ccc;
-    opacity:0.5;
-  }
+        /* Compact UI */
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 12px;
+            border-radius: 20px;
+            z-index: 10;
+        }
 
-  .icon-btn {
-    pointer-events:auto;
-    background:transparent;
-    border:none;
-    padding:8px;
-    border-radius:10px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    font-size:18px;
-  }
-  .info {
-    position:absolute;
-    top:14px;
-    right:14px;
-    pointer-events:auto;
-    width:44px;
-    height:44px;
-    border-radius:12px;
-    background: rgba(255,255,255,0.95);
-    box-shadow:0 6px 18px rgba(0,0,0,0.12);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:700;
-    color:var(--accent);
-    font-size:18px;
-    z-index:10;
-  }
+        #powerBar {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            z-index: 10;
+        }
 
-  .overlay {
-    position:absolute;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:20;
-    pointer-events:auto;
-    background: rgba(0,0,0,0.7);
-  }
-  .panel {
-    width:min(92%,420px);
-    background:var(--card);
-    color:var(--text-dark);
-    padding:24px;
-    border-radius:20px;
-    text-align:center;
-    box-shadow:0 14px 40px rgba(0,0,0,0.25);
-    transform: translateY(0);
-    animation: panelAppear 0.3s ease-out;
-  }
-  @keyframes panelAppear {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .panel h1 { margin-bottom:8px; font-size:24px; }
-  .panel p { margin:10px 0 18px; font-size:15px; color:#333; line-height:1.4; }
-  .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
-  .btn {
-    border:0;
-    padding:12px 20px;
-    border-radius:14px;
-    font-weight:700;
-    cursor:pointer;
-    min-width:120px;
-    font-size:16px;
-    transition: transform 0.1s, box-shadow 0.2s;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    touch-action: manipulation;
-  }
-  .btn:active {
-    transform: scale(0.96);
-  }
-  .btn.primary { background:var(--primary); color:#fff; }
-  .btn.secondary { background:var(--accent); color:#fff; }
+        #powerFill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #00b894, #fdcb6e, #e17055);
+            transition: width 0.1s;
+            border-radius: 6px;
+        }
 
-  .hint {
-    position:absolute;
-    bottom:16px;
-    left:50%;
-    transform:translateX(-50%);
-    background:rgba(255,255,255,0.92);
-    padding:8px 16px;
-    border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.12);
-    font-weight:600;
-    font-size:14px;
-    z-index:10;
-    transition: opacity 0.3s;
-    text-align:center;
-    max-width:90%;
-  }
+        /* Help Button */
+        #helpBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2c3e50;
+            border: none;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
 
-  .palette {
-    display:flex;
-    gap:8px;
-    justify-content:center;
-    margin:12px 0;
-  }
-  .dot {
-    width:32px; height:32px; border-radius:50%;
-    box-shadow:0 4px 12px rgba(0,0,0,0.15);
-  }
+        /* Instruction Popup */
+        #instructionPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
 
-  .game-stats {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #666;
-  }
-  .level-indicator {
-    margin-top: 8px;
-    font-weight: bold;
-    color: var(--primary);
-  }
+        .popup-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 320px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            color: white;
+        }
 
-  @media (max-width:420px){
-    .card { font-size:14px; padding:6px 10px; }
-    .panel h1 { font-size:20px; }
-    .panel p { font-size:14px; }
-    .btn { padding:10px 16px; min-width:110px; font-size:15px; }
-    .hint { font-size:13px; padding:6px 12px; }
-  }
-  
-  @media (max-height:600px){
-    .hint { display:none; }
-    .topbar { top:5px; }
-  }
-</style>
+        .popup-content h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #fdcb6e;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .instruction-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .instruction-text {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        #startBtn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+        }
+
+        #startBtn:active {
+            transform: scale(0.95);
+        }
+
+        /* Restart Button */
+        #restartBtn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 10;
+            display: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Goal Celebration */
+        .goal-celebration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #fdcb6e;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            z-index: 50;
+            animation: goalAnimation 1s ease-out;
+            display: none;
+        }
+
+        @keyframes goalAnimation {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            #ui {
+                font-size: 14px;
+                padding: 6px 10px;
+            }
+            
+            #powerBar {
+                bottom: 50px;
+                width: 120px;
+                height: 10px;
+            }
+            
+            .popup-content {
+                padding: 20px;
+            }
+            
+            .popup-content h2 {
+                font-size: 20px;
+            }
+            
+            .instruction-item {
+                margin: 12px 0;
+            }
+            
+            .instruction-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 18px;
+            }
+            
+            .instruction-text {
+                font-size: 13px;
+            }
+        }
+
+        /* Sound Toggle */
+        #soundToggle {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Prevent zoom on double-tap */
+        .no-zoom {
+            touch-action: manipulation;
+        }
+    </style>
 </head>
-<body>
-  <div class="stage">
-    <canvas id="game" aria-label="Color Switch game"></canvas>
-
-    <div class="topbar" aria-hidden="false">
-      <div class="card score" id="scoreCard">Score: 0</div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <div class="card lives" id="livesCard">
-          <div class="life"></div>
-          <div class="life"></div>
-          <div class="life"></div>
-        </div>
-        <button id="soundToggle" class="icon-btn" title="Toggle sound" aria-label="sound toggle">
-          🔊
-        </button>
-      </div>
-    </div>
-
-    <button class="info" id="infoBtn" title="Instructions">i</button>
-
-    <div id="startOverlay" class="overlay">
-      <div class="panel">
-        <h1>Color Switch — Levels & Lives</h1>
-        <p>Control your ball precisely! You have 3 lives. Pass through matching colors to score. Each level gets faster and more challenging!</p>
-        <div class="palette" aria-hidden="true">
-          <div class="dot" style="background:#f1c40f"></div>
-          <div class="dot" style="background:#e74c3c"></div>
-          <div class="dot" style="background:#3498db"></div>
-          <div class="dot" style="background:#9b59b6"></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn primary" id="startBtn">Start Game</button>
-          <button class="btn secondary" id="howBtn">How to Play</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="gameOverOverlay" class="overlay" style="display:none;pointer-events:none;">
-      <div class="panel">
-        <h1>Game Over</h1>
-        <p>Your Score: <strong id="finalScore">0</strong></p>
-        <p class="game-stats">Level Reached: <span id="finalLevel">1</span></p>
-        <p class="game-stats">Rings Passed: <span id="ringsPassed">0</span></p>
-        <div class="btn-row">
-          <button class="btn primary" id="retryBtn">Play Again</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="hint" class="hint">Tap to jump • Match colors to pass • You have 3 lives</div>
-  </div>
-
-<script>
-/* -----------------------
-   Configuration & state
-   ----------------------- */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-let W = window.innerWidth;
-let H = window.innerHeight;
-const DPR = Math.min(window.devicePixelRatio || 1, 2);
-
-/* Colors used in the game */
-const COLORS = ['#f1c40f','#e74c3c','#3498db','#9b59b6']; // yellow, red, blue, purple
-
-/* Game parameters - Focus on control and timing */
-// Initialize with default values first
-let BALL_RADIUS = Math.max(8, Math.min(14, window.innerWidth * 0.03));
-let RING_RADIUS = Math.min(window.innerWidth * 0.25, 120);
-let RING_THICKNESS = Math.max(8, Math.min(14, window.innerWidth * 0.02));
-let BASE_OBSTACLE_SPACING = Math.max(200, window.innerHeight * 0.4);
-
-const GRAVITY = 0.15; // Very low gravity for maximum control
-const JUMP_V = -4; // Small, precise jumps
-let OBSTACLE_SPEED = 0.6; // Very slow movement
-let RING_SPIN_SPEED = 0.03; // Fast rotation for more color match opportunities
-
-function resize(){
-  W = window.innerWidth;
-  H = window.innerHeight;
-  
-  // Ensure canvas fits screen properly
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  canvas.width = Math.floor(W * DPR);
-  canvas.height = Math.floor(H * DPR);
-  ctx.setTransform(DPR,0,0,DPR,0,0);
-  
-  // Update game parameters based on new size
-  updateGameParameters();
-}
-
-// Update game parameters based on screen size
-function updateGameParameters() {
-  // Adjust sizes based on screen dimensions
-  BALL_RADIUS = Math.max(8, Math.min(14, W * 0.03));
-  RING_RADIUS = Math.min(W * 0.25, 120);
-  RING_THICKNESS = Math.max(8, Math.min(14, W * 0.02));
-  BASE_OBSTACLE_SPACING = Math.max(200, H * 0.4);
-}
-
-// Initialize on load
-resize();
-window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', resize);
-
-/* Sound engine */
-let audioCtx = null;
-let soundEnabled = true;
-const soundToggleBtn = document.getElementById('soundToggle');
-soundToggleBtn.addEventListener('click', ()=>{
-  soundEnabled = !soundEnabled;
-  soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔈';
-  if(soundEnabled && !audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-});
-
-function beep(freq=440,dur=0.06,vol=0.04,type='sine'){
-  if(!soundEnabled) return;
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = type;
-  o.frequency.value = freq;
-  g.gain.value = vol;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime + dur);
-}
-
-/* ----- Game objects ----- */
-class Ball {
-  constructor(){
-    this.x = W * 0.5;
-    this.y = H * 0.8; // Start lower on screen
-    this.vy = 0;
-    this.radius = BALL_RADIUS;
-    this.colorIndex = Math.floor(Math.random() * COLORS.length); // Random start color
-    this.jumpCount = 0;
-    this.trail = [];
-    this.maxTrail = 5;
-    this.isJumping = false;
-    this.inRing = false; // Track if ball is inside a ring
-    this.currentRing = null; // Reference to the ring the ball is in
-    this.invincible = false; // For brief invincibility after losing a life
-    this.invincibleTimer = 0;
-    this.lastCollisionRing = null; // Track which ring we last collided with
-  }
-  
-  jump(){
-    if (this.isJumping && this.vy < -2) return; // Prevent excessive double jumps
-    
-    this.vy = JUMP_V;
-    this.isJumping = true;
-    this.jumpCount++;
-    beep(720,0.05,0.03,'triangle');
-    
-    // Add trail effect
-    this.trail.push({x: this.x, y: this.y, alpha: 0.7});
-    if(this.trail.length > this.maxTrail) {
-      this.trail.shift();
-    }
-  }
-  
-  update(dt){
-    // Update invincibility timer
-    if (this.invincible) {
-      this.invincibleTimer -= dt;
-      if (this.invincibleTimer <= 0) {
-        this.invincible = false;
-      }
-    }
-    
-    // Update trail
-    for(let i = 0; i < this.trail.length; i++) {
-      this.trail[i].alpha -= 0.1;
-      if(this.trail[i].alpha <= 0) {
-        this.trail.splice(i, 1);
-        i--;
-      }
-    }
-    
-    // Apply gravity
-    this.vy += GRAVITY;
-    this.y += this.vy;
-    
-    // If inside a ring, reduce gravity for better control
-    if (this.inRing && this.currentRing) {
-      this.vy *= 0.9; // Slow down vertical movement when in ring
-    }
-    
-    // Reset jumping state when on ground
-    if (this.y + this.radius >= H) {
-      this.y = H - this.radius;
-      this.vy = 0;
-      this.isJumping = false;
-    }
-    
-    // Prevent going above screen
-    if(this.y - this.radius < 0){
-      this.y = this.radius;
-      this.vy = 0;
-    }
-  }
-  
-  draw(){
-    // Draw trail
-    for(let i = 0; i < this.trail.length; i++) {
-      const t = this.trail[i];
-      ctx.beginPath();
-      ctx.fillStyle = COLORS[this.colorIndex] + Math.round(t.alpha * 100).toString(16).padStart(2, '0');
-      ctx.arc(t.x, t.y, this.radius * 0.7, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    // Outer glow - with invincibility effect
-    if (this.invincible) {
-      // Blinking effect when invincible
-      const blink = Math.sin(Date.now() * 0.02) > 0;
-      if (blink) {
-        ctx.beginPath();
-        ctx.fillStyle = COLORS[this.colorIndex];
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-        ctx.fill();
-      }
-    } else {
-      ctx.beginPath();
-      ctx.fillStyle = COLORS[this.colorIndex];
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    // Highlight
-    ctx.beginPath();
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.arc(this.x - this.radius*0.3, this.y - this.radius*0.4, this.radius*0.5, 0, Math.PI*2);
-    ctx.fill();
-    
-    // Draw a small indicator when inside a ring
-    if (this.inRing) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 2;
-      ctx.arc(this.x, this.y, this.radius + 5, 0, Math.PI*2);
-      ctx.stroke();
-    }
-  }
-  
-  setColor(colorIndex) {
-    this.colorIndex = colorIndex;
-    beep(600,0.03,0.02,'sine');
-  }
-  
-  // Make ball invincible for a short time
-  makeInvincible(duration = 1.5) {
-    this.invincible = true;
-    this.invincibleTimer = duration;
-  }
-  
-  // Check if ball is inside a ring (for waiting)
-  checkInsideRing(ring) {
-    const dx = this.x - ring.x;
-    const dy = this.y - ring.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const ringInner = ring.radius - ring.thickness/2;
-    const ringOuter = ring.radius + ring.thickness/2;
-    
-    return dist >= ringInner && dist <= ringOuter;
-  }
-}
-
-class Ring {
-  constructor(y, level=1){
-    this.x = W * 0.5;
-    this.y = y;
-    this.radius = RING_RADIUS;
-    this.thickness = RING_THICKNESS;
-    this.rotation = Math.random() * Math.PI * 2; // Random starting rotation
-    // Fast rotation that increases with level
-    this.spinSpeed = RING_SPIN_SPEED * (0.8 + level * 0.1) * (Math.random()>0.5?1:-1);
-    this.segments = COLORS.length;
-    this.passed = false;
-    this.failed = false; // Track if this ring has already caused a life loss
-    this.pulse = 0;
-    this.pulseDirection = 1;
-    this.level = level;
-    this.hasPickup = Math.random() < 0.25; // 25% chance to have a pickup
-    this.pickupColor = Math.floor(Math.random() * COLORS.length);
-    this.ballInside = false; // Track if ball is currently inside this ring
-  }
-  
-  update(dt){
-    this.y += OBSTACLE_SPEED;
-    
-    // Fast rotation for more color match opportunities
-    this.rotation += this.spinSpeed * dt * 60;
-    
-    // Pulsing effect for visual feedback
-    this.pulse += 0.05 * this.pulseDirection;
-    if(this.pulse > 0.5 || this.pulse < 0) {
-      this.pulseDirection *= -1;
-      this.pulse = Math.max(0, Math.min(0.5, this.pulse));
-    }
-  }
-  
-  draw(){
-    const seg = this.segments;
-    const anglePer = (Math.PI*2) / seg;
-    const pulseOffset = this.pulse * 2;
-    
-    // Draw ring segments
-    for(let i=0;i<seg;i++){
-      const a0 = this.rotation + i*anglePer;
-      const a1 = a0 + anglePer;
-      ctx.beginPath();
-      ctx.lineWidth = this.thickness + pulseOffset;
-      ctx.strokeStyle = COLORS[i % COLORS.length];
-      ctx.arc(this.x, this.y, this.radius, a0, a1, false);
-      ctx.stroke();
-    }
-    
-    // Draw pickup if this ring has one
-    if (this.hasPickup && !this.passed) {
-      const pickupAngle = this.rotation + this.pickupColor * anglePer + anglePer/2;
-      const pickupX = this.x + Math.cos(pickupAngle) * (this.radius + this.thickness);
-      const pickupY = this.y + Math.sin(pickupAngle) * (this.radius + this.thickness);
-      
-      ctx.beginPath();
-      ctx.fillStyle = COLORS[this.pickupColor];
-      ctx.arc(pickupX, pickupY, BALL_RADIUS * 0.6, 0, Math.PI*2);
-      ctx.fill();
-      
-      ctx.beginPath();
-      ctx.fillStyle = '#fff';
-      ctx.arc(pickupX, pickupY, BALL_RADIUS * 0.3, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    // Visual feedback when ball is inside this ring
-    if (this.ballInside) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-      ctx.lineWidth = 3;
-      ctx.arc(this.x, this.y, this.radius + 10, 0, Math.PI*2);
-      ctx.stroke();
-    }
-  }
-  
-  // Get the color of the segment at the bottom of the ring
-  getBottomSegmentColor(){
-    let bottomAngle = -Math.PI/2;
-    let relativeAngle = bottomAngle - (this.rotation % (Math.PI*2));
-    if(relativeAngle < 0) relativeAngle += Math.PI*2;
-    const anglePer = (Math.PI*2) / this.segments;
-    const segIndex = Math.floor(relativeAngle / anglePer) % this.segments;
-    return segIndex;
-  }
-  
-  // Check if ball can pass through the ring
-  checkPassThrough(ball){
-    const dx = ball.x - this.x;
-    const dy = ball.y - this.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const inner = this.radius - this.thickness/2 - ball.radius*0.9;
-    const outer = this.radius + this.thickness/2 + ball.radius*0.9;
-    
-    // Check if ball is inside the ring area
-    const isInside = dist >= inner && dist <= outer;
-    this.ballInside = isInside;
-    
-    if(isInside){
-      let a = Math.atan2(dy, dx);
-      if(a < 0) a += Math.PI*2;
-      let rel = a - (this.rotation % (Math.PI*2));
-      if(rel < 0) rel += Math.PI*2;
-      
-      // Define anglePer here to fix the error
-      const anglePer = (Math.PI*2) / this.segments;
-      const segIndex = Math.floor(rel / anglePer) % this.segments;
-      
-      // Return whether colors match and if there's a pickup to collect
-      const colorMatch = segIndex === ball.colorIndex;
-      let pickupCollected = false;
-      
-      // Check if we're collecting a pickup
-      if (colorMatch && this.hasPickup && !this.passed) {
-        const pickupAngle = this.rotation + this.pickupColor * anglePer + anglePer/2;
-        const pickupX = this.x + Math.cos(pickupAngle) * (this.radius + this.thickness);
-        const pickupY = this.y + Math.sin(pickupAngle) * (this.radius + this.thickness);
-        const pickupDist = Math.sqrt((ball.x - pickupX)**2 + (ball.y - pickupY)**2);
+<body class="no-zoom">
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
         
-        if (pickupDist < (ball.radius + BALL_RADIUS * 0.6)) {
-          pickupCollected = true;
-          this.hasPickup = false;
-        }
-      }
-      
-      return {
-        passed: colorMatch,
-        pickupCollected: pickupCollected,
-        pickupColor: this.pickupColor,
-        isInside: isInside,
-        segmentIndex: segIndex
-      };
-    }
-    
-    return { passed: false, pickupCollected: false, isInside: false, segmentIndex: -1 };
-  }
-}
-
-/* ----- Game state ----- */
-let ball = null;
-let rings = [];
-let running = false;
-let score = 0;
-let level = 1;
-let lives = 3;
-let ringsPassed = 0;
-let lastSpawnY = -BASE_OBSTACLE_SPACING;
-let currentRingIndex = 0; // Track which ring the player is currently on
-const scoreCard = document.getElementById('scoreCard');
-const finalScoreEl = document.getElementById('finalScore');
-const finalLevelEl = document.getElementById('finalLevel');
-const ringsPassedEl = document.getElementById('ringsPassed');
-const livesCard = document.getElementById('livesCard');
-
-/* ----- Game functions ----- */
-function resetGame(){
-  ball = new Ball();
-  rings = [];
-  running = true;
-  score = 0;
-  level = 1;
-  lives = 3;
-  ringsPassed = 0;
-  currentRingIndex = 0;
-  lastSpawnY = -BASE_OBSTACLE_SPACING;
-  
-  // Reset game parameters
-  OBSTACLE_SPEED = 0.6;
-  RING_SPIN_SPEED = 0.03;
-  
-  // Reset lives display
-  updateLivesUI();
-  spawnInitial();
-  updateScoreUI();
-}
-
-function updateLivesUI() {
-  const lifeElements = livesCard.querySelectorAll('.life');
-  lifeElements.forEach((life, index) => {
-    if (index < lives) {
-      life.classList.remove('lost');
-    } else {
-      life.classList.add('lost');
-    }
-  });
-}
-
-function spawnInitial(){
-  let y = H * 0.2;
-  // Spawn rings closer together for continuous play
-  for (let i = 0; i < 6; i++) {
-    rings.push(new Ring(y, level));
-    y -= BASE_OBSTACLE_SPACING * 0.6; // Even closer spacing
-  }
-  lastSpawnY = y;
-}
-
-function spawnTop(){
-  const y = lastSpawnY - BASE_OBSTACLE_SPACING * 0.6; // Closer spacing
-  rings.push(new Ring(y, level));
-  lastSpawnY = y;
-}
-
-function updateLevel(){
-  // Level up every 5 rings
-  const newLevel = Math.floor(ringsPassed / 5) + 1;
-  if (newLevel > level) {
-    level = newLevel;
-    
-    // Increase difficulty with level
-    OBSTACLE_SPEED = 0.6 + (level * 0.1);
-    RING_SPIN_SPEED = 0.03 + (level * 0.005);
-    
-    // Visual and audio feedback for level up
-    beep(880,0.1,0.06,'sine');
-    setTimeout(() => beep(1100,0.08,0.05,'sine'), 100);
-  }
-}
-
-function updateScoreUI(){
-  scoreCard.textContent = `Score: ${score}`;
-}
-
-function loseLife() {
-  if (ball.invincible) return; // Can't lose life while invincible
-  
-  lives--;
-  updateLivesUI();
-  
-  if (lives <= 0) {
-    gameOver();
-  } else {
-    // Make ball invincible for a short time after losing a life
-    ball.makeInvincible(1.5);
-    beep(200,0.2,0.08,'square');
-  }
-}
-
-// Improved collision detection for life loss
-function checkCollision(ring, ball) {
-  // Only check collision with the current ring
-  const passResult = ring.checkPassThrough(ball);
-  
-  // Update ball's inside ring status
-  if (passResult.isInside) {
-    ball.inRing = true;
-    ball.currentRing = ring;
-  }
-  
-  // If ball is inside the ring and colors don't match, lose a life
-  if (passResult.isInside && !passResult.passed && !ring.failed && !ball.invincible) {
-    // Only lose a life if this is a new collision with this ring
-    if (ball.lastCollisionRing !== ring) {
-      ring.failed = true;
-      ball.lastCollisionRing = ring;
-      loseLife();
-      return false; // Collision occurred
-    }
-  }
-  
-  // If colors match and ring hasn't been passed yet
-  if (passResult.passed && !ring.passed) {
-    ring.passed = true;
-    score += 10;
-    ringsPassed++;
-    updateScoreUI();
-    updateLevel();
-    beep(560,0.04,0.02,'sine');
-    
-    // Change ball color if pickup was collected
-    if (passResult.pickupCollected) {
-      ball.setColor(passResult.pickupColor);
-      beep(950,0.06,0.04,'triangle');
-    }
-    
-    return true; // Successfully passed
-  }
-  
-  return null; // No collision or pass
-}
-
-/* ----- Input handling ----- */
-function pressJump(){
-  if(!running) return;
-  ball.jump();
-}
-
-window.addEventListener('keydown', (e)=>{
-  if(e.code === 'Space') {
-    e.preventDefault();
-    if(!running) return;
-    pressJump();
-  }
-});
-
-// Improved touch handling for mobile
-window.addEventListener('touchstart', (e)=>{
-  e.preventDefault();
-  if(!running) {
-    // If game not running, check if we're clicking on a button
-    const target = e.target;
-    if (!target.closest('.btn') && !target.closest('.info')) {
-      startGame();
-    }
-    return;
-  }
-  pressJump();
-}, {passive:false});
-
-window.addEventListener('mousedown', (e)=>{
-  if(!running) return;
-  pressJump();
-});
-
-/* UI controls */
-const startOverlay = document.getElementById('startOverlay');
-const startBtn = document.getElementById('startBtn');
-const howBtn = document.getElementById('howBtn');
-const infoBtn = document.getElementById('infoBtn');
-const gameOverOverlay = document.getElementById('gameOverOverlay');
-const retryBtn = document.getElementById('retryBtn');
-const hint = document.getElementById('hint');
-
-// Improved button event handling for mobile
-startBtn.addEventListener('click', startGame);
-startBtn.addEventListener('touchend', startGame);
-
-howBtn.addEventListener('click', showInstructions);
-howBtn.addEventListener('touchend', showInstructions);
-
-infoBtn.addEventListener('click', showInstructions);
-infoBtn.addEventListener('touchend', showInstructions);
-
-retryBtn.addEventListener('click', restartGame);
-retryBtn.addEventListener('touchend', restartGame);
-
-function showInstructions(){
-  startOverlay.style.display = 'flex';
-  const p = startOverlay.querySelector('.panel p');
-  p.textContent = 'Control your ball precisely with small jumps. You have 3 lives. Wait inside rings for your color to match the bottom segment. Pass through matching colors to score. Each level gets faster and more challenging!';
-}
-
-function startGame(){
-  startOverlay.style.display = 'none';
-  hint.style.opacity = '1';
-  resetGame();
-  beep(440,0.09,0.05,'sine');
-  setTimeout(() => beep(550,0.07,0.05,'sine'), 100);
-  setTimeout(() => beep(660,0.05,0.05,'sine'), 200);
-  requestAnimationFrame(loop);
-}
-
-function restartGame(){
-  gameOverOverlay.style.display = 'none';
-  gameOverOverlay.style.pointerEvents = 'none';
-  hint.style.opacity = '1';
-  startGame();
-}
-
-function gameOver(){
-  running = false;
-  beep(120,0.18,0.08,'square');
-  setTimeout(() => beep(90,0.15,0.06,'square'), 150);
-  
-  finalScoreEl.textContent = score;
-  finalLevelEl.textContent = level;
-  ringsPassedEl.textContent = ringsPassed;
-  gameOverOverlay.style.display = 'flex';
-  gameOverOverlay.style.pointerEvents = 'auto';
-  hint.style.opacity = '0';
-}
-
-/* ----- Main game loop ----- */
-let lastTime = performance.now();
-function loop(now){
-  const dt = Math.min(1/30, (now - lastTime) / 1000);
-  lastTime = now;
-  
-  // Clear canvas with a dark gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, H);
-  gradient.addColorStop(0, '#1a1a2e');
-  gradient.addColorStop(1, '#16213e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, W, H);
-  
-  // Draw background elements
-  drawBackground();
-
-  if(running){
-    ball.update(dt);
-    
-    // Improved ring spawning - always keep at least 7 rings on screen
-    if(rings.length < 7 || rings[rings.length-1].y > H * 0.1) {
-      spawnTop();
-    }
-    
-    // Reset ball's inside ring status
-    ball.inRing = false;
-    ball.currentRing = null;
-    
-    // Update rings and check for interactions
-    for(let i=rings.length-1;i>=0;i--){
-      const r = rings[i];
-      r.update(dt);
-      
-      // Only check collision with the current ring
-      if(i === currentRingIndex && !r.passed){
-        const result = checkCollision(r, ball);
+        <div id="ui">
+            <div>Score: <span id="score">0</span> | Shots: <span id="shots">0</span></div>
+        </div>
         
-        // If successfully passed, move to next ring
-        if (result === true) {
-          currentRingIndex++;
+        <div id="powerBar">
+            <div id="powerFill"></div>
+        </div>
+        
+        <button id="helpBtn">?</button>
+        <button id="soundToggle">🔊</button>
+        <button id="restartBtn">Restart</button>
+        
+        <div class="goal-celebration" id="goalText">GOAL!</div>
+        
+        <div id="instructionPopup">
+            <div class="popup-content">
+                <h2>⚽ Flick Soccer!</h2>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">🎯</div>
+                    <div class="instruction-text">Drag the ball to aim and set power</div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">💨</div>
+                    <div class="instruction-text">Release to shoot - longer drag = more power</div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">🥅</div>
+                    <div class="instruction-text">Score by getting past the goalkeeper</div>
+                </div>
+                
+                <div class="instruction-item">
+                    <div class="instruction-icon">🔄</div>
+                    <div class="instruction-text">Curve shots by dragging at angles</div>
+                </div>
+
+                <div class="instruction-item">
+                    <div class="instruction-icon">🔊</div>
+                    <div class="instruction-text">Tap the sound icon to toggle audio</div>
+                </div>
+                
+                <button id="startBtn">Start Playing!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class FlickSoccer {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resizeCanvas();
+                
+                this.scoreElement = document.getElementById('score');
+                this.shotsElement = document.getElementById('shots');
+                this.powerFill = document.getElementById('powerFill');
+                this.instructionPopup = document.getElementById('instructionPopup');
+                this.helpBtn = document.getElementById('helpBtn');
+                this.startBtn = document.getElementById('startBtn');
+                this.restartBtn = document.getElementById('restartBtn');
+                this.goalText = document.getElementById('goalText');
+                this.soundToggle = document.getElementById('soundToggle');
+                
+                // Sound effects
+                this.sounds = {};
+                this.soundEnabled = true;
+                
+                this.init();
+                this.setupEventListeners();
+                this.loadSounds();
+                
+                // Show instructions on start
+                this.showInstructions();
+                this.gameLoop();
+            }
+            
+            async loadSounds() {
+                // Try multiple possible paths for audio files
+                const pathAttempts = [
+                    // Relative paths from current directory
+                    'audio/',
+                    '../audio/',
+                    '../../audio/',
+                    '../../../audio/',
+                    // Absolute paths from root
+                    '/audio/',
+                    '/games/audio/',
+                    // Full URLs (replace with your actual domain if needed)
+                    'http://192.168.31.112:3000/audio/',
+                    'http://192.168.31.112:3000/games/audio/'
+                ];
+
+                const soundFiles = {
+                    kick: 'kick.mp3',
+                    goal: 'goal.mp3',
+                    save: 'save.mp3',
+                    whistle: 'whistle.mp3',
+                    bounce: 'bounce.mp3',
+                    goalpost: 'goalpost.mp3',
+                    crossbar: 'crossbar.mp3',
+                    squeak: 'squeak.mp3',
+                    crowdClap: 'crowd.mp3'
+                };
+
+                // Try to load each sound with multiple path attempts
+                for (const [name, filename] of Object.entries(soundFiles)) {
+                    await this.tryLoadSound(name, filename, pathAttempts);
+                }
+
+                console.log('Sound loading completed. Loaded sounds:', Object.keys(this.sounds));
+            }
+
+            async tryLoadSound(name, filename, pathAttempts) {
+                for (const basePath of pathAttempts) {
+                    try {
+                        const fullPath = basePath + filename;
+                        console.log(`Trying to load ${name} from: ${fullPath}`);
+                        
+                        const audio = new Audio();
+                        
+                        // Create a promise to handle loading
+                        const loadPromise = new Promise((resolve, reject) => {
+                            audio.oncanplaythrough = () => resolve(audio);
+                            audio.onerror = () => reject(new Error(`Failed to load ${fullPath}`));
+                            audio.src = fullPath;
+                            audio.load();
+                        });
+
+                        // Wait for load with timeout
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error('Timeout')), 3000)
+                        );
+
+                        const loadedAudio = await Promise.race([loadPromise, timeoutPromise]);
+                        this.sounds[name] = loadedAudio;
+                        console.log(`✅ Successfully loaded ${name} from: ${fullPath}`);
+                        return; // Exit on success
+                    } catch (error) {
+                        console.log(`❌ Failed to load ${name} from attempt: ${basePath + filename}`);
+                        continue; // Try next path
+                    }
+                }
+                
+                console.warn(`❌ Could not load sound: ${name} after all attempts`);
+                // Create a dummy audio element to prevent errors
+                this.sounds[name] = new Audio();
+                this.sounds[name].play = () => {}; // No-op function
+            }
+            
+            playSound(soundName) {
+                if (!this.soundEnabled || !this.sounds[soundName]) return;
+                
+                try {
+                    // Clone the audio to allow overlapping sounds
+                    const sound = this.sounds[soundName].cloneNode();
+                    sound.volume = this.getSoundVolume(soundName);
+                    
+                    // Reset playback position and play
+                    sound.currentTime = 0;
+                    const playPromise = sound.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.catch(e => {
+                            console.log('Sound play failed:', e);
+                            // Silently fail - don't show errors to user
+                        });
+                    }
+                } catch (e) {
+                    // Silently fail - don't show errors to user
+                    console.log('Sound play error (silent):', e);
+                }
+            }
+            
+            getSoundVolume(soundName) {
+                const volumes = {
+                    kick: 0.7,
+                    goal: 0.8,
+                    save: 0.6,
+                    whistle: 0.5,
+                    bounce: 0.4,
+                    goalpost: 0.7,
+                    crossbar: 0.7,
+                    squeak: 0.3,
+                    crowdClap: 0.5
+                };
+                return volumes[soundName] || 0.5;
+            }
+            
+            toggleSound() {
+                this.soundEnabled = !this.soundEnabled;
+                this.soundToggle.textContent = this.soundEnabled ? '🔊' : '🔇';
+                
+                // Play a test sound when enabling
+                if (this.soundEnabled) {
+                    this.playSound('whistle');
+                }
+            }
+            
+            resizeCanvas() {
+                // Use the full screen for the canvas
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+            }
+            
+            init() {
+                // Game state
+                this.score = 0;
+                this.shots = 0;
+                this.gameActive = false;
+                this.ballInPlay = false;
+                this.lastBounceTime = 0;
+                
+                // Scale factors for responsive design
+                const scale = Math.min(this.canvas.width, this.canvas.height);
+                this.ballRadius = scale * 0.04;
+                this.goalWidth = scale * 0.04;
+                this.goalHeight = scale * 0.25;
+                
+                // Ball properties
+                this.ball = {
+                    x: this.canvas.width * 0.15,
+                    y: this.canvas.height * 0.85,
+                    radius: this.ballRadius,
+                    vx: 0,
+                    vy: 0,
+                    color: '#ffffff'
+                };
+                
+                // Goal properties
+                this.goal = {
+                    x: this.canvas.width - this.goalWidth - (this.canvas.width * 0.05),
+                    y: this.canvas.height / 2 - this.goalHeight / 2,
+                    width: this.goalWidth,
+                    height: this.goalHeight,
+                    color: '#e74c3c'
+                };
+                
+                // Goalkeeper properties
+                this.keeper = {
+                    x: this.goal.x - (this.canvas.width * 0.08),
+                    y: this.canvas.height / 2,
+                    width: this.canvas.width * 0.03,
+                    height: this.canvas.height * 0.12,
+                    speed: 2 + (Math.random() * 2),
+                    direction: Math.random() > 0.5 ? 1 : -1,
+                    color: '#f39c12',
+                    lastSqueak: 0
+                };
+                
+                // Drag properties
+                this.isDragging = false;
+                this.dragStart = { x: 0, y: 0 };
+                this.dragEnd = { x: 0, y: 0 };
+                this.power = 0;
+                
+                // Physics
+                this.gravity = 0.4;
+                this.friction = 0.99;
+                this.groundLevel = this.canvas.height * 0.92;
+            }
+            
+            setupEventListeners() {
+                // Mouse events
+                this.canvas.addEventListener('mousedown', this.startDrag.bind(this));
+                this.canvas.addEventListener('mousemove', this.drag.bind(this));
+                this.canvas.addEventListener('mouseup', this.release.bind(this));
+                
+                // Touch events for mobile
+                this.canvas.addEventListener('touchstart', this.startDrag.bind(this));
+                this.canvas.addEventListener('touchmove', this.drag.bind(this));
+                this.canvas.addEventListener('touchend', this.release.bind(this));
+                
+                // UI events
+                this.helpBtn.addEventListener('click', this.showInstructions.bind(this));
+                this.startBtn.addEventListener('click', this.hideInstructions.bind(this));
+                this.restartBtn.addEventListener('click', this.restart.bind(this));
+                this.soundToggle.addEventListener('click', this.toggleSound.bind(this));
+                
+                // Window resize
+                window.addEventListener('resize', this.handleResize.bind(this));
+                
+                // Prevent context menu on long press
+                this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
+            
+            handleResize() {
+                this.resizeCanvas();
+                this.init(); // Reinitialize with new dimensions
+            }
+            
+            startDrag(e) {
+                if (this.ballInPlay) return;
+                
+                e.preventDefault();
+                const pos = this.getMousePos(e);
+                const dist = Math.sqrt(
+                    Math.pow(pos.x - this.ball.x, 2) + 
+                    Math.pow(pos.y - this.ball.y, 2)
+                );
+                
+                if (dist <= this.ball.radius) {
+                    this.isDragging = true;
+                    this.dragStart.x = pos.x;
+                    this.dragStart.y = pos.y;
+                    this.gameActive = true;
+                    
+                    // Play squeak sound when starting to drag
+                    this.playSound('squeak');
+                }
+            }
+            
+            drag(e) {
+                if (!this.isDragging) return;
+                
+                e.preventDefault();
+                const pos = this.getMousePos(e);
+                this.dragEnd.x = pos.x;
+                this.dragEnd.y = pos.y;
+                
+                // Calculate power (distance from ball to drag point)
+                const dx = this.dragStart.x - this.dragEnd.x;
+                const dy = this.dragStart.y - this.dragEnd.y;
+                this.power = Math.min(Math.sqrt(dx * dx + dy * dy) / (this.canvas.width * 0.03), 100);
+                this.powerFill.style.width = this.power + '%';
+            }
+            
+            release() {
+                if (!this.isDragging) return;
+                
+                this.isDragging = false;
+                this.ballInPlay = true;
+                this.shots++;
+                this.updateUI();
+                
+                // Calculate velocity based on drag
+                const dx = this.dragStart.x - this.dragEnd.x;
+                const dy = this.dragStart.y - this.dragEnd.y;
+                
+                this.ball.vx = dx * 0.25;
+                this.ball.vy = dy * 0.25;
+                
+                // Play kick sound
+                this.playSound('kick');
+                
+                this.powerFill.style.width = '0%';
+            }
+            
+            getMousePos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                let clientX, clientY;
+                
+                if (e.type.includes('touch')) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+            
+            update() {
+                if (!this.ballInPlay) return;
+                
+                // Apply physics to ball
+                this.ball.vx *= this.friction;
+                this.ball.vy *= this.friction;
+                this.ball.vy += this.gravity;
+                
+                this.ball.x += this.ball.vx;
+                this.ball.y += this.ball.vy;
+                
+                // Ground collision and bounce sound
+                if (this.ball.y + this.ball.radius > this.groundLevel) {
+                    this.ball.y = this.groundLevel - this.ball.radius;
+                    this.ball.vy = -this.ball.vy * 0.6; // Bounce with energy loss
+                    
+                    // Play bounce sound (with cooldown to prevent spam)
+                    const now = Date.now();
+                    if (now - this.lastBounceTime > 200) {
+                        this.playSound('bounce');
+                        this.lastBounceTime = now;
+                    }
+                    
+                    // Stop ball if velocity is very small
+                    if (Math.abs(this.ball.vx) < 0.5 && Math.abs(this.ball.vy) < 2) {
+                        this.ball.vx = 0;
+                        this.ball.vy = 0;
+                        this.ballInPlay = false;
+                        this.resetBall();
+                    }
+                }
+                
+                // Wall collisions
+                if (this.ball.x - this.ball.radius < 0) {
+                    this.ball.x = this.ball.radius;
+                    this.ball.vx = -this.ball.vx * 0.8;
+                    this.playSound('bounce');
+                }
+                
+                if (this.ball.x + this.ball.radius > this.canvas.width) {
+                    this.ball.x = this.canvas.width - this.ball.radius;
+                    this.ball.vx = -this.ball.vx * 0.8;
+                    this.playSound('bounce');
+                }
+                
+                // Ceiling collision
+                if (this.ball.y - this.ball.radius < 0) {
+                    this.ball.y = this.ball.radius;
+                    this.ball.vy = -this.ball.vy * 0.8;
+                    this.playSound('bounce');
+                }
+                
+                // Update goalkeeper with some randomness
+                this.keeper.y += this.keeper.speed * this.keeper.direction;
+                
+                // Play goalkeeper squeak sounds occasionally
+                const now = Date.now();
+                if (now - this.keeper.lastSqueak > 1000 && Math.random() < 0.02) {
+                    this.playSound('squeak');
+                    this.keeper.lastSqueak = now;
+                }
+                
+                // Occasionally change direction randomly
+                if (Math.random() < 0.01) {
+                    this.keeper.direction *= -1;
+                }
+                
+                // Keeper bounds checking
+                const keeperTop = this.goal.y + this.keeper.height * 0.3;
+                const keeperBottom = this.goal.y + this.goal.height - this.keeper.height * 0.3;
+                
+                if (this.keeper.y < keeperTop) {
+                    this.keeper.y = keeperTop;
+                    this.keeper.direction = 1;
+                } else if (this.keeper.y > keeperBottom) {
+                    this.keeper.y = keeperBottom;
+                    this.keeper.direction = -1;
+                }
+                
+                // Goal collision detection
+                if (this.ball.x + this.ball.radius > this.goal.x && 
+                    this.ball.x - this.ball.radius < this.goal.x + this.goal.width &&
+                    this.ball.y > this.goal.y && 
+                    this.ball.y < this.goal.y + this.goal.height) {
+                    
+                    // Check if goalkeeper saves
+                    const keeperTopBound = this.keeper.y - this.keeper.height * 0.4;
+                    const keeperBottomBound = this.keeper.y + this.keeper.height * 0.4;
+                    
+                    if (this.ball.y < keeperTopBound || this.ball.y > keeperBottomBound) {
+                        // GOAL!
+                        this.score += 100;
+                        this.showGoal();
+                        this.playSound('goal');
+                        this.playSound('crowdClap');
+                    } else {
+                        // Save!
+                        this.ball.vx = -this.ball.vx * 0.8;
+                        this.score += 10; // Partial points for on target
+                        this.playSound('save');
+                    }
+                    
+                    this.updateUI();
+                    this.resetBall();
+                }
+                
+                // Goal post/crossbar detection
+                if (this.ball.x + this.ball.radius > this.goal.x - 5 && 
+                    this.ball.x - this.ball.radius < this.goal.x + this.goal.width + 5) {
+                    
+                    // Hit left goal post
+                    if (this.ball.y > this.goal.y - 5 && this.ball.y < this.goal.y + 5) {
+                        this.playSound('goalpost');
+                    }
+                    // Hit right goal post  
+                    else if (this.ball.y > this.goal.y + this.goal.height - 5 && this.ball.y < this.goal.y + this.goal.height + 5) {
+                        this.playSound('goalpost');
+                    }
+                    // Hit crossbar
+                    else if (this.ball.x > this.goal.x - 5 && this.ball.x < this.goal.x + 5 && 
+                             this.ball.y > this.goal.y && this.ball.y < this.goal.y + this.goal.height) {
+                        this.playSound('crossbar');
+                    }
+                }
+            }
+            
+            resetBall() {
+                setTimeout(() => {
+                    this.ball.x = this.canvas.width * 0.15;
+                    this.ball.y = this.groundLevel - this.ball.radius;
+                    this.ball.vx = 0;
+                    this.ball.vy = 0;
+                    this.ballInPlay = false;
+                    
+                    // Change keeper speed randomly for variety
+                    this.keeper.speed = 2 + (Math.random() * 2);
+                }, 1000);
+            }
+            
+            draw() {
+                // Clear canvas
+                this.ctx.fillStyle = '#74b9ff';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw field markings
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    this.canvas.width * 0.15, 
+                    this.groundLevel - this.canvas.height * 0.15, 
+                    this.canvas.width * 0.08, 
+                    0, Math.PI, true
+                );
+                this.ctx.stroke();
+                
+                // Draw goal area
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                this.ctx.strokeRect(
+                    this.goal.x - this.canvas.width * 0.1, 
+                    this.goal.y - this.canvas.height * 0.05, 
+                    this.canvas.width * 0.1, 
+                    this.goal.height + this.canvas.height * 0.1
+                );
+                
+                // Draw goal
+                this.ctx.fillStyle = this.goal.color;
+                this.ctx.fillRect(this.goal.x, this.goal.y, this.goal.width, this.goal.height);
+                
+                // Draw goalkeeper
+                this.ctx.fillStyle = this.keeper.color;
+                this.ctx.fillRect(
+                    this.keeper.x - this.keeper.width / 2,
+                    this.keeper.y - this.keeper.height / 2,
+                    this.keeper.width,
+                    this.keeper.height
+                );
+                
+                // Draw goalkeeper details
+                this.ctx.fillStyle = '#2c3e50';
+                this.ctx.fillRect(
+                    this.keeper.x - this.keeper.width / 3,
+                    this.keeper.y - this.keeper.height / 3,
+                    this.keeper.width / 1.5,
+                    this.keeper.height / 1.5
+                );
+                
+                // Draw ball
+                this.ctx.fillStyle = this.ball.color;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Draw ball pattern
+                this.ctx.strokeStyle = '#2d3436';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball.x, this.ball.y, this.ball.radius - 3, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // Draw drag line when dragging
+                if (this.isDragging) {
+                    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.setLineDash([5, 5]);
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(this.ball.x, this.ball.y);
+                    this.ctx.lineTo(this.dragEnd.x, this.dragEnd.y);
+                    this.ctx.stroke();
+                    this.ctx.setLineDash([]);
+                }
+                
+                // Draw ground
+                this.ctx.fillStyle = '#27ae60';
+                this.ctx.fillRect(0, this.groundLevel, this.canvas.width, this.canvas.height - this.groundLevel);
+            }
+            
+            showGoal() {
+                this.goalText.style.display = 'block';
+                setTimeout(() => {
+                    this.goalText.style.display = 'none';
+                }, 1000);
+            }
+            
+            showInstructions() {
+                this.instructionPopup.style.display = 'flex';
+            }
+            
+            hideInstructions() {
+                this.instructionPopup.style.display = 'none';
+                this.gameActive = true;
+                // Play whistle when starting
+                this.playSound('whistle');
+            }
+            
+            updateUI() {
+                this.scoreElement.textContent = this.score;
+                this.shotsElement.textContent = this.shots;
+            }
+            
+            gameLoop() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(this.gameLoop.bind(this));
+            }
+            
+            restart() {
+                this.init();
+                this.restartBtn.style.display = 'none';
+                this.hideInstructions();
+            }
         }
-      }
-      
-      // Remove offscreen rings
-      if(r.y - r.radius - r.thickness > H + 40){
-        rings.splice(i,1);
-        // Adjust current ring index if we're removing rings before the current one
-        if (i < currentRingIndex) {
-          currentRingIndex--;
-        }
-      }
-    }
-  }
-
-  // Draw game objects
-  for(const r of rings) r.draw();
-  if (ball) ball.draw();
-  
-  // Draw UI elements on canvas
-  drawLevelIndicator();
-  drawLivesIndicator();
-
-  if(running) requestAnimationFrame(loop);
-}
-
-function drawBackground(){
-  // Draw subtle grid pattern
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  
-  // Vertical lines
-  for(let x = 0; x < W; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-  
-  // Horizontal lines
-  for(let y = 0; y < H; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
-}
-
-function drawLevelIndicator() {
-  // Show the current level at the top
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 16px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(`Level ${level}`, W/2, 30);
-  
-  // Show progress to next level
-  const progress = ringsPassed % 5;
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fillRect(W/2 - 40, 35, 80, 6);
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(W/2 - 40, 35, (80 / 5) * progress, 6);
-}
-
-function drawLivesIndicator() {
-  // Show lives on the canvas as well (in case the top bar is not visible)
-  ctx.fillStyle = 'white';
-  ctx.font = '14px Arial';
-  ctx.textAlign = 'left';
-  ctx.fillText(`Lives: ${lives}`, 20, 30);
-}
-
-/* Start paused (show overlay) */
-showInstructions();
-
-/* Prevent scrolling on mobile while playing */
-document.addEventListener('touchmove', function(e){ 
-  if(running) e.preventDefault(); 
-}, {passive:false});
-
-// Additional mobile optimizations
-document.addEventListener('DOMContentLoaded', function() {
-  // Prevent zoom on double-tap
-  document.addEventListener('touchend', function(e) {
-    if (running) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-  
-  // Prevent context menu on long press
-  document.addEventListener('contextmenu', function(e) {
-    if (running) {
-      e.preventDefault();
-    }
-  });
-});
-
-</script>
+        
+        // Start the game when page loads
+        window.addEventListener('load', () => {
+            new FlickSoccer();
+        });
+        
+        // Prevent zoom gestures
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
+    </script>
 </body>
 </html>
