@@ -38,20 +38,88 @@
             overflow: hidden;
         }
         
-        .orientation-warning {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(45, 27, 105, 0.95);
-            z-index: 1000;
+        .ui-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(45, 27, 105, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid #9d7aff;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        
+        .ui-text {
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: #9d7aff;
+        }
+        
+        .ui-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .control-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
             flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .control-btn {
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 107, 157, 0.5);
+        }
+        
+        .next-btn {
+            background: #4cd964;
+            box-shadow: 0 0 10px rgba(76, 217, 100, 0.5);
+        }
+        
+        .demo-guide {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(157, 122, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid #9d7aff;
+            font-size: 14px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        
+        .help-icon {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #9d7aff;
+            border-radius: 50%;
+            display: flex;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(157, 122, 255, 0.7);
+            cursor: pointer;
         }
         
         .instruction-popup {
@@ -114,21 +182,20 @@
             font-weight: bold;
         }
         
-        .help-icon {
+        .orientation-warning {
+            display: none;
             position: fixed;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
-            background: #9d7aff;
-            border-radius: 50%;
-            display: flex;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 27, 105, 0.95);
+            z-index: 1000;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
-            font-weight: bold;
-            z-index: 100;
-            box-shadow: 0 0 10px rgba(157, 122, 255, 0.7);
+            text-align: center;
+            padding: 20px;
         }
         
         @media (max-width: 768px) and (orientation: portrait) {
@@ -165,10 +232,17 @@
             
             <h3>Controls</h3>
             <ul>
-                <li><strong>Touch & Drag:</strong> Aim the cannon</li>
+                <li><strong>Touch & Drag:</strong> Aim the cannon (drag further for more power)</li>
                 <li><strong>Release:</strong> Shoot liquid</li>
                 <li><strong>Reset Button:</strong> Restart current level</li>
                 <li><strong>Next Button:</strong> Advance to next level (when available)</li>
+            </ul>
+            
+            <h3>Pro Tips</h3>
+            <ul>
+                <li>Aim slightly above the container to account for gravity</li>
+                <li>Use more power to reach the back of the container</li>
+                <li>Try to connect both electrodes with liquid to complete the circuit</li>
             </ul>
             
             <button class="close-btn" id="closeInstructions">Got It!</button>
@@ -200,11 +274,15 @@
                 this.isAiming = false;
                 this.aimPower = 0;
                 this.lastFireTime = 0;
-                this.fireRate = 500; // ms between shots
+                this.fireRate = 500;
+                this.showingDemo = false;
+                this.demoStep = 0;
+                this.maxParticlesPerShot = 12;
+                this.audioContext = null;
             }
 
             preload() {
-                // No external assets to load - using placeholder graphics
+                // No external assets to load
             }
 
             create() {
@@ -212,9 +290,12 @@
                 this.screenWidth = this.sys.game.config.width;
                 this.screenHeight = this.sys.game.config.height;
                 
-                // Set up the physics world
+                // Set up the physics world with higher gravity for better trajectory arc
                 this.matter.world.setBounds(0, 0, this.screenWidth, this.screenHeight);
-                this.matter.world.setGravity(0, 0.3);
+                this.matter.world.setGravity(0, 500); // Increased gravity for realistic drop
+                
+                // Initialize audio context
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 
                 // Create background with purple theme
                 this.createBackground();
@@ -227,6 +308,11 @@
                 
                 // Create UI elements
                 this.createUI();
+                
+                // Start demo if first time
+                if (this.level === 1) {
+                    this.startDemo();
+                }
             }
 
             createBackground() {
@@ -234,29 +320,13 @@
                 const bg = this.add.graphics();
                 bg.fillGradientStyle(0x2d1b69, 0x2d1b69, 0x1a1033, 0x1a1033, 1);
                 bg.fillRect(0, 0, this.screenWidth, this.screenHeight);
-                
-                // Add subtle grid lines
-                const grid = this.add.graphics();
-                grid.lineStyle(1, 0x9d7aff, 0.1);
-                
-                for (let x = 0; x < this.screenWidth; x += 50) {
-                    grid.moveTo(x, 0);
-                    grid.lineTo(x, this.screenHeight);
-                }
-                
-                for (let y = 0; y < this.screenHeight; y += 50) {
-                    grid.moveTo(0, y);
-                    grid.lineTo(this.screenWidth, y);
-                }
-                
-                grid.strokePath();
             }
 
             createGameElements() {
-                // Create the liquid cannon
+                // Create the liquid cannon - moved closer to container
                 this.createCannon();
                 
-                // Create the container
+                // Create the container - moved closer to cannon
                 this.createContainer();
                 
                 // Create floating objects
@@ -270,20 +340,21 @@
             }
 
             createCannon() {
-                const cannonX = this.screenWidth * 0.15;
-                const cannonY = this.screenHeight * 0.85;
+                // Position cannon closer to container and higher up
+                const cannonX = this.screenWidth * 0.25; // Closer to center
+                const cannonY = this.screenHeight * 0.7; // Higher up for better trajectory
                 
                 // Cannon base
                 this.cannonBase = this.add.rectangle(cannonX, cannonY, 60, 30, 0x6b5b95);
-                this.matter.add.gameObject(this.cannonBase, { isStatic: true });
+                this.matter.add.gameObject(this.cannonBase, { isStatic: true, restitution: 0, friction: 0.5 });
                 
                 // Cannon barrel
                 this.cannonBarrel = this.add.rectangle(cannonX, cannonY - 20, 40, 60, 0x4a3c6e);
-                this.matter.add.gameObject(this.cannonBarrel, { isStatic: true });
+                this.matter.add.gameObject(this.cannonBarrel, { isStatic: true, restitution: 0, friction: 0.5 });
                 
                 // Cannon nozzle
                 this.cannonNozzle = this.add.rectangle(cannonX, cannonY - 50, 20, 20, 0xff6b9d);
-                this.matter.add.gameObject(this.cannonNozzle, { isStatic: true });
+                this.matter.add.gameObject(this.cannonNozzle, { isStatic: true, restitution: 0, friction: 0.5 });
                 
                 // Aiming guide
                 this.aimGuide = this.add.graphics();
@@ -293,43 +364,52 @@
             }
 
             createContainer() {
-                const containerX = this.screenWidth * 0.6;
-                const containerY = this.screenHeight * 0.9;
-                const containerWidth = this.screenWidth * 0.35;
-                const containerHeight = this.screenHeight * 0.5;
+                // Position container closer to cannon
+                const containerX = this.screenWidth * 0.65;
+                const containerY = this.screenHeight * 0.8; // Center Y
+                const containerWidth = this.screenWidth * 0.3; // Slightly narrower
+                const containerHeight = this.screenHeight * 0.35; // Slightly shorter
                 
-                // Container base
-                this.containerBase = this.add.rectangle(containerX, containerY, containerWidth, 20, 0x6b5b95);
-                this.matter.add.gameObject(this.containerBase, { isStatic: true });
+                // Container base - positioned at bottom
+                const bottomY = containerY + containerHeight / 2;
+                this.containerBase = this.add.rectangle(containerX, bottomY, containerWidth, 20, 0x6b5b95);
+                this.matter.add.gameObject(this.containerBase, { isStatic: true, restitution: 0, friction: 0.5 });
                 
-                // Container sides
+                // Container sides - full height
+                const topY = containerY - containerHeight / 2;
                 this.containerLeft = this.add.rectangle(
                     containerX - containerWidth/2 + 10, 
-                    containerY - containerHeight/2, 
+                    (topY + bottomY) / 2, 
                     20, 
                     containerHeight, 
                     0x6b5b95
                 );
-                this.matter.add.gameObject(this.containerLeft, { isStatic: true });
+                this.matter.add.gameObject(this.containerLeft, { isStatic: true, restitution: 0.1, friction: 0.5 });
                 
                 this.containerRight = this.add.rectangle(
                     containerX + containerWidth/2 - 10, 
-                    containerY - containerHeight/2, 
+                    (topY + bottomY) / 2, 
                     20, 
                     containerHeight, 
                     0x6b5b95
                 );
-                this.matter.add.gameObject(this.containerRight, { isStatic: true });
+                this.matter.add.gameObject(this.containerRight, { isStatic: true, restitution: 0.1, friction: 0.5 });
                 
-                // Water level indicator
+                // Water level indicator - bottom origin
                 this.waterLevelIndicator = this.add.rectangle(
                     containerX, 
-                    containerY, 
+                    bottomY, 
                     containerWidth - 40, 
                     5, 
                     0x9d7aff
                 );
                 this.waterLevelIndicator.setAlpha(0.7);
+                this.waterLevelIndicator.setOrigin(0.5, 1);
+                
+                // Store container bounds
+                this.containerTopY = topY;
+                this.containerBottomY = bottomY;
+                this.containerInnerWidth = containerWidth - 40;
             }
 
             createFloatingObjects() {
@@ -337,13 +417,13 @@
                 
                 // Create different types of objects based on level
                 const objectCount = Math.min(this.level, 3);
-                const containerX = this.screenWidth * 0.6;
-                const containerY = this.screenHeight * 0.9;
-                const containerWidth = this.screenWidth * 0.35;
+                const containerX = this.screenWidth * 0.65;
+                const containerY = this.screenHeight * 0.8;
+                const containerWidth = this.screenWidth * 0.3;
                 
                 for (let i = 0; i < objectCount; i++) {
                     const x = containerX - containerWidth/4 + (i * containerWidth/objectCount/2);
-                    const y = containerY - 20;
+                    const y = this.containerTopY + 50; // Start above top
                     
                     let object;
                     const objectType = i % 3;
@@ -372,15 +452,18 @@
             createCircuit() {
                 this.electrodes = [];
                 
-                const containerX = this.screenWidth * 0.6;
-                const containerY = this.screenHeight * 0.9;
-                const containerWidth = this.screenWidth * 0.35;
-                const containerHeight = this.screenHeight * 0.5;
+                const containerX = this.screenWidth * 0.65;
+                const containerY = this.screenHeight * 0.8;
+                const containerWidth = this.screenWidth * 0.3;
+                const containerHeight = this.screenHeight * 0.35;
+                
+                // Electrode Y - upper position
+                const electrodeY = containerY - containerHeight / 3;
                 
                 // Left electrode
                 const leftElectrode = this.add.rectangle(
                     containerX - containerWidth/3, 
-                    containerY - containerHeight/4, 
+                    electrodeY, 
                     10, 
                     60, 
                     0xffd166
@@ -391,7 +474,7 @@
                 // Right electrode
                 const rightElectrode = this.add.rectangle(
                     containerX + containerWidth/3, 
-                    containerY - containerHeight/4, 
+                    electrodeY, 
                     10, 
                     60, 
                     0xffd166
@@ -404,24 +487,27 @@
                 wireGraphics.lineStyle(4, 0xffd166, 0.7);
                 
                 // Left wire
-                wireGraphics.moveTo(containerX - containerWidth/3, containerY - containerHeight/4 - 30);
-                wireGraphics.lineTo(containerX - containerWidth/2 - 20, containerY - containerHeight/4 - 30);
+                wireGraphics.moveTo(containerX - containerWidth/3, electrodeY - 30);
+                wireGraphics.lineTo(containerX - containerWidth/2 - 20, electrodeY - 30);
                 wireGraphics.lineTo(containerX - containerWidth/2 - 20, containerY - containerHeight/2 - 20);
                 wireGraphics.lineTo(containerX + containerWidth/2 + 20, containerY - containerHeight/2 - 20);
                 
                 // Right wire
-                wireGraphics.moveTo(containerX + containerWidth/3, containerY - containerHeight/4 - 30);
-                wireGraphics.lineTo(containerX + containerWidth/2 + 20, containerY - containerHeight/4 - 30);
+                wireGraphics.moveTo(containerX + containerWidth/3, electrodeY - 30);
+                wireGraphics.lineTo(containerX + containerWidth/2 + 20, electrodeY - 30);
                 
                 wireGraphics.strokePath();
                 
                 // Circuit base
                 this.add.rectangle(containerX + containerWidth/2 + 20, containerY - containerHeight/2 - 30, 60, 20, 0x6b5b95);
+                
+                // Store electrode Y for level check
+                this.electrodeY = electrodeY;
             }
 
             createLightbulb() {
-                const containerX = this.screenWidth * 0.6;
-                const containerWidth = this.screenWidth * 0.35;
+                const containerX = this.screenWidth * 0.65;
+                const containerWidth = this.screenWidth * 0.3;
                 
                 // Lightbulb base
                 this.add.rectangle(containerX + containerWidth/2 + 20, this.screenHeight * 0.3, 40, 10, 0x4a3c6e);
@@ -438,25 +524,35 @@
             setupTouchInput() {
                 // Touch start for aiming
                 this.input.on('pointerdown', (pointer) => {
+                    // Resume audio context on first interaction
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                    
                     // Check if touch is in the cannon area (left side of screen)
-                    if (pointer.x < this.screenWidth * 0.4) {
+                    if (pointer.x < this.screenWidth * 0.5) {
                         this.touchStartX = pointer.x;
                         this.touchStartY = pointer.y;
                         this.isAiming = true;
-                        this.aimPower = 0.5; // Start with minimum power
+                        this.aimPower = 0.5;
+                        
+                        // Stop demo if active
+                        if (this.showingDemo) {
+                            this.stopDemo();
+                        }
                     }
                 });
                 
                 // Touch move for adjusting aim
                 this.input.on('pointermove', (pointer) => {
                     if (this.isAiming && !this.levelComplete) {
-                        // Calculate power based on distance from cannon
+                        // Calculate power based on distance from cannon nozzle
                         const distance = Phaser.Math.Distance.Between(
                             this.cannonNozzle.x, this.cannonNozzle.y,
                             pointer.x, pointer.y
                         );
                         
-                        this.aimPower = Phaser.Math.Clamp(distance / 150, 0.5, 2);
+                        this.aimPower = Phaser.Math.Clamp(distance / 150, 0.5, 2.5); // Adjusted sensitivity
                         
                         // Update touch position for aiming
                         this.touchStartX = pointer.x;
@@ -479,151 +575,174 @@
                         this.aimPower = 0;
                     }
                 });
-                
-                // Add virtual buttons for mobile
-                this.createVirtualButtons();
             }
 
-            createVirtualButtons() {
-                // Reset button
-                const resetButton = this.add.rectangle(
-                    this.screenWidth - 60, 
-                    40, 
-                    80, 
-                    40, 
-                    0xff6b9d
-                ).setInteractive();
+            createUI() {
+                // UI Panel
+                this.uiPanel = this.add.container(10, 10);
                 
-                resetButton.on('pointerdown', () => {
+                // Level indicator
+                this.levelText = this.add.text(0, 0, `LEVEL ${this.level}`, {
+                    fontSize: '18px',
+                    fill: '#9d7aff',
+                    fontStyle: 'bold'
+                });
+                
+                // Liquid used indicator
+                this.liquidText = this.add.text(0, 25, `LIQUID: ${this.liquidUsed} ml`, {
+                    fontSize: '16px',
+                    fill: '#9d7aff'
+                });
+                
+                // Circuit progress text
+                this.circuitText = this.add.text(0, 45, `CIRCUIT: ${Math.round(this.circuitProgress)}%`, {
+                    fontSize: '16px',
+                    fill: '#9d7aff'
+                });
+                
+                this.uiPanel.add([this.levelText, this.liquidText, this.circuitText]);
+                
+                // Control buttons
+                this.controlButtons = this.add.container(this.screenWidth - 100, 10);
+                
+                // Reset button
+                this.resetButton = this.add.rectangle(0, 0, 80, 35, 0xff6b9d)
+                    .setInteractive({ useHandCursor: true });
+                this.resetButton.on('pointerdown', () => {
                     this.resetLevel();
                 });
                 
-                this.add.text(this.screenWidth - 60, 40, 'RESET', {
+                this.resetText = this.add.text(0, 0, 'RESET', {
                     fontSize: '14px',
                     fill: '#ffffff',
                     fontStyle: 'bold'
                 }).setOrigin(0.5);
                 
                 // Next level button (initially hidden)
-                this.nextLevelButton = this.add.rectangle(
-                    this.screenWidth - 60, 
-                    100, 
-                    80, 
-                    40, 
-                    0x4cd964
-                ).setInteractive();
-                
-                this.nextLevelButton.on('pointerdown', () => {
+                this.nextButton = this.add.rectangle(0, 45, 80, 35, 0x4cd964)
+                    .setInteractive({ useHandCursor: true });
+                this.nextButton.on('pointerdown', () => {
                     this.nextLevel();
                 });
                 
-                this.nextLevelText = this.add.text(this.screenWidth - 60, 100, 'NEXT', {
+                this.nextText = this.add.text(0, 45, 'NEXT', {
                     fontSize: '14px',
                     fill: '#ffffff',
                     fontStyle: 'bold'
                 }).setOrigin(0.5);
                 
-                this.nextLevelButton.setVisible(false);
-                this.nextLevelText.setVisible(false);
-            }
-
-            createUI() {
-                // Level indicator
-                this.levelText = this.add.text(20, 20, `LEVEL ${this.level}`, {
-                    fontSize: '20px',
-                    fill: '#9d7aff',
-                    fontStyle: 'bold'
-                });
+                this.nextButton.setVisible(false);
+                this.nextText.setVisible(false);
                 
-                // Liquid used indicator
-                this.liquidText = this.add.text(20, 50, `LIQUID: ${this.liquidUsed} ml`, {
-                    fontSize: '16px',
-                    fill: '#9d7aff'
-                });
+                this.controlButtons.add([this.resetButton, this.resetText, this.nextButton, this.nextText]);
                 
-                // Circuit progress text
-                this.circuitText = this.add.text(20, 80, `CIRCUIT: ${Math.round(this.circuitProgress)}%`, {
-                    fontSize: '16px',
-                    fill: '#9d7aff'
-                });
-                
-                // Instructions for mobile
-                this.instructionText = this.add.text(this.screenWidth/2, this.screenHeight - 20, 'TOUCH AND DRAG TO AIM, RELEASE TO SHOOT', {
+                // Demo guide text
+                this.demoGuide = this.add.text(this.screenWidth/2, this.screenHeight - 30, 
+                    'TOUCH AND DRAG TO AIM, RELEASE TO SHOOT', {
                     fontSize: '14px',
                     fill: '#9d7aff',
                     fontStyle: 'bold'
                 }).setOrigin(0.5);
-                
-                // FPS counter for performance monitoring
-                this.fpsText = this.add.text(this.screenWidth - 20, this.screenHeight - 20, '', {
-                    fontSize: '12px',
-                    fill: '#9d7aff'
-                }).setOrigin(1, 1);
+            }
+
+            playShotSound() {
+                if (!this.audioContext || this.audioContext.state !== 'running') return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+
+                oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+                gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
+
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + 0.1);
             }
 
             fireLiquid() {
                 if (this.isFiring || this.levelComplete) return;
                 
                 this.isFiring = true;
+                this.playShotSound();
                 
                 const angle = Phaser.Math.Angle.Between(
                     this.cannonNozzle.x, this.cannonNozzle.y,
                     this.touchStartX, this.touchStartY
                 );
                 
-                // Create liquid particles
-                const liquidColor = 0x9d7aff;
-                const particleCount = 6; // Reduced for mobile performance
+                // Improved speed for better reach and arc
+                const speed = 200 + this.aimPower * 200; // 250-700 px/s
+                const particleCount = this.maxParticlesPerShot;
                 
                 for (let i = 0; i < particleCount; i++) {
                     setTimeout(() => {
-                        const size = Phaser.Math.Between(6, 10);
-                        const particle = this.add.circle(
+                        const size = Phaser.Math.Between(5, 8); // Slightly smaller for more particles
+                        
+                        // Create visual representation first
+                        const particleGO = this.add.circle(
                             this.cannonNozzle.x, 
                             this.cannonNozzle.y, 
                             size, 
-                            liquidColor
+                            0x9d7aff
                         );
                         
-                        this.matter.add.gameObject(particle, {
-                            restitution: 0.1,
-                            friction: 0.005,
-                            density: 0.9,
-                            label: 'water'
+                        // Add physics to the visual
+                        this.matter.add.gameObject(particleGO, {
+                            circleRadius: size,
+                            restitution: 0.1, // Reduced for less bouncing
+                            friction: 0.01, // Increased for quicker settling
+                            density: 0.8,
+                            frictionAir: 0.001 // Slight air resistance
                         });
                         
-                        // Apply force in the direction of the touch with power multiplier
-                        const force = 0.04 * this.aimPower;
-                        particle.applyForce({
-                            x: Math.cos(angle) * force * (0.8 + Math.random() * 0.4),
-                            y: Math.sin(angle) * force * (0.8 + Math.random() * 0.4)
-                        });
+                        // Set initial velocity
+                        const velocityX = Math.cos(angle) * speed * (0.9 + Math.random() * 0.2);
+                        const velocityY = Math.sin(angle) * speed * (0.9 + Math.random() * 0.2);
+                        particleGO.setVelocity(velocityX, velocityY);
                         
                         // Add to particles array
-                        this.liquidParticles.push(particle);
+                        this.liquidParticles.push({
+                            go: particleGO
+                        });
                         
-                        // Remove particles after a while
+                        // Remove particles after a while if not in container
                         setTimeout(() => {
-                            if (particle && particle.active) {
-                                const index = this.liquidParticles.indexOf(particle);
-                                if (index > -1) {
-                                    this.liquidParticles.splice(index, 1);
-                                }
-                                particle.destroy();
+                            if (this.isParticleInContainer(particleGO)) return; // Keep if in container
+                            const index = this.liquidParticles.findIndex(item => item.go === particleGO);
+                            if (index > -1) {
+                                this.liquidParticles.splice(index, 1);
                             }
-                        }, 15000);
+                            this.matter.world.remove(particleGO.body);
+                            if (particleGO.active) {
+                                particleGO.destroy();
+                            }
+                        }, 10000); // Reduced time
                         
-                    }, i * 80); // Slightly slower firing for mobile
+                    }, i * 40); // Faster burst
                 }
                 
                 // Update liquid used
-                this.liquidUsed += 40;
+                this.liquidUsed += particleCount * 5;
                 this.liquidText.setText(`LIQUID: ${this.liquidUsed} ml`);
                 
                 // Reset firing state
                 setTimeout(() => {
                     this.isFiring = false;
-                }, 600);
+                }, 500);
+            }
+
+            isParticleInContainer(go) {
+                const containerX = this.screenWidth * 0.65;
+                const containerWidth = this.screenWidth * 0.3;
+                const left = containerX - containerWidth / 2 + 20;
+                const right = containerX + containerWidth / 2 - 20;
+                return go.x > left &&
+                       go.x < right &&
+                       go.y > this.containerTopY &&
+                       go.y < this.containerBottomY;
             }
 
             update() {
@@ -638,6 +757,9 @@
                 
                 // Update UI
                 this.updateUI();
+                
+                // Settle particles in container to simulate pooling
+                this.settleParticles();
             }
 
             updateAiming() {
@@ -651,11 +773,16 @@
                         this.touchStartX, this.touchStartY
                     );
                     
-                    // Draw aiming guide
+                    // Improved speed matching fireLiquid
+                    const speed = 200 + this.aimPower * 200;
+                    const vx = Math.cos(angle) * speed;
+                    const vy = Math.sin(angle) * speed;
+                    const g = 500;
+                    
+                    // Draw aiming guide line
+                    const predictionDistance = 300;
                     this.aimGuide.lineStyle(3, 0x9d7aff, 0.7);
                     this.aimGuide.moveTo(this.cannonNozzle.x, this.cannonNozzle.y);
-                    
-                    const predictionDistance = 200 * this.aimPower;
                     this.aimGuide.lineTo(
                         this.cannonNozzle.x + Math.cos(angle) * predictionDistance,
                         this.cannonNozzle.y + Math.sin(angle) * predictionDistance
@@ -665,69 +792,102 @@
                     // Draw power indicator
                     this.powerIndicator.fillStyle(0xff6b9d, 0.7);
                     this.powerIndicator.fillRect(
-                        this.cannonNozzle.x - 10,
+                        this.cannonNozzle.x - 15,
                         this.cannonNozzle.y + 30,
-                        20 * this.aimPower,
-                        10
+                        30 * (this.aimPower / 2.5),
+                        8
                     );
                     
                     // Draw touch point indicator
                     this.aimGuide.fillStyle(0xff6b9d, 0.7);
-                    this.aimGuide.fillCircle(this.touchStartX, this.touchStartY, 10);
+                    this.aimGuide.fillCircle(this.touchStartX, this.touchStartY, 8);
+                    
+                    // Draw improved trajectory dots
+                    this.drawTrajectory(vx, vy, g);
+                }
+            }
+            
+            drawTrajectory(vx, vy, g) {
+                const dotCount = 10;
+                const timeStep = 0.1; // 0.1 seconds per step
+                
+                for (let i = 1; i <= dotCount; i++) {
+                    const t = i * timeStep;
+                    const x = this.cannonNozzle.x + vx * t;
+                    const y = this.cannonNozzle.y + vy * t + 0.5 * g * t * t;
+                    
+                    // Skip if off screen
+                    if (x < 0 || x > this.screenWidth || y < 0 || y > this.screenHeight) break;
+                    
+                    this.aimGuide.fillStyle(0x9d7aff, 0.8 - (i * 0.07));
+                    this.aimGuide.fillCircle(x, y, 3);
                 }
             }
 
             updateWaterPhysics() {
-                // Calculate water level based on particles in container
-                let totalY = 0;
                 let waterParticlesInContainer = 0;
-                let minY = this.screenHeight;
                 
-                const containerX = this.screenWidth * 0.6;
-                const containerY = this.screenHeight * 0.9;
-                const containerWidth = this.screenWidth * 0.35;
-                const containerHeight = this.screenHeight * 0.5;
-                
-                this.liquidParticles.forEach(particle => {
-                    if (particle.x > containerX - containerWidth/2 + 20 && 
-                        particle.x < containerX + containerWidth/2 - 20 && 
-                        particle.y > containerY - containerHeight/2 && 
-                        particle.y < containerY) {
-                        
-                        totalY += particle.y;
+                // Count particles in full container
+                this.liquidParticles.forEach(item => {
+                    if (this.isParticleInContainer(item.go)) {
                         waterParticlesInContainer++;
-                        if (particle.y < minY) minY = particle.y;
                     }
                 });
                 
+                // Simulate water level based on particle count
+                const maxParticles = 60; // Capacity for full fill
+                const fillRatio = Math.min(waterParticlesInContainer / maxParticles, 1);
+                const waterHeight = (this.containerBottomY - this.containerTopY) * fillRatio;
+                const waterTopY = this.containerBottomY - waterHeight;
+                
                 // Update water level indicator
-                if (waterParticlesInContainer > 0) {
-                    const waterLevel = Phaser.Math.Clamp(containerY - (containerY - minY) * 2, containerY - containerHeight/2, containerY);
-                    
-                    this.waterLevelIndicator.y = waterLevel;
-                    this.waterLevelIndicator.height = containerY - waterLevel;
-                    
-                    // Check if objects are floating
-                    this.updateFloatingObjects(waterLevel);
-                } else {
-                    this.waterLevelIndicator.height = 5;
-                }
+                this.waterLevelIndicator.setDisplaySize(this.containerInnerWidth, waterHeight);
+                
+                // Store for other uses
+                this.currentWaterTopY = waterTopY;
+                
+                // Check if objects are floating
+                this.updateFloatingObjects(waterTopY);
             }
 
-            updateFloatingObjects(waterLevel) {
+            settleParticles() {
+                // Simple settling: move particles to water surface if below (simulate stacking/pooling)
+                if (!this.currentWaterTopY) return;
+                
+                this.liquidParticles.forEach(item => {
+                    const go = item.go;
+                    if (this.isParticleInContainer(go) && go.y > this.currentWaterTopY + 5) {
+                        // Settle to surface with small random offset
+                        const newY = this.currentWaterTopY + Phaser.Math.Between(-3, 3);
+                        go.setPosition(go.x, newY);
+                        go.setVelocity(0, 0);
+                        go.setAngularVelocity(0);
+                    }
+                });
+            }
+
+            updateFloatingObjects(waterTopY) {
                 let floatingCount = 0;
-                const containerX = this.screenWidth * 0.6;
-                const containerWidth = this.screenWidth * 0.35;
+                const containerX = this.screenWidth * 0.65;
+                const containerWidth = this.screenWidth * 0.3;
+                const left = containerX - containerWidth / 2 + 20;
+                const right = containerX + containerWidth / 2 - 20;
                 
                 this.floatingObjects.forEach(obj => {
-                    // If object is in container and above water level, it's floating
-                    if (obj.x > containerX - containerWidth/2 + 20 && 
-                        obj.x < containerX + containerWidth/2 - 20 && 
-                        obj.y < waterLevel - 20) {
+                    // Compute half height from bounds
+                    const halfHeight = (obj.body.bounds.max.y - obj.body.bounds.min.y) / 2;
+                    const objBottomY = obj.y + halfHeight;
+                    
+                    // If object is in container and bottom is below water surface (submerged)
+                    if (obj.x > left && 
+                        obj.x < right && 
+                        objBottomY > waterTopY) {
                         
-                        // Apply buoyancy force
-                        const buoyancyForce = 0.01;
-                        obj.applyForce({ x: 0, y: -buoyancyForce });
+                        // Apply buoyancy force upward
+                        const submersion = objBottomY - waterTopY;
+                        const buoyancyForce = 0.02 * (submersion / halfHeight);
+                        const currentVel = obj.body.velocity;
+                        obj.setVelocity(currentVel.x * 0.95, -buoyancyForce);
                         floatingCount++;
                     }
                 });
@@ -738,36 +898,11 @@
             updateCircuit() {
                 if (this.levelComplete) return;
                 
-                const containerX = this.screenWidth * 0.6;
-                const containerWidth = this.screenWidth * 0.35;
-                const containerHeight = this.screenHeight * 0.5;
-                const containerY = this.screenHeight * 0.9;
-                
-                // Check if water connects both electrodes
-                let leftElectrodeTouchingWater = false;
-                let rightElectrodeTouchingWater = false;
-                
-                this.liquidParticles.forEach(particle => {
-                    if (particle.x > containerX - containerWidth/3 - 10 && 
-                        particle.x < containerX - containerWidth/3 + 10 && 
-                        particle.y > containerY - containerHeight/4 - 30 && 
-                        particle.y < containerY - containerHeight/4 + 30) {
-                        leftElectrodeTouchingWater = true;
-                    }
-                    
-                    if (particle.x > containerX + containerWidth/3 - 10 && 
-                        particle.x < containerX + containerWidth/3 + 10 && 
-                        particle.y > containerY - containerHeight/4 - 30 && 
-                        particle.y < containerY - containerHeight/4 + 30) {
-                        rightElectrodeTouchingWater = true;
-                    }
-                });
-                
-                // Update circuit progress
-                if (leftElectrodeTouchingWater && rightElectrodeTouchingWater) {
-                    this.circuitProgress = Math.min(100, this.circuitProgress + 0.5);
+                // Check if water level reaches electrodes
+                if (this.currentWaterTopY && this.currentWaterTopY <= this.electrodeY) {
+                    this.circuitProgress = Math.min(100, this.circuitProgress + 2);
                 } else {
-                    this.circuitProgress = Math.max(0, this.circuitProgress - 0.2);
+                    this.circuitProgress = Math.max(0, this.circuitProgress - 0.5);
                 }
                 
                 // Update circuit text
@@ -803,14 +938,13 @@
             }
 
             updateUI() {
-                // Update FPS counter
-                this.fpsText.setText(`FPS: ${Math.floor(this.game.loop.actualFps)}`);
+                // Nothing needed here for now
             }
 
             showLevelComplete() {
                 // Show next level button
-                this.nextLevelButton.setVisible(true);
-                this.nextLevelText.setVisible(true);
+                this.nextButton.setVisible(true);
+                this.nextText.setVisible(true);
                 
                 // Add celebration particles
                 for (let i = 0; i < 20; i++) {
@@ -827,10 +961,10 @@
                             friction: 0.01
                         });
                         
-                        particle.applyForce({
-                            x: (Math.random() - 0.5) * 0.05,
-                            y: (Math.random() - 0.5) * 0.05
-                        });
+                        particle.setVelocity(
+                            (Math.random() - 0.5) * 200,
+                            (Math.random() - 0.5) * 200
+                        );
                         
                         setTimeout(() => {
                             if (particle && particle.active) {
@@ -841,12 +975,105 @@
                 }
             }
 
+            startDemo() {
+                this.showingDemo = true;
+                this.demoStep = 0;
+                this.runDemo();
+            }
+            
+            runDemo() {
+                if (!this.showingDemo) return;
+                
+                switch (this.demoStep) {
+                    case 0:
+                        // Show aiming demo - aim with slight upward arc to container
+                        this.demoGuide.setText("DEMO: Drag from cannon to aim at container");
+                        this.touchStartX = this.screenWidth * 0.65;
+                        this.touchStartY = this.screenHeight * 0.65; // Slightly upward
+                        this.isAiming = true;
+                        this.aimPower = 1.8;
+                        this.demoStep++;
+                        setTimeout(() => this.runDemo(), 2000);
+                        break;
+                    case 1:
+                        // Show firing demo
+                        this.demoGuide.setText("DEMO: Releasing to shoot liquid");
+                        this.fireLiquid();
+                        this.isAiming = false;
+                        this.demoStep++;
+                        setTimeout(() => this.runDemo(), 3000);
+                        break;
+                    case 2:
+                        // Show circuit completion
+                        this.demoGuide.setText("DEMO: Liquid completes the circuit");
+                        // Add some particles near electrodes to simulate progress
+                        for (let i = 0; i < 5; i++) {
+                            const posX = this.screenWidth * 0.65 - this.screenWidth * 0.3/3; 
+                            const posY = this.screenHeight * 0.8 - this.screenHeight * 0.35/3; 
+                            const particleGO = this.add.circle(posX, posY, 8, 0x9d7aff);
+                            this.matter.add.gameObject(particleGO, {
+                                circleRadius: 8,
+                                restitution: 0.3,
+                                friction: 0.001,
+                                density: 0.7,
+                                isStatic: false
+                            });
+                            particleGO.setVelocity(0, 0);
+                            this.liquidParticles.push({ go: particleGO });
+                        }
+                        for (let i = 0; i < 5; i++) {
+                            const posX = this.screenWidth * 0.65 + this.screenWidth * 0.3/3; 
+                            const posY = this.screenHeight * 0.8 - this.screenHeight * 0.35/3; 
+                            const particleGO = this.add.circle(posX, posY, 8, 0x9d7aff);
+                            this.matter.add.gameObject(particleGO, {
+                                circleRadius: 8,
+                                restitution: 0.3,
+                                friction: 0.001,
+                                density: 0.7,
+                                isStatic: false
+                            });
+                            particleGO.setVelocity(0, 0);
+                            this.liquidParticles.push({ go: particleGO });
+                        }
+                        this.demoStep++;
+                        setTimeout(() => this.runDemo(), 2000);
+                        break;
+                    case 3:
+                        // Show level completion
+                        this.demoGuide.setText("DEMO: Circuit complete - light turns on!");
+                        this.circuitProgress = 100;
+                        this.demoStep++;
+                        setTimeout(() => this.runDemo(), 2000);
+                        break;
+                    case 4:
+                        // Reset and prompt user to try
+                        this.demoGuide.setText("Now try it yourself! Touch and drag to aim");
+                        this.showingDemo = false;
+                        this.resetLevel();
+                        break;
+                }
+            }
+            
+            stopDemo() {
+                this.showingDemo = false;
+                this.isAiming = false;
+                this.demoGuide.setText("TOUCH AND DRAG TO AIM, RELEASE TO SHOOT");
+            }
+
             resetLevel() {
+                // Clean up particles
+                this.liquidParticles.forEach(item => {
+                    this.matter.world.remove(item.go.body);
+                    item.go.destroy();
+                });
+                this.liquidParticles = [];
+                
                 this.scene.restart();
                 this.liquidUsed = 0;
                 this.levelComplete = false;
                 this.circuitProgress = 0;
                 this.objectsFloating = 0;
+                this.showingDemo = false;
             }
 
             nextLevel() {
@@ -870,7 +1097,7 @@
             physics: {
                 default: 'matter',
                 matter: {
-                    gravity: { y: 0.3 },
+                    gravity: { y: 500 }, // Increased for arc
                     debug: false,
                     enableSleeping: true
                 }
