@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Liquid Physics Puzzle</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #2d1b69 0%, #1a1033 100%);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            margin: 0;
+            position: fixed;
+            width: 100%;
+        }
+        
+        #gameContainer {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .orientation-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(45, 27, 105, 0.95);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .instruction-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .popup-content {
+            background: linear-gradient(135deg, #3a246b 0%, #2a184e 100%);
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            border: 2px solid #9d7aff;
+            box-shadow: 0 0 20px rgba(157, 122, 255, 0.5);
+        }
+        
+        .popup-content h2 {
+            color: #9d7aff;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 24px;
+        }
+        
+        .popup-content p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .popup-content ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .popup-content li {
+            margin-bottom: 10px;
+        }
+        
+        .close-btn {
+            background: #ff6b9d;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            font-weight: bold;
+        }
+        
+        .help-icon {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #9d7aff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(157, 122, 255, 0.7);
+        }
+        
+        @media (max-width: 768px) and (orientation: portrait) {
+            .orientation-warning {
+                display: flex;
+            }
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(90deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="orientation-warning">
+        <div style="font-size: 60px; margin-bottom: 20px; animation: rotate 2s infinite ease-in-out;">🔄</div>
+        <h2>Please Rotate Your Device</h2>
+        <p>This game works best in landscape mode. Please rotate your device to continue playing.</p>
+    </div>
+    
+    <div class="instruction-popup" id="instructionPopup">
+        <div class="popup-content">
+            <h2>How to Play</h2>
+            <p>Welcome to Liquid Physics Puzzle! Your goal is to complete the electrical circuit by filling the container with liquid.</p>
+            
+            <h3>Game Mechanics</h3>
+            <ul>
+                <li><strong>Aim & Shoot:</strong> Touch and drag to aim the cannon, then release to shoot liquid</li>
+                <li><strong>Fill Container:</strong> As liquid fills the container, it will lift floating objects</li>
+                <li><strong>Complete Circuit:</strong> When liquid reaches both electrodes, it completes the circuit</li>
+                <li><strong>Power the Light:</strong> Complete the circuit to power the lightbulb and win the level</li>
+            </ul>
+            
+            <h3>Controls</h3>
+            <ul>
+                <li><strong>Touch & Drag:</strong> Aim the cannon</li>
+                <li><strong>Release:</strong> Shoot liquid</li>
+                <li><strong>Reset Button:</strong> Restart current level</li>
+                <li><strong>Next Button:</strong> Advance to next level (when available)</li>
+            </ul>
+            
+            <button class="close-btn" id="closeInstructions">Got It!</button>
+        </div>
+    </div>
+    
+    <div class="help-icon" id="helpIcon">?</div>
+    
+    <div id="gameContainer"></div>
+
+    <script>
+        class LiquidPhysicsGame extends Phaser.Scene {
+            constructor() {
+                super({ key: 'LiquidPhysicsGame' });
+                this.liquidParticles = [];
+                this.cannon = null;
+                this.container = null;
+                this.floatingObjects = [];
+                this.electrodes = [];
+                this.lightbulb = null;
+                this.isFiring = false;
+                this.liquidUsed = 0;
+                this.level = 1;
+                this.levelComplete = false;
+                this.circuitProgress = 0;
+                this.objectsFloating = 0;
+                this.touchStartX = 0;
+                this.touchStartY = 0;
+                this.isAiming = false;
+                this.aimPower = 0;
+                this.lastFireTime = 0;
+                this.fireRate = 500; // ms between shots
+            }
+
+            preload() {
+                // No external assets to load - using placeholder graphics
+            }
+
+            create() {
+                // Get screen dimensions
+                this.screenWidth = this.sys.game.config.width;
+                this.screenHeight = this.sys.game.config.height;
+                
+                // Set up the physics world
+                this.matter.world.setBounds(0, 0, this.screenWidth, this.screenHeight);
+                this.matter.world.setGravity(0, 0.3);
+                
+                // Create background with purple theme
+                this.createBackground();
+                
+                // Create the game elements based on level
+                this.createGameElements();
+                
+                // Set up touch input
+                this.setupTouchInput();
+                
+                // Create UI elements
+                this.createUI();
+            }
+
+            createBackground() {
+                // Create gradient background
+                const bg = this.add.graphics();
+                bg.fillGradientStyle(0x2d1b69, 0x2d1b69, 0x1a1033, 0x1a1033, 1);
+                bg.fillRect(0, 0, this.screenWidth, this.screenHeight);
+                
+                // Add subtle grid lines
+                const grid = this.add.graphics();
+                grid.lineStyle(1, 0x9d7aff, 0.1);
+                
+                for (let x = 0; x < this.screenWidth; x += 50) {
+                    grid.moveTo(x, 0);
+                    grid.lineTo(x, this.screenHeight);
+                }
+                
+                for (let y = 0; y < this.screenHeight; y += 50) {
+                    grid.moveTo(0, y);
+                    grid.lineTo(this.screenWidth, y);
+                }
+                
+                grid.strokePath();
+            }
+
+            createGameElements() {
+                // Create the liquid cannon
+                this.createCannon();
+                
+                // Create the container
+                this.createContainer();
+                
+                // Create floating objects
+                this.createFloatingObjects();
+                
+                // Create electrodes and circuit
+                this.createCircuit();
+                
+                // Create lightbulb
+                this.createLightbulb();
+            }
+
+            createCannon() {
+                const cannonX = this.screenWidth * 0.15;
+                const cannonY = this.screenHeight * 0.85;
+                
+                // Cannon base
+                this.cannonBase = this.add.rectangle(cannonX, cannonY, 60, 30, 0x6b5b95);
+                this.matter.add.gameObject(this.cannonBase, { isStatic: true });
+                
+                // Cannon barrel
+                this.cannonBarrel = this.add.rectangle(cannonX, cannonY - 20, 40, 60, 0x4a3c6e);
+                this.matter.add.gameObject(this.cannonBarrel, { isStatic: true });
+                
+                // Cannon nozzle
+                this.cannonNozzle = this.add.rectangle(cannonX, cannonY - 50, 20, 20, 0xff6b9d);
+                this.matter.add.gameObject(this.cannonNozzle, { isStatic: true });
+                
+                // Aiming guide
+                this.aimGuide = this.add.graphics();
+                
+                // Power indicator
+                this.powerIndicator = this.add.graphics();
+            }
+
+            createContainer() {
+                const containerX = this.screenWidth * 0.6;
+                const containerY = this.screenHeight * 0.9;
+                const containerWidth = this.screenWidth * 0.35;
+                const containerHeight = this.screenHeight * 0.5;
+                
+                // Container base
+                this.containerBase = this.add.rectangle(containerX, containerY, containerWidth, 20, 0x6b5b95);
+                this.matter.add.gameObject(this.containerBase, { isStatic: true });
+                
+                // Container sides
+                this.containerLeft = this.add.rectangle(
+                    containerX - containerWidth/2 + 10, 
+                    containerY - containerHeight/2, 
+                    20, 
+                    containerHeight, 
+                    0x6b5b95
+                );
+                this.matter.add.gameObject(this.containerLeft, { isStatic: true });
+                
+                this.containerRight = this.add.rectangle(
+                    containerX + containerWidth/2 - 10, 
+                    containerY - containerHeight/2, 
+                    20, 
+                    containerHeight, 
+                    0x6b5b95
+                );
+                this.matter.add.gameObject(this.containerRight, { isStatic: true });
+                
+                // Water level indicator
+                this.waterLevelIndicator = this.add.rectangle(
+                    containerX, 
+                    containerY, 
+                    containerWidth - 40, 
+                    5, 
+                    0x9d7aff
+                );
+                this.waterLevelIndicator.setAlpha(0.7);
+            }
+
+            createFloatingObjects() {
+                this.floatingObjects = [];
+                
+                // Create different types of objects based on level
+                const objectCount = Math.min(this.level, 3);
+                const containerX = this.screenWidth * 0.6;
+                const containerY = this.screenHeight * 0.9;
+                const containerWidth = this.screenWidth * 0.35;
+                
+                for (let i = 0; i < objectCount; i++) {
+                    const x = containerX - containerWidth/4 + (i * containerWidth/objectCount/2);
+                    const y = containerY - 20;
+                    
+                    let object;
+                    const objectType = i % 3;
+                    
+                    if (objectType === 0) {
+                        // Cube
+                        object = this.add.rectangle(x, y, 40, 40, 0xff6b9d);
+                    } else if (objectType === 1) {
+                        // Sphere
+                        object = this.add.circle(x, y, 25, 0xffb74d);
+                    } else {
+                        // Rectangle
+                        object = this.add.rectangle(x, y, 50, 30, 0x4cd964);
+                    }
+                    
+                    const matterObject = this.matter.add.gameObject(object, {
+                        restitution: 0.2,
+                        friction: 0.05,
+                        density: 0.3
+                    });
+                    
+                    this.floatingObjects.push(matterObject);
+                }
+            }
+
+            createCircuit() {
+                this.electrodes = [];
+                
+                const containerX = this.screenWidth * 0.6;
+                const containerY = this.screenHeight * 0.9;
+                const containerWidth = this.screenWidth * 0.35;
+                const containerHeight = this.screenHeight * 0.5;
+                
+                // Left electrode
+                const leftElectrode = this.add.rectangle(
+                    containerX - containerWidth/3, 
+                    containerY - containerHeight/4, 
+                    10, 
+                    60, 
+                    0xffd166
+                );
+                this.matter.add.gameObject(leftElectrode, { isStatic: true, label: 'electrode' });
+                this.electrodes.push(leftElectrode);
+                
+                // Right electrode
+                const rightElectrode = this.add.rectangle(
+                    containerX + containerWidth/3, 
+                    containerY - containerHeight/4, 
+                    10, 
+                    60, 
+                    0xffd166
+                );
+                this.matter.add.gameObject(rightElectrode, { isStatic: true, label: 'electrode' });
+                this.electrodes.push(rightElectrode);
+                
+                // Wires
+                const wireGraphics = this.add.graphics();
+                wireGraphics.lineStyle(4, 0xffd166, 0.7);
+                
+                // Left wire
+                wireGraphics.moveTo(containerX - containerWidth/3, containerY - containerHeight/4 - 30);
+                wireGraphics.lineTo(containerX - containerWidth/2 - 20, containerY - containerHeight/4 - 30);
+                wireGraphics.lineTo(containerX - containerWidth/2 - 20, containerY - containerHeight/2 - 20);
+                wireGraphics.lineTo(containerX + containerWidth/2 + 20, containerY - containerHeight/2 - 20);
+                
+                // Right wire
+                wireGraphics.moveTo(containerX + containerWidth/3, containerY - containerHeight/4 - 30);
+                wireGraphics.lineTo(containerX + containerWidth/2 + 20, containerY - containerHeight/4 - 30);
+                
+                wireGraphics.strokePath();
+                
+                // Circuit base
+                this.add.rectangle(containerX + containerWidth/2 + 20, containerY - containerHeight/2 - 30, 60, 20, 0x6b5b95);
+            }
+
+            createLightbulb() {
+                const containerX = this.screenWidth * 0.6;
+                const containerWidth = this.screenWidth * 0.35;
+                
+                // Lightbulb base
+                this.add.rectangle(containerX + containerWidth/2 + 20, this.screenHeight * 0.3, 40, 10, 0x4a3c6e);
+                
+                // Lightbulb (initially off)
+                this.lightbulb = this.add.circle(containerX + containerWidth/2 + 20, this.screenHeight * 0.25, 25, 0x6b5b95);
+                this.lightbulbGlow = this.add.circle(containerX + containerWidth/2 + 20, this.screenHeight * 0.25, 35, 0x4cd964);
+                this.lightbulbGlow.setAlpha(0);
+                
+                // Light rays (initially hidden)
+                this.lightRays = this.add.graphics();
+            }
+
+            setupTouchInput() {
+                // Touch start for aiming
+                this.input.on('pointerdown', (pointer) => {
+                    // Check if touch is in the cannon area (left side of screen)
+                    if (pointer.x < this.screenWidth * 0.4) {
+                        this.touchStartX = pointer.x;
+                        this.touchStartY = pointer.y;
+                        this.isAiming = true;
+                        this.aimPower = 0.5; // Start with minimum power
+                    }
+                });
+                
+                // Touch move for adjusting aim
+                this.input.on('pointermove', (pointer) => {
+                    if (this.isAiming && !this.levelComplete) {
+                        // Calculate power based on distance from cannon
+                        const distance = Phaser.Math.Distance.Between(
+                            this.cannonNozzle.x, this.cannonNozzle.y,
+                            pointer.x, pointer.y
+                        );
+                        
+                        this.aimPower = Phaser.Math.Clamp(distance / 150, 0.5, 2);
+                        
+                        // Update touch position for aiming
+                        this.touchStartX = pointer.x;
+                        this.touchStartY = pointer.y;
+                    }
+                });
+                
+                // Touch end for shooting
+                this.input.on('pointerup', (pointer) => {
+                    if (this.isAiming && !this.levelComplete && !this.isFiring) {
+                        const currentTime = Date.now();
+                        
+                        // Prevent firing too quickly
+                        if (currentTime - this.lastFireTime > this.fireRate) {
+                            this.fireLiquid();
+                            this.lastFireTime = currentTime;
+                        }
+                        
+                        this.isAiming = false;
+                        this.aimPower = 0;
+                    }
+                });
+                
+                // Add virtual buttons for mobile
+                this.createVirtualButtons();
+            }
+
+            createVirtualButtons() {
+                // Reset button
+                const resetButton = this.add.rectangle(
+                    this.screenWidth - 60, 
+                    40, 
+                    80, 
+                    40, 
+                    0xff6b9d
+                ).setInteractive();
+                
+                resetButton.on('pointerdown', () => {
+                    this.resetLevel();
+                });
+                
+                this.add.text(this.screenWidth - 60, 40, 'RESET', {
+                    fontSize: '14px',
+                    fill: '#ffffff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+                
+                // Next level button (initially hidden)
+                this.nextLevelButton = this.add.rectangle(
+                    this.screenWidth - 60, 
+                    100, 
+                    80, 
+                    40, 
+                    0x4cd964
+                ).setInteractive();
+                
+                this.nextLevelButton.on('pointerdown', () => {
+                    this.nextLevel();
+                });
+                
+                this.nextLevelText = this.add.text(this.screenWidth - 60, 100, 'NEXT', {
+                    fontSize: '14px',
+                    fill: '#ffffff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+                
+                this.nextLevelButton.setVisible(false);
+                this.nextLevelText.setVisible(false);
+            }
+
+            createUI() {
+                // Level indicator
+                this.levelText = this.add.text(20, 20, `LEVEL ${this.level}`, {
+                    fontSize: '20px',
+                    fill: '#9d7aff',
+                    fontStyle: 'bold'
+                });
+                
+                // Liquid used indicator
+                this.liquidText = this.add.text(20, 50, `LIQUID: ${this.liquidUsed} ml`, {
+                    fontSize: '16px',
+                    fill: '#9d7aff'
+                });
+                
+                // Circuit progress text
+                this.circuitText = this.add.text(20, 80, `CIRCUIT: ${Math.round(this.circuitProgress)}%`, {
+                    fontSize: '16px',
+                    fill: '#9d7aff'
+                });
+                
+                // Instructions for mobile
+                this.instructionText = this.add.text(this.screenWidth/2, this.screenHeight - 20, 'TOUCH AND DRAG TO AIM, RELEASE TO SHOOT', {
+                    fontSize: '14px',
+                    fill: '#9d7aff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5);
+                
+                // FPS counter for performance monitoring
+                this.fpsText = this.add.text(this.screenWidth - 20, this.screenHeight - 20, '', {
+                    fontSize: '12px',
+                    fill: '#9d7aff'
+                }).setOrigin(1, 1);
+            }
+
+            fireLiquid() {
+                if (this.isFiring || this.levelComplete) return;
+                
+                this.isFiring = true;
+                
+                const angle = Phaser.Math.Angle.Between(
+                    this.cannonNozzle.x, this.cannonNozzle.y,
+                    this.touchStartX, this.touchStartY
+                );
+                
+                // Create liquid particles
+                const liquidColor = 0x9d7aff;
+                const particleCount = 6; // Reduced for mobile performance
+                
+                for (let i = 0; i < particleCount; i++) {
+                    setTimeout(() => {
+                        const size = Phaser.Math.Between(6, 10);
+                        const particle = this.add.circle(
+                            this.cannonNozzle.x, 
+                            this.cannonNozzle.y, 
+                            size, 
+                            liquidColor
+                        );
+                        
+                        this.matter.add.gameObject(particle, {
+                            restitution: 0.1,
+                            friction: 0.005,
+                            density: 0.9,
+                            label: 'water'
+                        });
+                        
+                        // Apply force in the direction of the touch with power multiplier
+                        const force = 0.04 * this.aimPower;
+                        particle.applyForce({
+                            x: Math.cos(angle) * force * (0.8 + Math.random() * 0.4),
+                            y: Math.sin(angle) * force * (0.8 + Math.random() * 0.4)
+                        });
+                        
+                        // Add to particles array
+                        this.liquidParticles.push(particle);
+                        
+                        // Remove particles after a while
+                        setTimeout(() => {
+                            if (particle && particle.active) {
+                                const index = this.liquidParticles.indexOf(particle);
+                                if (index > -1) {
+                                    this.liquidParticles.splice(index, 1);
+                                }
+                                particle.destroy();
+                            }
+                        }, 15000);
+                        
+                    }, i * 80); // Slightly slower firing for mobile
+                }
+                
+                // Update liquid used
+                this.liquidUsed += 40;
+                this.liquidText.setText(`LIQUID: ${this.liquidUsed} ml`);
+                
+                // Reset firing state
+                setTimeout(() => {
+                    this.isFiring = false;
+                }, 600);
+            }
+
+            update() {
+                // Update aiming guide
+                this.updateAiming();
+                
+                // Update water level and floating objects
+                this.updateWaterPhysics();
+                
+                // Check circuit completion
+                this.updateCircuit();
+                
+                // Update UI
+                this.updateUI();
+            }
+
+            updateAiming() {
+                // Clear previous aiming guide
+                this.aimGuide.clear();
+                this.powerIndicator.clear();
+                
+                if (this.isAiming && !this.levelComplete) {
+                    const angle = Phaser.Math.Angle.Between(
+                        this.cannonNozzle.x, this.cannonNozzle.y,
+                        this.touchStartX, this.touchStartY
+                    );
+                    
+                    // Draw aiming guide
+                    this.aimGuide.lineStyle(3, 0x9d7aff, 0.7);
+                    this.aimGuide.moveTo(this.cannonNozzle.x, this.cannonNozzle.y);
+                    
+                    const predictionDistance = 200 * this.aimPower;
+                    this.aimGuide.lineTo(
+                        this.cannonNozzle.x + Math.cos(angle) * predictionDistance,
+                        this.cannonNozzle.y + Math.sin(angle) * predictionDistance
+                    );
+                    this.aimGuide.strokePath();
+                    
+                    // Draw power indicator
+                    this.powerIndicator.fillStyle(0xff6b9d, 0.7);
+                    this.powerIndicator.fillRect(
+                        this.cannonNozzle.x - 10,
+                        this.cannonNozzle.y + 30,
+                        20 * this.aimPower,
+                        10
+                    );
+                    
+                    // Draw touch point indicator
+                    this.aimGuide.fillStyle(0xff6b9d, 0.7);
+                    this.aimGuide.fillCircle(this.touchStartX, this.touchStartY, 10);
+                }
+            }
+
+            updateWaterPhysics() {
+                // Calculate water level based on particles in container
+                let totalY = 0;
+                let waterParticlesInContainer = 0;
+                let minY = this.screenHeight;
+                
+                const containerX = this.screenWidth * 0.6;
+                const containerY = this.screenHeight * 0.9;
+                const containerWidth = this.screenWidth * 0.35;
+                const containerHeight = this.screenHeight * 0.5;
+                
+                this.liquidParticles.forEach(particle => {
+                    if (particle.x > containerX - containerWidth/2 + 20 && 
+                        particle.x < containerX + containerWidth/2 - 20 && 
+                        particle.y > containerY - containerHeight/2 && 
+                        particle.y < containerY) {
+                        
+                        totalY += particle.y;
+                        waterParticlesInContainer++;
+                        if (particle.y < minY) minY = particle.y;
+                    }
+                });
+                
+                // Update water level indicator
+                if (waterParticlesInContainer > 0) {
+                    const waterLevel = Phaser.Math.Clamp(containerY - (containerY - minY) * 2, containerY - containerHeight/2, containerY);
+                    
+                    this.waterLevelIndicator.y = waterLevel;
+                    this.waterLevelIndicator.height = containerY - waterLevel;
+                    
+                    // Check if objects are floating
+                    this.updateFloatingObjects(waterLevel);
+                } else {
+                    this.waterLevelIndicator.height = 5;
+                }
+            }
+
+            updateFloatingObjects(waterLevel) {
+                let floatingCount = 0;
+                const containerX = this.screenWidth * 0.6;
+                const containerWidth = this.screenWidth * 0.35;
+                
+                this.floatingObjects.forEach(obj => {
+                    // If object is in container and above water level, it's floating
+                    if (obj.x > containerX - containerWidth/2 + 20 && 
+                        obj.x < containerX + containerWidth/2 - 20 && 
+                        obj.y < waterLevel - 20) {
+                        
+                        // Apply buoyancy force
+                        const buoyancyForce = 0.01;
+                        obj.applyForce({ x: 0, y: -buoyancyForce });
+                        floatingCount++;
+                    }
+                });
+                
+                this.objectsFloating = floatingCount;
+            }
+
+            updateCircuit() {
+                if (this.levelComplete) return;
+                
+                const containerX = this.screenWidth * 0.6;
+                const containerWidth = this.screenWidth * 0.35;
+                const containerHeight = this.screenHeight * 0.5;
+                const containerY = this.screenHeight * 0.9;
+                
+                // Check if water connects both electrodes
+                let leftElectrodeTouchingWater = false;
+                let rightElectrodeTouchingWater = false;
+                
+                this.liquidParticles.forEach(particle => {
+                    if (particle.x > containerX - containerWidth/3 - 10 && 
+                        particle.x < containerX - containerWidth/3 + 10 && 
+                        particle.y > containerY - containerHeight/4 - 30 && 
+                        particle.y < containerY - containerHeight/4 + 30) {
+                        leftElectrodeTouchingWater = true;
+                    }
+                    
+                    if (particle.x > containerX + containerWidth/3 - 10 && 
+                        particle.x < containerX + containerWidth/3 + 10 && 
+                        particle.y > containerY - containerHeight/4 - 30 && 
+                        particle.y < containerY - containerHeight/4 + 30) {
+                        rightElectrodeTouchingWater = true;
+                    }
+                });
+                
+                // Update circuit progress
+                if (leftElectrodeTouchingWater && rightElectrodeTouchingWater) {
+                    this.circuitProgress = Math.min(100, this.circuitProgress + 0.5);
+                } else {
+                    this.circuitProgress = Math.max(0, this.circuitProgress - 0.2);
+                }
+                
+                // Update circuit text
+                this.circuitText.setText(`CIRCUIT: ${Math.round(this.circuitProgress)}%`);
+                
+                // Update lightbulb based on circuit progress
+                this.lightbulbGlow.setAlpha(this.circuitProgress / 100);
+                
+                // Draw light rays when circuit is active
+                this.lightRays.clear();
+                if (this.circuitProgress > 50) {
+                    this.lightRays.lineStyle(2, 0x4cd964, 0.3);
+                    
+                    for (let i = 0; i < 8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const length = 50 + Math.sin(Date.now() / 200 + i) * 10;
+                        
+                        this.lightRays.moveTo(this.lightbulb.x, this.lightbulb.y);
+                        this.lightRays.lineTo(
+                            this.lightbulb.x + Math.cos(angle) * length,
+                            this.lightbulb.y + Math.sin(angle) * length
+                        );
+                    }
+                    
+                    this.lightRays.strokePath();
+                }
+                
+                // Check for level completion
+                if (this.circuitProgress >= 100 && !this.levelComplete) {
+                    this.levelComplete = true;
+                    this.showLevelComplete();
+                }
+            }
+
+            updateUI() {
+                // Update FPS counter
+                this.fpsText.setText(`FPS: ${Math.floor(this.game.loop.actualFps)}`);
+            }
+
+            showLevelComplete() {
+                // Show next level button
+                this.nextLevelButton.setVisible(true);
+                this.nextLevelText.setVisible(true);
+                
+                // Add celebration particles
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const particle = this.add.circle(
+                            this.lightbulb.x, 
+                            this.lightbulb.y, 
+                            Phaser.Math.Between(3, 8), 
+                            Phaser.Math.Between(0, 0xffffff)
+                        );
+                        
+                        this.matter.add.gameObject(particle, {
+                            restitution: 0.8,
+                            friction: 0.01
+                        });
+                        
+                        particle.applyForce({
+                            x: (Math.random() - 0.5) * 0.05,
+                            y: (Math.random() - 0.5) * 0.05
+                        });
+                        
+                        setTimeout(() => {
+                            if (particle && particle.active) {
+                                particle.destroy();
+                            }
+                        }, 2000);
+                    }, i * 100);
+                }
+            }
+
+            resetLevel() {
+                this.scene.restart();
+                this.liquidUsed = 0;
+                this.levelComplete = false;
+                this.circuitProgress = 0;
+                this.objectsFloating = 0;
+            }
+
+            nextLevel() {
+                if (this.levelComplete) {
+                    this.level++;
+                    this.liquidUsed = 0;
+                    this.levelComplete = false;
+                    this.circuitProgress = 0;
+                    this.objectsFloating = 0;
+                    this.scene.restart();
+                }
+            }
+        }
+
+        // Set up game config for mobile
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            parent: 'gameContainer',
+            physics: {
+                default: 'matter',
+                matter: {
+                    gravity: { y: 0.3 },
+                    debug: false,
+                    enableSleeping: true
+                }
+            },
+            scene: LiquidPhysicsGame,
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            input: {
+                activePointers: 2
+            }
+        };
+
+        // Prevent default touch behaviors
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Initialize the game
+        const game = new Phaser.Game(config);
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Instruction popup functionality
+        document.getElementById('helpIcon').addEventListener('click', function() {
+            document.getElementById('instructionPopup').style.display = 'flex';
+        });
+        
+        document.getElementById('closeInstructions').addEventListener('click', function() {
+            document.getElementById('instructionPopup').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
