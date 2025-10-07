@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Liquid Physics Puzzle</title>
+<style>
+:root {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-card: #252525;
+  --accent-primary: #3a86ff;
+  --accent-secondary: #8338ec;
+  --accent-success: #06d6a0;
+  --accent-warning: #ffd166;
+  --accent-danger: #ef476f;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --shadow: rgba(0, 0, 0, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  user-select: none;
+  color: var(--text-primary);
+  touch-action: manipulation;
+}
+
+header {
+  text-align: center;
+  padding: 10px 0;
+  width: 100%;
+  background-color: var(--bg-secondary);
+  box-shadow: 0 2px 10px var(--shadow);
+  z-index: 100;
+  position: relative;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+header p {
+  margin: 5px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+#ui {
+  width: 95%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  margin: 10px 0;
+  background-color: var(--bg-card);
+  border-radius: 15px;
+  box-shadow: 0 4px 12px var(--shadow);
+  z-index: 10;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+#moves-counter {
+  background-color: var(--bg-secondary);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+button {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 3px 8px var(--shadow);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 44px; /* Minimum touch target size */
+}
+
+button:hover, button:active {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px var(--shadow);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+#hintBtn {
+  background: linear-gradient(135deg, var(--accent-warning), #ff9e00);
+}
+
+#autoSolveBtn {
+  background: linear-gradient(135deg, var(--accent-success), #00b894);
+}
+
+#newGameBtn {
+  background: linear-gradient(135deg, var(--accent-primary), #2980b9);
+}
+
+#gameContainer {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+canvas {
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  background-color: var(--bg-card);
+  max-width: 95%;
+  max-height: 70vh;
+}
+
+.loader {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  color: white;
+  font-size: 1rem;
+  border-radius: 15px;
+}
+
+.loader::after {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border: 4px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-top: 15px;
+}
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+
+.instructions {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-card);
+  padding: 10px 15px;
+  border-radius: 12px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  box-shadow: 0 2px 8px var(--shadow);
+  max-width: 90%;
+  width: auto;
+}
+
+.win-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, var(--accent-success), #00b894);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  z-index: 100;
+  animation: popIn 0.5s ease-out;
+  max-width: 80%;
+}
+
+@keyframes popIn {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.win-message h2 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+}
+
+.win-message p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.tube-highlight {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.3rem;
+  }
+  
+  header p {
+    font-size: 0.8rem;
+  }
+  
+  #ui {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  button {
+    padding: 10px 0;
+    font-size: 0.85rem;
+  }
+  
+  .instructions {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+  }
+  
+  .win-message {
+    padding: 15px 20px;
+  }
+  
+  .win-message h2 {
+    font-size: 1.3rem;
+  }
+  
+  .win-message p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-height: 700px) {
+  header {
+    padding: 8px 0;
+  }
+  
+  header h1 {
+    font-size: 1.3rem;
+  }
+  
+  #ui {
+    margin: 5px 0;
+  }
+  
+  .instructions {
+    bottom: 5px;
+  }
+}
+
+/* Prevent zoom on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure no horizontal scroll */
+body {
+  overflow-x: hidden;
+}
+</style>
+</head>
+<body>
+  <header>
+    <h1>Liquid Physics Puzzle</h1>
+    <p>Sort the colored liquids until each tube contains only one color</p>
+  </header>
+  
+  <div id="ui">
+    <div class="stats-row">
+      <div id="moves-counter">Moves: 0</div>
+    </div>
+    <div class="button-group">
+      <button id="newGameBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white"/>
+        </svg>
+        New Game
+      </button>
+      <button id="hintBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="white"/>
+        </svg>
+        Hint
+      </button>
+      <button id="autoSolveBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+        </svg>
+        Auto Solve
+      </button>
+    </div>
+  </div>
+  
+  <div id="gameContainer"></div>
+  
+  <div class="instructions">
+    Click on a tube to select it, then click on another tube to pour liquid
+  </div>
+  
+  <div id="loader" class="loader" style="display:none;">
+    Solving puzzle...
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <script>
+    // Adjust game parameters for mobile
+    const NUM_TUBES = 6;
+    const TUBE_WIDTH = 50;
+    const TUBE_HEIGHT = 160;
+    const COLORS = ['#3a86ff', '#ef476f', '#ffd166', '#06d6a0'];
+    
+    let tubes = [];
+    let selectedTube = null;
+    let gameScene;
+    let animating = false;
+    let moves = 0;
+
+    const config = {
+      type: Phaser.AUTO,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      parent: 'gameContainer',
+      backgroundColor: 'rgba(0,0,0,0)',
+      scene: { create, resize },
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+      }
+    };
+    const game = new Phaser.Game(config);
+
+    function create() {
+      gameScene = this;
+      generateTubes();
+      drawTubes();
+
+      document.getElementById('newGameBtn').onclick = () => { 
+        playSound('click'); 
+        moves = 0;
+        updateMovesCounter();
+        generateTubes(); 
+        drawTubes(); 
+      };
+      document.getElementById('hintBtn').onclick = () => { playSound('click'); showHint(); };
+      document.getElementById('autoSolveBtn').onclick = () => { playSound('click'); autoSolve(); };
+      
+      updateMovesCounter();
+    }
+
+    function resize() {
+      this.scale.resize(window.innerWidth, window.innerHeight);
+      drawTubes();
+    }
+
+    function generateTubes() {
+      tubes = [];
+      const segments = [];
+      for (let c of COLORS) for (let i=0;i<4;i++) segments.push(c);
+      Phaser.Utils.Array.Shuffle(segments);
+      for (let i=0; i<NUM_TUBES; i++) tubes.push({segments: segments.splice(0,4)});
+      tubes[NUM_TUBES-1].segments = [];
+      tubes[NUM_TUBES-2].segments = [];
+    }
+
+    function drawTubes() {
+      gameScene.children.removeAll();
+      const width = game.scale.width;
+      const height = game.scale.height;
+      
+      // Adjust tube positioning for mobile
+      const tubeSpacing = Math.min(70, width / NUM_TUBES - 5);
+      const startX = (width - (NUM_TUBES * tubeSpacing)) / 2 + TUBE_WIDTH/2;
+      const startY = height/2 + 20;
+      
+      tubes.forEach((tube,i)=>{
+        const x = startX + i * tubeSpacing;
+        drawTube(x, startY, tube.segments, i, selectedTube === i);
+      });
+    }
+
+    function drawTube(x,y,segments,index,highlight=false) {
+      // Draw tube container with glass effect
+      const g = gameScene.add.graphics();
+      g.lineStyle(3, 0xFFFFFF, 0.8);
+      g.strokeRoundedRect(x-TUBE_WIDTH/2, y-TUBE_HEIGHT/2, TUBE_WIDTH, TUBE_HEIGHT, 10);
+      
+      // Draw liquid segments with rounded tops
+      for (let j=0;j<segments.length;j++){
+        g.fillStyle(Phaser.Display.Color.HexStringToColor(segments[j]).color, 0.9);
+        const h=TUBE_HEIGHT/4;
+        const yPos=y+TUBE_HEIGHT/2-(j+1)*h;
+        
+        // Rounded top for the top segment
+        if (j === segments.length-1) {
+          g.fillRoundedRect(x-TUBE_WIDTH/2+2, yPos+2, TUBE_WIDTH-4, h-4, 8);
+        } else {
+          g.fillRect(x-TUBE_WIDTH/2+2, yPos+2, TUBE_WIDTH-4, h-4);
+        }
+      }
+      
+      // Add highlight effect if selected
+      if (highlight) {
+        const highlight = gameScene.add.graphics();
+        highlight.lineStyle(3, 0xFFFFFF, 0.9);
+        highlight.strokeRoundedRect(x-TUBE_WIDTH/2-3, y-TUBE_HEIGHT/2-3, TUBE_WIDTH+6, TUBE_HEIGHT+6, 12);
+      }
+      
+      const zone=gameScene.add.zone(x,y,TUBE_WIDTH,TUBE_HEIGHT)
+        .setInteractive()
+        .setDepth(10)
+        .on('pointerdown',()=>handleTubeClick(index));
+    }
+
+    async function handleTubeClick(i){
+      if(animating) return;
+      playSound('click');
+      if(selectedTube===null){
+        selectedTube=i;
+      } else if(selectedTube===i){
+        selectedTube=null;
+      } else {
+        const success = await pourLiquid(selectedTube,i,true);
+        if (success) {
+          moves++;
+          updateMovesCounter();
+        }
+        selectedTube=null;
+      }
+      drawTubes();
+    }
+
+    async function pourLiquid(from,to,animate=false){
+      const src=tubes[from], dest=tubes[to];
+      if(src.segments.length===0 || dest.segments.length===4) return false;
+      const color=src.segments[src.segments.length-1];
+      if(dest.segments.length>0 && dest.segments[dest.segments.length-1]!==color) return false;
+      let moved=[];
+      while(src.segments.length>0 && src.segments[src.segments.length-1]===color && dest.segments.length<4){
+        moved.push(src.segments.pop());
+      }
+      animating=true;
+      playSound('pour');
+      await animatePour(from,to,color,moved.length);
+      for(let c of moved) dest.segments.push(c);
+      animating=false;
+      drawTubes();
+      if(checkWin()){
+        setTimeout(()=>{
+          playSound('success'); 
+          showWinMessage();
+        },300); 
+      }
+      return true;
+    }
+
+    function checkWin(){
+      return tubes.every(t=>t.segments.length===0||t.segments.every(c=>c===t.segments[0]));
+    }
+
+    function findValidMove(){
+      for(let i=0;i<tubes.length;i++){
+        for(let j=0;j<tubes.length;j++){
+          if(i!==j){
+            const a=tubes[i],b=tubes[j];
+            if(a.segments.length===0||b.segments.length===4) continue;
+            const color=a.segments[a.segments.length-1];
+            if(b.segments.length===0||b.segments[b.segments.length-1]===color)
+              return [i,j];
+          }
+        }
+      }
+      return null;
+    }
+
+    function showHint(){
+      const move=findValidMove();
+      if(move){
+        drawTubes();
+        const width=game.scale.width;
+        const height=game.scale.height;
+        
+        const tubeSpacing = Math.min(70, width / NUM_TUBES - 5);
+        const startX = (width - (NUM_TUBES * tubeSpacing)) / 2 + TUBE_WIDTH/2;
+        const startY = height/2 + 20;
+        
+        // Add pulse effect to hint tubes
+        const tube1 = gameScene.add.graphics();
+        tube1.lineStyle(3, 0xFFD700, 1);
+        tube1.strokeRoundedRect(
+          startX+move[0]*tubeSpacing-TUBE_WIDTH/2-3, 
+          startY-TUBE_HEIGHT/2-3, 
+          TUBE_WIDTH+6, 
+          TUBE_HEIGHT+6, 
+          12
+        );
+        
+        const tube2 = gameScene.add.graphics();
+        tube2.lineStyle(3, 0xFFD700, 1);
+        tube2.strokeRoundedRect(
+          startX+move[1]*tubeSpacing-TUBE_WIDTH/2-3, 
+          startY-TUBE_HEIGHT/2-3, 
+          TUBE_WIDTH+6, 
+          TUBE_HEIGHT+6, 
+          12
+        );
+        
+        // Remove the highlights after a delay
+        setTimeout(() => {
+          tube1.destroy();
+          tube2.destroy();
+        }, 1500);
+      }
+    }
+
+    async function autoSolve(){
+      document.getElementById('loader').style.display='flex';
+      while(!checkWin()){
+        const move=findValidMove();
+        if(!move) break;
+        await pourLiquid(move[0],move[1],true);
+        await new Promise(r=>setTimeout(r,300));
+        moves++;
+        updateMovesCounter();
+      }
+      document.getElementById('loader').style.display='none';
+    }
+
+    async function animatePour(from,to,color,count){
+      const width=game.scale.width;
+      const height=game.scale.height;
+      
+      const tubeSpacing = Math.min(70, width / NUM_TUBES - 5);
+      const startX = (width - (NUM_TUBES * tubeSpacing)) / 2 + TUBE_WIDTH/2;
+      const startY = height/2 + 20;
+      
+      const x1=startX+from*tubeSpacing;
+      const x2=startX+to*tubeSpacing;
+      const y1=startY;
+      
+      // Create a liquid drop with rounded corners
+      const liquid = gameScene.add.graphics();
+      liquid.fillStyle(Phaser.Display.Color.HexStringToColor(color).color, 0.9);
+      liquid.fillRoundedRect(x1-TUBE_WIDTH/2+5, y1-100, TUBE_WIDTH-10, 18, 8);
+      
+      await new Promise(r=>{
+        gameScene.tweens.add({
+          targets: liquid,
+          x: x2 - x1,
+          duration: 400,
+          ease: 'Sine.easeInOut',
+          onComplete:()=>{
+            liquid.destroy();
+            r();
+          }
+        });
+      });
+    }
+
+    function updateMovesCounter() {
+      document.getElementById('moves-counter').textContent = `Moves: ${moves}`;
+    }
+
+    function showWinMessage() {
+      const winMessage = document.createElement('div');
+      winMessage.className = 'win-message';
+      winMessage.innerHTML = `
+        <h2>🎉 You Solved It!</h2>
+        <p>Completed in ${moves} moves</p>
+      `;
+      document.body.appendChild(winMessage);
+      
+      setTimeout(() => {
+        winMessage.remove();
+      }, 3000);
+    }
+
+    // --- Sound using Web Audio ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type){
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.connect(g).connect(audioCtx.destination);
+      g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      
+      if(type==='click') {
+        o.frequency.value = 800;
+        o.type = 'sine';
+      }
+      if(type==='pour') {
+        o.frequency.value = 600;
+        o.type = 'sine';
+      }
+      if(type==='success') {
+        o.frequency.value = 523.25; // C5
+        const g2 = audioCtx.createGain();
+        o.connect(g2);
+        g2.connect(audioCtx.destination);
+        g2.gain.setValueAtTime(0, audioCtx.currentTime);
+        g2.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.1);
+        g2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+        
+        o.start();
+        o.stop(audioCtx.currentTime + 0.5);
+        return;
+      }
+      
+      o.start();
+      o.stop(audioCtx.currentTime + 0.1);
+    }
+  </script>
+</body>
+</html>
