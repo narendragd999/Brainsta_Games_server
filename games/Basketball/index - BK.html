@@ -11,26 +11,27 @@
 <style>
   /* --- Theme & reset --- */
   *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none}
-  html{height:100%}
+  html,body{height:100%}
   body{
-    min-height:100%;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg,#6a11cb 0%,#ffffff 100%);
     display:flex;
     align-items:center;
     justify-content:center;
+    padding:12px;
     color:#111;
-    overflow:hidden;
-    margin:0;
-    padding:0;
   }
 
   /* --- Game container sized for mobile --- */
   #gameContainer{
-    width:100vw;
+    width:100%;
+    max-width:520px;
     height:100vh;
+    max-height:880px;
+    border-radius:18px;
     overflow:hidden;
     position:relative;
+    box-shadow:0 18px 40px rgba(0,0,0,0.18);
     background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.85));
   }
 
@@ -47,7 +48,7 @@
   /* White UI card for score */
   .score-display{
     position:absolute;
-    top:calc(14px + env(safe-area-inset-top));
+    top:14px;
     left:14px;
     z-index:30;
     background:#fff;
@@ -65,7 +66,7 @@
   /* Timer card */
   .timer-card{
     position:absolute;
-    top:calc(14px + env(safe-area-inset-top));
+    top:14px;
     right:14px;
     z-index:30;
     background:#fff;
@@ -84,7 +85,7 @@
   .instructions{
     position:absolute;
     right:14px;
-    top:calc(72px + env(safe-area-inset-top));
+    top:72px;
     z-index:30;
     width:44px;height:44px;border-radius:12px;
     background:#fff;display:flex;align-items:center;justify-content:center;
@@ -95,7 +96,7 @@
   .power-ups{
     position:absolute;
     left:14px;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    bottom:16px;
     z-index:30;
     display:flex;
     gap:10px;
@@ -111,7 +112,7 @@
   /* Bottom controls */
   .controls{
     position:absolute;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    bottom:16px;
     right:14px;
     z-index:30;
     display:flex;
@@ -130,7 +131,7 @@
   /* Modal */
   .modal{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);
-    z-index:60;padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
+    z-index:60;padding:18px;
   }
   .modal.hidden{display:none}
   .modal-card{width:100%;max-width:420px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 18px 40px rgba(0,0,0,0.25)}
@@ -168,14 +169,14 @@
     height: 100%;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.3;
+    opacity: 0.5;
     background: linear-gradient(to bottom, rgba(106, 17, 203, 0.1) 0%, transparent 30%, transparent 70%, rgba(106, 17, 203, 0.1) 100%);
     animation: projectorPulse 4s infinite alternate;
   }
   
   @keyframes projectorPulse {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.4; }
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
   }
 
   /* responsive tweaks */
@@ -189,7 +190,7 @@
   .fullscreen-btn {
     position: absolute;
     right: 14px;
-    top: calc(130px + env(safe-area-inset-top));
+    top: 130px;
     z-index: 30;
     width: 44px;
     height: 44px;
@@ -309,7 +310,6 @@
     hoopY: 140,                     // vertical position of hoop center
     hoopWidth: 120,
     hoopThickness: 8,
-    // Update this path to match your image location
     courtImageSrc: 'basketball-court.png', // user-supplied image filename
     trailSteps: 30,                 // trajectory preview points
     autoSolveVariance: 0.02,        // slight randomness for auto solve (not perfect every time)
@@ -343,8 +343,8 @@
   const courtOverlay = document.getElementById('courtOverlay');
 
   // state
-  let cw = window.innerWidth;
-  let ch = window.innerHeight;
+  let cw = canvas.width = Math.min(window.innerWidth, 520);
+  let ch = canvas.height = Math.min(window.innerHeight, 880);
   let deviceRatio = window.devicePixelRatio || 1;
   // scale canvas for crispness
   canvas.width = Math.floor(cw * deviceRatio);
@@ -374,7 +374,7 @@
   let netStretchProgress = 0; // 0-1 value for net stretching animation
   let ballPaused = false;
   let ballPauseTimer = 0;
-  let hoopPosition = { x: cw*0.1, y: ch*0.2 }; // Fixed position matching background
+  let hoopPosition = { x: cw/2, y: CONFIG.hoopY }; // Fixed position matching background
 
   // Sounds (using Web Audio API for better compatibility)
   let audioContext = null;
@@ -393,6 +393,11 @@
   function initAudio() {
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create sound effects using Web Audio API
+      sounds.swish = createSwishSound();
+      sounds.bounce = createBounceSound();
+      sounds.crowd = createCrowdSound();
     } catch (e) {
       console.log("Web Audio API not supported, sounds disabled");
     }
@@ -400,7 +405,7 @@
 
   // Create swish sound using Web Audio API
   function createSwishSound() {
-    if (!audioContext) return;
+    if (!audioContext) return null;
     
     const duration = 0.8;
     const oscillator = audioContext.createOscillator();
@@ -417,11 +422,13 @@
     
     oscillator.start();
     oscillator.stop(audioContext.currentTime + duration);
+    
+    return { oscillator, gainNode };
   }
 
   // Create bounce sound
   function createBounceSound() {
-    if (!audioContext) return;
+    if (!audioContext) return null;
     
     const duration = 0.3;
     const oscillator = audioContext.createOscillator();
@@ -439,11 +446,13 @@
     
     oscillator.start();
     oscillator.stop(audioContext.currentTime + duration);
+    
+    return { oscillator, gainNode };
   }
 
   // Create crowd cheer sound
   function createCrowdSound() {
-    if (!audioContext) return;
+    if (!audioContext) return null;
     
     const duration = 1.5;
     const oscillator1 = audioContext.createOscillator();
@@ -470,30 +479,30 @@
     oscillator2.start();
     oscillator1.stop(audioContext.currentTime + duration);
     oscillator2.stop(audioContext.currentTime + duration);
+    
+    return { oscillator1, oscillator2, gainNode };
   }
 
   // Play sound with Web Audio API
   function playSound(name) {
     if (!soundEnabled || !audioContext) return;
     
-    const playInner = () => {
-      switch(name) {
-        case 'swish':
-          createSwishSound();
-          break;
-        case 'bounce':
-          createBounceSound();
-          break;
-        case 'crowd':
-          createCrowdSound();
-          break;
-      }
-    };
-
+    // Resume audio context if it's suspended (browser policy)
     if (audioContext.state === 'suspended') {
-      audioContext.resume().then(playInner);
-    } else {
-      playInner();
+      audioContext.resume();
+    }
+    
+    // Create a new sound instance
+    switch(name) {
+      case 'swish':
+        createSwishSound();
+        break;
+      case 'bounce':
+        createBounceSound();
+        break;
+      case 'crowd':
+        createCrowdSound();
+        break;
     }
   }
 
@@ -698,6 +707,16 @@
   }
 
   /* ---------- Input: pointer & touch friendly ---------- */
+  function getPointerPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const touch = (e.touches && e.touches[0]) || e;
+    return {
+      x: (touch.clientX - rect.left) * (canvas.width / deviceRatio) / rect.width / (canvas.width/(deviceRatio*rect.width)) || (touch.clientX - rect.left),
+      y: (touch.clientY - rect.top)
+    };
+  }
+
+  // Start drag if touch on ball
   function pointerDown(e){
     if (!isPlaying) return;
     // enable sounds on first user gesture
@@ -745,6 +764,8 @@
     if (!dragging) return;
     dragging = false;
     if (currentPreview.length){
+      const last = currentPreview[0]; // first point is immediate velocity estimate
+      // Instead compute based on pull vector again for consistency
       const p = (e.changedTouches ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY} : {x:e.clientX,y:e.clientY});
       const rect = canvas.getBoundingClientRect();
       const px = (p.x - rect.left);
@@ -781,6 +802,7 @@
   /* ---------- Hint & Auto-solve ---------- */
   function doHint(){
     if (ball.inPlay || ballPaused) return;
+    // compute a "perfect" shot by aiming at hoop center and adjusting power to land near center
     const dx = hoop.x - ball.x;
     const dy = hoop.y - ball.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -815,8 +837,8 @@
   playAgainBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
 
   // movement controls for mobile (hold to move)
-  leftBtn.addEventListener('touchstart', (e)=>{ leftHold=true; }, {passive:false}); leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
-  rightBtn.addEventListener('touchstart', (e)=>{ rightHold=true; }, {passive:false}); rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
+  leftBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); leftHold=true; }, {passive:false}); leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
+  rightBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); rightHold=true; }, {passive:false}); rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
   leftBtn.addEventListener('mousedown', ()=> leftHold=true); leftBtn.addEventListener('mouseup', ()=> leftHold=false);
   rightBtn.addEventListener('mousedown', ()=> rightHold=true); rightBtn.addEventListener('mouseup', ()=> rightHold=false);
 
@@ -857,16 +879,13 @@
 
   // Resize handling
   window.addEventListener('resize', ()=> {
-    cw = window.innerWidth;
-    ch = window.innerHeight;
-    canvas.width = Math.floor(cw * deviceRatio);
-    canvas.height = Math.floor(ch * deviceRatio);
+    cw = Math.min(window.innerWidth, 520);
+    ch = Math.min(window.innerHeight, 880);
     canvas.style.width = cw + 'px';
     canvas.style.height = ch + 'px';
-    ctx.scale(deviceRatio, deviceRatio);
     
     // Update hoop position to maintain alignment with background
-    hoopPosition.x = cw * 0.1;
+    hoopPosition.x = cw * 0.5;
     hoopPosition.y = ch * 0.2;
     
     // Update the overlay
@@ -913,10 +932,13 @@
     }
 
     // clear background: draw image if ready else gradient
-    ctx.clearRect(0,0,cw,ch);
     if (bgReady){
       // draw bg image to fill canvas area while preserving aspect ratio
+      ctx.save();
+      ctx.resetTransform && ctx.resetTransform();
+      ctx.clearRect(0,0,cw,ch);
       ctx.drawImage(backgroundImage, 0, 0, cw, ch);
+      ctx.restore();
     } else {
       // fallback gradient fill (purple to subtle ground)
       const g = ctx.createLinearGradient(0,0,0,ch);
@@ -935,12 +957,11 @@
     ctx.lineWidth = 1;
     
     // Draw converging lines for 3D effect
-    const vanishingPointX = cw * 0.1;
-    const vanishingPointY = ch * 0.2;
+    const vanishingPointY = ch * 0.3;
     for (let i = 0; i <= cw; i += 40) {
       ctx.beginPath();
       ctx.moveTo(i, ch);
-      ctx.lineTo(vanishingPointX, vanishingPointY);
+      ctx.lineTo(cw/2, vanishingPointY);
       ctx.stroke();
     }
     
@@ -1001,6 +1022,7 @@
     }
 
     // Draw hoop (rim + backboard simple)
+    // backboard
     ctx.save();
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
     //ctx.fillRect(hoop.x - 36, hoop.y - 36, 72, 28); // small backboard
@@ -1083,6 +1105,10 @@
       ctx.fillRect(cw/2 - 46, ch - 44, 92 * ratio, 8);
       ctx.restore();
     }
+
+    // debug: draw sensor rect (hidden in final, but we skip rendering it)
+
+    // overlay UI (no need to draw DOM elements here)
   }
 
   // main loop
