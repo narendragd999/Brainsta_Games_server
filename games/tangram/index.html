@@ -3,563 +3,85 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Tangram Puzzles — Classic Shape Challenges</title>
+  <title>Mobile Tangram — 25 Puzzles</title>
+
+  <!-- jQuery & jQuery UI -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+
+  <!-- touchPunch -> small snippet to make jQuery UI draggable work with touch -->
+  <script>
+  /*! jQuery UI Touch Punch 0.2.3 - modified inline (tiny) */
+  (function ($) {
+    if (!$.ui || !('ontouchend' in document)) return;
+    var _mouseInit = $.ui.mouse.prototype._mouseInit;
+    $.ui.mouse.prototype._mouseInit = function () {
+      this.element.bind('touchstart.' + this.widgetName, $.proxy(function (event) {
+        if (event.originalEvent.touches.length > 1) return;
+        this._touchEvent = event.originalEvent.changedTouches[0];
+        this._touchHandled = true;
+        this._mouseDown(event);
+      }, this));
+      _mouseInit.call(this);
+    };
+  })(jQuery);
+  </script>
 
   <style>
-    :root { 
-      --primary: #3498db;
-      --primary-dark: #2980b9;
-      --secondary: #2ecc71;
-      --accent: #e74c3c;
-      --accent-light: #ff7979;
-      --bg: #f9f9f9;
-      --card: #ffffff;
-      --text: #2c3e50;
-      --text-light: #7f8c8d;
-      --shadow: 0 4px 12px rgba(0,0,0,0.1);
-      --shadow-light: 0 2px 6px rgba(0,0,0,0.05);
-    }
-    
-    * {
-      box-sizing: border-box;
-    }
-    
-    html, body { 
-      height: 100%; 
-      margin: 0; 
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      color: var(--text);
-      -webkit-tap-highlight-color: transparent;
-      overflow: hidden;
-    }
-    
-    .app { 
-      display: flex; 
-      flex-direction: column; 
-      height: 100vh; 
-      max-width: 800px;
-      margin: 0 auto;
-      overflow: hidden;
-      background: var(--bg);
-      box-shadow: 0 0 30px rgba(0,0,0,0.1);
-      position: relative;
-    }
-    
-    header { 
-      padding: 16px 20px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      background: var(--card); 
-      box-shadow: var(--shadow-light);
-      z-index: 100;
-      position: relative;
-    }
-    
-    header h1 { 
-      margin: 0; 
-      font-size: 20px; 
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.5px;
-    }
-    
-    header .subtitle { 
-      color: var(--text-light); 
-      font-size: 13px; 
-      display: block; 
-      font-weight: 400;
-      margin-top: 2px;
-    }
-    
-    main { 
-      flex: 1; 
-      display: flex; 
-      overflow: hidden; 
-      position: relative;
-    }
+    :root { --accent: #2b9ed8; --bg:#f6f5f3; --card:#ffffff; --muted:#7f8c8d; }
+    html,body { height:100%; margin:0; font-family:Inter, system-ui, Arial; background: linear-gradient(180deg,#f7f9fb, #eceff1); -webkit-tap-highlight-color: transparent; }
+    .app { display:flex; flex-direction:column; height:100vh; }
+    header { padding:12px; display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--card); box-shadow:0 2px 6px rgba(0,0,0,0.06); }
+    header h1 { margin:0; font-size:16px; letter-spacing:0.2px; }
+    header small { color:var(--muted); font-size:12px; display:block; }
+    main { flex:1; display:flex; overflow:hidden; }
 
     /* Menu / Grid */
-    #menu { 
-      width: 100%; 
-      padding: 20px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      gap: 20px; 
-      overflow: auto; 
-      background: var(--bg);
-      z-index: 10;
-    }
-    
-    #levelGrid { 
-      width: 100%; 
-      max-width: 700px; 
-      display: grid; 
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
-      gap: 16px; 
-    }
-    
-    .levelBtn { 
-      background: var(--card); 
-      border-radius: 16px; 
-      border: 2px solid rgba(255,255,255,0.8); 
-      padding: 16px 8px; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 8px; 
-      cursor: pointer; 
-      min-height: 100px; 
-      transition: all 0.3s ease; 
-      box-shadow: var(--shadow-light);
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .levelBtn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--primary);
-      transform: scaleX(0);
-      transition: transform 0.3s ease;
-    }
-    
-    .levelBtn:hover { 
-      transform: translateY(-4px); 
-      box-shadow: var(--shadow); 
-      border-color: var(--primary);
-    }
-    
-    .levelBtn:hover::before {
-      transform: scaleX(1);
-    }
-    
-    .levelBtn.locked { 
-      opacity: 0.6; 
-      filter: grayscale(0.8); 
-      cursor: default; 
-    }
-    
-    .levelBtn.locked:hover { 
-      transform: none; 
-      box-shadow: var(--shadow-light);
-      border-color: rgba(255,255,255,0.8);
-    }
-    
-    .levelBtn.locked:hover::before {
-      transform: scaleX(0);
-    }
-    
-    .levelNum { 
-      font-weight: 700; 
-      font-size: 24px; 
-      color: var(--text);
-      z-index: 1;
-    }
-    
-    .levelName {
-      font-size: 13px;
-      color: var(--text-light);
-      z-index: 1;
-    }
-    
-    .stars { 
-      font-size: 14px; 
-      color: #f1c40f; 
-      letter-spacing: 2px;
-      z-index: 1;
-    }
+    #menu { width:100%; padding:14px; display:flex; flex-direction:column; align-items:center; gap:12px; overflow:auto; }
+    #levelGrid { width:100%; max-width:760px; display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+    .levelBtn { background:var(--card); border-radius:10px; border:1px solid rgba(0,0,0,0.06); padding:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; cursor:pointer; min-height:64px; transition: transform 0.1s; }
+    .levelBtn.locked { opacity:0.45; filter:grayscale(0.15); cursor:default; }
+    .levelNum { font-weight:700; font-size:18px; color:#1f2d3d; }
+    .stars { font-size:12px; color:#f1c40f; }
 
     /* Game area */
-    #game { 
-      flex: 1; 
-      display: none;
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: flex-start; 
-      padding: 16px; 
-      gap: 16px; 
-      overflow: hidden; 
-      background: var(--bg);
-      position: relative;
-    }
-    
-    #tray { 
-      width: 100%; 
-      max-width: 900px; 
-      min-height: 120px; 
-      background: rgba(255,255,255,0.9); 
-      border-radius: 16px; 
-      display: flex; 
-      gap: 8px; 
-      align-items: center; 
-      justify-content: center; 
-      padding: 16px; 
-      position: relative; 
-      overflow: visible; 
-      box-shadow: var(--shadow-light);
-      border: 1px solid rgba(0,0,0,0.05);
-      z-index: 20;
-    }
-    
-    /* Pieces container - moved outside tray */
-    #pieces-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 50;
-    }
-    
-    .piece { 
-      position: absolute; 
-      touch-action: none; 
-      user-select: none; 
-      -webkit-user-select: none; 
-      will-change: transform, left, top; 
-      transform-origin: center center; 
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
-      transition: box-shadow 0.2s, transform 0.1s; 
-      cursor: grab;
-      border-radius: 4px;
-      z-index: 60;
-      pointer-events: auto;
-    }
-    
-    .piece:hover { 
-      box-shadow: 0 6px 16px rgba(0,0,0,0.2); 
-    }
-    
-    .piece:active { 
-      cursor: grabbing;
-      transform: scale(1.02);
-      z-index: 100;
-    }
+    #game { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:8px; gap:8px; overflow:hidden; }
+    #tray { width:100%; max-width:920px; min-height:88px; background:rgba(255,255,255,0.8); border-radius:10px; display:flex; gap:8px; align-items:center; justify-content:center; padding:8px; position:relative; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
+    .block { position:absolute; touch-action:none; user-select:none; -webkit-user-select:none; will-change:transform,left,top; transform-origin:center center; box-shadow:0 2px 6px rgba(0,0,0,0.18); transition: box-shadow 0.2s; }
+    .block:hover { box-shadow:0 4px 12px rgba(0,0,0,0.25); }
 
-    /* Tangram piece shapes */
-    .large-triangle-1 { 
-      width: 0; height: 0; 
-      border-left: 50px solid transparent; 
-      border-right: 50px solid transparent; 
-      border-bottom: 70px solid #e74c3c; 
-    }
-    .large-triangle-2 { 
-      width: 0; height: 0; 
-      border-left: 50px solid #3498db; 
-      border-right: 50px solid transparent; 
-      border-bottom: 0 solid transparent; 
-      border-top: 70px solid transparent;
-      transform-origin: 0 0; 
-    }
-    .medium-triangle { 
-      width: 0; height: 0; 
-      border-left: 35px solid transparent; 
-      border-right: 35px solid transparent; 
-      border-bottom: 50px solid #f1c40f; 
-    }
-    .small-triangle-1 { 
-      width: 0; height: 0; 
-      border-left: 25px solid transparent; 
-      border-right: 25px solid transparent; 
-      border-bottom: 35px solid #2ecc71; 
-    }
-    .small-triangle-2 { 
-      width: 0; height: 0; 
-      border-left: 25px solid #9b59b6; 
-      border-right: 25px solid transparent; 
-      border-bottom: 0 solid transparent; 
-      border-top: 35px solid transparent;
-      transform-origin: 0 0; 
-    }
-    .square { 
-      width: 35px; height: 35px; 
-      background: #e67e22; 
-    }
-    .parallelogram { 
-      width: 50px; height: 35px; 
-      background: #1abc9c; 
-      transform: skewX(-20deg); 
-    }
+    /* piece shapes (CSS triangles & shapes) */
+    #large1{ width:0;height:0;border-left:110px solid transparent;border-right:110px solid transparent;border-bottom:160px solid #e74c3c; border-radius:2px; }
+    #large2{ width:0;height:0;border-left:110px solid #007bff;border-right:110px solid transparent;border-bottom:0 solid transparent; transform-origin:0 0; transform:rotate(90deg); }
+    #medium{ width:0;height:0;border-left:78px solid transparent;border-right:78px solid transparent;border-bottom:110px solid #f1c40f; }
+    #small1{ width:0;height:0;border-left:55px solid transparent;border-right:55px solid transparent;border-bottom:80px solid #27ae60; }
+    #small2{ width:0;height:0;border-left:55px solid #e91e63;border-right:55px solid transparent;border-bottom:0 solid transparent; transform-origin:0 0; transform:rotate(90deg); }
+    #square{ width:80px;height:80px;background:#f39c12;border-radius:6px; }
+    #para{ width:110px;height:78px;background:#9b59b6; transform:skewX(-26.565deg); border-radius:6px; }
 
     /* canvas target */
-    #canvasWrap { 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      width: 100%; 
-      flex: 1; 
-      padding: 16px; 
-      position: relative;
-      min-height: 300px;
-      z-index: 40;
-    }
-    
-    #target { 
-      width: 85vw; 
-      max-width: 400px; 
-      height: 85vw; 
-      max-height: 400px; 
-      border-radius: 16px; 
-      background: rgba(255,255,255,0.95); 
-      border: 3px dashed rgba(0,0,0,0.1); 
-      touch-action: none; 
-      box-shadow: var(--shadow-light);
-      transition: all 0.3s ease;
-      z-index: 45;
-    }
-    
-    #target.highlight {
-      animation: pulse 1.5s infinite;
-      border-color: var(--primary);
-    }
-    
-    @keyframes pulse {
-      0% { box-shadow: 0 8px 20px rgba(18,38,63,0.08); }
-      50% { box-shadow: 0 8px 25px rgba(52,152,219,0.3); }
-      100% { box-shadow: 0 8px 20px rgba(18,38,63,0.08); }
-    }
+    #canvasWrap { display:flex; align-items:center; justify-content:center; width:100%; flex:1; padding:8px; }
+    #target { width:88vw; max-width:400px; height:88vw; max-height:400px; border-radius:12px; background:rgba(255,255,255,0.9); border:3px dashed rgba(0,0,0,0.08); touch-action:none; box-shadow:0 6px 18px rgba(18,38,63,0.06); }
 
     /* controls */
-    .controls { 
-      display: flex; 
-      gap: 12px; 
-      margin-top: 12px; 
-      align-items: center; 
-      justify-content: center; 
-      flex-wrap: wrap; 
-      width: 100%;
-      max-width: 600px;
-      z-index: 20;
-    }
-    
-    .btn { 
-      padding: 12px 20px; 
-      background: var(--primary); 
-      color: #fff; 
-      border-radius: 12px; 
-      border: none; 
-      font-weight: 600; 
-      font-size: 15px; 
-      cursor: pointer; 
-      transition: all 0.2s ease; 
-      box-shadow: 0 2px 6px rgba(52,152,219,0.2);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    .btn:hover { 
-      background: var(--primary-dark); 
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(52,152,219,0.3);
-    }
-    
-    .btn.ghost { 
-      background: transparent; 
-      color: var(--primary); 
-      border: 2px solid rgba(52,152,219,0.25); 
-      box-shadow: none;
-    }
-    
-    .btn.ghost:hover { 
-      background: rgba(52,152,219,0.08); 
-      transform: translateY(-2px);
-    }
-    
-    .btn.danger {
-      background: var(--accent);
-      box-shadow: 0 2px 6px rgba(231,76,60,0.2);
-    }
-    
-    .btn.danger:hover {
-      background: #c0392b;
-      box-shadow: 0 4px 10px rgba(231,76,60,0.3);
-    }
-
-    .btn.success {
-      background: var(--secondary);
-      box-shadow: 0 2px 6px rgba(46,204,113,0.2);
-    }
-    
-    .btn.success:hover {
-      background: #27ae60;
-      box-shadow: 0 4px 10px rgba(46,204,113,0.3);
-    }
+    .controls { display:flex; gap:8px; margin-top:6px; align-items:center; justify-content:center; flex-wrap:wrap; }
+    .btn { padding:10px 14px; background:var(--accent); color:#fff; border-radius:10px; border:none; font-weight:600; font-size:14px; cursor:pointer; transition: background 0.2s; }
+    .btn:hover { background: #1e7bb0; }
+    .btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(43,158,216,0.18); }
+    .btn.ghost:hover { background: rgba(43,158,216,0.05); }
 
     /* status */
-    .statusRow { 
-      display: flex; 
-      gap: 12px; 
-      align-items: center; 
-      font-size: 14px; 
-      color: var(--text-light); 
-      margin-top: 8px; 
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-    
-    .statusItem {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,0.7);
-      padding: 8px 12px;
-      border-radius: 10px;
-      box-shadow: var(--shadow-light);
-    }
+    .statusRow { display:flex; gap:10px; align-items:center; font-size:13px; color:var(--muted); margin-top:6px; }
 
-    /* header buttons */
-    .topRowRight { 
-      display: flex; 
-      gap: 10px; 
-      align-items: center; 
-    }
-    
-    .smallBtn { 
-      background: transparent; 
-      border: 1px solid rgba(0,0,0,0.08); 
-      padding: 8px 12px; 
-      border-radius: 8px; 
-      font-size: 13px; 
-      cursor: pointer; 
-      transition: all 0.2s; 
-      color: var(--text-light);
-    }
-    
-    .smallBtn:hover { 
-      background: rgba(0,0,0,0.03); 
-      transform: translateY(-1px);
-      color: var(--text);
-    }
-
-    /* completion overlay */
-    .completion-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255,255,255,0.95);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 200;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    
-    .completion-overlay.show {
-      opacity: 1;
-      pointer-events: all;
-    }
-    
-    .completion-content {
-      background: white;
-      border-radius: 20px;
-      padding: 30px;
-      text-align: center;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-      max-width: 320px;
-      width: 85%;
-      transform: scale(0.9);
-      transition: transform 0.3s;
-      border: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .completion-overlay.show .completion-content {
-      transform: scale(1);
-    }
-    
-    .completion-stars {
-      font-size: 42px;
-      margin: 20px 0;
-      color: #f1c40f;
-      letter-spacing: 5px;
-    }
-    
-    .completion-time {
-      font-size: 18px;
-      margin: 10px 0;
-      color: var(--text-light);
-      font-weight: 500;
-    }
-    
-    .completion-next {
-      margin-top: 20px;
-      width: 100%;
-    }
-    
-    .completion-title {
-      color: var(--text);
-      margin: 0 0 10px 0;
-      font-size: 24px;
-    }
+    /* small */
+    .topRowRight { display:flex; gap:8px; align-items:center; }
+    .smallBtn { background:transparent; border:1px solid rgba(0,0,0,0.06); padding:8px 10px; border-radius:8px; font-size:13px; cursor:pointer; transition: background 0.2s; }
+    .smallBtn:hover { background: rgba(0,0,0,0.03); }
 
     /* responsive adjustments */
-    @media (max-width: 600px) {
-      #levelGrid { grid-template-columns: repeat(3, 1fr); }
-      header h1 { font-size: 18px; }
-      .levelBtn { padding: 14px 6px; min-height: 90px; }
-      .levelNum { font-size: 20px; }
-      .btn { padding: 10px 16px; font-size: 14px; }
-      .controls { gap: 8px; }
-    }
-    
-    @media (max-width: 400px) {
-      #levelGrid { grid-template-columns: repeat(2, 1fr); }
-      .controls { gap: 6px; }
-      .btn { padding: 8px 12px; font-size: 13px; }
-      header { padding: 12px 16px; }
-    }
-    
-    /* Piece rotation indicator */
-    .rotation-indicator {
-      position: absolute;
-      bottom: -25px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 12px;
-      color: var(--text-light);
-      background: rgba(255,255,255,0.9);
-      padding: 2px 8px;
-      border-radius: 10px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-    
-    .piece.rotating .rotation-indicator {
-      opacity: 1;
-    }
-    
-    /* Progress bar */
-    .progress-bar {
-      height: 4px;
-      background: rgba(0,0,0,0.1);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-top: 8px;
-      width: 100%;
-    }
-    
-    .progress-fill {
-      height: 100%;
-      background: var(--primary);
-      transition: width 0.3s ease;
+    @media (max-width:520px) {
+      #levelGrid { grid-template-columns:repeat(4,1fr); }
+      header h1 { font-size:14px; }
     }
   </style>
 </head>
@@ -567,8 +89,8 @@
   <div class="app">
     <header>
       <div>
-        <h1>Tangram Puzzles</h1>
-        <span class="subtitle">Classic shape challenges</span>
+        <h1>Mobile Tangram</h1>
+        <small>25 classic puzzles — drag, rotate, solve!</small>
       </div>
       <div class="topRowRight">
         <button class="smallBtn" id="btnResetAll">Reset Progress</button>
@@ -578,715 +100,92 @@
 
     <main>
       <!-- MENU -->
-      <section id="menu">
-        <div style="text-align:center; width: 100%;">
-          <strong style="font-size:18px">Select Level</strong>
-          <div style="color:var(--text-light); font-size:14px; margin-top:6px">Complete levels to unlock more. Tap a tile to play.</div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="globalProgress"></div>
-          </div>
+      <section id="menu" aria-hidden="false">
+        <div style="text-align:center;">
+          <strong style="font-size:15px">Select Level</strong>
+          <div style="color:var(--muted); font-size:13px">Complete a level to unlock the next. Tap a tile to play.</div>
         </div>
-        <div id="levelGrid"></div>
+        <div id="levelGrid" aria-hidden="false"></div>
       </section>
 
       <!-- GAME -->
-      <section id="game">
-        <div id="tray">
-          <!-- Tray is now just a visual container -->
-        </div>
-        
-        <!-- Pieces container - moved outside tray -->
-        <div id="pieces-container">
-          <!-- Tangram pieces -->
-          <div class="piece large-triangle-1" data-piece="large-triangle-1" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
-          <div class="piece large-triangle-2" data-piece="large-triangle-2" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
-          <div class="piece medium-triangle" data-piece="medium-triangle" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
-          <div class="piece small-triangle-1" data-piece="small-triangle-1" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
-          <div class="piece small-triangle-2" data-piece="small-triangle-2" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
-          <div class="piece square" data-piece="square" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
-          <div class="piece parallelogram" data-piece="parallelogram" data-flip="1">
-            <div class="rotation-indicator">Double-tap to rotate, long-press to flip</div>
-          </div>
+      <section id="game" style="display:none; width:100%; flex-direction:column; align-items:center;">
+        <div id="tray" aria-hidden="false">
+          <!-- pieces are absolute-positioned inside tray area -->
+          <div id="large1" class="block piece" data-piece="large1"></div>
+          <div id="large2" class="block piece" data-piece="large2"></div>
+          <div id="medium" class="block piece" data-piece="medium"></div>
+          <div id="small1" class="block piece" data-piece="small1"></div>
+          <div id="small2" class="block piece" data-piece="small2"></div>
+          <div id="square" class="block piece" data-piece="square"></div>
+          <div id="para" class="block piece" data-piece="para"></div>
         </div>
 
         <div id="canvasWrap">
           <canvas id="target"></canvas>
-          <div class="completion-overlay" id="completionOverlay">
-            <div class="completion-content">
-              <h2 class="completion-title">Level Complete!</h2>
-              <div class="completion-stars" id="completionStars"></div>
-              <div class="completion-time" id="completionTime"></div>
-              <button class="btn success completion-next" id="btnNextLevel">Next Level</button>
-              <button class="btn ghost" style="margin-top:8px; width:100%" id="btnBackToMenu">Back to Menu</button>
-            </div>
-          </div>
         </div>
 
         <div class="controls">
-          <button class="btn" id="btnReset">Reset Pieces</button>
+          <button class="btn" id="btnReset">Reset</button>
           <button class="btn ghost" id="btnBack">Back</button>
           <button class="btn" id="btnHint">Hint</button>
-          <button class="btn success" id="btnAutoSolve">Auto Solve</button>
           <div style="width:8px"></div>
           <div class="statusRow" id="statusRow">
-            <div class="statusItem" id="timer">⏱ 00:00</div>
-            <div class="statusItem" id="levelLabel">Level 1</div>
-            <div class="statusItem" id="starsLabel">☆☆☆</div>
+            <div id="timer">⏱ 00:00</div>
+            <div id="levelLabel">Level 1</div>
+            <div id="starsLabel">☆☆☆</div>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- Success sound -->
-  <audio id="winSound" preload="auto">
-    <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==" type="audio/wav">
+  <!-- small beep audio for success -->
+  <audio id="winSound">
+    <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" type="audio/wav">
   </audio>
 
   <script>
   (function($){
     // ---------- Game data ----------
-    const TOTAL_LEVELS = 25;
-    
-    // Standard Tangram puzzles with accurate configurations
-    const PUZZLES = {
-      1: { name: "Square", draw: drawSquare },
-      2: { name: "Rectangle", draw: drawRectangle },
-      3: { name: "Triangle", draw: drawTriangle },
-      4: { name: "Parallelogram", draw: drawParallelogram },
-      5: { name: "House", draw: drawHouse },
-      6: { name: "Boat", draw: drawBoat },
-      7: { name: "Candle", draw: drawCandle },
-      8: { name: "Fish", draw: drawFish },
-      9: { name: "Bird", draw: drawBird },
-      10: { name: "Cat", draw: drawCat },
-      11: { name: "Dog", draw: drawDog },
-      12: { name: "Rabbit", draw: drawRabbit },
-      13: { name: "Camel", draw: drawCamel },
-      14: { name: "Horse", draw: drawHorse },
-      15: { name: "Swan", draw: drawSwan },
-      16: { name: "Running Man", draw: drawRunningMan },
-      17: { name: "Sitting Person", draw: drawSittingPerson },
-      18: { name: "Arrow", draw: drawArrow },
-      19: { name: "Diamond", draw: drawDiamond },
-      20: { name: "Hexagon", draw: drawHexagon },
-      21: { name: "Rocket", draw: drawRocket },
-      22: { name: "Windmill", draw: drawWindmill },
-      23: { name: "Bridge", draw: drawBridge },
-      24: { name: "Tower", draw: drawTower },
-      25: { name: "Crown", draw: drawCrown }
-    };
-    
-    // Improved drawing functions for more precise silhouettes
-    function drawSquare(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
-      ctx.strokeStyle = 'rgba(52, 152, 219, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, -100);
-      ctx.lineTo(100, -100);
-      ctx.lineTo(100, 100);
-      ctx.lineTo(-100, 100);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawRectangle(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(46, 204, 113, 0.15)';
-      ctx.strokeStyle = 'rgba(46, 204, 113, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-125, -75);
-      ctx.lineTo(125, -75);
-      ctx.lineTo(125, 75);
-      ctx.lineTo(-125, 75);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawTriangle(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(231, 76, 60, 0.15)';
-      ctx.strokeStyle = 'rgba(231, 76, 60, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, -141.42);
-      ctx.lineTo(-122.47, 70.71);
-      ctx.lineTo(122.47, 70.71);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawParallelogram(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(155, 89, 182, 0.15)';
-      ctx.strokeStyle = 'rgba(155, 89, 182, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, -50);
-      ctx.lineTo(50, -50);
-      ctx.lineTo(150, 50);
-      ctx.lineTo(0, 50);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawHouse(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(230, 126, 34, 0.15)';
-      ctx.strokeStyle = 'rgba(230, 126, 34, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-70, 40);
-      ctx.lineTo(70, 40);
-      ctx.lineTo(70, 140);
-      ctx.lineTo(-70, 140);
-      ctx.closePath();
-      ctx.moveTo(-90, 40);
-      ctx.lineTo(0, -30);
-      ctx.lineTo(90, 40);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawBoat(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
-      ctx.strokeStyle = 'rgba(52, 152, 219, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 60);
-      ctx.lineTo(100, 60);
-      ctx.lineTo(60, -20);
-      ctx.lineTo(0, -60);
-      ctx.lineTo(-60, -20);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawCandle(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(241, 196, 15, 0.15)';
-      ctx.strokeStyle = 'rgba(241, 196, 15, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-20, 40);
-      ctx.lineTo(20, 40);
-      ctx.lineTo(20, 100);
-      ctx.lineTo(-20, 100);
-      ctx.closePath();
-      ctx.moveTo(0, -60);
-      ctx.bezierCurveTo(20, -40, 20, 0, 0, 20);
-      ctx.bezierCurveTo(-20, 0, -20, -40, 0, -60);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawFish(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(26, 188, 156, 0.15)';
-      ctx.strokeStyle = 'rgba(26, 188, 156, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 0);
-      ctx.lineTo(0, -50);
-      ctx.lineTo(100, 0);
-      ctx.lineTo(0, 50);
-      ctx.closePath();
-      ctx.moveTo(80, 0);
-      ctx.lineTo(120, -30);
-      ctx.lineTo(120, 30);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawBird(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
-      ctx.strokeStyle = 'rgba(52, 152, 219, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 0);
-      ctx.lineTo(-50, -50);
-      ctx.lineTo(0, -30);
-      ctx.lineTo(50, -50);
-      ctx.lineTo(100, 0);
-      ctx.lineTo(50, 50);
-      ctx.lineTo(0, 30);
-      ctx.lineTo(-50, 50);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawCat(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(149, 165, 166, 0.15)';
-      ctx.strokeStyle = 'rgba(149, 165, 166, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-50, -80);
-      ctx.lineTo(0, -100);
-      ctx.lineTo(50, -80);
-      ctx.lineTo(50, 0);
-      ctx.lineTo(30, 60);
-      ctx.lineTo(-30, 60);
-      ctx.lineTo(-50, 0);
-      ctx.closePath();
-      ctx.moveTo(60, -60);
-      ctx.lineTo(100, -40);
-      ctx.lineTo(80, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawDog(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(230, 126, 34, 0.15)';
-      ctx.strokeStyle = 'rgba(230, 126, 34, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-80, -60);
-      ctx.lineTo(0, -100);
-      ctx.lineTo(80, -60);
-      ctx.lineTo(60, 0);
-      ctx.lineTo(80, 60);
-      ctx.lineTo(0, 100);
-      ctx.lineTo(-80, 60);
-      ctx.lineTo(-60, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawRabbit(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(149, 165, 166, 0.15)';
-      ctx.strokeStyle = 'rgba(149, 165, 166, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-50, -80);
-      ctx.lineTo(-30, -120);
-      ctx.lineTo(30, -120);
-      ctx.lineTo(50, -80);
-      ctx.lineTo(50, 40);
-      ctx.lineTo(30, 80);
-      ctx.lineTo(-30, 80);
-      ctx.lineTo(-50, 40);
-      ctx.closePath();
-      ctx.moveTo(60, -100);
-      ctx.lineTo(80, -140);
-      ctx.lineTo(100, -100);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawCamel(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(230, 126, 34, 0.15)';
-      ctx.strokeStyle = 'rgba(230, 126, 34, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 0);
-      ctx.lineTo(-80, -60);
-      ctx.lineTo(-40, -80);
-      ctx.lineTo(0, -60);
-      ctx.lineTo(20, -80);
-      ctx.lineTo(60, -60);
-      ctx.lineTo(80, 0);
-      ctx.lineTo(60, 60);
-      ctx.lineTo(40, 80);
-      ctx.lineTo(0, 60);
-      ctx.lineTo(-20, 80);
-      ctx.lineTo(-60, 60);
-      ctx.lineTo(-80, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawHorse(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(155, 89, 182, 0.15)';
-      ctx.strokeStyle = 'rgba(155, 89, 182, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 0);
-      ctx.lineTo(-80, -60);
-      ctx.lineTo(-40, -80);
-      ctx.lineTo(0, -60);
-      ctx.lineTo(20, -100);
-      ctx.lineTo(60, -80);
-      ctx.lineTo(80, -20);
-      ctx.lineTo(60, 40);
-      ctx.lineTo(40, 60);
-      ctx.lineTo(0, 40);
-      ctx.lineTo(-20, 60);
-      ctx.lineTo(-60, 40);
-      ctx.lineTo(-80, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawSwan(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(236, 240, 241, 0.15)';
-      ctx.strokeStyle = 'rgba(149, 165, 166, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 0);
-      ctx.bezierCurveTo(-80, -40, -40, -60, 0, -40);
-      ctx.lineTo(20, -80);
-      ctx.bezierCurveTo(40, -100, 80, -80, 100, -40);
-      ctx.lineTo(80, 40);
-      ctx.lineTo(40, 60);
-      ctx.lineTo(0, 40);
-      ctx.lineTo(-40, 60);
-      ctx.lineTo(-80, 40);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawRunningMan(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
-      ctx.strokeStyle = 'rgba(52, 152, 219, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-40, -100);
-      ctx.lineTo(0, -120);
-      ctx.lineTo(40, -100);
-      ctx.lineTo(60, -40);
-      ctx.lineTo(40, 20);
-      ctx.lineTo(60, 80);
-      ctx.lineTo(20, 100);
-      ctx.lineTo(-20, 80);
-      ctx.lineTo(-40, 20);
-      ctx.lineTo(-60, -40);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawSittingPerson(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(46, 204, 113, 0.15)';
-      ctx.strokeStyle = 'rgba(46, 204, 113, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-40, -100);
-      ctx.lineTo(0, -120);
-      ctx.lineTo(40, -100);
-      ctx.lineTo(40, -40);
-      ctx.lineTo(60, 20);
-      ctx.lineTo(40, 80);
-      ctx.lineTo(0, 100);
-      ctx.lineTo(-40, 80);
-      ctx.lineTo(-60, 20);
-      ctx.lineTo(-40, -40);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawArrow(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(231, 76, 60, 0.15)';
-      ctx.strokeStyle = 'rgba(231, 76, 60, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, -100);
-      ctx.lineTo(50, -50);
-      ctx.lineTo(30, -50);
-      ctx.lineTo(30, 50);
-      ctx.lineTo(50, 50);
-      ctx.lineTo(0, 100);
-      ctx.lineTo(-50, 50);
-      ctx.lineTo(-30, 50);
-      ctx.lineTo(-30, -50);
-      ctx.lineTo(-50, -50);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawDiamond(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(155, 89, 182, 0.15)';
-      ctx.strokeStyle = 'rgba(155, 89, 182, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, -100);
-      ctx.lineTo(100, 0);
-      ctx.lineTo(0, 100);
-      ctx.lineTo(-100, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawHexagon(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(241, 196, 15, 0.15)';
-      ctx.strokeStyle = 'rgba(241, 196, 15, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-50, -86.6);
-      ctx.lineTo(50, -86.6);
-      ctx.lineTo(100, 0);
-      ctx.lineTo(50, 86.6);
-      ctx.lineTo(-50, 86.6);
-      ctx.lineTo(-100, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawRocket(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(52, 152, 219, 0.15)';
-      ctx.strokeStyle = 'rgba(52, 152, 219, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, -100);
-      ctx.lineTo(50, -50);
-      ctx.lineTo(30, -50);
-      ctx.lineTo(30, 50);
-      ctx.lineTo(50, 100);
-      ctx.lineTo(0, 80);
-      ctx.lineTo(-50, 100);
-      ctx.lineTo(-30, 50);
-      ctx.lineTo(-30, -50);
-      ctx.lineTo(-50, -50);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawWindmill(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(230, 126, 34, 0.15)';
-      ctx.strokeStyle = 'rgba(230, 126, 34, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, -100);
-      ctx.lineTo(50, -50);
-      ctx.lineTo(100, -100);
-      ctx.lineTo(50, -150);
-      ctx.closePath();
-      ctx.moveTo(100, 0);
-      ctx.lineTo(50, -50);
-      ctx.lineTo(100, -100);
-      ctx.lineTo(150, -50);
-      ctx.closePath();
-      ctx.moveTo(0, 100);
-      ctx.lineTo(50, 50);
-      ctx.lineTo(100, 100);
-      ctx.lineTo(50, 150);
-      ctx.closePath();
-      ctx.moveTo(-100, 0);
-      ctx.lineTo(-50, 50);
-      ctx.lineTo(-100, 100);
-      ctx.lineTo(-150, 50);
-      ctx.closePath();
-      ctx.moveTo(-30, 0);
-      ctx.lineTo(30, 0);
-      ctx.lineTo(30, 100);
-      ctx.lineTo(-30, 100);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawBridge(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(149, 165, 166, 0.15)';
-      ctx.strokeStyle = 'rgba(149, 165, 166, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-150, 50);
-      ctx.lineTo(-100, 0);
-      ctx.lineTo(-50, 50);
-      ctx.lineTo(0, 0);
-      ctx.lineTo(50, 50);
-      ctx.lineTo(100, 0);
-      ctx.lineTo(150, 50);
-      ctx.lineTo(150, 100);
-      ctx.lineTo(-150, 100);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawTower(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(149, 165, 166, 0.15)';
-      ctx.strokeStyle = 'rgba(149, 165, 166, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-50, 100);
-      ctx.lineTo(50, 100);
-      ctx.lineTo(50, 0);
-      ctx.lineTo(70, -20);
-      ctx.lineTo(50, -40);
-      ctx.lineTo(70, -60);
-      ctx.lineTo(50, -80);
-      ctx.lineTo(0, -100);
-      ctx.lineTo(-50, -80);
-      ctx.lineTo(-70, -60);
-      ctx.lineTo(-50, -40);
-      ctx.lineTo(-70, -20);
-      ctx.lineTo(-50, 0);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    function drawCrown(ctx, size) {
-      ctx.save();
-      ctx.translate(size/2, size/2);
-      ctx.scale(size/300, size/300);
-      ctx.fillStyle = 'rgba(241, 196, 15, 0.15)';
-      ctx.strokeStyle = 'rgba(241, 196, 15, 0.4)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-100, 50);
-      ctx.lineTo(-80, 0);
-      ctx.lineTo(-60, 50);
-      ctx.lineTo(-40, 0);
-      ctx.lineTo(-20, 50);
-      ctx.lineTo(0, 0);
-      ctx.lineTo(20, 50);
-      ctx.lineTo(40, 0);
-      ctx.lineTo(60, 50);
-      ctx.lineTo(80, 0);
-      ctx.lineTo(100, 50);
-      ctx.lineTo(100, 100);
-      ctx.lineTo(-100, 100);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
+    const TOTAL = 25;
+    // Minimal silhouette paths for demo. Replace with richer Path2D for real puzzles.
+    // Paths are in canvas coordinates centered at 0,0; we'll scale/translate when drawing.
+    const PUZZLES = {};
+    const NAMES = ["Dog","Heart","House","Angel","Horse","Kangaroo","Cow","Camel","Rhino","Giraffe","Turtle","Crab","Eagle","Rooster","Turkey","Swan","Windmill","Castle","Barn","Bridge","Fir Tree","Fish","Boy","Boat","Lamp"];
+    for(let i=1;i<=TOTAL;i++){
+      // simple placeholder shapes (you can replace with actual Vector paths)
+      PUZZLES[i] = { name: NAMES[i-1] || `P${i}`,
+                     draw(ctx, size){
+                       // example: each level shows a different silhouette variant using simple shapes
+                       ctx.save();
+                       ctx.translate(size/2, size/2);
+                       ctx.scale(size/320, size/320);
+                       ctx.fillStyle = 'rgba(0,0,0,0.22)';
+                       ctx.beginPath();
+                       if (i%5===1) { ctx.moveTo(-30,80); ctx.lineTo(0,-120); ctx.lineTo(60,80); ctx.closePath(); }
+                       else if (i%5===2) { ctx.moveTo(-80,-10); ctx.arc(0,0,90,0,Math.PI*2); ctx.closePath(); }
+                       else if (i%5===3) { ctx.rect(-100,-100,200,200); }
+                       else if (i%5===4) { ctx.moveTo(-120,60); ctx.quadraticCurveTo(0,-120,120,60); ctx.lineTo(0,120); ctx.closePath(); }
+                       else { ctx.moveTo(-120,-40); ctx.lineTo(0,-120); ctx.lineTo(120,-40); ctx.lineTo(0,120); ctx.closePath(); }
+                       ctx.fill();
+                       ctx.restore();
+                     }
+                   };
     }
 
     // ---------- Storage helpers ----------
     function getProgress() {
       const raw = localStorage.getItem('tangram_progress');
       if (!raw) {
-        const obj = { unlocked: 1, stars: {} };
+        // store structure { unlocked:1, stars: {1:3,2:2,...} }
+        const obj = { unlocked:1, stars:{} };
         localStorage.setItem('tangram_progress', JSON.stringify(obj));
         return obj;
       }
-      try { return JSON.parse(raw); } catch(e){ return { unlocked: 1, stars: {} }; }
+      try { return JSON.parse(raw); } catch(e){ return { unlocked:1, stars:{} }; }
     }
-    
-    function saveProgress(obj) { 
-      localStorage.setItem('tangram_progress', JSON.stringify(obj)); 
-      updateGlobalProgress();
-    }
-    
-    function updateGlobalProgress() {
-      const progress = getProgress();
-      const completed = Object.keys(progress.stars).length;
-      const progressPercent = (completed / TOTAL_LEVELS) * 100;
-      $('#globalProgress').css('width', `${progressPercent}%`);
-    }
+    function saveProgress(obj){ localStorage.setItem('tangram_progress', JSON.stringify(obj)); }
 
     // ---------- UI elements ----------
     const $menu = $('#menu'), $game = $('#game'), $levelGrid = $('#levelGrid');
@@ -1294,27 +193,18 @@
     const targetCtx = targetCanvas.getContext('2d');
     const $timer = $('#timer'), $levelLabel = $('#levelLabel'), $starsLabel = $('#starsLabel');
     const $pieces = $('.piece');
-    const $piecesContainer = $('#pieces-container');
-    const $completionOverlay = $('#completionOverlay');
-    const $completionStars = $('#completionStars');
-    const $completionTime = $('#completionTime');
     const progress = getProgress();
 
-    // Piece initial positions
+    // piece initial positions (scattered) relative to tray
     const initialPositions = {
-      'large-triangle-1': {x: 30, y: 20, rot: 0},
-      'large-triangle-2': {x: 140, y: 20, rot: 0},
-      'medium-triangle': {x: 250, y: 20, rot: 0},
-      'small-triangle-1': {x: 360, y: 20, rot: 0},
-      'small-triangle-2': {x: 30, y: 120, rot: 0},
-      'square': {x: 140, y: 120, rot: 0},
-      'parallelogram': {x: 250, y: 120, rot: 0}
+      large1: {x:20,y:12,rot:0}, large2:{x:120,y:10,rot:90},
+      medium:{x:220,y:12,rot:0}, small1:{x:320,y:12,rot:0}, small2:{x:20,y:110,rot:90},
+      square:{x:120,y:110,rot:0}, para:{x:220,y:110,rot:0}
     };
 
     let currentLevel = null;
     let timerInterval = null;
     let startTime = null;
-    let hintShown = false;
 
     // ---------- Canvas sizing & draw ----------
     function resizeCanvas() {
@@ -1325,8 +215,8 @@
       }
     }
 
-    function drawSilhouette(level) {
-      targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+    function drawSilhouette(level){
+      targetCtx.clearRect(0,0,targetCanvas.width,targetCanvas.height);
       if (!PUZZLES[level]) return;
       PUZZLES[level].draw(targetCtx, targetCanvas.width);
     }
@@ -1334,189 +224,124 @@
     $(window).on('resize', resizeCanvas);
 
     // ---------- Level Grid Builder ----------
-    function buildLevelGrid() {
+    function buildLevelGrid(){
       const prog = getProgress();
       let html = '';
-      for(let i = 1; i <= TOTAL_LEVELS; i++) {
-        const locked = i > prog.unlocked;
+      for(let i=1;i<=TOTAL;i++){
+        const locked = i>prog.unlocked;
         const s = prog.stars[i] || 0;
-        const starStr = '★'.repeat(s) + '☆'.repeat(3 - s);
-        html += `
-          <div class="levelBtn ${locked ? 'locked' : ''}" data-level="${i}" ${locked ? '' : 'role="button"'} style="text-align:center;">
-            <div class="levelNum">${i}</div>
-            <div class="levelName">${PUZZLES[i].name}</div>
-            <div class="stars">${starStr}</div>
-          </div>`;
+        const starStr = '★'.repeat(s) + '☆'.repeat(3-s);
+        html += `<div class="levelBtn ${locked? 'locked':''}" data-level="${i}" ${locked? '':'role="button"'} style="text-align:center;">
+                   <div class="levelNum">${i}</div>
+                   <div style="font-size:12px;color:var(--muted)">${PUZZLES[i].name}</div>
+                   <div class="stars">${starStr}</div>
+                 </div>`;
       }
       $levelGrid.html(html);
     }
 
-    // ---------- Timer functions ----------
-    function startTimer() {
+    function startTimer(){
       startTime = Date.now();
       if (timerInterval) clearInterval(timerInterval);
-      timerInterval = setInterval(() => {
-        const sec = Math.floor((Date.now() - startTime) / 1000);
-        const m = Math.floor(sec / 60);
-        const s = sec % 60;
-        $timer.text(`⏱ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+      timerInterval = setInterval(()=>{
+        const sec = Math.floor((Date.now()-startTime)/1000);
+        const m = Math.floor(sec/60); const s = sec%60;
+        $timer.text(`⏱ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
       }, 500);
     }
-    
-    function stopTimer() {
-      if (timerInterval) { 
-        clearInterval(timerInterval); 
-        timerInterval = null; 
-      }
+    function stopTimer(){
+      if (timerInterval) { clearInterval(timerInterval); timerInterval=null; }
       if (!startTime) return 0;
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const elapsed = Math.floor((Date.now()-startTime)/1000);
       startTime = null;
       return elapsed;
     }
 
-    // ---------- Piece utilities ----------
-    function resetPiecesToTray() {
-      $pieces.each(function() {
-        const id = $(this).data('piece');
-        const pos = initialPositions[id] || {x: 10, y: 10, rot: 0};
-        $(this).css({ 
-          left: pos.x + 'px', 
-          top: pos.y + 'px', 
-          transform: `rotate(${pos.rot}deg) scaleX(1)` 
-        });
+    // ---------- piece utilities ----------
+    // Set pieces initial positions in tray (absolute)
+    function resetPiecesToTray(){
+      $pieces.each(function(){
+        const id = $(this).attr('id');
+        const pos = initialPositions[id] || {x:10,y:10,rot:0};
+        // position relative to tray
+        $(this).css({ left: pos.x+'px', top: pos.y+'px', transform: `rotate(${pos.rot}deg)` });
         $(this).data('rot', pos.rot || 0);
-        $(this).data('flip', 1);
       });
     }
 
     // Make pieces draggable
-    function initDraggable() {
-      $pieces.draggable({
-        containment: '#game',
-        stack: '.piece',
-        start: function() { 
-          $(this).css('z-index', 1000); 
-          $(this).css('transform', $(this).css('transform') + ' scale(1.05)');
-        },
-        stop: function() { 
-          $(this).css('z-index', 60); 
-          $(this).css('transform', $(this).css('transform').replace('scale(1.05)', ''));
-          checkCompletion();
-        }
-      });
-    }
+    $pieces.draggable({
+      containment: '#game',
+      stack: '.piece',
+      start: function(){ $(this).css('z-index', 9999); },
+      stop: function(){ $(this).css('z-index',''); }
+    });
 
     // Rotation: double-tap or double-click rotates 45deg
-    (function addDoubleTapRotate() {
+    (function addDoubleTapRotate(){
       let lastTap = 0;
-      $pieces.on('touchend dblclick', function(e) {
+      $pieces.on('touchend dblclick', function(e){
         e.preventDefault();
         const now = Date.now();
-        if (now - lastTap < 350) {
-          // Double-tap detected
+        if (now - lastTap < 350){
+          // treat as double-tap
           const $el = $(this);
-          let rot = ($el.data('rot') || 0) + 45;
-          let flip = $el.data('flip') || 1;
-          $el.css('transform', `rotate(${rot}deg) scaleX(${flip})`);
-          $el.data('rot', rot % 360);
-          
-          // Show rotation indicator
-          $el.addClass('rotating');
-          setTimeout(() => {
-            $el.removeClass('rotating');
-          }, 1000);
-          
-          // Visual feedback
-          $el.css('box-shadow', '0 5px 15px rgba(0,0,0,0.25)');
-          setTimeout(() => {
-            $el.css('box-shadow', '0 4px 10px rgba(0,0,0,0.15)');
-          }, 200);
+          let rot = ($el.data('rot')||0) + 45;
+          $el.css('transform', `rotate(${rot}deg)`);
+          $el.data('rot', rot%360);
         }
         lastTap = now;
       });
-    })();
-
-    // Flipping: long press to flip the piece
-    (function addLongPressFlip() {
-      let pressTimer;
-      $pieces.on('touchstart mousedown', function(e) {
+      // desktop double-click (fallback)
+      $pieces.on('dblclick', function(e){
+        e.preventDefault();
         const $el = $(this);
-        pressTimer = setTimeout(() => {
-          let rot = $el.data('rot') || 0;
-          let flip = $el.data('flip') || 1;
-          flip = flip * -1;
-          $el.css('transform', `rotate(${rot}deg) scaleX(${flip})`);
-          $el.data('flip', flip);
-          // Visual feedback
-          $el.css('box-shadow', '0 5px 15px rgba(0,0,0,0.25)');
-          setTimeout(() => {
-            $el.css('box-shadow', '0 4px 10px rgba(0,0,0,0.15)');
-          }, 200);
-        }, 500); // 500ms for long press
-      }).on('touchend mouseup', function() {
-        clearTimeout(pressTimer);
+        let rot = ($el.data('rot')||0) + 45;
+        $el.css('transform', `rotate(${rot}deg)`);
+        $el.data('rot', rot%360);
       });
     })();
 
-    // ---------- Completion check ----------
-    function isPieceInsideCanvas($el) {
+    // ---------- simple completion check ----------
+    // Criteria: center point of each piece must lie inside target canvas bounding box
+    function isPieceCenterInsideCanvas($el){
       const pieceRect = $el[0].getBoundingClientRect();
       const canvasRect = targetCanvas.getBoundingClientRect();
-      
-      // Check if at least 70% of the piece is inside the canvas
-      const pieceArea = pieceRect.width * pieceRect.height;
-      
-      // Calculate intersection area
-      const xOverlap = Math.max(0, Math.min(pieceRect.right, canvasRect.right) - Math.max(pieceRect.left, canvasRect.left));
-      const yOverlap = Math.max(0, Math.min(pieceRect.bottom, canvasRect.bottom) - Math.max(pieceRect.top, canvasRect.top));
-      const overlapArea = xOverlap * yOverlap;
-      
-      return overlapArea >= pieceArea * 0.7;
+      const cx = (pieceRect.left + pieceRect.right)/2;
+      const cy = (pieceRect.top + pieceRect.bottom)/2;
+      return (cx >= canvasRect.left && cx <= canvasRect.right && cy >= canvasRect.top && cy <= canvasRect.bottom);
     }
 
-    function checkCompletion() {
-      // Count pieces inside the target area
+    function checkCompletion(){
+      // all 7 pieces inside?
       let inside = 0;
-      $pieces.each(function() {
-        if (isPieceInsideCanvas($(this))) inside++;
+      $pieces.each(function(){
+        if (isPieceCenterInsideCanvas($(this))) inside++;
       });
-      
-      // Update progress indicator
-      $starsLabel.text(`${inside}/7 placed`);
-      
-      // Visual feedback for progress
-      if (inside === 7) {
-        // All pieces placed - level complete
+      if (inside === 7){
+        // completed
         onLevelComplete();
-      } else if (inside >= 5) {
-        // Almost there - pulse the target area
-        $('#target').addClass('highlight');
       } else {
-        $('#target').removeClass('highlight');
+        // update small UI (how many placed)
+        $starsLabel.text(`${inside}/7 placed`);
       }
     }
 
-    // Auto-check while playing
+    // run a periodic check while playing (lightweight)
     let checkInterval = null;
-    function startAutoCheck() { 
-      if (checkInterval) clearInterval(checkInterval); 
-      checkInterval = setInterval(checkCompletion, 600); 
-    }
-    
-    function stopAutoCheck() { 
-      if (checkInterval) clearInterval(checkInterval); 
-      checkInterval = null; 
-    }
+    function startAutoCheck(){ if (checkInterval) clearInterval(checkInterval); checkInterval = setInterval(checkCompletion, 600); }
+    function stopAutoCheck(){ if (checkInterval) clearInterval(checkInterval); checkInterval = null; }
 
-    // ---------- Star rating logic ----------
-    function computeStarsForTime(t) {
-      if (t <= 30) return 3;
-      if (t <= 60) return 2;
+    // ---------- star rating logic ----------
+    // thresholds (seconds): under 20 -> 3 stars, under 50 -> 2 stars, else 1 star
+    function computeStarsForTime(t){
+      if (t <= 20) return 3;
+      if (t <= 50) return 2;
       return 1;
     }
 
-    // ---------- Level flow ----------
-    function startLevel(level) {
+    // ---------- level flow ----------
+    function startLevel(level){
       currentLevel = level;
       $('#menu').hide();
       $('#game').show();
@@ -1527,181 +352,98 @@
       resizeCanvas();
       startTimer();
       startAutoCheck();
-      hintShown = false;
-      
-      // Reinitialize draggable for pieces
-      $pieces.draggable('destroy');
-      initDraggable();
-      
-      // Reset completion overlay
-      $completionOverlay.removeClass('show');
     }
 
-    function onLevelComplete() {
+    function onLevelComplete(){
       stopAutoCheck();
       const elapsed = stopTimer();
       const stars = computeStarsForTime(elapsed);
-      
-      // Save progress
+      // save progress
       const prog = getProgress();
       if (!prog.stars) prog.stars = {};
       const prev = prog.stars[currentLevel] || 0;
       if (stars > prev) prog.stars[currentLevel] = stars;
-      
-      // Unlock next level
-      if (currentLevel >= prog.unlocked && prog.unlocked < TOTAL_LEVELS) {
-        prog.unlocked = currentLevel + 1;
-      }
+      // unlock next
+      if (currentLevel >= prog.unlocked && prog.unlocked < TOTAL) prog.unlocked = currentLevel + 1;
       saveProgress(prog);
-      
-      // Show completion overlay
-      $completionStars.text('★'.repeat(stars) + '☆'.repeat(3 - stars));
-      $completionTime.text(`Time: ${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`);
-      $completionOverlay.addClass('show');
-      
-      // Play success sound
-      try { 
-        document.getElementById('winSound').play().catch(() => {}); 
-      } catch(e) {}
-      
-      // Animate target area briefly
+      // show win UX
+      $starsLabel.text('★'.repeat(stars) + '☆'.repeat(3-stars));
+      // tiny beep
+      try { document.getElementById('winSound').play().catch(()=>{}); } catch(e){}
+      // animate brief confetti-ish scale on target
       const $target = $('#target');
-      $target.animate({ width: $target.width() * 1.04 }, 120)
-             .animate({ width: $target.width() / 1.04 }, 120);
+      const originalWidth = $target.width();
+      $target.animate({ width: originalWidth * 1.04 }, 120).animate({ width: originalWidth }, 120);
+      // return to menu after a short delay
+      setTimeout(()=>{
+        buildLevelGrid();
+        showMenu();
+      }, 900);
     }
 
-    function showMenu() {
+    function showMenu(){
       $('#game').hide();
       $('#menu').show();
       currentLevel = null;
       stopAutoCheck();
-      if (timerInterval) { 
-        clearInterval(timerInterval); 
-        timerInterval = null; 
-      }
+      if (timerInterval) { clearInterval(timerInterval); timerInterval=null; }
       $timer.text('⏱ 00:00');
-      buildLevelGrid();
-      updateGlobalProgress();
     }
 
-    // ---------- Hints ----------
-    function showHint() {
+    // ---------- hints ----------
+    let hintShown = false;
+    function showHint(){
       if (!currentLevel || hintShown) return;
       hintShown = true;
-      
-      // Find a piece that's not in the target area
-      let $pieceToHint = null;
-      $pieces.each(function() {
-        if (!isPieceInsideCanvas($(this))) {
-          $pieceToHint = $(this);
-          return false; // break the loop
-        }
-      });
-      
-      if (!$pieceToHint) return;
-      
-      const original = { 
-        left: $pieceToHint.css('left'), 
-        top: $pieceToHint.css('top'), 
-        rot: $pieceToHint.data('rot') || 0, 
-        flip: $pieceToHint.data('flip') || 1
-      };
-      
+      const $p = $pieces.first();
+      const original = { left: $p.css('left'), top: $p.css('top'), rot: $p.data('rot')||0 };
       const canvasRect = targetCanvas.getBoundingClientRect();
-      const gameRect = $('#game')[0].getBoundingClientRect();
-      
-      // Position piece near the target area
-      const px = (canvasRect.left - gameRect.left) + canvasRect.width * 0.7 - $pieceToHint.width() / 2;
-      const py = (canvasRect.top - gameRect.top) + canvasRect.height * 0.7 - $pieceToHint.height() / 2;
-      
-      $pieceToHint.animate({ left: px + 'px', top: py + 'px' }, 450, () => {
-        setTimeout(() => {
-          $pieceToHint.animate({ 
-            left: original.left, 
-            top: original.top, 
-            transform: `rotate(${original.rot}deg) scaleX(${original.flip})` 
-          }, 450, () => { 
-            $pieceToHint.data('rot', original.rot);
-            $pieceToHint.data('flip', original.flip);
-            setTimeout(() => { hintShown = false; }, 1000);
+      const trayRect = $('#tray')[0].getBoundingClientRect();
+      const px = (canvasRect.left - trayRect.left) + canvasRect.width/2 - $p.width()/2;
+      const py = (canvasRect.top - trayRect.top) + canvasRect.height/2 - $p.height()/2;
+      $p.animate({ left: px+'px', top: py+'px' }, 450, ()=> {
+        setTimeout(()=> {
+          $p.animate({ left: original.left, top: original.top, transform: `rotate(${original.rot}deg)` }, 450, ()=> { 
+            $p.data('rot', original.rot);
+            hintShown=false; 
           });
         }, 650);
       });
     }
 
-    // ---------- Event binding ----------
+    // ---------- event binding ----------
     buildLevelGrid();
     resizeCanvas();
     resetPiecesToTray();
-    updateGlobalProgress();
-    initDraggable();
 
-    $levelGrid.on('click', '.levelBtn:not(.locked)', function() {
+    $levelGrid.on('click', '.levelBtn:not(.locked)', function(){
       const lvl = parseInt($(this).data('level'));
       startLevel(lvl);
-    }).on('click', '.levelBtn.locked', function() {
-      // Shake animation for locked levels
-      $(this).animate({ left: '+=8px' }, 60)
-             .animate({ left: '-=8px' }, 60)
-             .animate({ left: '+=8px' }, 60)
-             .animate({ left: '-=8px' }, 60);
+    }).on('click', '.levelBtn.locked', function(){
+      // locked -> do small shake
+      $(this).animate({ left: '+=8px' }, 60).animate({ left: '-=8px' }, 60);
     });
 
     $('#btnBack, #btnMenu').on('click', showMenu);
     $('#btnReset').on('click', resetPiecesToTray);
     $('#btnHint').on('click', showHint);
-    $('#btnResetAll').on('click', () => {
+    $('#btnResetAll').on('click', ()=>{
       if (!confirm('Reset all progress and stars?')) return;
       localStorage.removeItem('tangram_progress');
       getProgress(); // reinitialize
       buildLevelGrid();
-      updateGlobalProgress();
       alert('Progress reset.');
     });
-    
-    // Completion overlay buttons
-    $('#btnNextLevel').on('click', function() {
-      if (currentLevel < TOTAL_LEVELS) {
-        startLevel(currentLevel + 1);
-      } else {
-        showMenu();
-      }
-    });
-    
-    $('#btnBackToMenu').on('click', showMenu);
 
-    // Check completion when pieces are moved
-    $pieces.on('dragstop touchend mouseup', function() {
+    // pieces move check on drag stop
+    $pieces.on('dragstop touchend mouseup', function(){
+      // small debounce
       setTimeout(checkCompletion, 220);
     });
 
-    // Ensure menu toggle works correctly
-    $('#btnMenu').on('click', () => { 
+    // accessibility: ensure menu toggle
+    $('#btnMenu').on('click', ()=> { 
       if ($game.is(':visible')) showMenu(); 
-    });
-
-    // Auto-solve feature
-    $('#btnAutoSolve').on('click', function() {
-      if (currentLevel === null) return;
-      const gameRect = $('#game')[0].getBoundingClientRect();
-      const targetRect = targetCanvas.getBoundingClientRect();
-      const centerX = targetRect.left - gameRect.left + targetRect.width / 2;
-      const centerY = targetRect.top - gameRect.top + targetRect.height / 2;
-      $pieces.each(function(index) {
-        const $el = $(this);
-        const offsetX = (index - 3.5) * 10; // spread horizontally
-        const offsetY = (index % 2 * 20) - 10; // some vertical
-        $el.animate({
-          left: centerX + offsetX,
-          top: centerY + offsetY
-        }, 800);
-        const randomRot = Math.floor(Math.random() * 8) * 45;
-        const randomFlip = Math.random() < 0.5 ? 1 : -1;
-        $el.css('transform', `rotate(${randomRot}deg) scaleX(${randomFlip})`);
-        $el.data('rot', randomRot);
-        $el.data('flip', randomFlip);
-      });
-      setTimeout(checkCompletion, 1000);
     });
 
   })(jQuery);
