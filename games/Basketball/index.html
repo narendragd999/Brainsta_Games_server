@@ -935,8 +935,8 @@
     ctx.lineWidth = 1;
     
     // Draw converging lines for 3D effect
-    const vanishingPointX = cw * 0.1;
-    const vanishingPointY = ch * 0.2;
+    const vanishingPointX = cw * 0.5;
+    const vanishingPointY = ch * 0.4;
     for (let i = 0; i <= cw; i += 40) {
       ctx.beginPath();
       ctx.moveTo(i, ch);
