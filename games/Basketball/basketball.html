@@ -11,27 +11,26 @@
 <style>
   /* --- Theme & reset --- */
   *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-user-select:none}
-  html,body{height:100%;overflow:hidden}
+  html{height:100%}
   body{
+    min-height:100%;
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg,#6a11cb 0%,#ffffff 100%);
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:12px;
     color:#111;
+    overflow:hidden;
+    margin:0;
+    padding:0;
   }
 
   /* --- Game container sized for mobile --- */
   #gameContainer{
-    width:100%;
-    max-width:520px;
+    width:100vw;
     height:100vh;
-    max-height:880px;
-    border-radius:18px;
     overflow:hidden;
     position:relative;
-    box-shadow:0 18px 40px rgba(0,0,0,0.18);
     background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.85));
   }
 
@@ -48,7 +47,7 @@
   /* White UI card for score */
   .score-display{
     position:absolute;
-    top:14px;
+    top:calc(14px + env(safe-area-inset-top));
     left:14px;
     z-index:30;
     background:#fff;
@@ -66,7 +65,7 @@
   /* Timer card */
   .timer-card{
     position:absolute;
-    top:14px;
+    top:calc(14px + env(safe-area-inset-top));
     right:14px;
     z-index:30;
     background:#fff;
@@ -85,7 +84,7 @@
   .instructions{
     position:absolute;
     right:14px;
-    top:72px;
+    top:calc(72px + env(safe-area-inset-top));
     z-index:30;
     width:44px;height:44px;border-radius:12px;
     background:#fff;display:flex;align-items:center;justify-content:center;
@@ -96,7 +95,7 @@
   .power-ups{
     position:absolute;
     left:14px;
-    bottom:16px;
+    bottom:calc(16px + env(safe-area-inset-bottom));
     z-index:30;
     display:flex;
     gap:10px;
@@ -112,7 +111,7 @@
   /* Bottom controls */
   .controls{
     position:absolute;
-    bottom:16px;
+    bottom:calc(16px + env(safe-area-inset-bottom));
     right:14px;
     z-index:30;
     display:flex;
@@ -131,7 +130,7 @@
   /* Modal */
   .modal{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);
-    z-index:60;padding:18px;
+    z-index:60;padding:calc(18px + env(safe-area-inset-top)) 18px calc(18px + env(safe-area-inset-bottom));
   }
   .modal.hidden{display:none}
   .modal-card{width:100%;max-width:420px;background:#fff;border-radius:14px;padding:16px;box-shadow:0 18px 40px rgba(0,0,0,0.25)}
@@ -169,17 +168,16 @@
     height: 100%;
     pointer-events: none;
     z-index: 5;
-    opacity: 0.5;
+    opacity: 0.3;
     background: linear-gradient(to bottom, rgba(106, 17, 203, 0.1) 0%, transparent 30%, transparent 70%, rgba(106, 17, 203, 0.1) 100%);
     animation: projectorPulse 4s infinite alternate;
   }
   
   @keyframes projectorPulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.7; }
+    0%, 100% { opacity: 0.2; }
+    50% { opacity: 0.4; }
   }
 
-<<<<<<< HEAD
   /* Challenges display */
   .challenges-display {
     position: absolute;
@@ -222,83 +220,22 @@
   }
 
   /* responsive tweaks */
-=======
-  /* Challenge indicators */
-  .challenge-indicator {
-    position: absolute;
-    top: 14px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 30;
-    background: #fff;
-    color: #111;
-    padding: 8px 14px;
-    border-radius: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    font-weight: 700;
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  
-  .challenge-indicator.active {
-    opacity: 1;
-  }
-  
-  .challenge-indicator.wind { background: #e74c3c; color: white; }
-  .challenge-indicator.moving { background: #9b59b6; color: white; }
-  .challenge-indicator.small { background: #e67e22; color: white; }
-  .challenge-indicator.double { background: #2ecc71; color: white; }
-
-  /* Mobile-specific responsive fixes */
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
   @media (max-width:420px){
     .control-btn{width:50px;height:50px;font-size:18px;border-radius:12px}
     .power-up{width:44px;height:44px}
     .score-display,.timer-card{padding:8px 10px;font-size:13px;border-radius:12px}
-<<<<<<< HEAD
     .challenges-display {
       padding: 8px 10px;
       font-size: 11px;
       max-width: 170px;
     }
-=======
-    .instructions, .fullscreen-btn {width:40px;height:40px;font-size:16px}
-    .challenge-indicator {font-size: 12px; padding: 6px 10px;}
-    
-    /* Prevent overlap on very small screens */
-    .power-ups {bottom: 12px; left: 12px;}
-    .controls {bottom: 12px; right: 12px;}
-    .score-display {top: 10px; left: 10px;}
-    .timer-card {top: 10px; right: 10px;}
-    .instructions {top: 60px; right: 10px;}
-    .fullscreen-btn {top: 110px; right: 10px;}
-    .challenge-indicator {top: 10px;}
-    
-    /* Adjust modal for small screens */
-    .modal {padding: 10px;}
-    .modal-card {padding: 12px;}
-    .modal-card h2 {font-size: 18px;}
-    .modal-card p {font-size: 13px;}
-  }
-
-  /* Extra small screens */
-  @media (max-height: 700px) and (max-width: 420px) {
-    .power-ups {bottom: 8px; gap: 6px;}
-    .controls {bottom: 8px; gap: 6px;}
-    .control-btn {width: 46px; height: 46px;}
-    .power-up {width: 40px; height: 40px;}
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
   }
 
   /* Full-screen mode */
   .fullscreen-btn {
     position: absolute;
     right: 14px;
-    top: 130px;
+    top: calc(130px + env(safe-area-inset-top));
     z-index: 30;
     width: 44px;
     height: 44px;
@@ -343,23 +280,6 @@
     font-weight: 700;
     font-size: 13px;
   }
-  
-  /* Prevent text selection and context menu */
-  * {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  
-  /* Fix for iOS Safari viewport height issues */
-  @supports (-webkit-touch-callout: none) {
-    #gameContainer {
-      height: -webkit-fill-available;
-    }
-  }
 </style>
 </head>
 
@@ -381,7 +301,6 @@
       <i class="fas fa-clock"></i>&nbsp;<span id="timerText">60</span>s
     </div>
     
-<<<<<<< HEAD
     <div class="challenges-display" id="challengesDisplay">
       <div class="challenge-item" id="challengeStreak">
         <i class="fas fa-circle challenge-unchecked" id="streakIcon"></i>
@@ -398,20 +317,6 @@
         <span>Perfect shot</span>
         <span class="challenge-progress" id="perfectProgress">(0/2)</span>
       </div>
-=======
-    <!-- Challenge indicators -->
-    <div class="challenge-indicator wind" id="windIndicator">
-      <i class="fas fa-wind"></i>&nbsp;Wind: <span id="windValue">0</span>
-    </div>
-    <div class="challenge-indicator moving" id="movingIndicator">
-      <i class="fas fa-arrows-alt-h"></i>&nbsp;Moving Hoop
-    </div>
-    <div class="challenge-indicator small" id="smallIndicator">
-      <i class="fas fa-compress-alt"></i>&nbsp;Small Hoop
-    </div>
-    <div class="challenge-indicator double" id="doubleIndicator">
-      <i class="fas fa-star"></i>&nbsp;Double Points!
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
     </div>
 
     <div class="instructions" id="instructionsBtn" title="How to play">
@@ -445,17 +350,7 @@
         <h2>How to Play</h2>
         <p>Drag the ball backward and release (or flick) to shoot. The dotted arc shows the trajectory preview while dragging.</p>
         <p>Make as many baskets as possible before time runs out (Time Attack).</p>
-<<<<<<< HEAD
         <p>Complete challenges for bonus points: 3 shots in a row, long distance shots, and perfect shots.</p>
-=======
-        <p><strong>New Challenges:</strong></p>
-        <ul style="margin-left: 20px; margin-bottom: 10px;">
-          <li><strong>Wind:</strong> Affects ball trajectory</li>
-          <li><strong>Moving Hoop:</strong> Hoop moves left and right</li>
-          <li><strong>Small Hoop:</strong> Hoop size decreases temporarily</li>
-          <li><strong>Double Points:</strong> Score double for a limited time</li>
-        </ul>
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
         <p>Use Hint or Auto-solve buttons for assistance. Tap the blue shoot button for a quick auto-aim shot.</p>
         <div class="modal-actions">
           <button id="closeInstr" class="btn primary">Got it</button>
@@ -491,7 +386,6 @@
    - Hint & AutoSolve
    - Challenges system
    - Background image with fixed hoop position
-   - ADDITIONAL CHALLENGES
    ------------------------------ */
 
 (() => {
@@ -514,23 +408,10 @@
     ballPauseDuration: 500,         // milliseconds after scoring
     fixedHoopX: null,               // Will be set based on background image
     fixedHoopY: null,               // Will be set based on background image
-<<<<<<< HEAD
     challengesEnabled: true,         // Enable challenges
     windEnabled: true,               // Enable wind effect
     windChangeInterval: 3000,       // How often wind changes (ms)
     maxWindForce: 150               // Maximum wind force
-=======
-    
-    // Challenge settings
-    windMaxForce: 180,              // Maximum wind force
-    windChangeInterval: 5000,       // How often wind changes (ms)
-    movingHoopSpeed: 60,            // Pixels per second
-    movingHoopRange: 200,           // How far the hoop moves
-    smallHoopWidth: 70,             // Small hoop size
-    smallHoopDuration: 8000,        // How long small hoop lasts (ms)
-    doublePointsDuration: 10000,    // How long double points lasts (ms)
-    challengeInterval: 15000        // How often challenges change (ms)
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
   };
 
   // DOM elements
@@ -556,7 +437,6 @@
   const playAgainBtn = document.getElementById('playAgainBtn');
   const container = document.getElementById('gameContainer');
   const courtOverlay = document.getElementById('courtOverlay');
-<<<<<<< HEAD
   const windIndicator = document.getElementById('windIndicator');
   const windText = document.getElementById('windText');
   
@@ -570,44 +450,17 @@
   const streakProgress = document.getElementById('streakProgress');
   const distanceProgress = document.getElementById('distanceProgress');
   const perfectProgress = document.getElementById('perfectProgress');
-=======
-  
-  // Challenge indicators
-  const windIndicator = document.getElementById('windIndicator');
-  const movingIndicator = document.getElementById('movingIndicator');
-  const smallIndicator = document.getElementById('smallIndicator');
-  const doubleIndicator = document.getElementById('doubleIndicator');
-  const windValue = document.getElementById('windValue');
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
 
   // state
-  let cw, ch, deviceRatio;
-  
-  // Initialize canvas size with mobile fixes
-  function initCanvasSize() {
-    // Use container dimensions instead of window for better mobile behavior
-    const containerRect = container.getBoundingClientRect();
-    cw = Math.min(containerRect.width, 520);
-    ch = Math.min(containerRect.height, 880);
-    
-    // Handle iOS Safari viewport height quirk
-    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      ch = Math.min(window.innerHeight, 880);
-    }
-    
-    deviceRatio = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
-    
-    // Set canvas dimensions
-    canvas.width = Math.floor(cw * deviceRatio);
-    canvas.height = Math.floor(ch * deviceRatio);
-    canvas.style.width = cw + 'px';
-    canvas.style.height = ch + 'px';
-    
-    // Scale context
-    ctx.scale(deviceRatio, deviceRatio);
-  }
-  
-  initCanvasSize();
+  let cw = window.innerWidth;
+  let ch = window.innerHeight;
+  let deviceRatio = window.devicePixelRatio || 1;
+  // scale canvas for crispness
+  canvas.width = Math.floor(cw * deviceRatio);
+  canvas.height = Math.floor(ch * deviceRatio);
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  ctx.scale(deviceRatio, deviceRatio);
 
   // game variables
   let score = 0;
@@ -630,7 +483,6 @@
   let netStretchProgress = 0; // 0-1 value for net stretching animation
   let ballPaused = false;
   let ballPauseTimer = 0;
-<<<<<<< HEAD
   let hoopPosition = { x: cw*0.5, y: ch*0.3 }; // Fixed position matching background
   let windForce = 0; // Current wind force affecting the ball
   let lastWindChange = 0; // Last time wind changed
@@ -665,22 +517,6 @@
   
   let consecutiveBaskets = 0;
   let perfectShots = 0;
-=======
-  let hoopPosition = { x: cw/2, y: CONFIG.hoopY }; // Fixed position matching background
-
-  // Challenge variables
-  let windForce = 0;
-  let windDirection = 1; // 1 for right, -1 for left
-  let isMovingHoop = false;
-  let movingHoopDirection = 1;
-  let isSmallHoop = false;
-  let isDoublePoints = false;
-  let challengeTimers = {};
-  let activeChallenges = [];
-
-  // Mobile-specific touch tracking
-  let activeTouches = new Map();
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
 
   // Sounds (using Web Audio API for better compatibility)
   let audioContext = null;
@@ -700,11 +536,6 @@
   function initAudio() {
     try {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      
-      // Create sound effects using Web Audio API
-      sounds.swish = createSwishSound();
-      sounds.bounce = createBounceSound();
-      sounds.crowd = createCrowdSound();
     } catch (e) {
       console.log("Web Audio API not supported, sounds disabled");
     }
@@ -712,7 +543,7 @@
 
   // Create swish sound using Web Audio API
   function createSwishSound() {
-    if (!audioContext) return null;
+    if (!audioContext) return;
     
     const duration = 0.8;
     const oscillator = audioContext.createOscillator();
@@ -729,13 +560,11 @@
     
     oscillator.start();
     oscillator.stop(audioContext.currentTime + duration);
-    
-    return { oscillator, gainNode };
   }
 
   // Create bounce sound
   function createBounceSound() {
-    if (!audioContext) return null;
+    if (!audioContext) return;
     
     const duration = 0.3;
     const oscillator = audioContext.createOscillator();
@@ -753,13 +582,11 @@
     
     oscillator.start();
     oscillator.stop(audioContext.currentTime + duration);
-    
-    return { oscillator, gainNode };
   }
 
   // Create crowd cheer sound
   function createCrowdSound() {
-    if (!audioContext) return null;
+    if (!audioContext) return;
     
     const duration = 1.5;
     const oscillator1 = audioContext.createOscillator();
@@ -786,8 +613,6 @@
     oscillator2.start();
     oscillator1.stop(audioContext.currentTime + duration);
     oscillator2.stop(audioContext.currentTime + duration);
-    
-    return { oscillator1, oscillator2, gainNode };
   }
 
   // Create challenge complete sound
@@ -828,7 +653,6 @@
   function playSound(name) {
     if (!soundEnabled || !audioContext) return;
     
-<<<<<<< HEAD
     const playInner = () => {
       switch(name) {
         case 'swish':
@@ -846,93 +670,11 @@
       }
     };
 
-=======
-    // Resume audio context if it's suspended (browser policy)
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
     if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-    
-    // Create a new sound instance
-    switch(name) {
-      case 'swish':
-        createSwishSound();
-        break;
-      case 'bounce':
-        createBounceSound();
-        break;
-      case 'crowd':
-        createCrowdSound();
-        break;
-    }
-  }
-
-  // Challenge management functions
-  function updateWind() {
-    // Change wind force and direction randomly
-    windForce = randRange(-CONFIG.windMaxForce, CONFIG.windMaxForce);
-    windDirection = windForce > 0 ? 1 : -1;
-    windValue.textContent = Math.abs(Math.round(windForce/10));
-    
-    // Show/hide wind indicator
-    if (Math.abs(windForce) > 20) {
-      windIndicator.classList.add('active');
+      audioContext.resume().then(playInner);
     } else {
-      windIndicator.classList.remove('active');
+      playInner();
     }
-  }
-  
-  function startMovingHoop() {
-    isMovingHoop = true;
-    movingIndicator.classList.add('active');
-    
-    // Set a timer to stop moving hoop
-    clearTimeout(challengeTimers.movingHoop);
-    challengeTimers.movingHoop = setTimeout(() => {
-      isMovingHoop = false;
-      movingIndicator.classList.remove('active');
-    }, CONFIG.challengeInterval);
-  }
-  
-  function startSmallHoop() {
-    isSmallHoop = true;
-    smallIndicator.classList.add('active');
-    
-    // Set a timer to return to normal hoop
-    clearTimeout(challengeTimers.smallHoop);
-    challengeTimers.smallHoop = setTimeout(() => {
-      isSmallHoop = false;
-      smallIndicator.classList.remove('active');
-    }, CONFIG.smallHoopDuration);
-  }
-  
-  function startDoublePoints() {
-    isDoublePoints = true;
-    doubleIndicator.classList.add('active');
-    
-    // Set a timer to end double points
-    clearTimeout(challengeTimers.doublePoints);
-    challengeTimers.doublePoints = setTimeout(() => {
-      isDoublePoints = false;
-      doubleIndicator.classList.remove('active');
-    }, CONFIG.doublePointsDuration);
-  }
-  
-  function triggerRandomChallenge() {
-    const challenges = [
-      updateWind,
-      startMovingHoop,
-      startSmallHoop,
-      startDoublePoints
-    ];
-    
-    // Pick a random challenge
-    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
-    randomChallenge();
-    
-    // Schedule next challenge
-    clearTimeout(challengeTimers.nextChallenge);
-    challengeTimers.nextChallenge = setTimeout(triggerRandomChallenge, CONFIG.challengeInterval);
   }
 
   // Initialize the stage elements: player, ball, hoop
@@ -976,9 +718,7 @@
       y: hoopPosition.y,
       w: CONFIG.hoopWidth,
       thickness: CONFIG.hoopThickness,
-      netStretch: 0,
-      baseX: hoopPosition.x, // For moving hoop
-      direction: 1 // For moving hoop
+      netStretch: 0
     };
     // place scoring sensor just below rim
     ball.inPlay = false;
@@ -989,28 +729,9 @@
     ballPaused = false;
     ballPauseTimer = 0;
     
-<<<<<<< HEAD
     // Reset wind
     windForce = 0;
     windIndicator.style.display = 'none';
-=======
-    // Reset challenges
-    windForce = 0;
-    isMovingHoop = false;
-    isSmallHoop = false;
-    isDoublePoints = false;
-    
-    // Hide all challenge indicators
-    windIndicator.classList.remove('active');
-    movingIndicator.classList.remove('active');
-    smallIndicator.classList.remove('active');
-    doubleIndicator.classList.remove('active');
-    
-    // Clear all challenge timers
-    for (let timer in challengeTimers) {
-      clearTimeout(challengeTimers[timer]);
-    }
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
   }
 
   // Load background image and detect hoop position
@@ -1051,7 +772,6 @@
     resetStage(true);
     // Clear previous overlay content - NO SVG CREATION
     courtOverlay.innerHTML = '';
-<<<<<<< HEAD
     
     // Court overlay is completely transparent - no SVG elements created
     // This ensures no vertical lines or any elements are visible
@@ -1143,8 +863,6 @@
       score += bonusPoints;
       scoreText.textContent = score;
     }
-=======
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
   }
 
   // Time & Game Loop
@@ -1160,12 +878,6 @@
         gameOver();
       }
     }, 1000);
-    
-    // Start wind changes
-    setInterval(updateWind, CONFIG.windChangeInterval);
-    
-    // Start random challenges after a delay
-    setTimeout(triggerRandomChallenge, 5000);
   }
 
   function gameOver(){
@@ -1186,11 +898,6 @@
     finalFeedback.textContent = fb;
     gameOverModal.classList.remove('hidden');
     playSound('crowd');
-    
-    // Clear all challenge timers
-    for (let timer in challengeTimers) {
-      clearTimeout(challengeTimers[timer]);
-    }
   }
 
   /* ---------- Physics + Shot logic ---------- */
@@ -1206,13 +913,9 @@
   // We check if ball passes a small rectangular sensor directly below hoop while moving downward.
   function checkScore(dt){
     if (!ball.inPlay || ballPaused) return;
-    
-    // Adjust hoop width based on challenge
-    const currentHoopWidth = isSmallHoop ? CONFIG.smallHoopWidth : CONFIG.hoopWidth;
-    
     const sensorX = hoop.x;
     const sensorY = hoop.y + 6;
-    const sensorW = currentHoopWidth * 0.5;
+    const sensorW = hoop.w * 0.5;
     const sensorH = 10;
     // ball center overlap with sensor rect
     if (ball.y > sensorY - ball.r && ball.y < sensorY + sensorH + ball.r){
@@ -1220,13 +923,9 @@
         // ensure ball was moving downward enough and gives some debounce
         if (ball.vy > 150 && performance.now() - (ball.lastScoredTick || 0) > 600){
           ball.lastScoredTick = performance.now();
-          
-          // Calculate points (double if challenge active)
-          const points = isDoublePoints ? 4 : 2;
-          score += points;
-          
+          score += 2;
           playSound('swish');
-          showFloatingText(`+${points}`, ball.x, ball.y);
+          showFloatingText('+2', ball.x, ball.y);
           scoreText.textContent = score;
           
           // Check if this was a perfect shot (swish)
@@ -1282,124 +981,23 @@
   }
 
   /* ---------- Input: pointer & touch friendly ---------- */
-  function getPointerPos(e){
-    const rect = canvas.getBoundingClientRect();
-    const touch = (e.touches && e.touches[0]) || e;
-    return {
-      x: (touch.clientX - rect.left) * (canvas.width / deviceRatio) / rect.width / (canvas.width/(deviceRatio*rect.width)) || (touch.clientX - rect.left),
-      y: (touch.clientY - rect.top)
-    };
-  }
-
-  // Improved touch handling for mobile
-  function handleTouchStart(e) {
-    e.preventDefault();
-    if (!isPlaying) return;
-    
-    // enable sounds on first user gesture
-    soundEnabled = true;
-    initAudio();
-    
-    const touches = e.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const p = getPointerPos({ touches: [touch] });
-      
-      // Check if touch is close to ball
-      const dx = p.x - ball.x;
-      const dy = p.y - ball.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      
-      if (!ball.inPlay && dist <= ball.r + 16 && !dragging) {
-        dragging = true;
-        dragStart = { x: p.x, y: p.y };
-        currentPreview = [];
-        isHintActive = false;
-        activeTouches.set(touch.identifier, { type: 'ball', startX: p.x, startY: p.y });
-        break;
-      } else {
-        // Check if touch is on control buttons
-        activeTouches.set(touch.identifier, { type: 'other', x: p.x, y: p.y });
-      }
-    }
-  }
-
-  function handleTouchMove(e) {
-    e.preventDefault();
-    if (!dragging) return;
-    
-    const touches = e.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const touchInfo = activeTouches.get(touch.identifier);
-      
-      if (touchInfo && touchInfo.type === 'ball') {
-        const p = getPointerPos({ touches: [touch] });
-        
-        // Compute "pull-back" vector (drag backwards to aim forward)
-        const dx = p.x - dragStart.x;
-        const dy = p.y - dragStart.y;
-        const pullX = -dx;
-        const pullY = -dy;
-        
-        // raw power magnitude
-        const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
-        const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
-        const angle = Math.atan2(pullY, pullX); // radians
-        
-        // store preview points (with wind effect)
-        currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
-        break;
-      }
-    }
-  }
-
-  function handleTouchEnd(e) {
-    e.preventDefault();
-    const touches = e.changedTouches;
-    
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const touchInfo = activeTouches.get(touch.identifier);
-      
-      if (touchInfo && touchInfo.type === 'ball' && dragging) {
-        dragging = false;
-        
-        if (currentPreview.length){
-          const p = getPointerPos({ changedTouches: [touch] });
-          const dx = p.x - dragStart.x;
-          const dy = p.y - dragStart.y;
-          const pullX = -dx;
-          const pullY = -dy;
-          const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
-          const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
-          const angle = Math.atan2(pullY, pullX);
-          
-          // shoot (with wind effect)
-          shootBall(Math.cos(angle)*speed + windForce/10, Math.sin(angle)*speed);
-        }
-        currentPreview = [];
-      }
-      
-      activeTouches.delete(touch.identifier);
-    }
-  }
-
-  // Start drag if touch on ball
   function pointerDown(e){
     if (!isPlaying) return;
     // enable sounds on first user gesture
     soundEnabled = true;
     initAudio();
 
-    const p = getPointerPos(e);
+    const p = (e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY});
     // check if pointer is close to ball
-    const dx = p.x - ball.x;
-    const dy = p.y - ball.y;
+    const rect = canvas.getBoundingClientRect();
+    const px = (p.x - rect.left);
+    const py = (p.y - rect.top);
+    const dx = px - ball.x;
+    const dy = py - ball.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (!ball.inPlay && dist <= ball.r + 16){
       dragging = true;
-      dragStart = { x: p.x, y: p.y };
+      dragStart = { x: px, y: py };
       currentPreview = [];
       isHintActive = false;
       e.preventDefault && e.preventDefault();
@@ -1408,17 +1006,20 @@
 
   function pointerMove(e){
     if (!dragging) return;
-    const p = getPointerPos(e);
+    const p = (e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY});
+    const rect = canvas.getBoundingClientRect();
+    const px = (p.x - rect.left);
+    const py = (p.y - rect.top);
     // Compute "pull-back" vector (drag backwards to aim forward)
-    const dx = p.x - dragStart.x;
-    const dy = p.y - dragStart.y;
+    const dx = px - dragStart.x;
+    const dy = py - dragStart.y;
     const pullX = -dx;
     const pullY = -dy;
     // raw power magnitude
     const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
     const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
     const angle = Math.atan2(pullY, pullX); // radians
-    // store preview points (with wind effect)
+    // store preview points
     currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
     e.preventDefault && e.preventDefault();
   }
@@ -1427,16 +1028,19 @@
     if (!dragging) return;
     dragging = false;
     if (currentPreview.length){
-      const p = getPointerPos(e);
-      const dx = p.x - dragStart.x;
-      const dy = p.y - dragStart.y;
+      const p = (e.changedTouches ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY} : {x:e.clientX,y:e.clientY});
+      const rect = canvas.getBoundingClientRect();
+      const px = (p.x - rect.left);
+      const py = (p.y - rect.top);
+      const dx = px - dragStart.x;
+      const dy = py - dragStart.y;
       const pullX = -dx;
       const pullY = -dy;
       const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
       const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
       const angle = Math.atan2(pullY, pullX);
-      // shoot (with wind effect)
-      shootBall(Math.cos(angle)*speed + windForce/10, Math.sin(angle)*speed);
+      // shoot
+      shootBall(Math.cos(angle)*speed, Math.sin(angle)*speed);
     }
     currentPreview = [];
   }
@@ -1451,15 +1055,10 @@
       x += pvx * dt;
       y += pvy * dt;
       pvy += CONFIG.gravity * dt;
-<<<<<<< HEAD
       // Apply wind effect to trajectory preview
       if (CONFIG.windEnabled) {
         pvx += windForce * dt;
       }
-=======
-      // Apply wind effect to trajectory
-      pvx += windForce * dt * 0.1;
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
       points.push({x,y});
       if (y > ch) break;
     }
@@ -1469,7 +1068,6 @@
   /* ---------- Hint & Auto-solve ---------- */
   function doHint(){
     if (ball.inPlay || ballPaused) return;
-    // compute a "perfect" shot by aiming at hoop center and adjusting power to land near center
     const dx = hoop.x - ball.x;
     const dy = hoop.y - ball.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -1491,7 +1089,7 @@
     // show hint briefly then shoot
     currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*power, Math.sin(angle)*power, CONFIG.trailSteps);
     isHintActive = true;
-    setTimeout(()=>{ isHintActive=false; currentPreview=[]; shootBall(Math.cos(angle)*power + windForce/10, Math.sin(angle)*power); }, 700);
+    setTimeout(()=>{ isHintActive=false; currentPreview=[]; shootBall(Math.cos(angle)*power, Math.sin(angle)*power); }, 700);
   }
 
   /* ---------- UI / Controls ---------- */
@@ -1504,21 +1102,10 @@
   playAgainBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
 
   // movement controls for mobile (hold to move)
-  leftBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); leftHold=true; }, {passive:false}); 
-  leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
-  leftBtn.addEventListener('touchcancel', ()=>{ leftHold=false; });
-  
-  rightBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); rightHold=true; }, {passive:false}); 
-  rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
-  rightBtn.addEventListener('touchcancel', ()=>{ rightHold=false; });
-  
-  leftBtn.addEventListener('mousedown', ()=> leftHold=true); 
-  leftBtn.addEventListener('mouseup', ()=> leftHold=false);
-  leftBtn.addEventListener('mouseleave', ()=> leftHold=false);
-  
-  rightBtn.addEventListener('mousedown', ()=> rightHold=true); 
-  rightBtn.addEventListener('mouseup', ()=> rightHold=false);
-  rightBtn.addEventListener('mouseleave', ()=> rightHold=false);
+  leftBtn.addEventListener('touchstart', (e)=>{ leftHold=true; }, {passive:false}); leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
+  rightBtn.addEventListener('touchstart', (e)=>{ rightHold=true; }, {passive:false}); rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
+  leftBtn.addEventListener('mousedown', ()=> leftHold=true); leftBtn.addEventListener('mouseup', ()=> leftHold=false);
+  rightBtn.addEventListener('mousedown', ()=> rightHold=true); rightBtn.addEventListener('mouseup', ()=> rightHold=false);
 
   // quick shoot button (auto-aim)
   shootBtn.addEventListener('click', ()=> {
@@ -1528,7 +1115,7 @@
       const dist = Math.sqrt(dx*dx + dy*dy);
       const p = clamp(dist * 7.2, CONFIG.minPower, CONFIG.maxPower);
       const ang = Math.atan2(dy, dx);
-      shootBall(Math.cos(ang)*p + windForce/10, Math.sin(ang)*p);
+      shootBall(Math.cos(ang)*p, Math.sin(ang)*p);
     }
   });
 
@@ -1547,20 +1134,16 @@
     }
   }
 
-  // Pointer events on canvas - improved for mobile
-  canvas.addEventListener('touchstart', handleTouchStart, {passive:false});
-  canvas.addEventListener('touchmove', handleTouchMove, {passive:false});
-  canvas.addEventListener('touchend', handleTouchEnd, {passive:false});
-  canvas.addEventListener('touchcancel', handleTouchEnd, {passive:false});
-  
+  // Pointer events on canvas
+  canvas.addEventListener('touchstart', pointerDown, {passive:false});
+  canvas.addEventListener('touchmove', pointerMove, {passive:false});
+  canvas.addEventListener('touchend', pointerUp, {passive:false});
   canvas.addEventListener('mousedown', pointerDown);
   window.addEventListener('mousemove', pointerMove);
   window.addEventListener('mouseup', pointerUp);
 
-  // Resize handling - improved for mobile
-  let resizeTimeout;
+  // Resize handling
   window.addEventListener('resize', ()=> {
-<<<<<<< HEAD
     cw = window.innerWidth;
     ch = window.innerHeight;
     canvas.width = Math.floor(cw * deviceRatio);
@@ -1587,32 +1170,6 @@
       hoop.x = hoopPosition.x;
       hoop.y = hoopPosition.y;
     }
-=======
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      initCanvasSize();
-      
-      // Update hoop position to maintain alignment with background
-      hoopPosition.x = cw * 0.5;
-      hoopPosition.y = ch * 0.2;
-      
-      // Update the overlay
-      updateCourtOverlay();
-      
-      // Update ball position to align with holder
-      if (!ball.inPlay && player) {
-        ball.x = player.x;
-        ball.y = player.y - 42;
-      }
-      
-      // Update hoop position in game
-      if (hoop) {
-        hoop.x = hoopPosition.x;
-        hoop.y = hoopPosition.y;
-        hoop.baseX = hoopPosition.x;
-      }
-    }, 250); // Debounce resize events
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
   });
 
   // Floating text helper
@@ -1644,27 +1201,12 @@
         ballPaused = false;
       }
     }
-    
-    // Update moving hoop position
-    if (isMovingHoop) {
-      hoop.x += movingHoopDirection * CONFIG.movingHoopSpeed * (dt/1000);
-      
-      // Reverse direction if hitting boundaries
-      if (hoop.x > hoop.baseX + CONFIG.movingHoopRange/2) {
-        movingHoopDirection = -1;
-      } else if (hoop.x < hoop.baseX - CONFIG.movingHoopRange/2) {
-        movingHoopDirection = 1;
-      }
-    }
 
     // clear background: draw image if ready else gradient
+    ctx.clearRect(0,0,cw,ch);
     if (bgReady){
       // draw bg image to fill canvas area while preserving aspect ratio
-      ctx.save();
-      ctx.resetTransform && ctx.resetTransform();
-      ctx.clearRect(0,0,cw,ch);
       ctx.drawImage(backgroundImage, 0, 0, cw, ch);
-      ctx.restore();
     } else {
       // fallback gradient fill (purple to subtle ground)
       const g = ctx.createLinearGradient(0,0,0,ch);
@@ -1683,15 +1225,12 @@
     ctx.lineWidth = 1;
     
     // Draw converging lines for 3D effect
-<<<<<<< HEAD
     const vanishingPointX = cw * 0.5;
-=======
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
     const vanishingPointY = ch * 0.3;
     for (let i = 0; i <= cw; i += 40) {
       ctx.beginPath();
       ctx.moveTo(i, ch);
-      ctx.lineTo(cw/2, vanishingPointY);
+      ctx.lineTo(vanishingPointX, vanishingPointY);
       ctx.stroke();
     }
     
@@ -1726,8 +1265,6 @@
     if (ball.inPlay && !ballPaused){
       // integrate velocity
       ball.vy += CONFIG.gravity * (dt/1000);
-      // Apply wind effect to ball in flight
-      ball.vx += windForce * (dt/1000) * 0.1;
       ball.x += ball.vx * (dt/1000);
       ball.y += ball.vy * (dt/1000);
 
@@ -1754,39 +1291,23 @@
     }
 
     // Draw hoop (rim + backboard simple)
-    // Adjust hoop width based on challenge
-    const currentHoopWidth = isSmallHoop ? CONFIG.smallHoopWidth : CONFIG.hoopWidth;
-    
-    // backboard
     ctx.save();
-<<<<<<< HEAD
-    //ctx.fillStyle = 'rgba(255,255,255,0.92)';
-    //ctx.fillRect(hoop.x - 36, hoop.y - 36, 72, 28); // small backboard
-=======
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
+    
     // rim
     ctx.beginPath();
-    //ctx.strokeStyle = '#ff6bcb';
-    //ctx.lineWidth = hoop.thickness;
+    ctx.strokeStyle = '#ff6bcb';
+    ctx.lineWidth = hoop.thickness;
     ctx.lineCap = 'round';
-<<<<<<< HEAD
     //ctx.arc(hoop.x, hoop.y, hoop.w/2, 0.15*Math.PI, 0.85*Math.PI, false);
-=======
-    ctx.arc(hoop.x, hoop.y, currentHoopWidth/2, 0.15*Math.PI, 0.85*Math.PI, false);
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
     ctx.stroke();
     
     // net (with stretch animation)
     ctx.lineWidth = 2;
-<<<<<<< HEAD
     ctx.strokeStyle = 'transparent';
-=======
-    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
     const stretchFactor = 1 + netStretchProgress * 0.5; // 1 to 1.5 stretch
     for (let i=-4;i<=4;i++){
-      const rx = hoop.x + (i*(currentHoopWidth/10));
+      const rx = hoop.x + (i*(hoop.w/10));
       ctx.beginPath();
       ctx.moveTo(rx, hoop.y + hoop.thickness/2);
       // Apply stretch to the net
@@ -1852,10 +1373,6 @@
       ctx.fillRect(cw/2 - 46, ch - 44, 92 * ratio, 8);
       ctx.restore();
     }
-
-    // debug: draw sensor rect (hidden in final, but we skip rendering it)
-
-    // overlay UI (no need to draw DOM elements here)
   }
 
   // main loop

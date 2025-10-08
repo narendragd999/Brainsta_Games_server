@@ -1225,12 +1225,8 @@
     ctx.lineWidth = 1;
     
     // Draw converging lines for 3D effect
-    const vanishingPointX = cw * 0.5;
-<<<<<<< HEAD
-    const vanishingPointY = ch * 0.3;
-=======
-    const vanishingPointY = ch * 0.4;
->>>>>>> 8d415acf69ad40b6e0cbf31a90e3a18b43ab7b4f
+    const vanishingPointX = cw * 0.1;
+    const vanishingPointY = ch * 0.2;
     for (let i = 0; i <= cw; i += 40) {
       ctx.beginPath();
       ctx.moveTo(i, ch);
@@ -1296,19 +1292,19 @@
 
     // Draw hoop (rim + backboard simple)
     ctx.save();
-    //ctx.fillStyle = 'rgba(255,255,255,0.92)';
-    //ctx.fillRect(hoop.x - 36, hoop.y - 36, 72, 28); // small backboard
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.fillRect(hoop.x - 36, hoop.y - 36, 72, 28); // small backboard
     // rim
     ctx.beginPath();
-    //ctx.strokeStyle = '#ff6bcb';
-    //ctx.lineWidth = hoop.thickness;
+    ctx.strokeStyle = '#ff6bcb';
+    ctx.lineWidth = hoop.thickness;
     ctx.lineCap = 'round';
-    //ctx.arc(hoop.x, hoop.y, hoop.w/2, 0.15*Math.PI, 0.85*Math.PI, false);
+    ctx.arc(hoop.x, hoop.y, hoop.w/2, 0.15*Math.PI, 0.85*Math.PI, false);
     ctx.stroke();
     
     // net (with stretch animation)
     ctx.lineWidth = 2;
-    ctx.strokeStyle = 'transparent';
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
     const stretchFactor = 1 + netStretchProgress * 0.5; // 1 to 1.5 stretch
     for (let i=-4;i<=4;i++){
       const rx = hoop.x + (i*(hoop.w/10));
