@@ -94,7 +94,7 @@
   /* Powerups column */
   .power-ups{
     position:absolute;
-    left:14px;
+    left:0px;
     bottom:calc(16px + env(safe-area-inset-bottom));
     z-index:30;
     display:flex;
@@ -111,7 +111,7 @@
   /* Bottom controls */
   .controls{
     position:absolute;
-    bottom:calc(30px + env(safe-area-inset-bottom));
+    bottom:calc(100px + env(safe-area-inset-bottom));
     right:14px;
     z-index:30;
     display:flex;
@@ -284,7 +284,7 @@
   /* Updated controls positioning */
 .controls{
   position: absolute;
-  bottom: max(calc(30px + env(safe-area-inset-bottom)), 20px);
+  bottom: max(calc(100px + env(safe-area-inset-bottom)), 20px);
   right: 14px;
   z-index: 30;
   display: flex;
@@ -295,8 +295,8 @@
 /* Updated power-ups positioning */
 .power-ups{
   position: absolute;
-  left: 14px;
-  bottom: max(calc(16px + env(safe-area-inset-bottom)), 20px);
+  left: 0px;
+  bottom: max(calc(100px + env(safe-area-inset-bottom)), 20px);
   z-index: 30;
   display: flex;
   gap: 10px;
@@ -306,11 +306,11 @@
 /* Additional responsive adjustments */
 @media (max-height: 700px) {
   .controls {
-    bottom: max(calc(20px + env(safe-area-inset-bottom)), 15px);
+    bottom: max(calc(100px + env(safe-area-inset-bottom)), 15px);
   }
   
   .power-ups {
-    bottom: max(calc(10px + env(safe-area-inset-bottom)), 15px);
+    bottom: max(calc(100px + env(safe-area-inset-bottom)), 15px);
   }
   
   .control-btn {
@@ -327,11 +327,11 @@
 
 @media (max-height: 600px) {
   .controls {
-    bottom: max(calc(15px + env(safe-area-inset-bottom)), 10px);
+    bottom: max(calc(100px + env(safe-area-inset-bottom)), 10px);
   }
   
   .power-ups {
-    bottom: max(calc(8px + env(safe-area-inset-bottom)), 10px);
+    bottom: max(calc(100px + env(safe-area-inset-bottom)), 10px);
   }
   
   .control-btn {
