@@ -94,8 +94,8 @@
   /* Powerups column */
   .power-ups{
     position:absolute;
-    left:14px;
-    bottom: max(calc(16px + env(safe-area-inset-bottom)), 20px);
+    left:0px;
+    bottom:calc(16px + env(safe-area-inset-bottom));
     z-index:30;
     display:flex;
     gap:10px;
@@ -111,8 +111,8 @@
   /* Bottom controls */
   .controls{
     position:absolute;
-    bottom: max(calc(70px + env(safe-area-inset-bottom)), 20px);
-    right:0px;
+    bottom:calc(70px + env(safe-area-inset-bottom));
+    right:14px;
     z-index:30;
     display:flex;
     gap:10px;
@@ -231,57 +231,6 @@
     }
   }
 
-  /* Additional responsive adjustments for height */
-  @media (max-height: 700px) {
-    .controls {
-      bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
-    }
-    
-    .power-ups {
-      bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
-    }
-    
-    .control-btn {
-      width: 50px;
-      height: 50px;
-      font-size: 18px;
-    }
-    
-    .power-up {
-      width: 42px;
-      height: 42px;
-    }
-  }
-
-  @media (max-height: 600px) {
-    .controls {
-      bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
-    }
-    
-    .power-ups {
-      bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
-    }
-    
-    .control-btn {
-      width: 46px;
-      height: 46px;
-      font-size: 16px;
-    }
-    
-    .power-up {
-      width: 40px;
-      height: 40px;
-    }
-    
-    .challenges-display {
-      display: none; /* Hide challenges on very small screens */
-    }
-    
-    .wind-indicator {
-      display: none; /* Hide wind indicator on very small screens */
-    }
-  }
-
   /* Full-screen mode */
   .fullscreen-btn {
     position: absolute;
@@ -331,6 +280,79 @@
     font-weight: 700;
     font-size: 13px;
   }
+
+  /* Updated controls positioning */
+.controls{
+  position: absolute;
+  bottom: max(calc(40px + env(safe-area-inset-bottom)), 20px);
+  right: 14px;
+  z-index: 30;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Updated power-ups positioning */
+.power-ups{
+  position: absolute;
+  left: 0px;
+  bottom: max(calc(70px + env(safe-area-inset-bottom)), 20px);
+  z-index: 30;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+/* Additional responsive adjustments */
+@media (max-height: 700px) {
+  .controls {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
+  }
+  
+  .power-ups {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
+  }
+  
+  .control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+  
+  .power-up {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-height: 600px) {
+  .controls {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
+  }
+  
+  .power-ups {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
+  }
+  
+  .control-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 16px;
+  }
+  
+  .power-up {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .challenges-display {
+    display: none; /* Hide challenges on very small screens */
+  }
+  
+  .wind-indicator {
+    display: none; /* Hide wind indicator on very small screens */
+  }
+}
 </style>
 </head>
 
