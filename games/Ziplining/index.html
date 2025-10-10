@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Zipline Speed & Style Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            overflow: hidden;
+            padding: 10px;
+        }
+        
+        #gameContainer {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+        
+        .game-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .ui-panel {
+            background: rgba(74, 20, 140, 0.85);
+            border-radius: 15px;
+            padding: 12px;
+            margin: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            top: 10px;
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .stat-box {
+            display: flex;
+            align-items: center;
+            background: rgba(106, 17, 203, 0.9);
+            border-radius: 12px;
+            padding: 8px 12px;
+            margin: 0 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+            color: #ffcc00;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 15px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+            pointer-events: none;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .control-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(106, 17, 203, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.3rem;
+            color: white;
+            pointer-events: auto;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .control-btn:active {
+            transform: scale(0.9);
+            background: rgba(84, 13, 160, 0.9);
+        }
+        
+        .style-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .style-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            background: rgba(157, 78, 221, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.1rem;
+            color: white;
+            pointer-events: auto;
+            transition: all 0.2s;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .style-btn:active {
+            transform: scale(0.95);
+            background: rgba(138, 63, 197, 0.9);
+        }
+        
+        .style-icon {
+            font-size: 1.4rem;
+            margin-bottom: 3px;
+        }
+        
+        .style-label {
+            font-size: 0.7rem;
+            text-align: center;
+        }
+        
+        .game-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(74, 20, 140, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            z-index: 20;
+            backdrop-filter: blur(10px);
+        }
+        
+        .menu-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffcc00;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .menu-btn {
+            background: linear-gradient(135deg, #9e4edd 0%, #6a11cb 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin: 8px 0;
+            width: 100%;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .menu-btn i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .menu-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .instructions {
+            text-align: left;
+            margin: 15px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .instruction-icon {
+            width: 30px;
+            height: 30px;
+            background: rgba(157, 78, 221, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .hint-popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(74, 20, 140, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            width: 80%;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            z-index: 30;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hint-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #ffcc00;
+        }
+        
+        .hint-text {
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .close-btn {
+            background: rgba(157, 78, 221, 0.9);
+            border: none;
+            border-radius: 10px;
+            padding: 8px 15px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .character-selector {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+        
+        .character-option {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            background: rgba(157, 78, 221, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+        
+        .character-option.selected {
+            border-color: #ffcc00;
+            transform: scale(1.1);
+        }
+        
+        .character-icon {
+            font-size: 2.5rem;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+        }
+        
+        .difficulty-option {
+            padding: 10px 15px;
+            border-radius: 10px;
+            background: rgba(157, 78, 221, 0.7);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .difficulty-option.selected {
+            border-color: #ffcc00;
+            background: rgba(157, 78, 221, 0.9);
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .stat-box {
+                padding: 6px 10px;
+            }
+            
+            .stat-icon {
+                font-size: 1rem;
+                margin-right: 5px;
+            }
+            
+            .stat-value {
+                font-size: 0.9rem;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+            
+            .style-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 1rem;
+            }
+            
+            .style-icon {
+                font-size: 1.2rem;
+            }
+            
+            .style-label {
+                font-size: 0.65rem;
+            }
+            
+            .menu-title {
+                font-size: 1.6rem;
+            }
+            
+            .menu-btn {
+                font-size: 1rem;
+                padding: 10px 15px;
+            }
+            
+            .character-option {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .character-icon {
+                font-size: 2rem;
+            }
+            
+            .difficulty-option {
+                padding: 8px 10px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .stat-box {
+                padding: 5px 8px;
+            }
+            
+            .stat-icon {
+                font-size: 0.9rem;
+            }
+            
+            .stat-value {
+                font-size: 0.8rem;
+            }
+            
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .style-btn {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .style-icon {
+                font-size: 1.1rem;
+            }
+            
+            .style-label {
+                font-size: 0.6rem;
+            }
+            
+            .controls {
+                padding: 0 10px;
+            }
+            
+            .character-option {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .character-icon {
+                font-size: 1.7rem;
+            }
+            
+            .difficulty-option {
+                padding: 6px 8px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer"></div>
+    
+    <div class="game-ui">
+        <div class="stats">
+            <div class="stat-box">
+                <i class="fas fa-tachometer-alt stat-icon"></i>
+                <div class="stat-value" id="speedValue">0</div>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-star stat-icon"></i>
+                <div class="stat-value" id="styleValue">0</div>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-bolt stat-icon"></i>
+                <div class="stat-value" id="scoreValue">0</div>
+            </div>
+            <div class="stat-box">
+                <i class="fas fa-wind stat-icon"></i>
+                <div class="stat-value" id="windValue">0</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-row">
+                    <div class="control-btn" id="upBtn">
+                        <i class="fas fa-arrow-up"></i>
+                    </div>
+                </div>
+                <div class="control-row">
+                    <div class="control-btn" id="leftBtn">
+                        <i class="fas fa-arrow-left"></i>
+                    </div>
+                    <div class="control-btn" id="downBtn">
+                        <i class="fas fa-arrow-down"></i>
+                    </div>
+                    <div class="control-btn" id="rightBtn">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <div class="style-controls">
+                    <div class="style-btn" id="superheroBtn">
+                        <i class="fas fa-running style-icon"></i>
+                        <div class="style-label">Superhero</div>
+                    </div>
+                    <div class="style-btn" id="reclineBtn">
+                        <i class="fas fa-couch style-icon"></i>
+                        <div class="style-label">Recline</div>
+                    </div>
+                    <div class="style-btn" id="nohandsBtn">
+                        <i class="fas fa-hands style-icon"></i>
+                        <div class="style-label">No Hands</div>
+                    </div>
+                    <div class="style-btn" id="spinBtn">
+                        <i class="fas fa-sync-alt style-icon"></i>
+                        <div class="style-label">Spin</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-menu" id="mainMenu">
+        <h1 class="menu-title">Zipline Pro</h1>
+        <p>Optimize speed and style for maximum points!</p>
+        
+        <div class="character-selector">
+            <div class="character-option selected" data-character="adventurer">
+                <i class="fas fa-hiking character-icon"></i>
+            </div>
+            <div class="character-option" data-character="athlete">
+                <i class="fas fa-running character-icon"></i>
+            </div>
+            <div class="character-option" data-character="ninja">
+                <i class="fas fa-user-ninja character-icon"></i>
+            </div>
+        </div>
+        
+        <div class="difficulty-selector">
+            <div class="difficulty-option selected" data-difficulty="easy">
+                Easy
+            </div>
+            <div class="difficulty-option" data-difficulty="medium">
+                Medium
+            </div>
+            <div class="difficulty-option" data-difficulty="hard">
+                Hard
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <div class="instruction-item">
+                <div class="instruction-icon"><i class="fas fa-arrow-up"></i></div>
+                <div>Aero Tuck for Speed</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon"><i class="fas fa-arrow-down"></i></div>
+                <div>Stable Position for Control</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon"><i class="fas fa-running"></i></div>
+                <div>Style Moves for Bonus Points</div>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon"><i class="fas fa-wind"></i></div>
+                <div>Adapt to Wind Conditions</div>
+            </div>
+        </div>
+        
+        <button class="menu-btn" id="startBtn">
+            <i class="fas fa-play"></i> Start Game
+        </button>
+        <button class="menu-btn" id="instructionsBtn">
+            <i class="fas fa-info-circle"></i> How to Play
+        </button>
+        <button class="menu-btn" id="autoSolveBtn">
+            <i class="fas fa-robot"></i> Auto-Solve
+        </button>
+    </div>
+    
+    <div class="hint-popup hidden" id="hintPopup">
+        <h2 class="hint-title"><i class="fas fa-lightbulb"></i> Pro Tip</h2>
+        <p class="hint-text" id="hintText">Use the aero tuck position when you need maximum speed!</p>
+        <button class="close-btn" id="closeHintBtn">Got it!</button>
+    </div>
+
+    <script>
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 500,
+            parent: 'gameContainer',
+            backgroundColor: '#4a148c',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH,
+                min: {
+                    width: 300,
+                    height: 500
+                },
+                max: {
+                    width: 800,
+                    height: 600
+                }
+            }
+        };
+
+        // Game variables
+        let game;
+        let player;
+        let zipline;
+        let platforms = {};
+        let score = 0;
+        let stylePoints = 0;
+        let speed = 0;
+        let windForce = 0;
+        let currentPose = 'default';
+        let poseTime = 0;
+        let gameStarted = false;
+        let gameOver = false;
+        let autoSolveActive = false;
+        let autoSolveInterval;
+        let selectedCharacter = 'adventurer';
+        let selectedDifficulty = 'easy';
+        let trees = [];
+        let clouds = [];
+        let currentScene;
+        let obstacles = [];
+        let comboMultiplier = 1;
+        let comboTime = 0;
+
+        // UI elements
+        let speedValue, styleValue, scoreValue, windValue;
+        let mainMenu, hintPopup;
+        let upBtn, downBtn, leftBtn, rightBtn;
+        let superheroBtn, reclineBtn, nohandsBtn, spinBtn;
+        let startBtn, instructionsBtn, autoSolveBtn, closeHintBtn;
+        let characterOptions, difficultyOptions;
+
+        // Initialize the game
+        game = new Phaser.Game(config);
+
+        function preload() {
+            // In a real game, we would load assets here
+        }
+
+        function create() {
+            currentScene = this;
+            
+            // Setup game world
+            createGameWorld.call(this);
+            
+            // Setup UI references
+            setupUI();
+            
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Setup keyboard controls - FIXED VERSION
+            const keyCodes = Phaser.Input.Keyboard.KeyCodes;
+            this.cursors = this.input.keyboard.createCursorKeys();
+            
+            // Number keys for style moves
+            this.keys = {
+                one: this.input.keyboard.addKey(keyCodes.ONE),
+                two: this.input.keyboard.addKey(keyCodes.TWO),
+                three: this.input.keyboard.addKey(keyCodes.THREE),
+                four: this.input.keyboard.addKey(keyCodes.FOUR),
+                h: this.input.keyboard.addKey(keyCodes.H),
+                a: this.input.keyboard.addKey(keyCodes.A)
+            };
+            
+            // Start with main menu
+            showMainMenu();
+        }
+
+        function update() {
+            if (!gameStarted || gameOver) return;
+            
+            // Handle keyboard inputs - FIXED VERSION
+            if (this.cursors.up.isDown) {
+                setBodyPosition('aero');
+            } else if (this.cursors.down.isDown) {
+                setBodyPosition('stable');
+            }
+            
+            if (this.cursors.left.isDown) {
+                twistBody('left');
+            } else if (this.cursors.right.isDown) {
+                twistBody('right');
+            }
+            
+            if (Phaser.Input.Keyboard.JustDown(this.keys.one)) {
+                activatePose('superhero');
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keys.two)) {
+                activatePose('recline');
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keys.three)) {
+                activatePose('nohands');
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keys.four)) {
+                activatePose('spinning');
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keys.h)) {
+                showHint();
+            }
+            if (Phaser.Input.Keyboard.JustDown(this.keys.a)) {
+                toggleAutoSolve();
+            }
+            
+            // Update game state
+            updateGame.call(this);
+            
+            // Update UI
+            updateUI();
+            
+            // Handle auto-solve if active
+            if (autoSolveActive) {
+                handleAutoSolve();
+            }
+        }
+
+        function createGameWorld() {
+            // Create background with gradient effect
+            const bg = this.add.graphics();
+            bg.fillGradientStyle(0x6a11cb, 0x6a11cb, 0x4a148c, 0x4a148c, 1);
+            bg.fillRect(0, 0, 800, 500);
+            
+            // Add parallax background layers
+            createParallaxBackground.call(this);
+            
+            // Draw mountains in the background
+            const mountains = this.add.graphics();
+            mountains.fillStyle(0x5e35b1, 1);
+            
+            // Left mountain
+            mountains.fillTriangle(0, 350, 150, 350, 75, 200);
+            
+            // Right mountain
+            mountains.fillTriangle(650, 350, 800, 350, 725, 250);
+            
+            // Central mountain
+            mountains.fillTriangle(300, 350, 500, 350, 400, 150);
+            
+            // Create trees
+            createTrees.call(this);
+            
+            // Create the zipline cable
+            createZiplineCable.call(this);
+            
+            // Create start platform
+            platforms.start = this.add.rectangle(100, 150, 80, 60, 0x5e35b1);
+            this.add.rectangle(100, 150, 60, 40, 0x7e57c2);
+            
+            // Create end platform
+            platforms.end = this.add.rectangle(700, 430, 80, 60, 0x5e35b1);
+            this.add.rectangle(700, 430, 60, 40, 0x7e57c2);
+            
+            // Create obstacles
+            createObstacles.call(this);
+            
+            // Create player character
+            createPlayerCharacter.call(this);
+            
+            // Setup physics for player
+            this.physics.world.enable(player);
+            player.body.setVelocity(0, 0);
+            
+            // Setup wind changes
+            this.time.addEvent({
+                delay: 4000,
+                callback: changeWind,
+                callbackScope: this,
+                loop: true
+            });
+            
+            // Add ambient animations
+            createAmbientAnimations.call(this);
+        }
+
+        function createParallaxBackground() {
+            // Create distant mountains
+            const distantMountains = this.add.graphics();
+            distantMountains.fillStyle(0x4527a0, 0.7);
+            distantMountains.fillTriangle(50, 300, 200, 300, 125, 180);
+            distantMountains.fillTriangle(600, 300, 750, 300, 675, 220);
+            
+            // Create clouds
+            for (let i = 0; i < 5; i++) {
+                const cloud = this.add.ellipse(
+                    Phaser.Math.Between(100, 700),
+                    Phaser.Math.Between(50, 150),
+                    Phaser.Math.Between(60, 120),
+                    Phaser.Math.Between(30, 50),
+                    0xffffff,
+                    0.3
+                );
+                clouds.push(cloud);
+                
+                // Animate clouds
+                this.tweens.add({
+                    targets: cloud,
+                    x: cloud.x + Phaser.Math.Between(-100, 100),
+                    duration: Phaser.Math.Between(15000, 25000),
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+            }
+        }
+
+        function createTrees() {
+            const treeColors = [0x2e7d32, 0x388e3c, 0x43a047];
+            
+            for (let i = 0; i < 8; i++) {
+                const x = Phaser.Math.Between(50, 750);
+                const height = Phaser.Math.Between(80, 120);
+                const color = treeColors[Math.floor(Math.random() * treeColors.length)];
+                
+                // Tree trunk
+                const trunk = this.add.rectangle(x, 400, 15, height, 0x5d4037);
+                
+                // Tree top
+                const treeTop = this.add.ellipse(x, 400 - height/2, 60, 80, color);
+                
+                trees.push({ trunk, treeTop });
+            }
+        }
+
+        function createObstacles() {
+            obstacles = [];
+            
+            // Number of obstacles based on difficulty
+            let obstacleCount = 0;
+            switch(selectedDifficulty) {
+                case 'easy': obstacleCount = 2; break;
+                case 'medium': obstacleCount = 4; break;
+                case 'hard': obstacleCount = 6; break;
+            }
+            
+            for (let i = 0; i < obstacleCount; i++) {
+                const x = Phaser.Math.Between(200, 650);
+                const y = Phaser.Math.Between(150, 350);
+                const size = Phaser.Math.Between(20, 40);
+                
+                const obstacle = this.add.rectangle(x, y, size, size, 0xff0000);
+                obstacles.push(obstacle);
+                
+                // Add physics to obstacles
+                this.physics.world.enable(obstacle);
+                obstacle.body.setImmovable(true);
+            }
+        }
+
+        function createZiplineCable() {
+            // Create the zipline cable
+            zipline = this.add.line(0, 0, 100, 120, 700, 400, 0x7e57c2);
+            zipline.setLineWidth(6, 6);
+            zipline.setOrigin(0);
+        }
+
+        function createPlayerCharacter() {
+            // Create a more detailed player character
+            player = this.add.container(120, 130);
+            
+            // Character body
+            const body = this.add.ellipse(0, 0, 30, 50, getCharacterColor(selectedCharacter));
+            player.add(body);
+            
+            // Character head
+            const head = this.add.circle(0, -30, 15, 0xffdbac);
+            player.add(head);
+            
+            // Character harness
+            const harness = this.add.rectangle(0, 10, 25, 15, 0x333333);
+            player.add(harness);
+            
+            // Connection point to zipline
+            const connection = this.add.rectangle(0, -20, 5, 25, 0x666666);
+            player.add(connection);
+            
+            // Store body reference for animations
+            player.bodyPart = body;
+            player.head = head;
+            player.harness = harness;
+            
+            // Set initial depth
+            player.depth = 10;
+        }
+
+        function getCharacterColor(character) {
+            switch(character) {
+                case 'adventurer': return 0x4caf50; // Green
+                case 'athlete': return 0x2196f3; // Blue
+                case 'ninja': return 0x607d8b; // Gray
+                default: return 0xba68c8; // Purple
+            }
+        }
+
+        function createAmbientAnimations() {
+            // Add birds flying in the background
+            for (let i = 0; i < 3; i++) {
+                const bird = this.add.ellipse(
+                    Phaser.Math.Between(-50, 0),
+                    Phaser.Math.Between(50, 200),
+                    10, 5, 0xffffff
+                );
+                
+                this.tweens.add({
+                    targets: bird,
+                    x: 850,
+                    duration: Phaser.Math.Between(15000, 25000),
+                    repeat: -1,
+                    delay: Phaser.Math.Between(0, 10000),
+                    ease: 'Linear'
+                });
+            }
+        }
+
+        function setupUI() {
+            // Get references to UI elements
+            speedValue = document.getElementById('speedValue');
+            styleValue = document.getElementById('styleValue');
+            scoreValue = document.getElementById('scoreValue');
+            windValue = document.getElementById('windValue');
+            
+            mainMenu = document.getElementById('mainMenu');
+            hintPopup = document.getElementById('hintPopup');
+            
+            // Control buttons
+            upBtn = document.getElementById('upBtn');
+            downBtn = document.getElementById('downBtn');
+            leftBtn = document.getElementById('leftBtn');
+            rightBtn = document.getElementById('rightBtn');
+            
+            // Style buttons
+            superheroBtn = document.getElementById('superheroBtn');
+            reclineBtn = document.getElementById('reclineBtn');
+            nohandsBtn = document.getElementById('nohandsBtn');
+            spinBtn = document.getElementById('spinBtn');
+            
+            // Menu buttons
+            startBtn = document.getElementById('startBtn');
+            instructionsBtn = document.getElementById('instructionsBtn');
+            autoSolveBtn = document.getElementById('autoSolveBtn');
+            closeHintBtn = document.getElementById('closeHintBtn');
+            
+            // Character selection
+            characterOptions = document.querySelectorAll('.character-option');
+            difficultyOptions = document.querySelectorAll('.difficulty-option');
+        }
+
+        function setupEventListeners() {
+            // Control button events
+            upBtn.addEventListener('touchstart', () => setBodyPosition('aero'));
+            downBtn.addEventListener('touchstart', () => setBodyPosition('stable'));
+            leftBtn.addEventListener('touchstart', () => twistBody('left'));
+            rightBtn.addEventListener('touchstart', () => twistBody('right'));
+            
+            // Style button events
+            superheroBtn.addEventListener('touchstart', () => activatePose('superhero'));
+            reclineBtn.addEventListener('touchstart', () => activatePose('recline'));
+            nohandsBtn.addEventListener('touchstart', () => activatePose('nohands'));
+            spinBtn.addEventListener('touchstart', () => activatePose('spinning'));
+            
+            // Menu button events
+            startBtn.addEventListener('click', startGame);
+            instructionsBtn.addEventListener('click', showInstructions);
+            autoSolveBtn.addEventListener('click', toggleAutoSolve);
+            closeHintBtn.addEventListener('click', closeHint);
+            
+            // Character selection events
+            characterOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    characterOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedCharacter = option.getAttribute('data-character');
+                    
+                    // Update player color if game is running
+                    if (gameStarted && !gameOver && player.bodyPart) {
+                        player.bodyPart.setFillStyle(getCharacterColor(selectedCharacter));
+                    }
+                });
+            });
+            
+            // Difficulty selection events
+            difficultyOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    difficultyOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedDifficulty = option.getAttribute('data-difficulty');
+                });
+            });
+        }
+
+        function showMainMenu() {
+            mainMenu.classList.remove('hidden');
+        }
+
+        function startGame() {
+            mainMenu.classList.add('hidden');
+            gameStarted = true;
+            gameOver = false;
+            score = 0;
+            stylePoints = 0;
+            speed = 0;
+            windForce = 0;
+            currentPose = 'default';
+            comboMultiplier = 1;
+            comboTime = 0;
+            
+            // Reset player position and appearance
+            player.x = 120;
+            player.y = 130;
+            player.rotation = 0;
+            if (player.bodyPart) {
+                player.bodyPart.setFillStyle(getCharacterColor(selectedCharacter));
+                player.bodyPart.setSize(30, 50);
+            }
+            
+            // Reset obstacles
+            obstacles.forEach(obstacle => {
+                obstacle.destroy();
+            });
+            createObstacles.call(currentScene);
+        }
+
+        function showInstructions() {
+            const hintText = document.getElementById('hintText');
+            hintText.innerHTML = `
+                <strong>How to Play:</strong><br><br>
+                <strong>Objective:</strong> Reach the end platform with maximum speed and style points!<br><br>
+                <strong>Controls:</strong><br>
+                • <strong>Arrow Keys:</strong> Control your zipliner<br>
+                • <strong>Up Arrow:</strong> Aero Tuck (Speed+)<br>
+                • <strong>Down Arrow:</strong> Stable Position (Control+)<br>
+                • <strong>Left/Right Arrows:</strong> Twist Body<br>
+                • <strong>Number Keys 1-4:</strong> Style Moves<br><br>
+                <strong>Scoring:</strong><br>
+                • <strong>Speed:</strong> Higher speed = more points<br>
+                • <strong>Style:</strong> Perform tricks for bonus points<br>
+                • <strong>Combo:</strong> Chain moves for multiplier!<br><br>
+                <strong>Challenges:</strong><br>
+                • Wind conditions change randomly<br>
+                • Obstacles block your path<br>
+                • Balance speed with control<br>
+                • Perfect timing for maximum score!
+            `;
+            hintPopup.classList.remove('hidden');
+        }
+
+        function showHint() {
+            const hints = [
+                "Use the aero tuck position when you need maximum speed!",
+                "The stable position gives you better control in windy conditions.",
+                "Perform style moves at the peak of your speed for maximum points!",
+                "Watch the wind indicator and adjust your position accordingly.",
+                "Combine multiple style moves for combo bonuses!",
+                "Try to maintain a consistent speed for better control.",
+                "Different characters have slightly different handling - experiment!",
+                "Higher difficulties have more obstacles - plan your route carefully!"
+            ];
+            
+            const randomHint = hints[Math.floor(Math.random() * hints.length)];
+            document.getElementById('hintText').textContent = randomHint;
+            hintPopup.classList.remove('hidden');
+        }
+
+        function closeHint() {
+            hintPopup.classList.add('hidden');
+        }
+
+        function toggleAutoSolve() {
+            autoSolveActive = !autoSolveActive;
+            
+            if (autoSolveActive) {
+                autoSolveBtn.innerHTML = '<i class="fas fa-stop"></i> Stop Auto-Solve';
+                if (gameStarted) {
+                    autoSolveInterval = setInterval(executeAutoSolve, 500);
+                }
+            } else {
+                autoSolveBtn.innerHTML = '<i class="fas fa-robot"></i> Auto-Solve';
+                clearInterval(autoSolveInterval);
+            }
+        }
+
+        function executeAutoSolve() {
+            // Simple AI for auto-solving
+            if (player.x < 400) {
+                // First half - maximize speed
+                setBodyPosition('aero');
+                if (Math.random() > 0.7) activatePose('superhero');
+            } else {
+                // Second half - focus on style and control
+                if (windForce > 1) {
+                    setBodyPosition('stable');
+                } else {
+                    setBodyPosition('aero');
+                }
+                
+                if (Math.random() > 0.8) {
+                    const moves = ['recline', 'nohands', 'spinning'];
+                    const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                    activatePose(randomMove);
+                }
+            }
+        }
+
+        function handleAutoSolve() {
+            // This function is called in update when auto-solve is active
+        }
+
+        function setBodyPosition(position) {
+            if (!gameStarted || gameOver || !player || !player.bodyPart) return;
+            
+            switch(position) {
+                case 'aero':
+                    player.bodyPart.setSize(20, 40);
+                    player.bodyPart.setFillStyle(0x4caf50);
+                    speed = Math.min(speed + 0.5, 10);
+                    
+                    currentScene.tweens.add({
+                        targets: [player.bodyPart, player.head, player.harness],
+                        y: 5,
+                        duration: 200,
+                        ease: 'Back.easeOut'
+                    });
+                    break;
+                    
+                case 'stable':
+                    player.bodyPart.setSize(40, 50);
+                    player.bodyPart.setFillStyle(getCharacterColor(selectedCharacter));
+                    speed = Math.max(speed - 0.3, 3);
+                    
+                    currentScene.tweens.add({
+                        targets: [player.bodyPart, player.head, player.harness],
+                        y: 0,
+                        duration: 200,
+                        ease: 'Back.easeOut'
+                    });
+                    break;
+            }
+        }
+
+        function twistBody(direction) {
+            if (!gameStarted || gameOver) return;
+            
+            if (direction === 'left') {
+                player.rotation -= 0.1;
+            } else {
+                player.rotation += 0.1;
+            }
+            
+            // Add a small style bonus for twisting
+            addStylePoints(5);
+        }
+
+        function activatePose(pose) {
+            if (!gameStarted || gameOver || currentPose !== 'default') return;
+            
+            currentPose = pose;
+            poseTime = 60; // 60 frames = ~1 second
+            
+            // Style-specific effects and bonuses
+            switch(pose) {
+                case 'superhero':
+                    player.bodyPart.setSize(40, 30);
+                    player.bodyPart.setFillStyle(0xff9800);
+                    addStylePoints(100 * comboMultiplier);
+                    
+                    currentScene.tweens.add({
+                        targets: player.bodyPart,
+                        scaleX: 1.2,
+                        scaleY: 0.9,
+                        duration: 300,
+                        yoyo: true,
+                        ease: 'Back.easeOut'
+                    });
+                    break;
+                    
+                case 'recline':
+                    player.bodyPart.setSize(50, 40);
+                    player.bodyPart.setFillStyle(0x9c27b0);
+                    addStylePoints(80 * comboMultiplier);
+                    
+                    currentScene.tweens.add({
+                        targets: [player.bodyPart, player.head, player.harness],
+                        y: 15,
+                        duration: 300,
+                        ease: 'Back.easeOut'
+                    });
+                    break;
+                    
+                case 'nohands':
+                    player.bodyPart.setFillStyle(0xe91e63);
+                    addStylePoints(120 * comboMultiplier);
+                    
+                    currentScene.tweens.add({
+                        targets: player.harness,
+                        alpha: 0,
+                        duration: 300,
+                        yoyo: true,
+                        ease: 'Power2'
+                    });
+                    break;
+                    
+                case 'spinning':
+                    player.bodyPart.setFillStyle(0xffeb3b);
+                    addStylePoints(150 * comboMultiplier);
+                    
+                    currentScene.tweens.add({
+                        targets: player,
+                        rotation: player.rotation + 6.283,
+                        duration: 800,
+                        ease: 'Linear'
+                    });
+                    break;
+            }
+            
+            // Increase combo multiplier
+            comboMultiplier += 0.2;
+            comboTime = 120; // 2 seconds to maintain combo
+        }
+
+        function addStylePoints(points) {
+            stylePoints += Math.floor(points);
+        }
+
+        function changeWind() {
+            if (!gameStarted || gameOver) return;
+            
+            // Randomly change wind force and direction
+            windForce = Phaser.Math.FloatBetween(-2, 2);
+        }
+
+        function updateGame() {
+            // Calculate progress along zipline (0 to 1)
+            const progress = (player.x - 120) / (700 - 120);
+            
+            // Calculate position on zipline
+            const lineY = 120 + (progress * 280);
+            const targetY = lineY - 20; // Player hangs below the line
+            
+            // Move player along zipline with speed affected by position and wind
+            const windEffect = windForce * 0.5;
+            const totalSpeed = speed + windEffect;
+            
+            player.x += totalSpeed;
+            player.y = Phaser.Math.Linear(player.y, targetY, 0.1);
+            
+            // Update combo timer
+            if (comboTime > 0) {
+                comboTime--;
+            } else {
+                comboMultiplier = 1;
+            }
+            
+            // Check for collision with obstacles
+            obstacles.forEach(obstacle => {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(
+                    player.getBounds(),
+                    obstacle.getBounds()
+                )) {
+                    // Collision with obstacle - slow down and lose points
+                    speed *= 0.7;
+                    stylePoints = Math.max(0, stylePoints - 50);
+                    obstacle.destroy();
+                }
+            });
+            
+            // Update pose timer and reset if needed
+            if (currentPose !== 'default') {
+                poseTime--;
+                if (poseTime <= 0) {
+                    currentPose = 'default';
+                    player.bodyPart.setFillStyle(getCharacterColor(selectedCharacter));
+                    player.bodyPart.setSize(30, 50);
+                    
+                    currentScene.tweens.add({
+                        targets: [player.bodyPart, player.head, player.harness],
+                        y: 0,
+                        duration: 200,
+                        ease: 'Back.easeOut'
+                    });
+                    
+                    player.harness.alpha = 1;
+                }
+            }
+            
+            // Calculate score based on speed and style
+            score = Math.floor(stylePoints + (speed * 10) + (progress * 1000));
+            
+            // Check for game end (reached platform)
+            if (player.x >= 680 && !gameOver) {
+                endGame(true);
+            }
+            
+            // Check for falling (if player goes too far below the line)
+            if (player.y > 480) {
+                endGame(false);
+            }
+        }
+
+        function updateUI() {
+            speedValue.textContent = speed.toFixed(1);
+            styleValue.textContent = stylePoints;
+            scoreValue.textContent = score;
+            windValue.textContent = windForce.toFixed(1);
+        }
+
+        function endGame(success) {
+            gameOver = true;
+            
+            // Create game over message
+            const gameOverMenu = document.createElement('div');
+            gameOverMenu.className = 'game-menu';
+            gameOverMenu.innerHTML = `
+                <h1 class="menu-title">${success ? 'Perfect Landing!' : 'Crash Landing!'}</h1>
+                <p>Final Score: ${score}</p>
+                <div class="instructions">
+                    <div class="instruction-item">
+                        <div class="instruction-icon"><i class="fas fa-star"></i></div>
+                        <div>Style Points: ${stylePoints}</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <div>Max Speed: ${speed.toFixed(1)}</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="instruction-icon"><i class="fas fa-fire"></i></div>
+                        <div>Max Combo: x${comboMultiplier.toFixed(1)}</div>
+                    </div>
+                </div>
+                <button class="menu-btn" id="restartBtn">
+                    <i class="fas fa-redo"></i> Play Again
+                </button>
+                <button class="menu-btn" id="menuBtn">
+                    <i class="fas fa-home"></i> Main Menu
+                </button>
+            `;
+            
+            document.getElementById('gameContainer').appendChild(gameOverMenu);
+            
+            // Add event listeners to the new buttons
+            document.getElementById('restartBtn').addEventListener('click', () => {
+                document.getElementById('gameContainer').removeChild(gameOverMenu);
+                startGame();
+            });
+            
+            document.getElementById('menuBtn').addEventListener('click', () => {
+                document.getElementById('gameContainer').removeChild(gameOverMenu);
+                showMainMenu();
+            });
+        }
+    </script>
+</body>
+</html>
