@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
-<title>Rotating Pin Circle — Adventure Edition</title>
+<title>Rotating Pins - Fixed</title>
 <style>
   :root{
     --bg1:#0f172a;
@@ -72,18 +72,19 @@
   .title { font-size:13px; color:var(--muted); }
   .value { font-weight:700; font-size:16px; color:white; }
 
-  /* Right column controls */
-  .controls{
-    position:absolute;
-    right:12px;
-    top:50%;
-    transform:translateY(-50%);
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    z-index:30;
+  /* New shoot button position */
+  .shoot-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
   }
-  .ctrl-row{ display:flex; gap:8px; }
+  
   .btn{
     background:var(--btn-bg);
     border-radius:14px;
@@ -98,14 +99,21 @@
     color:white;
     touch-action:none;
     cursor: pointer;
-    transition: all 0.2s ease;
   }
-  .btn:hover {
-    background: rgba(255,255,255,0.12);
+  .btn.big { 
+    padding:14px 18px; 
+    min-width:74px; 
+    border-radius:18px; 
+    font-size:16px; 
+    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
   }
-  .btn.big { padding:14px 18px; min-width:74px; border-radius:18px; font-size:16px; }
   .btn.pulse { animation: pulse 1.6s infinite; }
-  @keyframes pulse{ 0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)} }
+  @keyframes pulse{ 
+    0%{transform:scale(1)}
+    50%{transform:scale(1.04)}
+    100%{transform:scale(1)} 
+  }
 
   /* bottom bar for powerups */
   .bottom-bar{
@@ -126,12 +134,7 @@
     align-items:center;
     min-width:70px;
     cursor: pointer;
-    transition: all 0.2s ease;
   }
-  .power:hover {
-    background: rgba(255,255,255,0.08);
-  }
-  .hint-glow{ box-shadow:0 0 18px rgba(255,209,102,0.12); }
 
   /* combo bar */
   .combo-wrap{
@@ -160,29 +163,32 @@
     font-size:14px;
   }
 
-  /* small mobile touch areas */
-  .touch-left, .touch-right{
-    position:absolute;
-    bottom:0;
-    top:0;
-    width:20%;
-    z-index:20;
-    opacity:0;
-    touch-action: none;
-  }
-  .touch-left{ left:0; }
-  .touch-right{ right:0; }
-
   /* level indicator at top-left */
-  .level-card{ position:absolute; left:12px; top:74px; z-index:30; padding:10px 12px; border-radius:12px; background:var(--card); }
+  .level-card{ 
+    position:absolute; 
+    left:12px; 
+    top:74px; 
+    z-index:30; 
+    padding:10px 12px; 
+    border-radius:12px; 
+    background:var(--card); 
+  }
 
   /* responsive */
   @media (max-width:600px){
-    .controls{ right:8px; gap:8px; }
-    .btn { padding:10px; min-width:56px; }
     .hud{ gap:8px; top:10px; }
     .combo-wrap{ left:10px; top:10px; width:140px; }
+    .btn.big { 
+      padding: 16px 20px;
+      font-size: 18px;
+    }
+    .level-card {
+      top: 60px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
   }
+  
   .center-overlay{
     position:absolute;
     left:50%;
@@ -196,30 +202,67 @@
   }
   .center-overlay h1{ margin:0; font-size:18px; letter-spacing:0.6px; }
   .center-overlay p{ margin:6px 0 0 0; opacity:0.9; font-size:13px; }
+  
   .game-over{
     position:absolute;
     z-index:80;
     left:50%;
     top:50%;
     transform:translate(-50%,-50%);
-    background:linear-gradient(180deg, rgba(0,0,0,0.54), rgba(0,0,0,0.36));
-    padding:18px;
+    background:linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+    padding:24px;
     border-radius:16px;
     text-align:center;
     display:none;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    min-width: 280px;
   }
   .game-over.show{ display:block; }
   .small { font-size:13px; opacity:0.9; }
+  
   .burst {
     position:absolute;
     pointer-events:none;
     z-index:50;
     transform:translate(-50%,-50%);
   }
+  
   .pin-count {
     font-size: 12px;
     margin-left: 4px;
     opacity: 0.85;
+  }
+  
+  .final-score {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 15px 0;
+    color: var(--accent);
+  }
+  
+  .aim-indicator {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 0;
+    background: linear-gradient(to top, rgba(255,255,255,0.8), transparent);
+    z-index: 25;
+    pointer-events: none;
+    transition: height 0.2s ease;
+  }
+  
+  .touch-shoot-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    z-index: 20;
+    opacity: 0;
+    touch-action: none;
   }
 </style>
 </head>
@@ -254,115 +297,64 @@
     <div id="combo-mult" class="combo-mult">x1</div>
   </div>
 
-  <div class="level-card" id="level-card">Rotation: <span id="rot-speed">0.00</span> rad/s</div>
+  <div class="level-card" id="level-card">Speed: <span id="rot-speed">0.00</span></div>
 
-  <div class="controls" aria-hidden="true">
-    <div class="ctrl-row">
-      <button id="btn-left" class="btn">◀︎</button>
-      <button id="btn-right" class="btn">▶︎</button>
-    </div>
-    <div class="ctrl-row">
-      <button id="btn-shoot" class="btn big pulse">SHOOT <span class="pin-count">8</span></button>
-    </div>
+  <!-- New shoot controls at bottom center -->
+  <div class="shoot-controls" aria-hidden="true">
+    <div class="aim-indicator" id="aim-indicator"></div>
+    <button id="btn-shoot" class="btn big pulse">SHOOT <span class="pin-count" id="pin-count">∞</span></button>
   </div>
 
   <div class="bottom-bar" aria-hidden="true">
-    <div id="power-hint" class="power">💡 Hint</div>
     <div id="power-slow" class="power">🐢 Slow</div>
-    <div id="power-extra" class="power">➕ Extra</div>
-    <div id="power-new" class="power">⟳ New</div>
+    <div id="power-new" class="power">⟳ Restart</div>
   </div>
 
-  <!-- invisible full-screen touch halves for rotation -->
-  <div class="touch-left" id="touch-left"></div>
-  <div class="touch-right" id="touch-right"></div>
+  <!-- Touch shoot area for mobile -->
+  <div class="touch-shoot-area" id="touch-shoot"></div>
 
   <div class="center-overlay" id="center-overlay" aria-hidden="true">
     <h1>Rotating Pins</h1>
-    <p class="small">Shoot pins to attach to the circle. Don't hit an existing one.</p>
+    <p class="small">Tap to shoot pins. Avoid collisions!</p>
   </div>
 
   <div id="burst-layer" class="burst"></div>
 
   <div id="game-over" class="game-over" role="alert">
     <h2 id="go-title">Game Over</h2>
-    <p id="go-details" class="small">You hit a pin — try again!</p>
-    <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
-      <button id="restart-btn" class="btn">Restart</button>
-      <button id="share-btn" class="btn">Share</button>
+    <p id="go-details" class="small">Pins collided!</p>
+    <div class="final-score" id="final-score">0 Pins</div>
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:center;">
+      <button id="restart-btn" class="btn">Play Again</button>
     </div>
   </div>
 
 </div>
 
 <script>
-/*
- Rotating Pin Circle Game - Adventure Edition
- Fixed rotation and shooting issues
- Added new mechanics: power-ups, special pins, and dynamic difficulty
-*/
+// Rotating Pin Circle Game - Fixed Version
+// All issues resolved with improved mobile experience
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: true });
 
-// handle high DPI
-function resizeCanvasToDisplaySize() {
-  const ratio = window.devicePixelRatio || 1;
-  const w = canvas.clientWidth * ratio;
-  const h = canvas.clientHeight * ratio;
-  if (canvas.width !== w || canvas.height !== h) {
-    canvas.width = w; canvas.height = h;
-  }
-}
-resizeCanvasToDisplaySize();
-window.addEventListener('resize', ()=> {
-  resizeCanvasToDisplaySize();
-  updateDims();
-});
-
 // Game state
-let cw = canvas.width, ch = canvas.height;
-function updateDims(){ cw = canvas.width; ch = canvas.height; }
-updateDims();
-
-// circle properties
-const circle = {
-  x:  Math.floor(cw/2),
-  y:  Math.floor(ch/2)+40,   // a little lower
-  radius: Math.min(cw, ch) * 0.22,
-  rotation: 0,               // current rotation (radians)
-  angularVelocity: 0.6,      // rad/s initial
-  direction: 0,
-  baseSpeed: 0.6
-};
-
-// pin properties
-const pin = {
-  length: circle.radius * 0.22,
-  width: Math.max(6, Math.floor(circle.radius * 0.045)),
-  color: '#ffffff',
-};
-
-// gameplay
-let attachedPins = []; // { angleOnCircle: number (radians), color, id, type }
+let cw, ch;
+let circle, pin;
+let attachedPins = [];
 let score = 0;
 let level = 1;
 let pinsThisLevel = 0;
 let pinsToLevel = 6;
 let combo = { count:0, timeWindow:1500, lastHit:0, multiplier:1 };
-let maxPinsLimit = 36; // after this many pins, maybe impossible
-let rotationBase = circle.angularVelocity;
 let lastTime = performance.now();
 let running = true;
 let gameOver = false;
-
-// shoot state
-let activeShot = null; // { x,y, vx, vy, speed, state } state: 'flying'|'attaching'
-let shootSpeed = Math.min(cw,ch) * 0.9; // pixels/sec
-let availablePins = 8; // number of pins available this level (Extra powerup increases)
-let extraPinsHeld = 0;
+let activeShot = null;
+let shootSpeed;
+let availablePins = Infinity;
 let slowMotionActive = false;
-let hintActive = false;
+let fallingPins = [];
 
 // visual & UI refs
 const hudScore = document.getElementById('hud-score');
@@ -377,25 +369,140 @@ const goTitle = document.getElementById('go-title');
 const goDetails = document.getElementById('go-details');
 const centerOverlay = document.getElementById('center-overlay');
 const btnShoot = document.getElementById('btn-shoot');
-const pinCountElement = document.querySelector('.pin-count');
+const pinCountElement = document.getElementById('pin-count');
+const finalScoreElement = document.getElementById('final-score');
+const aimIndicator = document.getElementById('aim-indicator');
+const touchShootArea = document.getElementById('touch-shoot');
 
 // controls
-const btnLeft = document.getElementById('btn-left');
-const btnRight = document.getElementById('btn-right');
-const powerHint = document.getElementById('power-hint');
 const powerSlow = document.getElementById('power-slow');
-const powerExtra = document.getElementById('power-extra');
 const powerNew = document.getElementById('power-new');
 const restartBtn = document.getElementById('restart-btn');
-const shareBtn = document.getElementById('share-btn');
 
-// utility
+// handle high DPI
+function resizeCanvasToDisplaySize() {
+  const ratio = window.devicePixelRatio || 1;
+  const w = canvas.clientWidth * ratio;
+  const h = canvas.clientHeight * ratio;
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w; 
+    canvas.height = h;
+  }
+}
+
+// Initialize game objects
+function initGameObjects() {
+  cw = canvas.width;
+  ch = canvas.height;
+  
+  // Initialize circle
+  circle = {
+    x: Math.floor(cw/2),
+    y: Math.floor(ch/2) + 40,
+    radius: Math.min(cw, ch) * 0.22,
+    rotation: 0,
+    angularVelocity: 0.6,
+    direction: 0,
+    baseSpeed: 0.6,
+    vibration: 0
+  };
+  
+  // Initialize pin
+  pin = {
+    length: circle.radius * 0.28,
+    width: Math.max(8, Math.floor(circle.radius * 0.06)),
+    color: '#ffffff',
+  };
+  
+  // Update shoot speed
+  shootSpeed = Math.min(cw,ch) * 1.2;
+}
+
+// Update dimensions when canvas resizes
+function updateDims() { 
+  cw = canvas.width; 
+  ch = canvas.height; 
+  
+  if (circle) {
+    // Update circle position on resize
+    circle.x = Math.floor(cw/2);
+    circle.y = Math.floor(ch/2) + 40;
+    circle.radius = Math.min(cw, ch) * 0.22;
+    
+    // Update pin size
+    pin.length = circle.radius * 0.28;
+    pin.width = Math.max(8, Math.floor(circle.radius * 0.06));
+    
+    // Update shoot speed
+    shootSpeed = Math.min(cw,ch) * 1.2;
+  }
+}
+
+// Initialize the game
+function init() {
+  resizeCanvasToDisplaySize();
+  initGameObjects();
+  
+  // Set up event listeners
+  window.addEventListener('resize', () => {
+    resizeCanvasToDisplaySize();
+    updateDims();
+  });
+  
+  // Powerups
+  powerSlow.addEventListener('click', () => {
+    if (gameOver) return;
+    if (slowMotionActive) return;
+    
+    slowMotionActive = true;
+    const prev = circle.angularVelocity;
+    circle.angularVelocity *= 0.35;
+    
+    setTimeout(() => { 
+      circle.angularVelocity = prev; 
+      slowMotionActive = false; 
+    }, 3500);
+  });
+
+  // Fix: Ensure both restart buttons work
+  powerNew.addEventListener('click', restart);
+  restartBtn.addEventListener('click', restart);
+
+  // Shoot button
+  btnShoot.addEventListener('click', shoot);
+
+  // Aim indicator when hovering over shoot button
+  btnShoot.addEventListener('mouseenter', () => {
+    aimIndicator.style.height = '150px';
+  });
+
+  btnShoot.addEventListener('mouseleave', () => {
+    aimIndicator.style.height = '0';
+  });
+
+  // Touch shoot area for mobile
+  touchShootArea.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    shoot();
+  });
+
+  // Keyboard support for desktop
+  window.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') shoot();
+  });
+
+  // Start the game
+  restart();
+  requestAnimationFrame(frameLoop);
+}
+
+// utility functions
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-function normAngle(a){ // normalize to [-PI, PI)
+function normAngle(a){
   a = ((a + Math.PI) % (Math.PI*2) + (Math.PI*2)) % (Math.PI*2) - Math.PI;
   return a;
 }
-function angDistance(a,b){ // minimal absolute diff in radians
+function angDistance(a,b){
   let d = normAngle(a - b);
   return Math.abs(d);
 }
@@ -405,13 +512,69 @@ function randColor(){
   return palette[Math.floor(Math.random()*palette.length)];
 }
 
-// compute pin angular width (on circle, roughly)
+// compute pin angular width
 function pinAngularWidth(){
-  // chord angle approximated by 2 * asin((pin.width/2) / (radius))
-  return 2 * Math.asin((pin.width/2) / circle.radius) * 1.2; // factor to add safe margin
+  return 2 * Math.asin((pin.width/2) / circle.radius) * 1.2;
 }
 
-// attach pin: angleOnCircle is internal angle to store (relative to circle)
+// Check for collisions between pins
+function checkPinCollisions() {
+  const collisionThreshold = pin.width * 1.5;
+  
+  for (let i = 0; i < attachedPins.length; i++) {
+    for (let j = i + 1; j < attachedPins.length; j++) {
+      const pin1 = attachedPins[i];
+      const pin2 = attachedPins[j];
+      
+      // Calculate world positions
+      const worldAngle1 = normAngle(pin1.angleOnCircle + circle.rotation);
+      const worldAngle2 = normAngle(pin2.angleOnCircle + circle.rotation);
+      
+      const x1 = circle.x + Math.cos(worldAngle1) * circle.radius;
+      const y1 = circle.y + Math.sin(worldAngle1) * circle.radius;
+      const x2 = circle.x + Math.cos(worldAngle2) * circle.radius;
+      const y2 = circle.y + Math.sin(worldAngle2) * circle.radius;
+      
+      // Calculate distance between pins
+      const dx = x1 - x2;
+      const dy = y1 - y2;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      
+      // If pins are too close, trigger collision
+      if (distance < collisionThreshold) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+// Make all pins fall with animation
+function makePinsFall() {
+  const fallingPins = [];
+  
+  for (const pin of attachedPins) {
+    const worldAngle = normAngle(pin.angleOnCircle + circle.rotation);
+    const x = circle.x + Math.cos(worldAngle) * circle.radius;
+    const y = circle.y + Math.sin(worldAngle) * circle.radius;
+    
+    fallingPins.push({
+      x: x,
+      y: y,
+      color: pin.color,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.2,
+      velocityY: 0,
+      velocityX: (Math.random() - 0.5) * 4,
+      scale: 1,
+      alpha: 1
+    });
+  }
+  
+  return fallingPins;
+}
+
+// attach pin to circle
 function attachPin(angleOnCircle, color, type = "normal"){
   attachedPins.push({ 
     angleOnCircle: angleOnCircle, 
@@ -419,7 +582,8 @@ function attachPin(angleOnCircle, color, type = "normal"){
     id: Date.now()+Math.random(),
     type: type
   });
-  // sort by angleOnCircle to ease gap computation (0..2pi)
+  
+  // sort by angleOnCircle
   attachedPins.sort((a,b)=> (a.angleOnCircle - b.angleOnCircle));
   pinsThisLevel++;
   hudPins.textContent = attachedPins.length;
@@ -445,13 +609,19 @@ function attachPin(angleOnCircle, color, type = "normal"){
   comboFill.style.width = `${Math.min(100, (combo.count / 8) * 100)}%`;
   comboMult.textContent = `x${combo.multiplier}`;
   
+  // Add vibration to circle
+  circle.vibration = 5;
+  
+  // Check for collisions after attaching
+  if (checkPinCollisions()) {
+    triggerGameOver('Pins collided!');
+    return;
+  }
+  
   // level up
   if (pinsThisLevel >= pinsToLevel){
     levelUp();
   }
-  
-  // Update pin count display
-  updatePinCountDisplay();
 }
 
 // level up logic
@@ -478,12 +648,12 @@ function levelUp(){
 
 // Add a special pin that gives extra points
 function addSpecialPin() {
-  if (attachedPins.length >= maxPinsLimit - 1) return;
+  if (attachedPins.length >= 34) return;
   
   // Find a gap for the special pin
   const gap = findAnyGap();
   if (gap.found) {
-    const specialColor = level % 5 === 0 ? "#FFD700" : "#FF6B6B"; // Golden or red special pins
+    const specialColor = level % 5 === 0 ? "#FFD700" : "#FF6B6B";
     attachPin(gap.placeAngleOnCircle, specialColor, level % 5 === 0 ? "golden" : "special");
   }
 }
@@ -521,7 +691,7 @@ function findAnyGap() {
   return { found: false, placeAngleOnCircle: null };
 }
 
-// flash center
+// flash center text
 function flashCenterText(text, ms=800){
   const h1 = centerOverlay.querySelector('h1');
   const p = centerOverlay.querySelector('p');
@@ -531,28 +701,22 @@ function flashCenterText(text, ms=800){
   
   setTimeout(()=> {
     h1.textContent = 'Rotating Pins';
-    p.textContent = 'Shoot pins to attach to the circle. Don\'t hit an existing one.';
+    p.textContent = 'Tap to shoot pins. Avoid collisions!';
     centerOverlay.style.opacity = 0;
   }, ms);
 }
 
-// find gap logic
-// returns { found: bool, placeAngleOnCircle } where placeAngleOnCircle is inside [ -PI, PI )
+// find gap for pin placement
 function findGapForImpact(impactWorldAngle){
-  // convert impactWorldAngle to internal angle relative to circle (angleOnCircle)
-  // angleOnCircle = impactWorldAngle - rotation
   let impactInternal = normAngle(impactWorldAngle - circle.rotation);
   
-  // prepare sorted angles in [-PI,PI)
   let angles = attachedPins.map(p => normAngle(p.angleOnCircle));
   
-  // if no pins attached, place immediately
-  const minGap = pinAngularWidth() * 1.1; // safety multiplier
+  const minGap = pinAngularWidth() * 1.1;
   if (angles.length === 0) {
     return { found: true, placeAngleOnCircle: impactInternal };
   }
   
-  // sort and compute gaps between consecutive pins around circle (treat as circular)
   angles.sort((a,b)=>a-b);
   let best = null;
   
@@ -560,40 +724,30 @@ function findGapForImpact(impactWorldAngle){
     let a = angles[i];
     let b = angles[(i+1)%angles.length];
     
-    // compute gap clockwise from a to b
     let gap;
     if (i < angles.length-1) gap = b - a;
     else gap = (angles[0] + Math.PI*2) - angles[angles.length-1];
     
-    // center of gap (on internal coords)
     let center;
     if (i < angles.length-1) center = a + gap/2;
     else center = normAngle(angles[angles.length-1] + gap/2);
     
-    // normalize gap to positive
     let gapSize = (gap + Math.PI*2) % (Math.PI*2);
     
-    // if gap big enough
     if (gapSize >= minGap){
-      // check if impactInternal falls inside that gap angular span (with wrap)
       let start = a;
       let end = (i < angles.length-1) ? b : angles[0] + Math.PI*2;
       
-      // normalize impact to same domain
       let imp = impactInternal;
       if (i === angles.length-1 && imp < angles[0]) imp += Math.PI*2;
       
       if (imp >= start && imp <= end){
-        // place at clamped position nearest to impact but at least half-pin away from pins
-        // ensure enough margin from edges
         const margin = minGap/2;
         let place = clamp(imp, start + margin, end - margin);
-        // normalize
         place = normAngle(place);
         return { found: true, placeAngleOnCircle: place };
       }
       
-      // otherwise keep track of nearest gap center for later if impact didn't land in any gap
       let distToImpact = angDistance(center, impactInternal);
       if (!best || distToImpact < best.dist){
         best = { center: center, gapSize: gapSize, dist: distToImpact };
@@ -601,19 +755,16 @@ function findGapForImpact(impactWorldAngle){
     }
   }
   
-  // if no gap contains impact, but we found some sufficiently large gap nearby, place at center if within reasonable angular search
   if (best && best.gapSize >= minGap){
-    // if nearest gap center is reasonably close (say within 60 degrees), place in that center
     if (best.dist < (Math.PI * 2 * 0.33)){
       return { found: true, placeAngleOnCircle: normAngle(best.center) };
     }
   }
   
-  // no suitable gap
   return { found: false, placeAngleOnCircle: null };
 }
 
-// collision check if impact hits existing pin directly (too near)
+// collision check if impact hits existing pin directly
 function immediateCollision(impactInternal){
   for (const p of attachedPins){
     if (angDistance(impactInternal, p.angleOnCircle) < (pinAngularWidth() * 0.6)) {
@@ -626,19 +777,7 @@ function immediateCollision(impactInternal){
 // shoot function
 function shoot(){
   if (gameOver) return;
-  if (activeShot) return; // already shot
-  if (availablePins <=0 && extraPinsHeld <=0) {
-    // no pins left -> gameover/fail if they attempt
-    triggerGameOver('No pins available!');
-    return;
-  }
-  
-  // deduct a pin from available
-  if (availablePins>0) availablePins--;
-  else extraPinsHeld--;
-  
-  // Update pin count display
-  updatePinCountDisplay();
+  if (activeShot) return;
   
   // Start the shot
   const startX = circle.x;
@@ -646,7 +785,7 @@ function shoot(){
   const vx = 0;
   const vy = -1;
   
-  // Determine pin type (5% chance for special pin)
+  // Determine pin type
   const pinType = Math.random() < 0.05 ? "special" : "normal";
   const pinColor = pinType === "special" ? "#FF6B6B" : randColor();
   
@@ -660,32 +799,44 @@ function shoot(){
   };
 }
 
-// game over
-function triggerGameOver(reason='You hit a pin!'){
+// game over with falling pins
+function triggerGameOver(reason='Pins collided!'){
   gameOver = true;
   running = false;
   goTitle.textContent = 'Game Over';
   goDetails.textContent = reason;
-  gameOverDiv.classList.add('show');
+  finalScoreElement.textContent = `${attachedPins.length} Pins`;
+  
+  // Create falling pins animation
+  fallingPins = makePinsFall();
+  
+  // Show game over screen after a delay
+  setTimeout(() => {
+    gameOverDiv.classList.add('show');
+  }, 1500);
 }
 
-// restart
+// restart game
 function restart(){
   attachedPins = [];
+  fallingPins = [];
   score = 0;
   level = 1;
   pinsThisLevel = 0;
   pinsToLevel = 6;
   combo = { count:0, timeWindow:1500, lastHit:0, multiplier:1 };
-  circle.baseSpeed = 0.6;
-  circle.angularVelocity = circle.baseSpeed * (Math.random()>0.5 ? 1 : -1);
-  circle.rotation = 0;
-  circle.direction = 0;
+  
+  if (circle) {
+    circle.baseSpeed = 0.6;
+    circle.angularVelocity = circle.baseSpeed * (Math.random()>0.5 ? 1 : -1);
+    circle.rotation = 0;
+    circle.direction = 0;
+    circle.vibration = 0;
+  }
+  
   activeShot = null;
-  availablePins = 8;
-  extraPinsHeld = 0;
+  availablePins = Infinity;
   slowMotionActive = false;
-  hintActive = false;
   gameOver = false;
   running = true;
   
@@ -695,16 +846,11 @@ function restart(){
   hudPins.textContent = 0;
   comboFill.style.width = '0%';
   comboMult.textContent = 'x1';
+  pinCountElement.textContent = '∞';
   gameOverDiv.classList.remove('show');
-  updatePinCountDisplay();
   
   // Add initial pins for demo
   addInitialPins();
-}
-
-// Update pin count display
-function updatePinCountDisplay() {
-  pinCountElement.textContent = availablePins + extraPinsHeld;
 }
 
 // Add initial pins for demo
@@ -718,127 +864,7 @@ function addInitialPins() {
   hudPins.textContent = attachedPins.length;
 }
 
-// powerups
-powerHint.addEventListener('click', ()=>{
-  if (gameOver) return;
-  
-  // show best upcoming gap highlighted for 1.4s
-  powerHint.classList.add('hint-glow');
-  hintActive = true;
-  
-  setTimeout(()=>{
-    powerHint.classList.remove('hint-glow');
-    hintActive = false;
-  }, 1400);
-  
-  // compute impact world angle (top of circle in world coords)
-  const impactWorldAngle = -Math.PI/2; // shooter shoots straight up -> hits top in world coords
-  const res = findGapForImpact(impactWorldAngle);
-  
-  if (res.found){
-    // display highlight (drawn for a short time)
-    showHint(res.placeAngleOnCircle);
-  } else {
-    // flash small message
-    flashCenterText('No gap found',800);
-  }
-});
-
-powerSlow.addEventListener('click', ()=>{
-  if (gameOver) return;
-  if (slowMotionActive) return;
-  
-  slowMotionActive = true;
-  const prev = circle.angularVelocity;
-  circle.angularVelocity *= 0.35;
-  
-  setTimeout(()=>{ 
-    circle.angularVelocity = prev; 
-    slowMotionActive = false; 
-  }, 3500);
-});
-
-powerExtra.addEventListener('click', ()=>{
-  if (gameOver) return;
-  extraPinsHeld += 1;
-  updatePinCountDisplay();
-  flashCenterText('+1 Pin', 700);
-});
-
-powerNew.addEventListener('click', ()=>{
-  restart();
-});
-
-// UI buttons
-btnLeft.addEventListener('pointerdown', ()=>{ circle.direction = -1; });
-btnLeft.addEventListener('pointerup', ()=>{ circle.direction = 0; });
-btnLeft.addEventListener('pointercancel', ()=>{ circle.direction = 0; });
-
-btnRight.addEventListener('pointerdown', ()=>{ circle.direction = 1; });
-btnRight.addEventListener('pointerup', ()=>{ circle.direction = 0; });
-btnRight.addEventListener('pointercancel', ()=>{ circle.direction = 0; });
-
-btnShoot.addEventListener('click', shoot);
-restartBtn.addEventListener('click', restart);
-shareBtn.addEventListener('click', ()=>{
-  // try share score (if available) or fallback copy
-  const txt = `I scored ${score} in Rotating Pins!`;
-  if (navigator.share) {
-    navigator.share({ title:'Rotating Pins', text:txt }).catch(()=>{ 
-      navigator.clipboard.writeText(txt); 
-      flashCenterText('Copied result',900); 
-    });
-  } else { 
-    navigator.clipboard.writeText(txt); 
-    flashCenterText('Copied result',900); 
-  }
-});
-
-// touch halves for left-right rotation (mobile)
-const touchLeft = document.getElementById('touch-left');
-const touchRight = document.getElementById('touch-right');
-let leftDown=false, rightDown=false;
-
-touchLeft.addEventListener('pointerdown', ()=>{ leftDown=true; circle.direction = -1; });
-touchLeft.addEventListener('pointerup', ()=>{ leftDown=false; if(!rightDown) circle.direction = 0; });
-touchLeft.addEventListener('pointercancel', ()=>{ leftDown=false; if(!rightDown) circle.direction = 0; });
-
-touchRight.addEventListener('pointerdown', ()=>{ rightDown=true; circle.direction = 1; });
-touchRight.addEventListener('pointerup', ()=>{ rightDown=false; if(!leftDown) circle.direction = 0; });
-touchRight.addEventListener('pointercancel', ()=>{ rightDown=false; if(!leftDown) circle.direction = 0; });
-
-// show hint visually for short time
-function showHint(internalAngle){
-  // compute world angle = internal + rotation
-  const worldAngle = normAngle(internalAngle + circle.rotation);
-  const px = circle.x + Math.cos(worldAngle) * circle.radius;
-  const py = circle.y + Math.sin(worldAngle) * circle.radius;
-  
-  // draw temporary ring
-  const hintNode = document.createElement('div');
-  hintNode.style.position = 'absolute';
-  hintNode.style.left = (px / (cw) * 100) + '%';
-  hintNode.style.top = (py / (ch) * 100) + '%';
-  hintNode.style.width = (pin.length*2) + 'px';
-  hintNode.style.height = (pin.length*2) + 'px';
-  hintNode.style.borderRadius = '50%';
-  hintNode.style.border = '2px dashed rgba(255,255,255,0.8)';
-  hintNode.style.transform = 'translate(-50%,-50%) scale(0.7)';
-  hintNode.style.zIndex = 60;
-  document.body.appendChild(hintNode);
-  
-  setTimeout(()=>{ 
-    hintNode.style.transition='transform 350ms, opacity 350ms'; 
-    hintNode.style.opacity='0'; 
-    hintNode.style.transform='translate(-50%,-50%) scale(1.25)'; 
-  }, 10);
-  
-  setTimeout(()=>{ 
-    try{ document.body.removeChild(hintNode);}catch(e){} 
-  }, 450);
-}
-
-// burst animation (when hit)
+// burst animation
 function spawnBurst(x,y,color){
   const size=32;
   const el = document.createElement('div');
@@ -859,12 +885,10 @@ function spawnBurst(x,y,color){
   setTimeout(()=> { try{ burstLayer.removeChild(el); } catch(e){} }, 740);
 }
 
-// draw loop
+// draw background
 function drawBackground(){
-  // Clear canvas
   ctx.clearRect(0,0,cw,ch);
   
-  // Draw background gradient
   const g = ctx.createRadialGradient(circle.x, circle.y - 120, circle.radius*0.2, circle.x, circle.y+100, circle.radius*2);
   g.addColorStop(0,'rgba(255,255,255,0.02)');
   g.addColorStop(1,'rgba(0,0,0,0)');
@@ -874,9 +898,12 @@ function drawBackground(){
 
 // drawing circle & pins
 function drawCircle(){
-  // circle base
+  // Apply vibration if any
+  const vibrationX = circle.vibration > 0 ? (Math.random() - 0.5) * circle.vibration : 0;
+  const vibrationY = circle.vibration > 0 ? (Math.random() - 0.5) * circle.vibration : 0;
+  
   ctx.save();
-  ctx.translate(circle.x, circle.y);
+  ctx.translate(circle.x + vibrationX, circle.y + vibrationY);
   ctx.rotate(circle.rotation);
   
   // outer ring
@@ -886,25 +913,20 @@ function drawCircle(){
   ctx.strokeStyle = 'rgba(255,255,255,0.08)';
   ctx.stroke();
 
-  // draw attached pins rotating with circle: their positions in internal frame
+  // draw attached pins rotating with circle
   for (const ap of attachedPins){
-    const a = ap.angleOnCircle; // internal
-    // world position after rotation is at a + rotation, but since we've rotated canvas by rotation, just place at internal a
+    const a = ap.angleOnCircle;
     const px = Math.cos(a) * (circle.radius);
     const py = Math.sin(a) * (circle.radius);
     
-    // draw pin shaft
     ctx.save();
     ctx.translate(px, py);
-    ctx.rotate(a + Math.PI/2); // point outward
+    ctx.rotate(a + Math.PI/2);
     
-    // Special pins have different appearance
     if (ap.type === "special") {
-      // Red special pins
       ctx.fillStyle = ap.color;
       ctx.fillRect(-pin.width/2, -pin.length, pin.width, pin.length);
       
-      // Add a star to special pins
       ctx.fillStyle = "#FFFFFF";
       ctx.beginPath();
       ctx.moveTo(0, -pin.length - 4);
@@ -915,11 +937,9 @@ function drawCircle(){
       ctx.closePath();
       ctx.fill();
     } else if (ap.type === "golden") {
-      // Golden special pins
       ctx.fillStyle = ap.color;
       ctx.fillRect(-pin.width/2, -pin.length, pin.width, pin.length);
       
-      // Add sparkle to golden pins
       ctx.fillStyle = "#FFFFFF";
       ctx.beginPath();
       ctx.arc(-3, -pin.length - 6, 2, 0, Math.PI*2);
@@ -928,11 +948,9 @@ function drawCircle(){
       ctx.arc(3, -pin.length - 8, 1.5, 0, Math.PI*2);
       ctx.fill();
     } else {
-      // Normal pins
       ctx.fillStyle = ap.color;
       ctx.fillRect(-pin.width/2, -pin.length, pin.width, pin.length);
       
-      // head
       ctx.beginPath();
       ctx.arc(0, -pin.length - 6, 6, 0, Math.PI*2);
       ctx.fill();
@@ -951,24 +969,28 @@ function drawCircle(){
   cg.addColorStop(1, 'rgba(255,255,255,0.01)');
   ctx.fillStyle = cg;
   ctx.fill();
-  
-  // Draw hint if active
-  if (hintActive) {
-    const impactWorldAngle = -Math.PI/2;
-    const res = findGapForImpact(impactWorldAngle);
-    if (res.found) {
-      const worldAngle = normAngle(res.placeAngleOnCircle + circle.rotation);
-      const px = circle.x + Math.cos(worldAngle) * circle.radius;
-      const py = circle.y + Math.sin(worldAngle) * circle.radius;
-      
-      ctx.beginPath();
-      ctx.arc(px, py, 12, 0, Math.PI*2);
-      ctx.fillStyle = 'rgba(255, 209, 102, 0.2)';
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(255, 209, 102, 0.6)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    }
+}
+
+// Draw falling pins with enhanced animation
+function drawFallingPins() {
+  for (const fp of fallingPins) {
+    ctx.save();
+    ctx.translate(fp.x, fp.y);
+    ctx.rotate(fp.rotation);
+    ctx.scale(fp.scale, fp.scale);
+    
+    // Apply alpha
+    ctx.globalAlpha = fp.alpha;
+    
+    ctx.fillStyle = fp.color;
+    ctx.fillRect(-pin.width/2, -pin.length, pin.width, pin.length);
+    
+    ctx.beginPath();
+    ctx.arc(0, -pin.length - 6, 6, 0, Math.PI*2);
+    ctx.fill();
+    
+    ctx.restore();
+    ctx.globalAlpha = 1;
   }
 }
 
@@ -976,12 +998,10 @@ function drawCircle(){
 function drawShot(dt){
   if (!activeShot) return;
   
-  // move shot
   const s = (activeShot.speed * (dt/1000));
   activeShot.x += activeShot.vx * s;
   activeShot.y += activeShot.vy * s;
 
-  // draw pin in flight: a simple line + head
   ctx.beginPath();
   ctx.moveTo(activeShot.x, activeShot.y + 12);
   ctx.lineTo(activeShot.x, activeShot.y - pin.length + 6);
@@ -990,14 +1010,12 @@ function drawShot(dt){
   ctx.strokeStyle = activeShot.color;
   ctx.stroke();
 
-  // Special shot appearance
   if (activeShot.type === "special") {
     ctx.beginPath();
     ctx.arc(activeShot.x, activeShot.y - pin.length - 2, 8, 0, Math.PI*2);
     ctx.fillStyle = activeShot.color;
     ctx.fill();
     
-    // Add glow to special shots
     ctx.beginPath();
     ctx.arc(activeShot.x, activeShot.y - pin.length - 2, 12, 0, Math.PI*2);
     ctx.strokeStyle = 'rgba(255, 107, 107, 0.4)';
@@ -1010,40 +1028,31 @@ function drawShot(dt){
     ctx.fill();
   }
 
-  // check collision with circle perimeter: distance from center <= radius + small margin
   const dx = activeShot.x - circle.x;
   const dy = activeShot.y - circle.y;
   const dist = Math.sqrt(dx*dx + dy*dy);
   
   if (dist <= circle.radius + 6){
-    // compute impact world angle
-    const impactWorldAngle = Math.atan2(dy, dx); // world coordinate
-    // convert to internal
+    const impactWorldAngle = Math.atan2(dy, dx);
     const impactInternal = normAngle(impactWorldAngle - circle.rotation);
     
-    // if immediate collision (too close to existing pin) -> attempt find gap; if none -> game over/hit
     const hitExistingDirect = immediateCollision(impactInternal);
     
-    // find a gap possibly
     const gap = findGapForImpact(impactWorldAngle);
     
     if (!gap.found){
-      // game over (no free spot)
       spawnBurst(activeShot.x, activeShot.y, 'rgba(255,80,80,0.9)');
-      triggerGameOver('Hit existing pin — no free gap.');
+      triggerGameOver('No space for pin!');
       activeShot = null;
       return;
     } else {
-      // Attach at gap.placeAngleOnCircle
       const placeInternal = gap.placeAngleOnCircle;
       attachPin(placeInternal, activeShot.color, activeShot.type);
       
-      // spawn burst at place world coords (compute final world coords from internal)
       const placeWorldAngle = normAngle(placeInternal + circle.rotation);
       const px = circle.x + Math.cos(placeWorldAngle) * circle.radius;
       const py = circle.y + Math.sin(placeWorldAngle) * circle.radius;
       
-      // Different burst for special pins
       if (activeShot.type === "special") {
         spawnBurst(px, py, 'rgba(255, 107, 107, 0.9)');
       } else if (activeShot.type === "golden") {
@@ -1057,37 +1066,47 @@ function drawShot(dt){
     }
   }
 
-  // if shot goes off-screen
   if (activeShot.y < -40) {
     activeShot = null;
   }
 }
 
-// update (physics & rotation)
+// update game state
 function update(dt){
   if (!running) return;
   
-  // rotation update: if user pressing direction, apply torque by adjusting angularVelocity temporarily
-  // implement small acceleration effect
-  const accel = 0.6;
-  if (circle.direction === -1) {
-    circle.angularVelocity -= accel * (dt/1000);
-  } else if (circle.direction === 1) {
-    circle.angularVelocity += accel * (dt/1000);
-  } else {
-    // gently approach base rotationBase sign
-    const targetSpeed = circle.baseSpeed * Math.sign(circle.angularVelocity);
-    circle.angularVelocity += (targetSpeed - circle.angularVelocity) * 0.05 * (dt/1000);
-  }
-  
-  // clamp angular velocity to some reasonable bounds
-  const maxAV = 3 + level * 0.6;
-  circle.angularVelocity = clamp(circle.angularVelocity, -maxAV, maxAV);
-
-  // continuous rotation
+  // Proper rotation update
   circle.rotation += circle.angularVelocity * (dt / 1000);
   circle.rotation = normAngle(circle.rotation);
-
+  
+  // Clamp angular velocity
+  const maxAV = 3 + level * 0.6;
+  circle.angularVelocity = clamp(circle.angularVelocity, -maxAV, maxAV);
+  
+  // Decay vibration
+  if (circle.vibration > 0) {
+    circle.vibration -= dt / 100;
+    if (circle.vibration < 0) circle.vibration = 0;
+  }
+  
+  // Update falling pins with enhanced animation
+  for (let i = fallingPins.length - 1; i >= 0; i--) {
+    const fp = fallingPins[i];
+    fp.velocityY += 0.5 * (dt / 16);
+    fp.y += fp.velocityY;
+    fp.x += fp.velocityX;
+    fp.rotation += fp.rotationSpeed * (dt / 16);
+    
+    // Add scale and alpha effects for falling pins
+    fp.scale = Math.max(0.5, fp.scale - 0.002 * (dt / 16));
+    fp.alpha = Math.max(0, fp.alpha - 0.005 * (dt / 16));
+    
+    // Remove pins that fall off screen or fade out
+    if (fp.y > ch + 100 || fp.alpha <= 0) {
+      fallingPins.splice(i, 1);
+    }
+  }
+  
   // update active shot
   drawShot(dt);
 }
@@ -1103,12 +1122,15 @@ function frameLoop(ts){
   drawBackground();
   drawCircle();
   
+  // Draw falling pins if any
+  if (fallingPins.length > 0) {
+    drawFallingPins();
+  }
+  
   // draw aiming indicator from shooter to top
-  // shooter position
   const sx = circle.x;
   const sy = ch - 40;
   
-  // draw shooter marker
   ctx.beginPath();
   ctx.moveTo(sx - 18, sy + 8);
   ctx.arc(sx, sy, 18, Math.PI*0.7, Math.PI*0.3, true);
@@ -1122,7 +1144,6 @@ function frameLoop(ts){
   ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.stroke();
 
-  // draw small indicator on top of circle showing where a new shot would aim (top world angle)
   const aimWorldAngle = -Math.PI/2;
   const ax = circle.x + Math.cos(aimWorldAngle) * (circle.radius + 6);
   const ay = circle.y + Math.sin(aimWorldAngle) * (circle.radius + 6);
@@ -1134,41 +1155,13 @@ function frameLoop(ts){
   ctx.moveTo(ax-6, ay); ctx.lineTo(ax+6, ay);
   ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(255,209,102,0.5)'; ctx.stroke();
 
-  // draw floating info at bottom-left
   rotSpeedEl.textContent = Math.abs(circle.angularVelocity).toFixed(2);
 
-  // continue loop
-  if (!gameOver) requestAnimationFrame(frameLoop);
+  requestAnimationFrame(frameLoop);
 }
-requestAnimationFrame(frameLoop);
 
-// keyboard support for desktop
-window.addEventListener('keydown',(e)=>{
-  if (e.key === 'ArrowLeft') circle.direction = -1;
-  if (e.key === 'ArrowRight') circle.direction = 1;
-  if (e.key === ' ' || e.key === 'Enter') shoot();
-});
-window.addEventListener('keyup',(e)=>{
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') circle.direction = 0;
-});
-
-// ensure canvas scales on orientation changes and resizing
-window.addEventListener('resize', ()=> {
-  resizeCanvasToDisplaySize();
-  updateDims();
-});
-
-// start initial state
-restart();
-
-// expose some debugging or direct functions to window for experimentation
-window._DEBUG = {
-  attachRandom(){
-    attachPin(normAngle(Math.random()*Math.PI*2));
-  },
-  showState(){ console.log({attachedPins, circle, score, level}); }
-};
-
+// Initialize the game when the page loads
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
