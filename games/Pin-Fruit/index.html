@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Circle Pin Shooter Adventure</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #game-container {
+            width: 100%;
+            height: 100%;
+            max-width: 500px;
+            max-height: 900px;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            width: 100%;
+        }
+        
+        .score-container, .level-container, .combo-container {
+            background: rgba(106, 17, 203, 0.8);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .combo-bar {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .combo-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff9a00, #ff5500);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .combo-text {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff9a00;
+            text-shadow: 0 0 10px rgba(255, 154, 0, 0.5);
+            opacity: 0;
+        }
+        
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 0 20px;
+        }
+        
+        .control-btn {
+            background: rgba(106, 17, 203, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s ease;
+        }
+        
+        .control-btn:active {
+            transform: scale(0.9);
+            background: rgba(86, 11, 173, 0.9);
+        }
+        
+        .game-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            z-index: 20;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            background: white;
+            color: #6a11cb;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            pointer-events: auto;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 90%;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instructions h3 {
+            color: #6a11cb;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .instructions ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .power-ups {
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 20px;
+        }
+        
+        .power-up {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 15px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .power-up:active {
+            transform: scale(0.95);
+        }
+        
+        .power-up i {
+            font-size: 1.2rem;
+        }
+        
+        .target-burst {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            z-index: 30;
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .level-name {
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+            background: rgba(106, 17, 203, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        .pins-left {
+            position: absolute;
+            top: 200px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.2rem;
+            background: rgba(106, 17, 203, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        
+        @media (max-height: 700px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            p { font-size: 1rem; }
+            .btn { padding: 10px 25px; font-size: 1rem; }
+            .control-btn { width: 50px; height: 50px; font-size: 1.3rem; }
+            .combo-bar { top: 70px; }
+            .combo-text { top: 90px; }
+            .level-name { top: 120px; }
+            .pins-left { top: 170px; }
+        }
+        
+        @media (max-width: 400px) {
+            .header { padding: 10px; }
+            .score-container, .level-container, .combo-container { padding: 6px 12px; font-size: 1rem; }
+            .controls { gap: 10px; }
+            .power-ups { gap: 5px; }
+            .power-up { padding: 6px 10px; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-canvas"></div>
+        
+        <div class="ui-overlay">
+            <div class="header">
+                <div class="score-container">
+                    <i class="fas fa-star"></i>
+                    <span id="score">0</span>
+                </div>
+                <div class="level-container">
+                    <i class="fas fa-flag"></i>
+                    <span id="level">1</span>
+                </div>
+                <div class="combo-container">
+                    <i class="fas fa-fire"></i>
+                    <span id="combo">x1</span>
+                </div>
+            </div>
+            
+            <div class="combo-bar">
+                <div class="combo-fill" id="combo-fill"></div>
+            </div>
+            <div class="combo-text" id="combo-text"></div>
+            
+            <div class="level-name" id="level-name">Level 1</div>
+            <div class="pins-left" id="pins-left">Pins: 0/5</div>
+            
+            <div class="power-ups">
+                <div class="power-up" id="hint-btn">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Hint</span>
+                </div>
+                <div class="power-up" id="slow-motion">
+                    <i class="fas fa-clock"></i>
+                    <span>Slow Mo</span>
+                </div>
+                <div class="power-up" id="extra-pin">
+                    <i class="fas fa-plus"></i>
+                    <span>+1 Pin</span>
+                </div>
+                <div class="power-up" id="new-game">
+                    <i class="fas fa-redo"></i>
+                    <span>New</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="spin-left">
+                    <i class="fas fa-undo"></i>
+                </button>
+                <button class="control-btn" id="shoot-pin">
+                    <i class="fas fa-bullseye"></i>
+                </button>
+                <button class="control-btn" id="spin-right">
+                    <i class="fas fa-redo"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="start-screen" class="game-screen">
+            <h1>Circle Pin Shooter</h1>
+            <p>Throw pins into the rotating circle without hitting other pins!</p>
+            <div class="instructions">
+                <h3>How to Play:</h3>
+                <ul>
+                    <li>Spin the circle with left/right buttons</li>
+                    <li>Shoot pins at the circle with perfect timing</li>
+                    <li>Avoid hitting existing pins</li>
+                    <li>Build combos for bonus points</li>
+                    <li>Complete levels to increase difficulty</li>
+                </ul>
+            </div>
+            <button class="btn" id="start-btn">Start Adventure</button>
+        </div>
+        
+        <div id="game-over-screen" class="game-screen hidden">
+            <h1>Target Burst!</h1>
+            <h2 id="final-score">Score: 0</h2>
+            <p id="game-over-message">You hit an existing pin!</p>
+            <button class="btn" id="restart-btn">Play Again</button>
+            <button class="btn" id="menu-btn">Main Menu</button>
+        </div>
+        
+        <div id="level-complete-screen" class="game-screen hidden">
+            <h1>Level Complete!</h1>
+            <h2 id="level-score">Score: +100</h2>
+            <p id="next-level">Next: Level 2</p>
+            <button class="btn" id="next-level-btn">Next Level</button>
+        </div>
+        
+        <div class="target-burst" id="target-burst">
+            💥
+        </div>
+    </div>
+
+    <script>
+        // Game configuration
+        const config = {
+            type: Phaser.AUTO,
+            width: window.innerWidth,
+            height: window.innerHeight,
+            parent: 'game-canvas',
+            backgroundColor: '#6a11cb',
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    gravity: { y: 0 },
+                    debug: false
+                }
+            },
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        // Game variables
+        let game;
+        let targetCircle;
+        let pins = [];
+        let pinGroup;
+        let score = 0;
+        let level = 1;
+        let isSpinning = false;
+        let spinDirection = 0;
+        let canShoot = true;
+        let gameOver = false;
+        let pinsShot = 0;
+        let pinsNeeded = 5;
+        let comboCount = 0;
+        let comboMultiplier = 1;
+        let comboFill = 0;
+        let slowMotionActive = false;
+        let hintActive = false;
+        
+        // Level data
+        const levelData = [
+            { name: "Level 1", pins: 5, rotationSpeed: 0.01, color: 0xFF6B6B },
+            { name: "Level 2", pins: 6, rotationSpeed: 0.015, color: 0xFFA500 },
+            { name: "Level 3", pins: 7, rotationSpeed: 0.02, color: 0xFFFF00 },
+            { name: "Level 4", pins: 8, rotationSpeed: 0.025, color: 0x00FF00 },
+            { name: "Level 5", pins: 9, rotationSpeed: 0.03, color: 0x00FFFF },
+            { name: "Level 6", pins: 10, rotationSpeed: 0.035, color: 0x0000FF },
+            { name: "Level 7", pins: 11, rotationSpeed: 0.04, color: 0xFF00FF },
+            { name: "Level 8", pins: 12, rotationSpeed: 0.045, color: 0xFF1493 }
+        ];
+        
+        let currentLevelIndex = 0;
+        let rotationSpeed = 0.01;
+        let directionChangeTimer = 0;
+        let directionChangeInterval = 3000; // ms
+        
+        // Initialize the game
+        game = new Phaser.Game(config);
+        
+        // Preload assets
+        function preload() {
+            // Create target circle texture
+            const graphics = this.add.graphics();
+            graphics.lineStyle(8, 0xFFFFFF, 1);
+            graphics.strokeCircle(50, 50, 45);
+            graphics.generateTexture('targetCircle', 100, 100);
+            graphics.destroy();
+                
+            // Create a pin texture
+            const pinGraphics = this.add.graphics();
+            pinGraphics.fillStyle(0x4ECDC4, 1);
+            pinGraphics.fillRect(0, 0, 8, 50);
+            pinGraphics.fillStyle(0xFFFFFF, 1);
+            pinGraphics.fillCircle(4, 4, 6);
+            pinGraphics.generateTexture('pin', 10, 55);
+            pinGraphics.destroy();
+            
+            // Create particle texture
+            const particleGraphics = this.add.graphics();
+            particleGraphics.fillStyle(0xFF6B6B, 1);
+            particleGraphics.fillCircle(0, 0, 5);
+            particleGraphics.generateTexture('particle', 10, 10);
+            particleGraphics.destroy();
+        }
+        
+        // Create game objects
+        function create() {
+            // Add background
+            const bgGraphics = this.add.graphics();
+            bgGraphics.fillGradientStyle(0x6a11cb, 0x6a11cb, 0x2575fc, 0x2575fc, 1);
+            bgGraphics.fillRect(0, 0, config.width, config.height);
+            
+            // Create target circle
+            createTarget.call(this);
+            
+            // Create pin group for physics
+            pinGroup = this.physics.add.group();
+            
+            // Set up particles
+            this.particles = this.add.particles('particle');
+            
+            // Set up game UI
+            setupUI();
+            
+            // Set up controls
+            setupControls();
+            
+            // Start with the start screen visible
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+        
+        // Create the target circle
+        function createTarget() {
+            const levelInfo = levelData[currentLevelIndex];
+            targetCircle = this.add.image(config.width / 2, config.height / 2 - 50, 'targetCircle');
+            targetCircle.setScale(1.2);
+            
+            // Set level-specific values
+            pinsNeeded = levelInfo.pins;
+            rotationSpeed = levelInfo.rotationSpeed;
+            
+            // Change circle color based on level
+            targetCircle.setTint(levelInfo.color);
+            
+            // Reset direction change timer
+            directionChangeTimer = 0;
+            
+            // Update UI
+            document.getElementById('level-name').textContent = levelInfo.name;
+            updatePinsLeft();
+        }
+        
+        // Update game state
+        function update(time, delta) {
+            if (gameOver) return;
+            
+            // Apply slow motion if active
+            const effectiveDelta = slowMotionActive ? delta * 0.3 : delta;
+            
+            // Rotate target if spinning
+            if (isSpinning) {
+                targetCircle.rotation += rotationSpeed * spinDirection;
+            } else {
+                // Auto-rotate target
+                targetCircle.rotation += rotationSpeed;
+            }
+            
+            // Random direction changes at higher levels
+            if (level >= 3) {
+                directionChangeTimer += effectiveDelta;
+                if (directionChangeTimer >= directionChangeInterval) {
+                    directionChangeTimer = 0;
+                    // 30% chance to change direction
+                    if (Math.random() < 0.3) {
+                        rotationSpeed *= -1;
+                        showDirectionChangeEffect.call(this);
+                    }
+                }
+            }
+            
+            // Check for overlaps between pins
+            this.physics.world.overlap(pinGroup, pinGroup, handlePinOverlap, null, this);
+            
+            // Check if all pins are placed without overlaps
+            if (pinsShot >= pinsNeeded && !gameOver) {
+                levelComplete();
+            }
+        }
+        
+        // Show direction change effect
+        function showDirectionChangeEffect() {
+            const directionText = this.add.text(config.width / 2, config.height / 2 - 120, 
+                rotationSpeed > 0 ? 'REVERSE!' : 'SPEED UP!', 
+                { font: '24px Arial', fill: '#ff5500', fontWeight: 'bold' });
+            directionText.setOrigin(0.5);
+            
+            this.tweens.add({
+                targets: directionText,
+                y: directionText.y - 50,
+                alpha: 0,
+                duration: 1000,
+                ease: 'Power2',
+                onComplete: () => {
+                    directionText.destroy();
+                }
+            });
+        }
+        
+        // Set up the game UI
+        function setupUI() {
+            // Update score and level displays
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('combo').textContent = `x${comboMultiplier}`;
+            document.getElementById('combo-fill').style.width = `${comboFill}%`;
+            
+            // Set up button event listeners
+            document.getElementById('start-btn').addEventListener('click', startGame);
+            document.getElementById('restart-btn').addEventListener('click', restartGame);
+            document.getElementById('menu-btn').addEventListener('click', showMainMenu);
+            document.getElementById('next-level-btn').addEventListener('click', nextLevel);
+            document.getElementById('hint-btn').addEventListener('click', showHint);
+            document.getElementById('slow-motion').addEventListener('click', activateSlowMotion);
+            document.getElementById('extra-pin').addEventListener('click', addExtraPin);
+            document.getElementById('new-game').addEventListener('click', newGame);
+        }
+        
+        // Set up game controls
+        function setupControls() {
+            document.getElementById('spin-left').addEventListener('click', () => {
+                isSpinning = true;
+                spinDirection = -1;
+            });
+            
+            document.getElementById('spin-right').addEventListener('click', () => {
+                isSpinning = true;
+                spinDirection = 1;
+            });
+            
+            // Stop spinning when buttons are released
+            const stopSpinning = () => {
+                isSpinning = false;
+            };
+            
+            document.getElementById('spin-left').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isSpinning = true;
+                spinDirection = -1;
+            });
+            
+            document.getElementById('spin-right').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isSpinning = true;
+                spinDirection = 1;
+            });
+            
+            document.getElementById('spin-left').addEventListener('touchend', stopSpinning);
+            document.getElementById('spin-right').addEventListener('touchend', stopSpinning);
+            document.getElementById('spin-left').addEventListener('touchcancel', stopSpinning);
+            document.getElementById('spin-right').addEventListener('touchcancel', stopSpinning);
+            
+            // Shoot pin
+            document.getElementById('shoot-pin').addEventListener('click', shootPin);
+            document.getElementById('shoot-pin').addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                shootPin();
+            });
+        }
+        
+        // Start the game
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            resetGame();
+        }
+        
+        // Reset game state
+        function resetGame() {
+            score = 0;
+            level = 1;
+            pinsShot = 0;
+            currentLevelIndex = 0;
+            gameOver = false;
+            comboCount = 0;
+            comboMultiplier = 1;
+            comboFill = 0;
+            
+            // Clear existing pins
+            if (pinGroup) pinGroup.clear(true, true);
+            pins = [];
+            
+            // Update UI
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            document.getElementById('combo').textContent = `x${comboMultiplier}`;
+            document.getElementById('combo-fill').style.width = `${comboFill}%`;
+            
+            // Reset target
+            if (targetCircle) targetCircle.destroy();
+            createTarget.call(game.scene.scenes[0]);
+        }
+        
+        // Shoot a pin at the target
+        function shootPin() {
+            if (!canShoot || gameOver || pinsShot >= pinsNeeded) return;
+            
+            canShoot = false;
+            
+            // Calculate position on the circle's circumference
+            const angle = targetCircle.rotation;
+            const radius = targetCircle.displayWidth / 2;
+            const pinX = targetCircle.x + Math.cos(angle) * radius;
+            const pinY = targetCircle.y + Math.sin(angle) * radius;
+            
+            // Create a new pin
+            const pin = pinGroup.create(pinX, pinY, 'pin');
+            pin.setScale(1.2);
+            
+            // Rotate the pin to match the tangent of the circle
+            pin.rotation = angle + Math.PI / 2;
+            
+            pins.push(pin);
+            pinsShot++;
+            
+            // Update combo
+            updateCombo();
+            
+            // Allow shooting again after a short delay
+            setTimeout(() => {
+                canShoot = true;
+            }, 500);
+            
+            // Update UI
+            updatePinsLeft();
+            
+            // Play shooting sound (placeholder)
+            playSound('shoot');
+        }
+        
+        // Update pins left display
+        function updatePinsLeft() {
+            document.getElementById('pins-left').textContent = `Pins: ${pinsShot}/${pinsNeeded}`;
+        }
+        
+        // Update combo system
+        function updateCombo() {
+            comboCount++;
+            
+            // Increase combo multiplier every 3 successful shots
+            if (comboCount % 3 === 0) {
+                comboMultiplier++;
+                
+                // Show combo text
+                showComboText(`Combo x${comboMultiplier}!`);
+                
+                // Fill combo bar
+                comboFill = 0;
+                
+                // Check for target explosion mode
+                if (comboMultiplier >= 3) {
+                    activateTargetExplosionMode();
+                }
+            } else {
+                // Fill combo bar gradually
+                comboFill = ((comboCount % 3) / 3) * 100;
+            }
+            
+            // Update UI
+            document.getElementById('combo').textContent = `x${comboMultiplier}`;
+            document.getElementById('combo-fill').style.width = `${comboFill}%`;
+        }
+        
+        // Reset combo
+        function resetCombo() {
+            comboCount = 0;
+            comboMultiplier = 1;
+            comboFill = 0;
+            
+            // Update UI
+            document.getElementById('combo').textContent = `x${comboMultiplier}`;
+            document.getElementById('combo-fill').style.width = `${comboFill}%`;
+            
+            // Deactivate slow motion
+            slowMotionActive = false;
+            game.scene.scenes[0].time.timeScale = 1;
+        }
+        
+        // Show combo text
+        function showComboText(text) {
+            const comboText = document.getElementById('combo-text');
+            comboText.textContent = text;
+            comboText.style.opacity = '1';
+            
+            setTimeout(() => {
+                comboText.style.opacity = '0';
+            }, 1500);
+        }
+        
+        // Activate target explosion mode (slow motion)
+        function activateTargetExplosionMode() {
+            slowMotionActive = true;
+            game.scene.scenes[0].time.timeScale = 0.5;
+            
+            // Show explosion mode text
+            showComboText('TARGET EXPLOSION MODE!');
+            
+            // Create particle effect around target
+            createBurstEffect.call(game.scene.scenes[0], targetCircle.x, targetCircle.y);
+            
+            // End slow motion after 5 seconds (real time)
+            setTimeout(() => {
+                slowMotionActive = false;
+                game.scene.scenes[0].time.timeScale = 1;
+            }, 5000);
+        }
+        
+        // Handle pin overlap
+        function handlePinOverlap(pin1, pin2) {
+            if (!gameOver) {
+                gameOver = true;
+                
+                // Create burst effect
+                createBurstEffect.call(game.scene.scenes[0], targetCircle.x, targetCircle.y);
+                
+                // Show target burst animation
+                showTargetBurst();
+                
+                // End game after a delay
+                setTimeout(() => {
+                    endGame();
+                }, 1000);
+            }
+        }
+        
+        // Create burst effect
+        function createBurstEffect(x, y) {
+            const emitter = this.particles.createEmitter({
+                x: x,
+                y: y,
+                speed: { min: 100, max: 200 },
+                angle: { min: 0, max: 360 },
+                scale: { start: 1, end: 0 },
+                blendMode: 'ADD',
+                lifespan: 1000,
+                gravityY: 300,
+                quantity: 30,
+                frequency: 0
+            });
+            
+            emitter.explode(30, x, y);
+            
+            // Stop emitter after explosion
+            setTimeout(() => {
+                emitter.stop();
+            }, 100);
+        }
+        
+        // Show target burst animation
+        function showTargetBurst() {
+            const burstElement = document.getElementById('target-burst');
+            burstElement.style.opacity = '1';
+            burstElement.style.fontSize = '4rem';
+            
+            setTimeout(() => {
+                burstElement.style.opacity = '0';
+                burstElement.style.fontSize = '6rem';
+            }, 1000);
+        }
+        
+        // End the game
+        function endGame() {
+            document.getElementById('final-score').textContent = `Score: ${score}`;
+            document.getElementById('game-over-message').textContent = 'You hit an existing pin!';
+            document.getElementById('game-over-screen').classList.remove('hidden');
+            
+            // Play game over sound (placeholder)
+            playSound('gameOver');
+        }
+        
+        // Level complete
+        function levelComplete() {
+            // Calculate level score with combo bonus
+            const levelScore = 100 * level * comboMultiplier;
+            score += levelScore;
+            
+            document.getElementById('level-score').textContent = `Score: +${levelScore}`;
+            
+            // Show next level
+            const nextLevelIndex = (currentLevelIndex + 1) % levelData.length;
+            document.getElementById('next-level').textContent = `Next: ${levelData[nextLevelIndex].name}`;
+            
+            document.getElementById('level-complete-screen').classList.remove('hidden');
+            
+            // Play level complete sound (placeholder)
+            playSound('levelComplete');
+        }
+        
+        // Go to next level
+        function nextLevel() {
+            level++;
+            pinsShot = 0;
+            currentLevelIndex = (currentLevelIndex + 1) % levelData.length;
+            
+            gameOver = false;
+            
+            // Clear existing pins
+            pinGroup.clear(true, true);
+            pins = [];
+            
+            // Replace target
+            targetCircle.destroy();
+            createTarget.call(game.scene.scenes[0]);
+            
+            // Update UI
+            document.getElementById('score').textContent = score;
+            document.getElementById('level').textContent = level;
+            
+            document.getElementById('level-complete-screen').classList.add('hidden');
+            
+            // Reset combo
+            resetCombo();
+        }
+        
+        // Restart the game
+        function restartGame() {
+            resetGame();
+            document.getElementById('game-over-screen').classList.add('hidden');
+        }
+        
+        // Show main menu
+        function showMainMenu() {
+            document.getElementById('game-over-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+        
+        // Show hint
+        function showHint() {
+            if (hintActive) return;
+            
+            hintActive = true;
+            
+            // Visual hint - highlight a safe spot
+            const hintGraphics = game.scene.scenes[0].add.graphics();
+            hintGraphics.lineStyle(4, 0xFFD700, 1);
+            hintGraphics.strokeCircle(targetCircle.x, targetCircle.y, targetCircle.displayWidth / 2 + 20);
+            
+            // Remove hint after a delay
+            setTimeout(() => {
+                hintGraphics.destroy();
+                hintActive = false;
+            }, 2000);
+            
+            // Play hint sound (placeholder)
+            playSound('hint');
+        }
+        
+        // Activate slow motion power-up
+        function activateSlowMotion() {
+            if (slowMotionActive) return;
+            
+            slowMotionActive = true;
+            game.scene.scenes[0].time.timeScale = 0.5;
+            
+            // Show slow motion text
+            showComboText('SLOW MOTION!');
+            
+            // End slow motion after 3 seconds (real time)
+            setTimeout(() => {
+                slowMotionActive = false;
+                game.scene.scenes[0].time.timeScale = 1;
+            }, 3000);
+            
+            // Play power-up sound (placeholder)
+            playSound('powerUp');
+        }
+        
+        // Add extra pin power-up
+        function addExtraPin() {
+            if (pinsShot >= pinsNeeded) return;
+            
+            pinsNeeded++;
+            updatePinsLeft();
+            
+            // Show extra pin text
+            showComboText('EXTRA PIN!');
+            
+            // Play power-up sound (placeholder)
+            playSound('powerUp');
+        }
+        
+        // New game
+        function newGame() {
+            resetGame();
+            document.getElementById('level-complete-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+        }
+        
+        // Play sound effect (placeholder)
+        function playSound(type) {
+            // In a real implementation, you would play actual sound files
+            console.log(`Playing sound: ${type}`);
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Prevent zoom on mobile
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
