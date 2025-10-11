@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
-<title>Rotating Pins - Enhanced</title>
+<title>Rotating Pins - Ultimate Edition</title>
 <style>
 :root{
     --bg1: #ffffff;
@@ -307,12 +307,19 @@
     z-index: 45;
     border-radius: 50%;
   }
+  
+  .circle-image {
+    display: none;
+  }
 </style>
 </head>
 <body>
 <div id="game-wrap">
   <canvas id="gameCanvas" width="900" height="800"></canvas>
 
+  <!-- Hidden image element for the circle -->
+  <img id="circle-image" class="circle-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTUiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjcwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMSIgZmlsbC1vcGFjaXR5PSIwLjA1Ii8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iNDUiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPHN2Zz4=" alt="Circle">
+  
   <div class="hud" aria-hidden="true">
     <div class="card">
       <div style="display:flex;flex-direction:column">
@@ -375,8 +382,8 @@
 </div>
 
 <script>
-// Rotating Pin Circle Game - Enhanced Version
-// Realistic falling physics and vibrant UI
+// Rotating Pin Circle Game - Ultimate Edition
+// Complete with vibration, sound effects, and collision animation
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -399,6 +406,8 @@ let availablePins = Infinity;
 let slowMotionActive = false;
 let fallingPins = [];
 let particles = [];
+let circleImage = null;
+let useCircleImage = false;
 
 // visual & UI refs
 const hudScore = document.getElementById('hud-score');
@@ -417,17 +426,91 @@ const pinCountElement = document.getElementById('pin-count');
 const finalScoreElement = document.getElementById('final-score');
 const aimIndicator = document.getElementById('aim-indicator');
 const touchShootArea = document.getElementById('touch-shoot');
+const circleImageElement = document.getElementById('circle-image');
 
 // controls
 const powerSlow = document.getElementById('power-slow');
 const powerNew = document.getElementById('power-new');
 const restartBtn = document.getElementById('restart-btn');
 
+// Audio elements
+let audioContext;
+let sounds = {};
+
 // Vibrant color palette
 const vibrantColors = [
   '#ff6b6b', '#4ecdc4', '#ffd166', '#6a0572', 
   '#118ab2', '#06d6a0', '#ef476f', '#073b4c'
 ];
+
+// Initialize audio context and sounds
+function initAudio() {
+  try {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    console.log("Audio not supported:", e);
+  }
+}
+
+function playSound(soundName, duration = 0.5) {
+  if (!audioContext) return;
+  
+  try {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    let frequency, type, volume;
+    
+    switch(soundName) {
+      case 'attach':
+        frequency = 800;
+        type = 'sine';
+        volume = 0.3;
+        break;
+      case 'collision':
+        frequency = 200;
+        type = 'sawtooth';
+        volume = 0.4;
+        break;
+      case 'falling':
+        frequency = 400;
+        type = 'sine';
+        volume = 0.3;
+        break;
+      default:
+        frequency = 440;
+        type = 'sine';
+        volume = 0.3;
+    }
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = type;
+    gainNode.gain.value = volume;
+    
+    if (soundName === 'falling') {
+      oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 1);
+    } else {
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + duration);
+    }
+  } catch (e) {
+    console.log("Error playing sound:", e);
+  }
+}
+
+// Vibration function
+function vibrate(duration) {
+  if (navigator.vibrate) {
+    navigator.vibrate(duration);
+  }
+}
 
 // handle high DPI
 function resizeCanvasToDisplaySize() {
@@ -492,6 +575,19 @@ function updateDims() {
 function init() {
   resizeCanvasToDisplaySize();
   initGameObjects();
+  initAudio();
+  
+  // Try to load circle image
+  circleImage = new Image();
+  circleImage.onload = function() {
+    useCircleImage = true;
+    console.log("Circle image loaded successfully");
+  };
+  circleImage.onerror = function() {
+    useCircleImage = false;
+    console.log("Circle image failed to load, using fallback");
+  };
+  circleImage.src = circleImageElement.src;
   
   // Set up event listeners
   window.addEventListener('resize', () => {
@@ -620,7 +716,8 @@ function makePinsFall() {
       alpha: 1,
       gravity: 0.5 + Math.random() * 0.3,
       airResistance: 0.98,
-      angularAcceleration: (Math.random() - 0.5) * 0.01
+      angularAcceleration: (Math.random() - 0.5) * 0.01,
+      originalAngle: pin.angleOnCircle
     });
   }
   
@@ -708,6 +805,10 @@ function attachPin(angleOnCircle, color, type = "normal"){
   
   // Add vibration to circle
   circle.vibration = 5;
+  
+  // Play sound and vibrate device
+  playSound('attach', 0.1);
+  vibrate(50);
   
   // Create particles for attachment
   const worldAngle = normAngle(angleOnCircle + circle.rotation);
@@ -910,8 +1011,17 @@ function triggerGameOver(reason='Pins collided!'){
   goDetails.textContent = reason;
   finalScoreElement.textContent = `${attachedPins.length} Pins`;
   
+  // Play collision sound and vibrate
+  playSound('collision', 0.5);
+  vibrate(200);
+  
   // Create falling pins animation
   fallingPins = makePinsFall();
+  
+  // Play falling sound after a short delay
+  setTimeout(() => {
+    playSound('falling', 1);
+  }, 300);
   
   // Create explosion particles
   for (const pin of attachedPins) {
@@ -920,6 +1030,10 @@ function triggerGameOver(reason='Pins collided!'){
     const y = circle.y + Math.sin(worldAngle) * circle.radius;
     createParticles(x, y, pin.color, 20);
   }
+  
+  // Clear attached pins
+  attachedPins = [];
+  hudPins.textContent = 0;
   
   // Show game over screen after a delay
   setTimeout(() => {
@@ -1034,18 +1148,37 @@ function drawCircle(){
   ctx.translate(circle.x + vibrationX, circle.y + vibrationY);
   ctx.rotate(circle.rotation);
   
-  // outer ring with glow effect
-  ctx.beginPath();
-  ctx.arc(0,0,circle.radius,0,Math.PI*2);
-  ctx.lineWidth = 8;
-  
-  // Create gradient for circle
-  const circleGradient = ctx.createLinearGradient(-circle.radius, 0, circle.radius, 0);
-  circleGradient.addColorStop(0, 'rgba(255,255,255,0.1)');
-  circleGradient.addColorStop(1, 'rgba(255,255,255,0.05)');
-  
-  ctx.strokeStyle = circleGradient;
-  ctx.stroke();
+  // Draw circle image or fallback
+  if (useCircleImage && circleImage.complete) {
+    // Draw the circle image
+    ctx.drawImage(circleImage, -circle.radius, -circle.radius, circle.radius * 2, circle.radius * 2);
+  } else {
+    // Draw fallback circle design
+    ctx.beginPath();
+    ctx.arc(0,0,circle.radius,0,Math.PI*2);
+    ctx.lineWidth = 8;
+    
+    // Create gradient for circle
+    const circleGradient = ctx.createLinearGradient(-circle.radius, 0, circle.radius, 0);
+    circleGradient.addColorStop(0, 'rgba(255,255,255,0.1)');
+    circleGradient.addColorStop(1, 'rgba(255,255,255,0.05)');
+    
+    ctx.strokeStyle = circleGradient;
+    ctx.stroke();
+
+    // Draw inner decorative circles
+    ctx.beginPath();
+    ctx.arc(0,0,circle.radius * 0.7,0,Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(0,0,circle.radius * 0.4,0,Math.PI*2);
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
 
   // draw attached pins rotating with circle
   for (const ap of attachedPins){
