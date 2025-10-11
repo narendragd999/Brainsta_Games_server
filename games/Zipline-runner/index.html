@@ -28,15 +28,15 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* सुनिश्चित करता है कि यह पूरे उपलब्ध व्यूपोर्ट को कवर करे */
-            min-height: 100vh;
+            /* dynamic viewport height के लिए अपडेट किया गया */
+            height: var(--app-height, 100vh);
         }
 
         #game-container {
             width: 100vw; 
-            height: 100vh; 
+            /* height: 100vh; को height: 100% में बदला गया ताकि यह body की height का उपयोग कर सके */
+            height: 100%; 
             max-width: 650px; 
-            /* max-height: 950px; सीमा हटाई गई */
             display: flex;
             flex-direction: column;
             border-radius: 1rem;
@@ -168,6 +168,12 @@
 
 
     <script>
+        // यह फ़ंक्शन असली viewport height की गणना करता है और उसे CSS variable के रूप में सेट करता है।
+        // यह मोबाइल ब्राउज़रों पर $100vh$ की समस्या को हल करता है।
+        function setAppHeight() {
+            document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+        }
+        
         // --- Game Class ---
         class Game {
             constructor() {
@@ -528,6 +534,10 @@
 
         // --- APPLICATION ENTRY POINT ---
         window.onload = function() {
+            // Fix viewport height for mobile browsers
+            setAppHeight(); 
+            window.addEventListener('resize', setAppHeight); // Re-set on resize/orientation change
+
             const game = new Game();
             game.init(); 
             
