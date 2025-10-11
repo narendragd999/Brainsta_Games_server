@@ -170,7 +170,9 @@
             
             reset() {
                 this.x = this.canvas.width; 
-                this.y = Math.random() * (this.canvas.height - 40); 
+                // Adjusted star field Y boundary (needs to respect new ground)
+                const groundClearance = 100; // Match new ground height
+                this.y = Math.random() * (this.canvas.height - groundClearance); 
                 this.size = Math.random() * 1.5 + 0.5;
                 this.opacity = Math.random() * 0.8 + 0.2;
                 this.speed = Math.random() * 0.8 + 0.5;
@@ -197,6 +199,8 @@
         const ctx = canvas.getContext('2d');
         const startButton = document.getElementById('start-button');
         
+        const GROUND_CLEARANCE = 100; // New constant for 100px lift
+
         // Dynamic resizing for responsiveness
         function resizeCanvas() {
             // This reads the size calculated by CSS (100% of container)
@@ -206,8 +210,8 @@
             // Crucial: Recalculate player ground position after resize
             if (window.gameInstance && window.gameInstance.player) {
                  const player = window.gameInstance.player;
-                 // *** CHANGED: Increased ground clearance from 20 to 40 for better visibility on mobile UI. ***
-                 const groundLevel = canvas.height - player.height - 40; 
+                 // *** UPDATED: Ground clearance set to 100px ***
+                 const groundLevel = canvas.height - player.height - GROUND_CLEARANCE; 
                  // Only adjust Y position if the player is currently on the ground (or near it)
                  if (!player.isJumping) {
                      player.y = groundLevel;
@@ -230,8 +234,8 @@
                 this.height = 70; 
                 this.x = 50;
                 
-                // *** CHANGED: Increased ground clearance from 20 to 40. ***
-                this.groundLevel = () => this.canvas.height - this.height - 40;
+                // *** UPDATED: Ground clearance set to 100px ***
+                this.groundLevel = () => this.canvas.height - this.height - GROUND_CLEARANCE;
                 this.y = this.groundLevel(); 
                 this.velocityY = 0;
                 this.gravity = 1.5;
@@ -310,8 +314,8 @@
                 this.width = Math.random() * 25 + 25; // Min 25 to max 50
                 this.height = Math.random() * 40 + 40; // Min 40 to max 80
                 this.x = this.canvas.width;
-                // *** CHANGED: Increased ground clearance from 20 to 40. ***
-                this.y = this.canvas.height - this.height - 40; 
+                // *** UPDATED: Ground clearance set to 100px ***
+                this.y = this.canvas.height - this.height - GROUND_CLEARANCE; 
                 this.color = '#EF4444'; 
                 this.speed = speed; 
             }
@@ -351,11 +355,11 @@
                 this.animationFrameId = null;
                 
                 this.lastObstacleTime = 0;
-                this.baseObstacleInterval = 1500; 
-                this.nextObstacleInterval = 1500; 
+                this.baseObstacleInterval = 3000; 
+                this.nextObstacleInterval = 3000; 
                 
                 this.obstaclesToSpawn = 0;
-                this.consecutiveSpawnInterval = 400; 
+                this.consecutiveSpawnInterval = 1500; 
                 
                 this.stars = [];
                 this.initStars(50);
@@ -420,8 +424,8 @@
             }
 
             drawGround() {
-                // *** CHANGED: Increased ground height from 20 to 40. ***
-                const groundHeight = 40; 
+                // *** UPDATED: Ground height set to 100px ***
+                const groundHeight = GROUND_CLEARANCE; 
                 const groundY = this.canvas.height - groundHeight;
                 const segmentWidth = 50;
                 const segmentGap = 10;
