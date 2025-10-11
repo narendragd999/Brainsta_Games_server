@@ -36,12 +36,14 @@
             width: 100vw; 
             height: 100vh; 
             max-width: 650px; 
-            max-height: 950px; 
+            /* max-height: 950px; सीमा हटाई गई */
             display: flex;
             flex-direction: column;
             border-radius: 1rem;
             box-shadow: 0 0 50px rgba(88, 166, 255, 0.4); /* Neon blue shadow */
-            background-color: #161b22; 
+            background-color: #161b22;
+            /* यह सुनिश्चित करता है कि पैडिंग और बॉर्डर 100vh के अंदर रहें */
+            box-sizing: border-box;
         }
 
         #gameCanvas {
@@ -117,7 +119,7 @@
 </head>
 <body>
 
-    <!-- पैडिंग को p-2 (मोबाइल के लिए) और sm:p-4 (बड़े स्क्रीन के लिए) में बदला गया है -->
+    <!-- पैडिंग और गैप को मोबाइल के लिए कम रखा गया है -->
     <div id="game-container" class="p-2 sm:p-4 flex flex-col gap-2 sm:gap-4">
         <h1 class="text-4xl font-black text-center text-[#58a6ff] mt-2 tracking-widest" style="text-shadow: 0 0 10px #58a6ff;">
             &lt;ZIPLINE_RUNNER/&gt;
@@ -135,7 +137,7 @@
 
         <div id="game-controls" class="flex justify-around items-center gap-4">
             <button id="startGameBtn" class="btn primary-btn w-full text-2xl">
-                <i class="fas fa-play mr-2"></i> START RUN (SPACE / TAP)
+                <i class="fas fa-play mr-2"></i> रन शुरू करें (SPACE / TAP)
             </button>
         </div>
         
@@ -243,7 +245,8 @@
                 }
                 
                 // UI updates
-                document.getElementById('startGameBtn').textContent = 'पुनः आरंभ करें (SPACE / TAP)';
+                // हिंदी में अपडेट किया गया
+                document.getElementById('startGameBtn').innerHTML = '<i class="fas fa-redo mr-2"></i> पुनः आरंभ करें (SPACE / TAP)';
 
                 // Reset state
                 this.currentScore = 0;
