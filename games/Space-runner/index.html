@@ -206,7 +206,8 @@
             // Crucial: Recalculate player ground position after resize
             if (window.gameInstance && window.gameInstance.player) {
                  const player = window.gameInstance.player;
-                 const groundLevel = canvas.height - player.height - 20; 
+                 // *** CHANGED: Increased ground clearance from 20 to 40 for better visibility on mobile UI. ***
+                 const groundLevel = canvas.height - player.height - 40; 
                  // Only adjust Y position if the player is currently on the ground (or near it)
                  if (!player.isJumping) {
                      player.y = groundLevel;
@@ -229,7 +230,8 @@
                 this.height = 70; 
                 this.x = 50;
                 
-                this.groundLevel = () => this.canvas.height - this.height - 20;
+                // *** CHANGED: Increased ground clearance from 20 to 40. ***
+                this.groundLevel = () => this.canvas.height - this.height - 40;
                 this.y = this.groundLevel(); 
                 this.velocityY = 0;
                 this.gravity = 1.5;
@@ -308,7 +310,8 @@
                 this.width = Math.random() * 25 + 25; // Min 25 to max 50
                 this.height = Math.random() * 40 + 40; // Min 40 to max 80
                 this.x = this.canvas.width;
-                this.y = this.canvas.height - this.height - 20; 
+                // *** CHANGED: Increased ground clearance from 20 to 40. ***
+                this.y = this.canvas.height - this.height - 40; 
                 this.color = '#EF4444'; 
                 this.speed = speed; 
             }
@@ -417,7 +420,8 @@
             }
 
             drawGround() {
-                const groundHeight = 20;
+                // *** CHANGED: Increased ground height from 20 to 40. ***
+                const groundHeight = 40; 
                 const groundY = this.canvas.height - groundHeight;
                 const segmentWidth = 50;
                 const segmentGap = 10;
