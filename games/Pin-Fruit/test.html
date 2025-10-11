@@ -317,8 +317,8 @@
 <div id="game-wrap">
   <canvas id="gameCanvas" width="900" height="800"></canvas>
 
-  <!-- Hidden image element for the PNG circle -->
-  <img id="circle-image" class="circle-image" src="slice-preview.png" alt="Circle">
+  <!-- Hidden image element for the circle -->
+  <img id="circle-image" class="circle-image" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iOTUiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsLW9wYWNpdHk9IjAuMSIvPgo8Y2lyY2xlIGN4PSIxMDAiIGN5PSIxMDAiIHI9IjcwIiBmaWxsPSIjZmZmIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMSIgZmlsbC1vcGFjaXR5PSIwLjA1Ii8+CjxjaXJjbGUgY3g9IjEwMCIgY3k9IjEwMCIgcj0iNDUiIGZpbGw9IiNmZmYiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPHN2Zz4=" alt="Circle">
   
   <div class="hud" aria-hidden="true">
     <div class="card">
@@ -383,7 +383,7 @@
 
 <script>
 // Rotating Pin Circle Game - Ultimate Edition
-// Complete with PNG image support
+// Complete with vibration, sound effects, and collision animation
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -435,6 +435,7 @@ const restartBtn = document.getElementById('restart-btn');
 
 // Audio elements
 let audioContext;
+let sounds = {};
 
 // Vibrant color palette
 const vibrantColors = [
@@ -536,7 +537,7 @@ function initGameObjects() {
     angularVelocity: 0.6,
     direction: 0,
     baseSpeed: 0.6,
-    vibration: 0
+    vibration: 0,    
   };
   
   // Initialize pin
@@ -576,19 +577,17 @@ function init() {
   initGameObjects();
   initAudio();
   
-  // Load PNG image for the circle
+  // Try to load circle image
   circleImage = new Image();
   circleImage.onload = function() {
     useCircleImage = true;
-    console.log("Circle PNG image loaded successfully");
+    console.log("Circle image loaded successfully");
   };
   circleImage.onerror = function() {
     useCircleImage = false;
-    console.log("Circle PNG image failed to load, using fallback");
+    console.log("Circle image failed to load, using fallback");
   };
-  
-  // Set the source to a PNG image - REPLACE THIS URL WITH YOUR OWN PNG
-  circleImage.src = "slice-preview.png"; // Sample PNG
+  circleImage.src = circleImageElement.src;
   
   // Set up event listeners
   window.addEventListener('resize', () => {
@@ -1149,9 +1148,9 @@ function drawCircle(){
   ctx.translate(circle.x + vibrationX, circle.y + vibrationY);
   ctx.rotate(circle.rotation);
   
-  // Draw PNG image or fallback
+  // Draw circle image or fallback
   if (useCircleImage && circleImage.complete) {
-    // Draw the PNG image - it will be centered and scaled to the circle radius
+    // Draw the circle image
     ctx.drawImage(circleImage, -circle.radius, -circle.radius, circle.radius * 2, circle.radius * 2);
   } else {
     // Draw fallback circle design
@@ -1240,20 +1239,17 @@ function drawCircle(){
 
   ctx.restore();
 
-  // Only draw center decoration if we're not using a PNG image
-  if (!useCircleImage) {
-    // draw center decoration with gradient
-    ctx.beginPath();
-    ctx.arc(circle.x, circle.y, circle.radius * 0.36, 0, Math.PI*2);
-    const cg = ctx.createRadialGradient(
-      circle.x - 30, circle.y - 30, 0,
-      circle.x, circle.y, circle.radius * 0.36
-    );
-    cg.addColorStop(0, 'rgba(255,255,255,0.05)');
-    cg.addColorStop(1, 'rgba(255,255,255,0.01)');
-    ctx.fillStyle = cg;
-    ctx.fill();
-  }
+  // draw center decoration with gradient
+  ctx.beginPath();
+  ctx.arc(circle.x, circle.y, circle.radius * 0.36, 0, Math.PI*2);
+  const cg = ctx.createRadialGradient(
+    circle.x - 30, circle.y - 30, 0,
+    circle.x, circle.y, circle.radius * 0.36
+  );
+  cg.addColorStop(0, 'rgba(255,255,255,0.05)');
+  cg.addColorStop(1, 'rgba(255,255,255,0.01)');
+  ctx.fillStyle = cg;
+  ctx.fill();
 }
 
 // Draw falling pins with enhanced realistic physics
