@@ -462,6 +462,8 @@
         let offsetX, offsetY;
         let dragStartGem = null;
         let dragStartPosition = { x: 0, y: 0 };
+        let audioContext;
+        let sounds = {};
         
         // Gem types with colors and icons
         const gemTypes = [
@@ -513,20 +515,42 @@
         game = new Phaser.Game(config);
 
         function preload() {
+            // Initialize audio context
+            initAudio();
+            
             // Calculate dynamic gem size based on screen dimensions
-            // Reserve space for UI elements (header and controls)
-            const uiHeight = 120; // Approximate height of UI elements
-            const availableHeight = game.scale.height - uiHeight;
-            const availableWidth = game.scale.width;
+            // In portrait mode, use more of the screen for larger gems
+            const isPortrait = window.innerHeight > window.innerWidth;
             
-            gemSize = Math.min(
-                Math.floor(availableWidth / (boardSize + 1)),
-                Math.floor(availableHeight / (boardSize + 1))
-            );
-            
-            // Calculate board offset to center it, accounting for UI
-            offsetX = (game.scale.width - boardSize * gemSize) / 2;
-            offsetY = (game.scale.height - boardSize * gemSize) / 2 + 20; // Slight offset to account for header
+            if (isPortrait) {
+                // Portrait mode - use more space for gems
+                const headerHeight = 50; // Approximate height of header
+                const controlsHeight = 80; // Approximate height of controls
+                const availableHeight = game.scale.height - headerHeight - controlsHeight;
+                const availableWidth = game.scale.width;
+                
+                gemSize = Math.min(
+                    Math.floor(availableWidth / (boardSize + 0.5)), // Less padding in portrait
+                    Math.floor(availableHeight / (boardSize + 0.5))
+                );
+                
+                // Calculate board offset to use more space
+                offsetX = (game.scale.width - boardSize * gemSize) / 2;
+                offsetY = (game.scale.height - boardSize * gemSize) / 2 + 10; // Less offset in portrait
+            } else {
+                // Landscape mode - standard calculation
+                const uiHeight = 120;
+                const availableHeight = game.scale.height - uiHeight;
+                const availableWidth = game.scale.width;
+                
+                gemSize = Math.min(
+                    Math.floor(availableWidth / (boardSize + 1)),
+                    Math.floor(availableHeight / (boardSize + 1))
+                );
+                
+                offsetX = (game.scale.width - boardSize * gemSize) / 2;
+                offsetY = (game.scale.height - boardSize * gemSize) / 2 + 20;
+            }
             
             // Create gem graphics programmatically
             gemTypes.forEach(gem => {
@@ -593,6 +617,7 @@
             
             // Set up button events
             document.getElementById('restart-btn').addEventListener('click', () => {
+                playSound('click');
                 this.scene.restart();
                 score = 0;
                 level = 1;
@@ -604,22 +629,27 @@
             });
             
             document.getElementById('hint-btn').addEventListener('click', () => {
+                playSound('click');
                 showHint(this);
             });
             
             document.getElementById('menu-btn').addEventListener('click', () => {
+                playSound('click');
                 document.getElementById('instructions-popup').classList.add('active');
             });
             
             document.getElementById('close-instructions').addEventListener('click', () => {
+                playSound('click');
                 document.getElementById('instructions-popup').classList.remove('active');
             });
             
             document.getElementById('start-playing').addEventListener('click', () => {
+                playSound('click');
                 document.getElementById('instructions-popup').classList.remove('active');
             });
             
             document.getElementById('play-again').addEventListener('click', () => {
+                playSound('click');
                 document.getElementById('game-over-popup').classList.remove('active');
                 this.scene.restart();
                 score = 0;
@@ -684,6 +714,9 @@
                     selectedGem = gem;
                     gem.setTint(0xaaaaaa);
                     
+                    // Play selection sound
+                    playSound('select');
+                    
                     // Add pulsing effect to selected gem
                     scene.tweens.add({
                         targets: gem,
@@ -721,6 +754,9 @@
                         
                         if (isAdjacent) {
                             canMove = false;
+                            
+                            // Play swap sound
+                            playSound('swap');
                             
                             // Remove selection effects
                             scene.tweens.killTweensOf(selectedGem);
@@ -763,6 +799,9 @@
                             // Select new gem
                             selectedGem = gem;
                             gem.setTint(0xaaaaaa);
+                            
+                            // Play selection sound
+                            playSound('select');
                             
                             // Add pulsing effect to selected gem
                             scene.tweens.add({
@@ -833,6 +872,9 @@
 
         function swapGemsWithDrag(gem1, gem2, scene) {
             canMove = false;
+            
+            // Play swap sound
+            playSound('swap');
             
             // Remove selection effects if any
             if (selectedGem) {
@@ -1039,6 +1081,9 @@
             // Add score with animation
             addScore(totalScore, scene);
             
+            // Play match sound
+            playSound('match');
+            
             // Remove gems with animation
             gemsToRemove.forEach(gem => {
                 const icon = gem.getData('icon');
@@ -1112,6 +1157,9 @@
         }
 
         function addNewGems(scene) {
+            // Play falling sound
+            playSound('fall');
+            
             // Add new gems at the top
             for (let col = 0; col < boardSize; col++) {
                 for (let row = 0; row < boardSize; row++) {
@@ -1158,6 +1206,9 @@
                                 selectedGem = gem;
                                 gem.setTint(0xaaaaaa);
                                 
+                                // Play selection sound
+                                playSound('select');
+                                
                                 // Add pulsing effect to selected gem
                                 scene.tweens.add({
                                     targets: gem,
@@ -1195,6 +1246,9 @@
                                     
                                     if (isAdjacent) {
                                         canMove = false;
+                                        
+                                        // Play swap sound
+                                        playSound('swap');
                                         
                                         // Remove selection effects
                                         scene.tweens.killTweensOf(selectedGem);
@@ -1237,6 +1291,9 @@
                                         // Select new gem
                                         selectedGem = gem;
                                         gem.setTint(0xaaaaaa);
+                                        
+                                        // Play selection sound
+                                        playSound('select');
                                         
                                         // Add pulsing effect to selected gem
                                         scene.tweens.add({
@@ -1292,6 +1349,9 @@
             document.getElementById('level').textContent = level;
             document.getElementById('moves').textContent = movesLeft;
             
+            // Play level up sound
+            playSound('levelup');
+            
             // Show level up message
             const levelUpText = scene.add.text(game.scale.width / 2, game.scale.height / 2, `LEVEL ${level}!`,
             {
@@ -1317,6 +1377,9 @@
         function gameOver(scene) {
             canMove = false;
             
+            // Play game over sound
+            playSound('gameover');
+            
             // Update final score
             document.getElementById('final-score').textContent = score;
             
@@ -1328,6 +1391,9 @@
 
         function showHint(scene) {
             if (!canMove) return;
+            
+            // Play hint sound
+            playSound('hint');
             
             // Find a possible move
             for (let row = 0; row < boardSize; row++) {
@@ -1417,6 +1483,99 @@
             gem1.setData('col', col2);
             gem2.setData('row', row1);
             gem2.setData('col', col1);
+        }
+        
+        // Audio functions
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create sound effects
+                sounds = {
+                    select: createBeepSound(400, 0.1),
+                    swap: createBeepSound(300, 0.2),
+                    match: createChordSound([523.25, 659.25, 783.99], 0.3), // C, E, G
+                    fall: createSlideSound(400, 200, 0.3),
+                    levelup: createSlideSound(200, 600, 0.5),
+                    gameover: createBeepSound(150, 1.0),
+                    click: createBeepSound(600, 0.05),
+                    hint: createBeepSound(800, 0.2)
+                };
+            } catch (e) {
+                console.log("Web Audio API is not supported in this browser");
+            }
+        }
+        
+        function createBeepSound(frequency, duration) {
+            return function() {
+                if (!audioContext) return;
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            };
+        }
+        
+        function createChordSound(frequencies, duration) {
+            return function() {
+                if (!audioContext) return;
+                
+                frequencies.forEach(freq => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + duration);
+                });
+            };
+        }
+        
+        function createSlideSound(startFreq, endFreq, duration) {
+            return function() {
+                if (!audioContext) return;
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(startFreq, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(endFreq, audioContext.currentTime + duration);
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            };
+        }
+        
+        function playSound(soundName) {
+            if (sounds[soundName]) {
+                sounds[soundName]();
+            }
         }
         
         // Handle window resize
