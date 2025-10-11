@@ -3,26 +3,36 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
-<title>Rotating Pins - Fixed</title>
+<title>Rotating Pins - Enhanced</title>
 <style>
-  :root{
-    --bg1:#0f172a;
-    --bg2:#07133b;
-    --card: rgba(255,255,255,0.06);
-    --accent: #ffd166;
-    --accent-2: #06d6a0;
-    --glass: rgba(255,255,255,0.06);
-    --muted: rgba(255,255,255,0.6);
-    --btn-bg: rgba(255,255,255,0.08);
+:root{
+    --bg1: #ffffff;
+    --bg2: #f0f4ff;
+    --card: rgba(255,255,255,0.8);
+    --accent: #ff6b6b;
+    --accent-2: #4ecdc4;
+    --glass: rgba(255,255,255,0.6);
+    --muted: rgba(0,0,0,0.6);
+    --btn-bg: rgba(0,0,0,0.08);
     --danger: #ff6b6b;
+    --vibrant-1: #ff6b6b;
+    --vibrant-2: #4ecdc4;
+    --vibrant-3: #ffd166;
+    --vibrant-4: #6a0572;
+    --vibrant-5: #118ab2;
+    --vibrant-6: #06d6a0;
+    --vibrant-7: #ef476f;
+    --vibrant-8: #073b4c;
+    --text-dark: #2d3748;
+    --text-light: #4a5568;
   }
   html,body{
     height:100%;
     margin:0;
     font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
     -webkit-tap-highlight-color: transparent;
-    background: linear-gradient(160deg,var(--bg1),var(--bg2));
-    color: #fff;
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+    color: var(--text-dark);
     overflow:hidden;
   }
   #game-wrap{
@@ -42,10 +52,11 @@
     max-height:820px;
     touch-action:none;
     display:block;
-    background: radial-gradient(1200px 600px at 30% 20%, rgba(255,255,255,0.02), transparent),
-                linear-gradient(180deg, rgba(10,20,40,0.25), transparent);
+    background: radial-gradient(circle at 30% 20%, rgba(240,248,255,0.8) 0%, rgba(255,255,255,0.4) 70%),
+                linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(240,245,255,0.7) 100%);
     border-radius:16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255,255,255,0.5);
   }
 
   /* HUD */
@@ -60,7 +71,7 @@
     pointer-events:none;
   }
   .card{
-    background:var(--card);
+    background: var(--card);
     padding:8px 12px;
     border-radius:12px;
     display:flex;
@@ -68,14 +79,17 @@
     align-items:center;
     pointer-events:auto;
     min-width:80px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
   .title { font-size:13px; color:var(--muted); }
-  .value { font-weight:700; font-size:16px; color:white; }
+  .value { font-weight:700; font-size:16px; color:var(--text-dark); }
 
   /* New shoot button position */
   .shoot-controls {
     position: absolute;
-    bottom: 20px;
+    bottom: 60px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 30;
@@ -86,27 +100,34 @@
   }
   
   .btn{
-    background:var(--btn-bg);
+    background: var(--btn-bg);
     border-radius:14px;
     padding:10px 12px;
     font-weight:700;
-    border:1px solid rgba(255,255,255,0.04);
+    border:1px solid rgba(0,0,0,0.04);
     min-width:52px;
     display:inline-flex;
     align-items:center;
     justify-content:center;
     gap:8px;
-    color:white;
+    color: var(--text-dark);
     touch-action:none;
     cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   }
   .btn.big { 
     padding:14px 18px; 
     min-width:74px; 
     border-radius:18px; 
     font-size:16px; 
-    background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    background: linear-gradient(135deg, var(--vibrant-1), var(--vibrant-3));
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.2);
+    color: white;
   }
   .btn.pulse { animation: pulse 1.6s infinite; }
   @keyframes pulse{ 
@@ -126,7 +147,7 @@
     z-index:30;
   }
   .power{
-    background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+    background: rgba(255,255,255,0.7);
     border-radius:12px;
     padding:8px 10px;
     display:flex;
@@ -134,6 +155,14 @@
     align-items:center;
     min-width:70px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .power:hover {
+    background: rgba(255,255,255,0.9);
+    transform: translateY(-2px);
   }
 
   /* combo bar */
@@ -147,20 +176,23 @@
   }
   .combo-bar{
     height:10px;
-    background:rgba(255,255,255,0.06);
+    background:rgba(0,0,0,0.06);
     border-radius:8px;
     overflow:hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
   }
   .combo-fill{
     height:100%;
     width:0%;
-    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    background:linear-gradient(90deg,var(--vibrant-3),var(--vibrant-6));
     transition:width 150ms linear;
   }
   .combo-mult{
     margin-top:6px;
     font-weight:700;
     font-size:14px;
+    color: var(--vibrant-3);
   }
 
   /* level indicator at top-left */
@@ -171,7 +203,10 @@
     z-index:30; 
     padding:10px 12px; 
     border-radius:12px; 
-    background:var(--card); 
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
 
   /* responsive */
@@ -200,8 +235,8 @@
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-  .center-overlay h1{ margin:0; font-size:18px; letter-spacing:0.6px; }
-  .center-overlay p{ margin:6px 0 0 0; opacity:0.9; font-size:13px; }
+  .center-overlay h1{ margin:0; font-size:18px; letter-spacing:0.6px; color: var(--vibrant-3); }
+  .center-overlay p{ margin:6px 0 0 0; color: var(--text-light); font-size:13px; }
   
   .game-over{
     position:absolute;
@@ -209,17 +244,18 @@
     left:50%;
     top:50%;
     transform:translate(-50%,-50%);
-    background:linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+    background: rgba(255,255,255,0.95);
     padding:24px;
     border-radius:16px;
     text-align:center;
     display:none;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     min-width: 280px;
   }
   .game-over.show{ display:block; }
-  .small { font-size:13px; opacity:0.9; }
+  .small { font-size:13px; color: var(--text-light); }
   
   .burst {
     position:absolute;
@@ -238,7 +274,7 @@
     font-size: 24px;
     font-weight: bold;
     margin: 15px 0;
-    color: var(--accent);
+    color: var(--vibrant-3);
   }
   
   .aim-indicator {
@@ -248,7 +284,7 @@
     transform: translateX(-50%);
     width: 2px;
     height: 0;
-    background: linear-gradient(to top, rgba(255,255,255,0.8), transparent);
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
     z-index: 25;
     pointer-events: none;
     transition: height 0.2s ease;
@@ -263,6 +299,13 @@
     z-index: 20;
     opacity: 0;
     touch-action: none;
+  }
+  
+  .particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 45;
+    border-radius: 50%;
   }
 </style>
 </head>
@@ -332,8 +375,8 @@
 </div>
 
 <script>
-// Rotating Pin Circle Game - Fixed Version
-// All issues resolved with improved mobile experience
+// Rotating Pin Circle Game - Enhanced Version
+// Realistic falling physics and vibrant UI
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: true });
@@ -355,6 +398,7 @@ let shootSpeed;
 let availablePins = Infinity;
 let slowMotionActive = false;
 let fallingPins = [];
+let particles = [];
 
 // visual & UI refs
 const hudScore = document.getElementById('hud-score');
@@ -378,6 +422,12 @@ const touchShootArea = document.getElementById('touch-shoot');
 const powerSlow = document.getElementById('power-slow');
 const powerNew = document.getElementById('power-new');
 const restartBtn = document.getElementById('restart-btn');
+
+// Vibrant color palette
+const vibrantColors = [
+  '#ff6b6b', '#4ecdc4', '#ffd166', '#6a0572', 
+  '#118ab2', '#06d6a0', '#ef476f', '#073b4c'
+];
 
 // handle high DPI
 function resizeCanvasToDisplaySize() {
@@ -430,11 +480,11 @@ function updateDims() {
     circle.radius = Math.min(cw, ch) * 0.22;
     
     // Update pin size
-    pin.length = circle.radius * 0.28;
-    pin.width = Math.max(8, Math.floor(circle.radius * 0.06));
+    pin.length = circle.radius * 0.50;
+    pin.width = Math.max(1, Math.floor(circle.radius * 0.01));
     
     // Update shoot speed
-    shootSpeed = Math.min(cw,ch) * 1.2;
+    shootSpeed = Math.min(cw,ch) * 2.2;
   }
 }
 
@@ -508,8 +558,7 @@ function angDistance(a,b){
 }
 function now(){ return performance.now(); }
 function randColor(){
-  const palette = ['#ffd166','#06d6a0','#118ab2','#ef476f','#9b5de5','#00bbf9'];
-  return palette[Math.floor(Math.random()*palette.length)];
+  return vibrantColors[Math.floor(Math.random() * vibrantColors.length)];
 }
 
 // compute pin angular width
@@ -549,7 +598,7 @@ function checkPinCollisions() {
   return false;
 }
 
-// Make all pins fall with animation
+// Make all pins fall with realistic physics
 function makePinsFall() {
   const fallingPins = [];
   
@@ -558,20 +607,68 @@ function makePinsFall() {
     const x = circle.x + Math.cos(worldAngle) * circle.radius;
     const y = circle.y + Math.sin(worldAngle) * circle.radius;
     
+    // Create more realistic falling physics
     fallingPins.push({
       x: x,
       y: y,
       color: pin.color,
       rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.2,
+      rotationSpeed: (Math.random() - 0.5) * 0.15,
       velocityY: 0,
-      velocityX: (Math.random() - 0.5) * 4,
+      velocityX: (Math.random() - 0.5) * 3,
       scale: 1,
-      alpha: 1
+      alpha: 1,
+      gravity: 0.5 + Math.random() * 0.3,
+      airResistance: 0.98,
+      angularAcceleration: (Math.random() - 0.5) * 0.01
     });
   }
   
   return fallingPins;
+}
+
+// Create particle effects
+function createParticles(x, y, color, count = 10) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: x,
+      y: y,
+      color: color,
+      size: 2 + Math.random() * 4,
+      velocityX: (Math.random() - 0.5) * 8,
+      velocityY: (Math.random() - 0.5) * 8,
+      life: 1,
+      decay: 0.02 + Math.random() * 0.03
+    });
+  }
+}
+
+// Update particles
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.velocityX * (dt / 16);
+    p.y += p.velocityY * (dt / 16);
+    p.velocityY += 0.1 * (dt / 16); // gravity for particles
+    p.life -= p.decay * (dt / 16);
+    
+    if (p.life <= 0) {
+      particles.splice(i, 1);
+    }
+  }
+}
+
+// Draw particles
+function drawParticles() {
+  for (const p of particles) {
+    ctx.save();
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 // attach pin to circle
@@ -611,6 +708,12 @@ function attachPin(angleOnCircle, color, type = "normal"){
   
   // Add vibration to circle
   circle.vibration = 5;
+  
+  // Create particles for attachment
+  const worldAngle = normAngle(angleOnCircle + circle.rotation);
+  const px = circle.x + Math.cos(worldAngle) * circle.radius;
+  const py = circle.y + Math.sin(worldAngle) * circle.radius;
+  createParticles(px, py, color || randColor(), 15);
   
   // Check for collisions after attaching
   if (checkPinCollisions()) {
@@ -810,6 +913,14 @@ function triggerGameOver(reason='Pins collided!'){
   // Create falling pins animation
   fallingPins = makePinsFall();
   
+  // Create explosion particles
+  for (const pin of attachedPins) {
+    const worldAngle = normAngle(pin.angleOnCircle + circle.rotation);
+    const x = circle.x + Math.cos(worldAngle) * circle.radius;
+    const y = circle.y + Math.sin(worldAngle) * circle.radius;
+    createParticles(x, y, pin.color, 20);
+  }
+  
   // Show game over screen after a delay
   setTimeout(() => {
     gameOverDiv.classList.add('show');
@@ -820,6 +931,7 @@ function triggerGameOver(reason='Pins collided!'){
 function restart(){
   attachedPins = [];
   fallingPins = [];
+  particles = [];
   score = 0;
   level = 1;
   pinsThisLevel = 0;
@@ -889,11 +1001,27 @@ function spawnBurst(x,y,color){
 function drawBackground(){
   ctx.clearRect(0,0,cw,ch);
   
-  const g = ctx.createRadialGradient(circle.x, circle.y - 120, circle.radius*0.2, circle.x, circle.y+100, circle.radius*2);
-  g.addColorStop(0,'rgba(255,255,255,0.02)');
-  g.addColorStop(1,'rgba(0,0,0,0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0,0,cw,ch);
+  // Enhanced background with gradient
+  const gradient = ctx.createRadialGradient(
+    circle.x, circle.y, 0,
+    circle.x, circle.y, Math.max(cw, ch) * 0.8
+  );
+  gradient.addColorStop(0, 'rgba(30, 40, 80, 0.3)');
+  gradient.addColorStop(1, 'rgba(10, 15, 35, 0.8)');
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, cw, ch);
+  
+  // Add decorative elements
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.lineWidth = 1;
+  
+  // Draw concentric circles
+  for (let i = 1; i <= 5; i++) {
+    ctx.beginPath();
+    ctx.arc(circle.x, circle.y, circle.radius * i / 3, 0, Math.PI * 2);
+    ctx.stroke();
+  }
 }
 
 // drawing circle & pins
@@ -906,11 +1034,17 @@ function drawCircle(){
   ctx.translate(circle.x + vibrationX, circle.y + vibrationY);
   ctx.rotate(circle.rotation);
   
-  // outer ring
+  // outer ring with glow effect
   ctx.beginPath();
   ctx.arc(0,0,circle.radius,0,Math.PI*2);
   ctx.lineWidth = 8;
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  
+  // Create gradient for circle
+  const circleGradient = ctx.createLinearGradient(-circle.radius, 0, circle.radius, 0);
+  circleGradient.addColorStop(0, 'rgba(255,255,255,0.1)');
+  circleGradient.addColorStop(1, 'rgba(255,255,255,0.05)');
+  
+  ctx.strokeStyle = circleGradient;
   ctx.stroke();
 
   // draw attached pins rotating with circle
@@ -922,6 +1056,12 @@ function drawCircle(){
     ctx.save();
     ctx.translate(px, py);
     ctx.rotate(a + Math.PI/2);
+    
+    // Add subtle shadow to pins
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
     
     if (ap.type === "special") {
       ctx.fillStyle = ap.color;
@@ -937,7 +1077,12 @@ function drawCircle(){
       ctx.closePath();
       ctx.fill();
     } else if (ap.type === "golden") {
-      ctx.fillStyle = ap.color;
+      // Golden gradient for special pins
+      const goldenGradient = ctx.createLinearGradient(0, -pin.length, 0, 0);
+      goldenGradient.addColorStop(0, '#FFD700');
+      goldenGradient.addColorStop(1, '#FFA500');
+      
+      ctx.fillStyle = goldenGradient;
       ctx.fillRect(-pin.width/2, -pin.length, pin.width, pin.length);
       
       ctx.fillStyle = "#FFFFFF";
@@ -961,17 +1106,20 @@ function drawCircle(){
 
   ctx.restore();
 
-  // draw center decoration
+  // draw center decoration with gradient
   ctx.beginPath();
   ctx.arc(circle.x, circle.y, circle.radius * 0.36, 0, Math.PI*2);
-  const cg = ctx.createLinearGradient(circle.x - 60, circle.y - 60, circle.x + 120, circle.y + 120);
-  cg.addColorStop(0, 'rgba(255,255,255,0.02)');
+  const cg = ctx.createRadialGradient(
+    circle.x - 30, circle.y - 30, 0,
+    circle.x, circle.y, circle.radius * 0.36
+  );
+  cg.addColorStop(0, 'rgba(255,255,255,0.05)');
   cg.addColorStop(1, 'rgba(255,255,255,0.01)');
   ctx.fillStyle = cg;
   ctx.fill();
 }
 
-// Draw falling pins with enhanced animation
+// Draw falling pins with enhanced realistic physics
 function drawFallingPins() {
   for (const fp of fallingPins) {
     ctx.save();
@@ -982,6 +1130,12 @@ function drawFallingPins() {
     // Apply alpha
     ctx.globalAlpha = fp.alpha;
     
+    // Add shadow to falling pins
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
     ctx.fillStyle = fp.color;
     ctx.fillRect(-pin.width/2, -pin.length, pin.width, pin.length);
     
@@ -991,6 +1145,10 @@ function drawFallingPins() {
     
     ctx.restore();
     ctx.globalAlpha = 1;
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
   }
 }
 
@@ -1002,6 +1160,10 @@ function drawShot(dt){
   activeShot.x += activeShot.vx * s;
   activeShot.y += activeShot.vy * s;
 
+  // Add glow to flying pin
+  ctx.shadowColor = activeShot.color;
+  ctx.shadowBlur = 15;
+  
   ctx.beginPath();
   ctx.moveTo(activeShot.x, activeShot.y + 12);
   ctx.lineTo(activeShot.x, activeShot.y - pin.length + 6);
@@ -1027,6 +1189,10 @@ function drawShot(dt){
     ctx.fillStyle = activeShot.color;
     ctx.fill();
   }
+  
+  // Reset shadow
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
 
   const dx = activeShot.x - circle.x;
   const dy = activeShot.y - circle.y;
@@ -1042,6 +1208,7 @@ function drawShot(dt){
     
     if (!gap.found){
       spawnBurst(activeShot.x, activeShot.y, 'rgba(255,80,80,0.9)');
+      createParticles(activeShot.x, activeShot.y, activeShot.color, 20);
       triggerGameOver('No space for pin!');
       activeShot = null;
       return;
@@ -1089,23 +1256,40 @@ function update(dt){
     if (circle.vibration < 0) circle.vibration = 0;
   }
   
-  // Update falling pins with enhanced animation
+  // Update falling pins with enhanced realistic physics
   for (let i = fallingPins.length - 1; i >= 0; i--) {
     const fp = fallingPins[i];
-    fp.velocityY += 0.5 * (dt / 16);
+    
+    // Apply gravity with air resistance
+    fp.velocityY += fp.gravity * (dt / 16);
+    fp.velocityY *= fp.airResistance;
+    fp.velocityX *= fp.airResistance;
+    
+    // Update position
     fp.y += fp.velocityY;
     fp.x += fp.velocityX;
-    fp.rotation += fp.rotationSpeed * (dt / 16);
+    
+    // Update rotation with acceleration
+    fp.rotationSpeed += fp.angularAcceleration * (dt / 16);
+    fp.rotation += fp.rotationSpeed;
     
     // Add scale and alpha effects for falling pins
-    fp.scale = Math.max(0.5, fp.scale - 0.002 * (dt / 16));
-    fp.alpha = Math.max(0, fp.alpha - 0.005 * (dt / 16));
+    fp.scale = Math.max(0.5, fp.scale - 0.001 * (dt / 16));
+    fp.alpha = Math.max(0, fp.alpha - 0.003 * (dt / 16));
+    
+    // Create trail particles for falling pins
+    if (Math.random() < 0.3) {
+      createParticles(fp.x, fp.y, fp.color, 1);
+    }
     
     // Remove pins that fall off screen or fade out
     if (fp.y > ch + 100 || fp.alpha <= 0) {
       fallingPins.splice(i, 1);
     }
   }
+  
+  // Update particles
+  updateParticles(dt);
   
   // update active shot
   drawShot(dt);
@@ -1126,6 +1310,9 @@ function frameLoop(ts){
   if (fallingPins.length > 0) {
     drawFallingPins();
   }
+  
+  // Draw particles
+  drawParticles();
   
   // draw aiming indicator from shooter to top
   const sx = circle.x;
