@@ -1152,7 +1152,7 @@ function drawCircle(){
   // Draw PNG image or fallback
   if (useCircleImage && circleImage.complete) {
     // Draw the PNG image - it will be centered and scaled to the circle radius
-    ctx.drawImage(circleImage, -circle.radius, -circle.radius, circle.radius * 2.3, circle.radius * 2.3);
+    ctx.drawImage(circleImage, -circle.radius, -circle.radius, circle.radius * 2, circle.radius * 2);
   } else {
     // Draw fallback circle design
     ctx.beginPath();
