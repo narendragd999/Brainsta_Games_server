@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zipline Runner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; 
+            color: #c9d1d9;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100vw; /* Full width on mobile */
+            height: 100vh; /* Full height on mobile */
+            max-width: 650px; /* Max width on desktop */
+            max-height: 950px; /* Max height on desktop */
+            background: linear-gradient(180deg, #1f2733 0%, #0d1117 100%);
+            border-radius: 0; 
+            box-shadow: none; 
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem;
+            transition: all 0.3s;
+            position: relative; /* For overlays */
+        }
+
+        @media (min-width: 640px) {
+            #game-container {
+                width: 95vw;
+                height: 80vh;
+                border-radius: 1.5rem;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                padding: 1rem;
+            }
+        }
+
+        canvas {
+            background-color: transparent;
+            border: 4px solid #4a90e2;
+            border-radius: 0.75rem;
+            flex-grow: 1;
+            touch-action: none; 
+            box-shadow: 0 0 15px rgba(74, 144, 226, 0.5);
+        }
+
+        #ui-panel {
+            padding: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5); 
+            color: #e0e6ed; 
+        }
+
+        #ui-panel .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        #ui-panel .level-display {
+            background-color: #e65252;
+            color: white;
+            padding: 0.1rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 900;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); opacity: 0.9; }
+            to { transform: scale(1.05); opacity: 1; }
+        }
+
+        #ui-panel .stat i {
+            color: #4a90e2; 
+        }
+        
+        #help-button {
+            background-color: #307ac3;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            transition: background-color 0.1s;
+        }
+        #help-button:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        #scores-panel {
+            background: linear-gradient(180deg, #161b22 0%, #0d1117 100%); 
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            margin-top: 0.5rem; 
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 0 8px rgba(0,0,0,0.5);
+        }
+
+        #scores-panel h2 {
+            font-size: 1.1rem; 
+            font-weight: 900;
+            color: #58a6ff;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        #scores-list div {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.1rem 0;
+            border-bottom: 1px dashed #30363d;
+            font-size: 0.9rem;
+        }
+        
+        .score-user { font-size: 0.8rem; }
+
+        /* --- OVERLAY STYLES --- */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .overlay-content {
+             background: linear-gradient(135deg, #1f2733 0%, #0d1117 100%);
+            padding: 2rem;
+            margin: 1rem;
+            border-radius: 1rem;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(74, 144, 226, 0.5);
+            border: 3px solid #4a90e2;
+            transform: scale(0.8);
+            animation: popIn 0.3s forwards;
+            color: #e0e6ed;
+        }
+        
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+
+        .overlay-content h3 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #58a6ff;
+            margin-bottom: 0.5rem;
+        }
+        
+        .action-button {
+            background: linear-gradient(180deg, #4a90e2 0%, #307ac3 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #285e8e;
+            transition: all 0.1s ease;
+            margin-top: 1rem;
+        }
+
+        .action-button:active {
+            box-shadow: 0 1px 0 #285e8e;
+            transform: translateY(3px);
+        }
+        
+        /* --- MODAL STYLES (Instructions) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none; /* Controlled by JS */
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1f2733 0%, #0d1117 100%);
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 1rem;
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            border: 3px solid #4a90e2;
+            box-shadow: 0 0 25px rgba(74, 144, 226, 0.7);
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            color: #4a90e2;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #30363d;
+            padding-bottom: 0.5rem;
+        }
+        
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #e65252;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Level up notification */
+        #level-up-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(88, 166, 255, 0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 900;
+            font-size: 1.5rem;
+            z-index: 15;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.7);
+            animation: levelUp 2s forwards;
+        }
+
+        @keyframes levelUp {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+            30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            70% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+
+        /* Double tap protection */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* Control hints */
+        .control-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #8b949e;
+            font-size: 0.9rem;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body class="no-select">
+
+<div id="game-container">
+    <div id="ui-panel">
+        <div class="flex items-center gap-4">
+            <div id="level-display" class="level-display">LEVEL 1</div>
+            <div id="score" class="stat"><i class="fas fa-trophy"></i>SCORE: 0</div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <button id="help-button" onclick="showInstructions()">
+                 <i class="fas fa-question text-xl"></i>
+            </button>
+            <div id="speed" class="stat"><i class="fas fa-tachometer-alt"></i>SPEED: 1.0x</div>
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Control hint -->
+    <div class="control-hint">
+        Press SPACE or CLICK to jump
+    </div>
+    
+    <!-- Start Screen Overlay -->
+    <div id="start-screen" class="overlay">
+        <div class="overlay-content">
+            <h3>ZIPLINE RUNNER</h3>
+            <p class="text-lg text-gray-400">Jump over gaps and hazards to survive!</p>
+            <button class="action-button" id="start-button">
+                <i class="fas fa-play mr-2"></i> START GAME
+            </button>
+        </div>
+    </div>
+    
+    <!-- Game Over Screen Overlay -->
+    <div id="game-over-screen" class="overlay hidden">
+        <div class="overlay-content">
+            <h3 id="message-title">GAME OVER</h3>
+            <p id="message-text">Your final score was: 0</p>
+            <button class="action-button" id="restart-button">RESTART ZIPPING</button>
+        </div>
+    </div>
+
+    <!-- Level Up Notification -->
+    <div id="level-up-notification" class="hidden"></div>
+
+    <div id="scores-panel">
+        <h2>TOP 10 LOCAL HIGH SCORES</h2>
+        <div id="scores-list">
+            <div class="text-center text-sm text-gray-500">No scores yet.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Instructions Modal -->
+<div id="instructions-modal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="hideInstructions()">&times;</button>
+        <h3>Zipline Runner Instructions</h3>
+        
+        <h4>Goal & Controls</h4>
+        <p>Your objective is to traverse the longest distance possible without hitting a flying hazard or falling into a gap.</p>
+        <ul>
+            <li><strong>Controls:</strong> Press SPACE or CLICK anywhere on the screen to <strong>Jump</strong>.</li>
+            <li><strong>Jumping:</strong> Use quick taps for low jumps over low hazards, and hold for higher jumps over wider gaps.</li>
+        </ul>
+        
+        <h4>Hazards</h4>
+        <ul>
+            <li><strong>Gaps:</strong> Sections where the zipline is missing. You must jump over these.</li>
+            <li><strong>Flying Hazards:</strong> Red, drone-like obstacles. You must jump over or under them. Be careful of the <strong>low-flying hazards</strong>!</li>
+        </ul>
+        
+        <h4>Level System</h4>
+        <p>The game features <strong>4 levels</strong> of increasing difficulty, changing player color and speed.</p>
+        <ul>
+            <li><strong>Level 1 (0m - 500m):</strong> Easy start, wide spacing.</li>
+            <li><strong>Level 2 (500m - 1500m):</strong> Speed increases, obstacles become more frequent.</li>
+            <li><strong>Level 3 (1500m - 3000m):</strong> High speed, very tight spacing.</li>
+            <li><strong>Level 4 (3000m+):</strong> Max speed, extreme challenge.</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // --- LOCAL STORAGE UTILITIES ---
+    const STORAGE_KEY = 'ziplineRunnerHighScores';
+
+    /**
+     * Loads high scores from localStorage.
+     * @returns {Array<Object>} Sorted list of high scores.
+     */
+    function loadHighScores() {
+        try {
+            const scores = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            // Ensure scores are sorted descendingly
+            scores.sort((a, b) => b.score - a.score);
+            return scores;
+        } catch (e) {
+            console.error("Error loading high scores from localStorage:", e);
+            return [];
+        }
+    }
+
+    /**
+     * Saves a new score if it makes the top 10.
+     * @param {number} newScore - The score to save.
+     */
+    function saveHighScore(newScore) {
+        if (newScore <= 0) return;
+
+        let scores = loadHighScores();
+
+        // Use a simple identifier for the local player
+        const playerName = 'LOCAL PLAYER'; 
+
+        // Add the new score (only if it's high enough to be relevant or if the list is empty)
+        if (scores.length < 10 || newScore > scores[scores.length - 1].score) {
+            scores.push({ score: Math.floor(newScore), displayName: playerName, timestamp: Date.now() });
+        }
+
+        // Sort and keep top 10
+        scores.sort((a, b) => b.score - a.score);
+        scores = scores.slice(0, 10);
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+        
+        // Update UI after saving
+        if (window.gameInstance) {
+            window.gameInstance.updateScoreboardUI(scores);
+        }
+    }
+
+    // --- CANVAS AND GAME SETUP ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score');
+    const speedDisplay = document.getElementById('speed');
+    const levelDisplay = document.getElementById('level-display');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const startScreen = document.getElementById('start-screen');
+    const startButton = document.getElementById('start-button');
+    const restartButton = document.getElementById('restart-button');
+    const messageTitle = document.getElementById('message-title');
+    const messageText = document.getElementById('message-text');
+    const scoresList = document.getElementById('scores-list');
+    const instructionsModal = document.getElementById('instructions-modal');
+    const levelUpNotification = document.getElementById('level-up-notification');
+
+    // Global Physics Constants
+    const PLAYER_RADIUS = 12;
+    const GRAVITY = 0.8; 
+    const JUMP_VELOCITY = -14; 
+
+    // Level Configurations
+    const LEVEL_CONFIGS = [
+        { scoreThreshold: 500, baseSpeed: 4, accelerationRate: 0.005, spacing: [300, 500], minGap: 40, maxGap: 100, lowHazardProb: 0.1, playerColor: '#58a6ff', levelColor: '#4a90e2' },
+        { scoreThreshold: 1500, baseSpeed: 5, accelerationRate: 0.007, spacing: [200, 450], minGap: 50, maxGap: 120, lowHazardProb: 0.2, playerColor: '#ffb366', levelColor: '#f7931e' },
+        { scoreThreshold: 3000, baseSpeed: 6.5, accelerationRate: 0.009, spacing: [150, 400], minGap: 60, maxGap: 140, lowHazardProb: 0.3, playerColor: '#e65252', levelColor: '#e65252' },
+        { scoreThreshold: Infinity, baseSpeed: 8, accelerationRate: 0.012, spacing: [100, 300], minGap: 70, maxGap: 150, lowHazardProb: 0.4, playerColor: '#c358ff', levelColor: '#c358ff' }
+    ];
+
+    // Visuals Constants
+    const PLAYER_COLOR_HIGHLIGHT = '#c9d1d9'; 
+    const PLAYER_COLOR_BODY_END = '#30363d'; 
+    const ZIPLINE_COLOR = '#c9d1d9';
+    const ZIPLINE_GLOW_COLOR = 'rgba(201, 209, 217, 0.4)';
+    const FLYING_OBSTACLE_COLOR_START = '#e65252'; 
+    const FLYING_OBSTACLE_COLOR_END = '#bf3636';   
+
+    // Parallax background mountains
+    let mountains = [];
+    const MOUNTAIN_LAYERS = 3;
+    const MOUNTAIN_COLORS = ['#30363d', '#161b22', '#0d1117']; 
+    const MOUNTAIN_SPEED_MULTIPLIERS = [0.1, 0.2, 0.3]; 
+    const MOUNTAIN_HEIGHT_VARIANCE = 150;
+    const MOUNTAIN_WIDTH_VARIANCE = 300;
+    let particles = [];
+
+    // Double tap protection
+    let lastTapTime = 0;
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x;
+            this.y = y;
+            this.size = Math.random() * 3 + 1;
+            this.color = color;
+            this.vx = (Math.random() - 0.5) * 3;
+            this.vy = (Math.random() - 0.5) * 3 - 1; 
+            this.alpha = 1;
+            this.gravity = 0.1;
+        }
+
+        update() {
+            this.x += this.vx;
+            this.y += this.vy;
+            this.vy += this.gravity;
+            this.alpha -= 0.02; 
+            return this.alpha > 0;
+        }
+
+        draw(ctx) {
+            ctx.save();
+            ctx.globalAlpha = this.alpha;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    class Player {
+        constructor(game) {
+            this.game = game;
+            this.x = canvas.width / 4;
+            this.y = 0; 
+            this.velocityY = 0;
+            this.isJumping = false;
+            this.onLine = false; 
+            this.jumpHoldTime = 0;
+            this.maxJumpHoldTime = 300; // Maximum jump hold time in ms
+        }
+
+        draw() {
+            const playerX = this.x;
+            const playerY = this.y - PLAYER_RADIUS; 
+            
+            const config = this.game.LEVEL_CONFIGS[this.game.currentLevelIndex];
+            const colorStart = config.playerColor;
+            const colorEnd = PLAYER_COLOR_BODY_END; 
+
+            // Body gradient
+            const bodyGradient = ctx.createLinearGradient(playerX - PLAYER_RADIUS, playerY, playerX + PLAYER_RADIUS, playerY);
+            bodyGradient.addColorStop(0, colorStart);
+            bodyGradient.addColorStop(1, colorEnd);
+            ctx.fillStyle = bodyGradient;
+
+            // Main body (circle)
+            ctx.beginPath();
+            ctx.arc(playerX, playerY, PLAYER_RADIUS, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = PLAYER_COLOR_HIGHLIGHT;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Visor/Mask
+            ctx.fillStyle = 'rgba(0,0,0,0.6)';
+            ctx.beginPath();
+            ctx.arc(playerX, playerY - PLAYER_RADIUS * 0.3, PLAYER_RADIUS * 0.8, Math.PI * 0.1, Math.PI * 0.9, false);
+            ctx.lineTo(playerX + PLAYER_RADIUS * 0.8 * Math.cos(Math.PI * 0.9), playerY - PLAYER_RADIUS * 0.3);
+            ctx.fill();
+            ctx.strokeStyle = PLAYER_COLOR_HIGHLIGHT;
+            ctx.stroke();
+
+            // Draw rope connection to zipline
+            if (this.onLine) {
+                ctx.strokeStyle = '#8b949e';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(playerX, this.y - PLAYER_RADIUS * 2.2);
+                ctx.lineTo(playerX, this.game.getLineY(this.x));
+                ctx.stroke();
+            }
+
+            // Pulley (connecting to zipline)
+            ctx.fillStyle = PLAYER_COLOR_HIGHLIGHT;
+            ctx.fillRect(playerX - 6, this.y - PLAYER_RADIUS * 2.2, 12, 6); 
+            ctx.strokeStyle = '#8b949e'; 
+            ctx.lineWidth = 1;
+            ctx.strokeRect(playerX - 6, this.y - PLAYER_RADIUS * 2.2, 12, 6);
+
+            // Simple "arms" and "legs" for dynamism
+            ctx.strokeStyle = PLAYER_COLOR_HIGHLIGHT;
+            ctx.lineWidth = 2;
+            const jumpOffset = this.isJumping ? -5 : 10;
+            const onLineOffset = this.onLine ? 3 : 15;
+
+            // Arms (slightly up when jumping)
+            ctx.beginPath();
+            ctx.moveTo(playerX - 8, playerY + 5);
+            ctx.lineTo(playerX - 15, playerY + jumpOffset);
+            ctx.moveTo(playerX + 8, playerY + 5);
+            ctx.lineTo(playerX + 15, playerY + jumpOffset);
+            ctx.stroke();
+
+            // Legs (tucked when jumping)
+            ctx.beginPath();
+            ctx.moveTo(playerX - 6, playerY + PLAYER_RADIUS + 3);
+            ctx.lineTo(playerX - 10, playerY + PLAYER_RADIUS + (this.isJumping ? onLineOffset : 8));
+            ctx.moveTo(playerX + 6, playerY + PLAYER_RADIUS + 3);
+            ctx.lineTo(playerX + 10, playerY + PLAYER_RADIUS + (this.isJumping ? onLineOffset : 8));
+            ctx.stroke();
+        }
+
+        update() {
+            if (this.isJumping) {
+                this.y += this.velocityY;
+                this.velocityY += GRAVITY;
+            }
+        }
+
+        jump() {
+            if (this.onLine && !this.isJumping) {
+                this.isJumping = true;
+                this.onLine = false;
+                this.velocityY = JUMP_VELOCITY;
+            }
+        }
+
+        startJumpHold() {
+            if (this.onLine && !this.isJumping) {
+                this.jumpHoldTime = 0;
+            }
+        }
+
+        updateJumpHold(deltaTime) {
+            if (this.jumpHoldTime > 0 && this.jumpHoldTime < this.maxJumpHoldTime) {
+                this.jumpHoldTime += deltaTime;
+                // Apply a stronger jump the longer the button is held
+                this.velocityY = JUMP_VELOCITY - (this.jumpHoldTime / this.maxJumpHoldTime) * 3;
+            }
+        }
+
+        reset() {
+            this.x = canvas.width / 4;
+            
+            // Calculate starting Y position based on the zipline
+            const lineY = this.game.getLineY(this.x); 
+            // Position player so the pulley (at this.y) is on the line
+            this.y = lineY - PLAYER_RADIUS; 
+            
+            this.velocityY = 0;
+            this.isJumping = false;
+            this.onLine = true; // Set onLine to true immediately so the first click works
+            this.jumpHoldTime = 0;
+        }
+    }
+
+    class Obstacle {
+        constructor(x, type) {
+            this.x = x;
+            this.type = type; 
+            this.lineY = 0; 
+            this.width = 0; 
+            this.height = 0;
+            this.hasBeenPassed = false; // Track if player has passed this obstacle
+        }
+
+        draw() {
+            if (this.type === 'flying') {
+                const obsX = this.x;
+                const obsY = this.y;
+                const wingSpan = this.width * 1.5;
+                const wingHeight = this.height * 0.8;
+                
+                const gradient = ctx.createLinearGradient(obsX, obsY, obsX + this.width, obsY + this.height);
+                gradient.addColorStop(0, FLYING_OBSTACLE_COLOR_START);
+                gradient.addColorStop(1, FLYING_OBSTACLE_COLOR_END);
+                ctx.fillStyle = gradient;
+                
+                ctx.beginPath();
+                // Body
+                ctx.ellipse(obsX + this.width / 2, obsY, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Wings/Propellers
+                ctx.beginPath();
+                ctx.moveTo(obsX + this.width / 2, obsY);
+                ctx.lineTo(obsX + this.width / 2 - wingSpan / 2, obsY - wingHeight);
+                ctx.lineTo(obsX + this.width / 2 - wingSpan / 3, obsY);
+                ctx.moveTo(obsX + this.width / 2, obsY);
+                ctx.lineTo(obsX + this.width / 2 + wingSpan / 2, obsY - wingHeight);
+                ctx.lineTo(obsX + this.width / 2 + wingSpan / 3, obsY);
+                ctx.fill();
+
+                ctx.strokeStyle = '#ffffff'; 
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        update(scrollSpeed) {
+            this.x -= scrollSpeed;
+        }
+
+        isOffScreen() {
+            return this.x + this.width < 0;
+        }
+    }
+
+    class Game {
+        constructor() {
+            window.gameInstance = this; 
+            this.currentLevelIndex = 0;
+            this.player = new Player(this);
+            this.obstacles = [];
+            this.score = 0;
+            this.isGameOver = true;
+            this.lastObstacleX = canvas.width;
+            this.linePoints = [];
+            this.nextObstacleDistance = 0;
+            this.highScores = loadHighScores(); // Load scores from localStorage
+            
+            this.scrollSpeed = 0;
+            this.accelerationRate = 0;
+            this.obstacleSpacing = [];
+            this.minGapWidth = 0;
+            this.maxGapWidth = 0;
+            this.lowHazardProb = 0;
+            this.LEVEL_CONFIGS = LEVEL_CONFIGS;
+            this.lastFrameTime = 0;
+            this.isJumpHeld = false;
+            this.comboMultiplier = 1;
+            this.comboTimer = 0;
+            this.comboTimeout = 2000; // 2 seconds to maintain combo
+
+            this.resizeCanvas();
+            window.addEventListener('resize', this.resizeCanvas.bind(this));
+            canvas.addEventListener('mousedown', this.handleInputDown.bind(this));
+            canvas.addEventListener('touchstart', this.handleInputDown.bind(this));
+            canvas.addEventListener('mouseup', this.handleInputUp.bind(this));
+            canvas.addEventListener('touchend', this.handleInputUp.bind(this));
+            
+            // Add keyboard event listeners
+            document.addEventListener('keydown', this.handleKeyDown.bind(this));
+            document.addEventListener('keyup', this.handleKeyUp.bind(this));
+            
+            startButton.addEventListener('click', this.start.bind(this));
+            restartButton.addEventListener('click', this.restart.bind(this));
+
+            this.generateMountains();
+            this.generateLinePoints();
+            this.applyLevel(0);
+            
+            this.updateScoreboardUI(this.highScores);
+            this.drawInitialScreen(); // Draw initial static screen
+        }
+
+        drawInitialScreen() {
+            // Draw a placeholder background before the loop starts
+            this.drawSky();
+            this.drawMountains(0); 
+            this.drawLine();
+        }
+        
+        applyLevel(index) {
+            const config = this.LEVEL_CONFIGS[index];
+            this.currentLevelIndex = index;
+            
+            this.scrollSpeed = config.baseSpeed;
+            this.accelerationRate = config.accelerationRate;
+            this.obstacleSpacing = config.spacing;
+            this.minGapWidth = config.minGap;
+            this.maxGapWidth = config.maxGap;
+            this.lowHazardProb = config.lowHazardProb;
+
+            levelDisplay.innerText = `LEVEL ${index + 1}`;
+            levelDisplay.style.backgroundColor = config.levelColor;
+            
+            this.nextObstacleDistance = this.obstacleSpacing[0];
+        }
+
+        checkLevelUp() {
+            const nextLevelIndex = this.currentLevelIndex + 1;
+            if (nextLevelIndex < this.LEVEL_CONFIGS.length) {
+                if (this.score >= this.LEVEL_CONFIGS[nextLevelIndex].scoreThreshold) {
+                    this.applyLevel(nextLevelIndex);
+                    
+                    // Show level up notification
+                    this.showLevelUpNotification(`LEVEL ${nextLevelIndex + 1}!`);
+                    
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        showLevelUpNotification(message) {
+            levelUpNotification.textContent = message;
+            levelUpNotification.classList.remove('hidden');
+            
+            setTimeout(() => {
+                levelUpNotification.classList.add('hidden');
+            }, 2000);
+        }
+
+        showMessage(title, text, buttonText) {
+            messageTitle.innerText = title;
+            messageText.innerText = text;
+            const button = gameOverScreen.querySelector('.action-button');
+            button.innerText = buttonText;
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        resizeCanvas() {
+            const container = document.getElementById('game-container');
+            // Calculate height for the canvas area
+            const containerHeight = container.clientHeight - 
+                (document.getElementById('ui-panel').offsetHeight + document.getElementById('scores-panel').offsetHeight + 20); // 20px buffer
+
+            // Set canvas size
+            canvas.width = container.clientWidth; 
+            canvas.height = containerHeight;
+
+            this.player.x = canvas.width / 4;
+            this.generateLinePoints(); 
+            this.generateMountains();
+        }
+
+        generateMountains() {
+            mountains = [];
+            for (let layer = 0; layer < MOUNTAIN_LAYERS; layer++) {
+                const mountainLayer = [];
+                let currentX = -canvas.width * 0.5; 
+                while (currentX < canvas.width * 1.5) { 
+                    const height = canvas.height * 0.3 + Math.random() * MOUNTAIN_HEIGHT_VARIANCE;
+                    const width = 200 + Math.random() * MOUNTAIN_WIDTH_VARIANCE;
+                    mountainLayer.push({
+                        x: currentX,
+                        y: canvas.height - height,
+                        width: width,
+                        height: height,
+                        color: MOUNTAIN_COLORS[layer],
+                        speedMultiplier: MOUNTAIN_SPEED_MULTIPLIERS[layer]
+                    });
+                    currentX += width * (0.8 + Math.random() * 0.4); 
+                }
+                mountains.push(mountainLayer);
+            }
+        }
+        
+        getLineY(worldX) {
+            const baseLine = canvas.height * 0.5;
+            const amplitude = 80;
+            const frequency = 0.005;
+            return baseLine + amplitude * Math.sin(worldX * frequency);
+        }
+
+        generateLinePoints() {
+            this.linePoints = [];
+            for (let i = -100; i < canvas.width + 1000; i += 10) {
+                this.linePoints.push({
+                    x: i,
+                    y: this.getLineY(i)
+                });
+            }
+        }
+
+        handleInputDown(e) {
+            e.preventDefault(); 
+            
+            // Double tap protection
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+            if (tapLength < 300 && tapLength > 0) {
+                return; // Ignore double taps
+            }
+            lastTapTime = currentTime;
+            
+            if (!this.isGameOver) {
+                this.isJumpHeld = true;
+                this.player.startJumpHold();
+                this.player.jump();
+            }
+        }
+
+        handleInputUp(e) {
+            e.preventDefault();
+            this.isJumpHeld = false;
+        }
+        
+        handleKeyDown(e) {
+            // Space bar or up arrow for jumping
+            if ((e.key === ' ' || e.key === 'ArrowUp') && !this.isGameOver) {
+                e.preventDefault();
+                this.isJumpHeld = true;
+                this.player.startJumpHold();
+                this.player.jump();
+            }
+        }
+        
+        handleKeyUp(e) {
+            if (e.key === ' ' || e.key === 'ArrowUp') {
+                this.isJumpHeld = false;
+            }
+        }
+
+        start() {
+            startScreen.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            
+            this.isGameOver = false;
+            this.score = 0;
+            this.comboMultiplier = 1;
+            this.comboTimer = 0;
+            this.player.reset(); // Player is now reset to an 'onLine' state
+            this.obstacles = [];
+            this.lastObstacleX = canvas.width;
+            this.nextObstacleDistance = 100;
+            particles = [];
+            this.applyLevel(0);
+            this.lastFrameTime = performance.now();
+            this.loop();
+        }
+
+        restart() {
+            this.start();
+        }
+
+        gameOver() {
+            this.isGameOver = true;
+            saveHighScore(this.score); // Use the global local storage function
+            this.showMessage("Zipline Snapped!", `Your final distance was: ${Math.floor(this.score)} meters.`, 'RESTART ZIPPING');
+        }
+
+        // --- GAME OBJECT UPDATES ---
+        updateLineAndEnvironment() {
+            const lineScroll = this.scrollSpeed;
+            this.linePoints.forEach(p => { p.x -= lineScroll; });
+            while (this.linePoints[0].x < -10) {
+                this.linePoints.shift();
+                const lastPointX = this.linePoints[this.linePoints.length - 1].x;
+                this.linePoints.push({
+                    x: lastPointX + 10,
+                    y: this.getLineY(lastPointX + 10)
+                });
+            }
+        }
+
+        updateObstacles() {
+            this.obstacles.forEach(obs => obs.update(this.scrollSpeed));
+            this.obstacles = this.obstacles.filter(obs => !obs.isOffScreen());
+
+            this.lastObstacleX -= this.scrollSpeed;
+            this.nextObstacleDistance -= this.scrollSpeed;
+
+            if (this.nextObstacleDistance <= 0) {
+                const type = Math.random() < 0.65 ? 'gap' : 'flying'; 
+                const spawnX = Math.max(
+                    canvas.width, 
+                    this.obstacles.length > 0 ? this.obstacles[this.obstacles.length - 1].x + this.obstacleSpacing[0] : canvas.width
+                );
+                
+                const newObstacle = new Obstacle(spawnX + 50, type); 
+                
+                if (type === 'gap') {
+                    newObstacle.width = this.minGapWidth + Math.random() * (this.maxGapWidth - this.minGapWidth);
+                    const lineY = this.getLineY(newObstacle.x);
+                    newObstacle.lineY = lineY;
+                } else { 
+                    newObstacle.width = 35; 
+                    newObstacle.height = 20;
+                    const isLowHazard = Math.random() < this.lowHazardProb; 
+                    if (isLowHazard) {
+                        newObstacle.y = (canvas.height * 0.5) - 30 + Math.random() * 20; 
+                    } else {
+                        newObstacle.y = (canvas.height * 0.5) - 80 - Math.random() * 50; 
+                    }
+                }
+
+                this.obstacles.push(newObstacle);
+                this.nextObstacleDistance = this.obstacleSpacing[0] + Math.random() * (this.obstacleSpacing[1] - this.obstacleSpacing[0]);
+                this.lastObstacleX = spawnX;
+            }
+
+            // Check for passed obstacles to increase combo
+            this.obstacles.forEach(obs => {
+                if (!obs.hasBeenPassed && obs.x + obs.width < this.player.x) {
+                    obs.hasBeenPassed = true;
+                    this.comboMultiplier++;
+                    this.comboTimer = this.comboTimeout;
+                    
+                    // Add particles for combo
+                    for (let i = 0; i < 5; i++) {
+                        particles.push(new Particle(
+                            this.player.x, 
+                            this.player.y - PLAYER_RADIUS, 
+                            this.LEVEL_CONFIGS[this.currentLevelIndex].playerColor
+                        ));
+                    }
+                }
+            });
+
+            // Update combo timer
+            if (this.comboTimer > 0) {
+                this.comboTimer -= this.scrollSpeed;
+            } else {
+                this.comboMultiplier = 1;
+            }
+        }
+
+        checkLineContact() {
+            const p = this.player;
+            const playerLineContactY = p.y + PLAYER_RADIUS;
+            let lineYAtPlayer = this.getLineY(p.x);
+            
+            let isOverGap = false;
+            let currentGap = null;
+            for (const obs of this.obstacles) {
+                if (obs.type === 'gap' && p.x > obs.x && p.x < obs.x + obs.width) {
+                    isOverGap = true;
+                    currentGap = obs;
+                    break;
+                }
+            }
+
+            if (isOverGap) {
+                if (p.isJumping) {
+                    p.onLine = false;
+                } else {
+                    if (playerLineContactY > currentGap.lineY + 50) { 
+                        this.gameOver();
+                        return;
+                    }
+                    p.onLine = false;
+                    p.y += p.velocityY; 
+                    p.velocityY += GRAVITY;
+                }
+            } else {
+                if (!p.onLine && playerLineContactY >= lineYAtPlayer) {
+                    p.onLine = true;
+                    p.isJumping = false;
+                    p.velocityY = 0;
+                    p.y = lineYAtPlayer - PLAYER_RADIUS; 
+                    for (let i = 0; i < 5; i++) {
+                        particles.push(new Particle(p.x, p.y + PLAYER_RADIUS, ZIPLINE_COLOR));
+                    }
+                } else if (!p.onLine && p.isJumping) {
+                    p.update();
+                } else if (p.onLine) {
+                    p.y = lineYAtPlayer - PLAYER_RADIUS;
+                }
+            }
+        }
+
+        checkCollision() {
+            const p = this.player;
+            for (const obs of this.obstacles) {
+                if (obs.type === 'flying') {
+                    const playerLeft = p.x - PLAYER_RADIUS;
+                    const playerRight = p.x + PLAYER_RADIUS;
+                    const playerTop = p.y - 2 * PLAYER_RADIUS; 
+                    const playerBottom = p.y;
+                    const obsLeft = obs.x;
+                    const obsRight = obs.x + obs.width;
+                    const obsTop = obs.y - obs.height; 
+                    const obsBottom = obs.y + obs.height; 
+
+                    if (playerRight > obsLeft && 
+                        playerLeft < obsRight &&
+                        playerBottom > obsTop &&
+                        playerTop < obsBottom) {
+                        this.gameOver();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // --- DRAWING ---
+        drawSky() {
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1f2733');
+            gradient.addColorStop(1, '#0d1117');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        drawMountains(scrollSpeed) {
+            for (let layer = 0; layer < MOUNTAIN_LAYERS; layer++) {
+                const currentLayer = mountains[layer];
+                const layerSpeed = scrollSpeed * MOUNTAIN_SPEED_MULTIPLIERS[layer];
+
+                for (let i = 0; i < currentLayer.length; i++) {
+                    let m = currentLayer[i];
+                    m.x -= layerSpeed;
+
+                    if (m.x + m.width < 0) {
+                        const lastMountain = currentLayer[currentLayer.length - 1];
+                        m.x = lastMountain.x + lastMountain.width * (0.8 + Math.random() * 0.4);
+                        m.y = canvas.height * 0.3 + Math.random() * MOUNTAIN_HEIGHT_VARIANCE;
+                        m.y = canvas.height - m.y;
+                    }
+
+                    const gradient = ctx.createLinearGradient(0, m.y, 0, canvas.height);
+                    gradient.addColorStop(0, m.color);
+                    gradient.addColorStop(1, 'rgba(0,0,0,0)'); 
+                    ctx.fillStyle = gradient;
+
+                    ctx.beginPath();
+                    ctx.moveTo(m.x, canvas.height);
+                    ctx.lineTo(m.x + m.width / 2, m.y); 
+                    ctx.lineTo(m.x + m.width, canvas.height);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            }
+        }
+        
+        drawLine() {
+            ctx.strokeStyle = ZIPLINE_COLOR; 
+            ctx.lineWidth = 4;
+            ctx.lineCap = 'round'; 
+
+            ctx.save();
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = ZIPLINE_GLOW_COLOR;
+            ctx.beginPath();
+            
+            for (let i = 0; i < this.linePoints.length - 1; i++) {
+                const p1 = this.linePoints[i];
+                const p2 = this.linePoints[i + 1];
+                let isSegmentInGap = false;
+                for (const obs of this.obstacles) {
+                    if (obs.type === 'gap' && p1.x < obs.x + obs.width && p2.x > obs.x) {
+                        isSegmentInGap = true;
+                        break;
+                    }
+                }
+                if (!isSegmentInGap) {
+                    if (i === 0 || !this.isSegmentContiguous(i)) {
+                        ctx.moveTo(p1.x, p1.y);
+                    } else {
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                } else {
+                    ctx.stroke();
+                    ctx.beginPath();
+                }
+            }
+            ctx.stroke();
+            ctx.restore(); 
+
+            ctx.beginPath();
+            for (let i = 0; i < this.linePoints.length - 1; i++) {
+                const p1 = this.linePoints[i];
+                const p2 = this.linePoints[i + 1];
+                let isSegmentInGap = false;
+                for (const obs of this.obstacles) {
+                    if (obs.type === 'gap' && p1.x < obs.x + obs.width && p2.x > obs.x) {
+                        isSegmentInGap = true;
+                        break;
+                    }
+                }
+                if (!isSegmentInGap) {
+                    if (i === 0 || !this.isSegmentContiguous(i)) {
+                        ctx.moveTo(p1.x, p1.y);
+                    } else {
+                        ctx.lineTo(p2.x, p2.y);
+                    }
+                } else {
+                    ctx.stroke();
+                    ctx.beginPath();
+                }
+            }
+            ctx.stroke();
+        }
+        
+        isSegmentContiguous(i) {
+            const p1 = this.linePoints[i];
+            const p2 = this.linePoints[i + 1];
+            
+            for (const obs of this.obstacles) {
+                if (obs.type === 'gap') {
+                    if ((p1.x >= obs.x && p1.x < obs.x + obs.width) ||
+                        (p2.x >= obs.x && p2.x < obs.x + obs.width)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // --- MAIN LOOP ---
+        loop() {
+            if (this.isGameOver) return;
+            
+            const currentTime = performance.now();
+            const deltaTime = currentTime - this.lastFrameTime;
+            this.lastFrameTime = currentTime;
+
+            // Check for level up
+            this.checkLevelUp();
+
+            // 1. Update Game State
+            this.scrollSpeed += this.accelerationRate;
+            this.score += (this.scrollSpeed / 100) * this.comboMultiplier;
+            
+            this.updateLineAndEnvironment();
+            this.updateObstacles();
+            
+            // Update jump hold if button is held
+            if (this.isJumpHeld) {
+                this.player.updateJumpHold(deltaTime);
+            }
+            
+            this.checkLineContact(); 
+            this.checkCollision();   
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                if (!particles[i].update()) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            // 2. Clear and Draw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            this.drawSky();
+            this.drawMountains(this.scrollSpeed); 
+            this.drawLine();
+            this.player.draw();
+            this.obstacles.forEach(obs => obs.draw());
+            particles.forEach(p => p.draw(ctx)); 
+
+            // Draw combo multiplier
+            if (this.comboMultiplier > 1) {
+                ctx.fillStyle = this.LEVEL_CONFIGS[this.currentLevelIndex].playerColor;
+                ctx.font = 'bold 16px Inter';
+                ctx.textAlign = 'right';
+                ctx.fillText(`COMBO x${this.comboMultiplier}`, canvas.width - 20, 30);
+            }
+
+            // 3. Update UI
+            scoreDisplay.innerHTML = `<i class="fas fa-trophy"></i>SCORE: ${Math.floor(this.score)}`;
+            speedDisplay.innerHTML = `<i class="fas fa-tachometer-alt"></i>SPEED: ${this.scrollSpeed.toFixed(1)}x`;
+
+            // 4. Request Next Frame
+            requestAnimationFrame(this.loop.bind(this));
+        }
+
+        // --- SCOREBOARD UI ---
+        updateScoreboardUI(scores) {
+            this.highScores = scores;
+            let html = '';
+            if (scores.length === 0) {
+                html = '<div class="text-center text-sm text-gray-500">Be the first to post a score!</div>';
+            } else {
+                scores.forEach((s, index) => {
+                    html += `
+                        <div>
+                            <span class="font-bold w-4">${index + 1}.</span>
+                            <span class="score-user">${s.displayName}</span>
+                            <span class="score-val">${s.score}m</span>
+                        </div>
+                    `;
+                });
+            }
+            scoresList.innerHTML = html;
+        }
+    }
+    
+    // --- GLOBAL MODAL FUNCTIONS ---
+    function showInstructions() {
+        instructionsModal.style.display = 'flex';
+        instructionsModal.style.opacity = 0;
+        setTimeout(() => instructionsModal.style.opacity = 1, 10);
+    }
+
+    function hideInstructions() {
+        instructionsModal.style.opacity = 0;
+        setTimeout(() => instructionsModal.style.display = 'none', 300);
+    }
+    window.showInstructions = showInstructions;
+    window.hideInstructions = hideInstructions;
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+        const game = new Game();
+        // The game will start when the user clicks the start button
+        // Initialize high scores display on load
+        game.updateScoreboardUI(game.highScores); 
+    };
+</script>
+</body>
+</html>
