@@ -2,68 +2,104 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gem Match 3 - Classic Puzzle Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gem Match 3 - Mobile Puzzle Game</title>
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
         }
         
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
             color: white;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-x: hidden;
         }
         
-        .container {
-            max-width: 800px;
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            height: 100%;
+            z-index: 1;
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 20px;
+        .mobile-ui {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
         }
         
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #ffcc00, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 204, 0, 0.3);
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #b0b0b0;
-            margin-bottom: 30px;
-        }
-        
-        .game-stats {
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 8px 12px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 25, 48, 0.85);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 10;
+        }
+        
+        .game-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffcc00, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .menu-icon {
+            width: 30px;
+            height: 30px;
+            pointer-events: auto;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .menu-line {
+            width: 20px;
+            height: 3px;
+            background: #ffcc00;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .stats-container {
+            position: absolute;
+            top: 50px;
+            left: 0;
             width: 100%;
-            max-width: 600px;
-            margin-bottom: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            background: rgba(10, 25, 48, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 9;
         }
         
         .stat {
@@ -72,73 +108,133 @@
         }
         
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 0.65rem;
             color: #a0a0a0;
-            margin-bottom: 5px;
+            margin-bottom: 2px;
         }
         
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: #ffcc00;
         }
         
-        #game-container {
-            width: 100%;
-            max-width: 600px;
-            height: 600px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            margin-bottom: 20px;
-            background: #0a1930;
-        }
-        
         .controls {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            width: 100%;
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            justify-content: center;
+            gap: 10px;
+            padding: 0 15px;
+            pointer-events: auto;
+            z-index: 10;
         }
         
         .btn {
-            padding: 12px 25px;
+            padding: 10px 15px;
             background: linear-gradient(45deg, #ff6b6b, #ffcc00);
             border: none;
             border-radius: 50px;
             color: white;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            pointer-events: auto;
+            font-size: 0.85rem;
+            flex: 1;
+            max-width: 120px;
         }
         
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.6);
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
-        .instructions {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+        .instructions-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            margin-top: 20px;
-            max-width: 600px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         
-        .instructions h2 {
-            color: #4ecdc4;
-            margin-bottom: 15px;
+        .instructions-popup.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .instructions-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .instructions-content h2 {
+            color: #ffcc00;
+            margin-bottom: 20px;
             text-align: center;
+            font-size: 1.5rem;
         }
         
-        .instructions p {
-            margin-bottom: 10px;
-            line-height: 1.5;
+        .instructions-list {
+            margin-bottom: 20px;
+        }
+        
+        .instruction-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .instruction-icon {
+            width: 24px;
+            height: 24px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        
+        .instruction-text {
+            flex: 1;
+            line-height: 1.4;
+            font-size: 0.95rem;
         }
         
         .highlight {
@@ -146,37 +242,131 @@
             font-weight: bold;
         }
         
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            color: #6a89cc;
-            font-size: 0.9rem;
+        .game-over-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         
-        @media (max-width: 650px) {
-            h1 {
-                font-size: 2.5rem;
+        .game-over-popup.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .game-over-content {
+            background: linear-gradient(135deg, #1a1a2e, #0f3460);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-over-title {
+            font-size: 2rem;
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .game-over-score {
+            font-size: 1.5rem;
+            color: #ffcc00;
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 1.1rem;
             }
             
-            #game-container {
-                height: 500px;
+            .stat-label {
+                font-size: 0.6rem;
             }
             
-            .game-stats {
-                flex-direction: column;
-                gap: 15px;
+            .stat-value {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                max-width: 110px;
+            }
+            
+            .instructions-content {
+                padding: 20px;
+            }
+            
+            .instructions-content h2 {
+                font-size: 1.3rem;
+            }
+            
+            .instruction-text {
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .header {
+                padding: 5px 10px;
+            }
+            
+            .stats-container {
+                top: 40px;
+                padding: 5px 10px;
+            }
+            
+            .controls {
+                bottom: 10px;
+            }
+        }
+        
+        /* Adjust for landscape orientation */
+        @media (max-aspect-ratio: 1/1) {
+            .header {
+                padding: 5px 10px;
+            }
+            
+            .stats-container {
+                top: 40px;
+                padding: 5px 10px;
+            }
+            
+            .controls {
+                bottom: 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Gem Match 3</h1>
-            <p class="subtitle">Match gems to score points and advance to higher levels!</p>
-        </header>
+    <div id="game-container"></div>
+    
+    <div class="mobile-ui">
+        <div class="header">
+            <div class="game-title">Gem Match 3</div>
+            <div class="menu-icon" id="menu-btn">
+                <div class="menu-line"></div>
+                <div class="menu-line"></div>
+                <div class="menu-line"></div>
+            </div>
+        </div>
         
-        <div class="game-stats">
+        <div class="stats-container">
             <div class="stat">
                 <div class="stat-label">SCORE</div>
                 <div id="score" class="stat-value">0</div>
@@ -191,42 +381,70 @@
             </div>
         </div>
         
-        <div id="game-container"></div>
-        
         <div class="controls">
             <button class="btn" id="restart-btn">New Game</button>
             <button class="btn" id="hint-btn">Hint</button>
         </div>
-        
-        <div class="instructions">
+    </div>
+    
+    <div class="instructions-popup" id="instructions-popup">
+        <div class="instructions-content">
+            <div class="close-btn" id="close-instructions">×</div>
             <h2>How to Play</h2>
-            <p>• <span class="highlight">Swap adjacent gems</span> to create rows or columns of 3 or more matching gems</p>
-            <p>• Match <span class="highlight">4 gems</span> to create a special gem that clears an entire row</p>
-            <p>• Match <span class="highlight">5 gems</span> to create a special gem that clears an entire column</p>
-            <p>• Complete the level by reaching the target score before running out of moves</p>
+            <div class="instructions-list">
+                <div class="instruction-item">
+                    <div class="instruction-icon">1</div>
+                    <div class="instruction-text"><span class="highlight">Swap adjacent gems</span> by dragging one gem to an adjacent position</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">2</div>
+                    <div class="instruction-text">Create rows or columns of <span class="highlight">3 or more matching gems</span> to clear them</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">3</div>
+                    <div class="instruction-text">Match <span class="highlight">4 gems</span> to create a special gem that clears an entire row</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">4</div>
+                    <div class="instruction-text">Match <span class="highlight">5 gems</span> to create a special gem that clears an entire column</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">5</div>
+                    <div class="instruction-text">Complete the level by reaching the target score before running out of moves</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-icon">!</div>
+                    <div class="instruction-text"><span class="highlight">Tip:</span> Plan your moves to create chain reactions for higher scores!</div>
+                </div>
+            </div>
+            <button class="btn" id="start-playing" style="width: 100%;">Start Playing</button>
         </div>
-        
-        <footer>
-            <p>Gem Match 3 - A classic puzzle game | Created with Phaser.js</p>
-        </footer>
+    </div>
+    
+    <div class="game-over-popup" id="game-over-popup">
+        <div class="game-over-content">
+            <div class="game-over-title">Game Over</div>
+            <div class="game-over-score">Score: <span id="final-score">0</span></div>
+            <button class="btn" id="play-again" style="width: 100%;">Play Again</button>
+        </div>
     </div>
 
     <script>
         // Game configuration
         const config = {
             type: Phaser.AUTO,
-            width: 600,
-            height: 600,
-            backgroundColor: '#0a1930',
             parent: 'game-container',
+            backgroundColor: '#0a1930',
+            scale: {
+                mode: Phaser.Scale.RESIZE,
+                width: '100%',
+                height: '100%',
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
             scene: {
                 preload: preload,
                 create: create,
                 update: update
-            },
-            scale: {
-                mode: Phaser.Scale.FIT,
-                autoCenter: Phaser.Scale.CENTER_BOTH
             }
         };
 
@@ -239,84 +457,129 @@
         let selectedGem = null;
         let canMove = true;
         let targetScore = 1000;
-        let hintTimeout;
+        let boardSize = 8;
+        let gemSize;
+        let offsetX, offsetY;
+        let dragStartGem = null;
+        let dragStartPosition = { x: 0, y: 0 };
         
-        // Gem types with colors
+        // Gem types with colors and icons
         const gemTypes = [
-            { key: 'red', color: 0xff6b6b, value: 50 },
-            { key: 'blue', color: 0x4ecdc4, value: 60 },
-            { key: 'green', color: 0x1dd1a1, value: 70 },
-            { key: 'yellow', color: 0xffcc00, value: 80 },
-            { key: 'purple', color: 0x9b59b6, value: 90 },
-            { key: 'orange', color: 0xff9f43, value: 100 }
+            { 
+                key: 'red', 
+                color: 0xff6b6b, 
+                value: 50,
+                icon: '♦',
+                soundColor: '#FF5252'
+            },
+            { 
+                key: 'blue', 
+                color: 0x4ecdc4, 
+                value: 60,
+                icon: '♠',
+                soundColor: '#4FC3F7'
+            },
+            { 
+                key: 'green', 
+                color: 0x1dd1a1, 
+                value: 70,
+                icon: '♣',
+                soundColor: '#69F0AE'
+            },
+            { 
+                key: 'yellow', 
+                color: 0xffcc00, 
+                value: 80,
+                icon: '★',
+                soundColor: '#FFD740'
+            },
+            { 
+                key: 'purple', 
+                color: 0x9b59b6, 
+                value: 90,
+                icon: '♥',
+                soundColor: '#E040FB'
+            },
+            { 
+                key: 'orange', 
+                color: 0xff9f43, 
+                value: 100,
+                icon: '●',
+                soundColor: '#FFAB40'
+            }
         ];
         
         // Initialize the game
         game = new Phaser.Game(config);
 
         function preload() {
+            // Calculate dynamic gem size based on screen dimensions
+            // Reserve space for UI elements (header and controls)
+            const uiHeight = 120; // Approximate height of UI elements
+            const availableHeight = game.scale.height - uiHeight;
+            const availableWidth = game.scale.width;
+            
+            gemSize = Math.min(
+                Math.floor(availableWidth / (boardSize + 1)),
+                Math.floor(availableHeight / (boardSize + 1))
+            );
+            
+            // Calculate board offset to center it, accounting for UI
+            offsetX = (game.scale.width - boardSize * gemSize) / 2;
+            offsetY = (game.scale.height - boardSize * gemSize) / 2 + 20; // Slight offset to account for header
+            
             // Create gem graphics programmatically
             gemTypes.forEach(gem => {
-                // Create a graphics object for each gem type
                 const graphics = this.make.graphics({ x: 0, y: 0, add: false });
                 
-                // Draw gem shape
+                // Draw gem base with vibrant color
                 graphics.fillStyle(gem.color, 1);
-                graphics.fillRoundedRect(2, 2, 56, 56, 15);
+                graphics.fillRoundedRect(2, 2, gemSize - 4, gemSize - 4, 10);
                 
                 // Add highlight
                 graphics.fillStyle(0xffffff, 0.3);
-                graphics.fillRoundedRect(10, 10, 20, 20, 5);
+                graphics.fillRoundedRect(gemSize * 0.15, gemSize * 0.15, gemSize * 0.3, gemSize * 0.3, 3);
+                
+                // Add inner shine
+                graphics.fillStyle(0xffffff, 0.1);
+                graphics.fillRoundedRect(gemSize * 0.3, gemSize * 0.3, gemSize * 0.4, gemSize * 0.4, 5);
                 
                 // Generate texture from graphics
-                graphics.generateTexture(gem.key, 60, 60);
+                graphics.generateTexture(gem.key, gemSize, gemSize);
                 graphics.destroy();
             });
             
             // Create background texture
             const bgGraphics = this.make.graphics({ x: 0, y: 0, add: false });
             bgGraphics.fillStyle(0x0a1930, 1);
-            bgGraphics.fillRect(0, 0, 600, 600);
+            bgGraphics.fillRect(0, 0, game.scale.width, game.scale.height);
             
-            // Add grid pattern
+            // Add subtle grid pattern
             bgGraphics.lineStyle(1, 0x16213e, 0.5);
-            for (let i = 0; i <= 600; i += 60) {
+            for (let i = 0; i <= game.scale.width; i += gemSize) {
                 bgGraphics.moveTo(i, 0);
-                bgGraphics.lineTo(i, 600);
+                bgGraphics.lineTo(i, game.scale.height);
+            }
+            for (let i = 0; i <= game.scale.height; i += gemSize) {
                 bgGraphics.moveTo(0, i);
-                bgGraphics.lineTo(600, i);
+                bgGraphics.lineTo(game.scale.width, i);
             }
             bgGraphics.strokePath();
             
-            bgGraphics.generateTexture('background', 600, 600);
+            bgGraphics.generateTexture('background', game.scale.width, game.scale.height);
             bgGraphics.destroy();
         }
 
         function create() {
             // Add background
-            this.add.image(300, 300, 'background');
-            
-            // Create title text
-            this.add.text(300, 40, 'GEM MATCH 3', {
-                fontSize: '32px',
-                fill: '#ffcc00',
-                fontStyle: 'bold',
-                stroke: '#000',
-                strokeThickness: 4
-            }).setOrigin(0.5);
+            this.add.image(game.scale.width / 2, game.scale.height / 2, 'background');
             
             // Create the game board
             board = [];
-            const boardSize = 8;
-            const gemSize = 60;
-            const offsetX = (600 - boardSize * gemSize) / 2;
-            const offsetY = (600 - boardSize * gemSize) / 2 + 20;
-            
-            // Create initial board with random gems
             for (let row = 0; row < boardSize; row++) {
                 board[row] = [];
                 for (let col = 0; col < boardSize; col++) {
-                    createGem(this, row, col, offsetX, offsetY, gemSize);
+                    createGem(this, row, col);
                 }
             }
             
@@ -335,24 +598,50 @@
                 level = 1;
                 movesLeft = 30;
                 targetScore = 1000;
+                document.getElementById('score').textContent = score;
+                document.getElementById('level').textContent = level;
+                document.getElementById('moves').textContent = movesLeft;
             });
             
             document.getElementById('hint-btn').addEventListener('click', () => {
                 showHint(this);
             });
             
-            // Add level info
-            this.add.text(300, 570, `Target: ${targetScore}`, {
-                fontSize: '20px',
-                fill: '#4ecdc4'
-            }).setOrigin(0.5);
+            document.getElementById('menu-btn').addEventListener('click', () => {
+                document.getElementById('instructions-popup').classList.add('active');
+            });
+            
+            document.getElementById('close-instructions').addEventListener('click', () => {
+                document.getElementById('instructions-popup').classList.remove('active');
+            });
+            
+            document.getElementById('start-playing').addEventListener('click', () => {
+                document.getElementById('instructions-popup').classList.remove('active');
+            });
+            
+            document.getElementById('play-again').addEventListener('click', () => {
+                document.getElementById('game-over-popup').classList.remove('active');
+                this.scene.restart();
+                score = 0;
+                level = 1;
+                movesLeft = 30;
+                targetScore = 1000;
+                document.getElementById('score').textContent = score;
+                document.getElementById('level').textContent = level;
+                document.getElementById('moves').textContent = movesLeft;
+            });
+            
+            // Show instructions on first load
+            setTimeout(() => {
+                document.getElementById('instructions-popup').classList.add('active');
+            }, 500);
         }
 
         function update() {
             // Game update logic would go here
         }
 
-        function createGem(scene, row, col, offsetX, offsetY, gemSize) {
+        function createGem(scene, row, col) {
             const gemType = Phaser.Math.RND.pick(gemTypes);
             const gem = scene.add.sprite(
                 offsetX + col * gemSize + gemSize / 2,
@@ -360,13 +649,139 @@
                 gemType.key
             ).setInteractive();
             
+            // Add icon to gem
+            const icon = scene.add.text(
+                offsetX + col * gemSize + gemSize / 2,
+                offsetY + row * gemSize + gemSize / 2,
+                gemType.icon,
+                {
+                    fontSize: Math.floor(gemSize * 0.4) + 'px',
+                    color: '#FFFFFF',
+                    fontStyle: 'bold',
+                    stroke: '#000000',
+                    strokeThickness: 2
+                }
+            ).setOrigin(0.5);
+            
             gem.setData('row', row);
             gem.setData('col', col);
             gem.setData('type', gemType.key);
             gem.setData('value', gemType.value);
+            gem.setData('icon', icon);
+            gem.setData('soundColor', gemType.soundColor);
             
             // Add gem selection and movement
-            gem.on('pointerdown', () => selectGem(gem, scene));
+            gem.on('pointerdown', function(pointer) {
+                if (!canMove) return;
+                
+                // Store drag start position
+                dragStartGem = gem;
+                dragStartPosition.x = pointer.x;
+                dragStartPosition.y = pointer.y;
+                
+                // Select the gem
+                if (!selectedGem) {
+                    selectedGem = gem;
+                    gem.setTint(0xaaaaaa);
+                    
+                    // Add pulsing effect to selected gem
+                    scene.tweens.add({
+                        targets: gem,
+                        scaleX: 1.1,
+                        scaleY: 1.1,
+                        duration: 200,
+                        yoyo: true,
+                        repeat: -1
+                    });
+                }
+            });
+            
+            gem.on('pointerup', function(pointer) {
+                if (!canMove || !dragStartGem) return;
+                
+                // Calculate drag distance
+                const dragDistance = Phaser.Math.Distance.Between(
+                    dragStartPosition.x, dragStartPosition.y,
+                    pointer.x, pointer.y
+                );
+                
+                // If drag distance is small, treat it as a tap
+                if (dragDistance < 10) {
+                    // If we already have a selected gem, try to swap
+                    if (selectedGem && selectedGem !== gem) {
+                        const row1 = selectedGem.getData('row');
+                        const col1 = selectedGem.getData('col');
+                        const row2 = gem.getData('row');
+                        const col2 = gem.getData('col');
+                        
+                        // Check if gems are adjacent
+                        const isAdjacent = 
+                            (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                            (Math.abs(col1 - col2) === 1 && row1 === row2);
+                        
+                        if (isAdjacent) {
+                            canMove = false;
+                            
+                            // Remove selection effects
+                            scene.tweens.killTweensOf(selectedGem);
+                            selectedGem.clearTint();
+                            selectedGem.setScale(1);
+                            
+                            // Swap gems
+                            swapGems(selectedGem, gem, scene);
+                            
+                            // Check for matches after swap
+                            setTimeout(() => {
+                                const matches = findMatches();
+                                if (matches.length > 0) {
+                                    // Matches found
+                                    removeMatches(matches, scene);
+                                    movesLeft--;
+                                    document.getElementById('moves').textContent = movesLeft;
+                                    
+                                    // Check for level completion
+                                    if (score >= targetScore) {
+                                        levelUp(scene);
+                                    }
+                                    
+                                    // Check for game over
+                                    if (movesLeft <= 0 && score < targetScore) {
+                                        gameOver(scene);
+                                    }
+                                } else {
+                                    // No matches - swap back
+                                    swapGems(selectedGem, gem, scene);
+                                    canMove = true;
+                                }
+                            }, 500);
+                        } else {
+                            // Not adjacent - deselect first gem
+                            scene.tweens.killTweensOf(selectedGem);
+                            selectedGem.clearTint();
+                            selectedGem.setScale(1);
+                            
+                            // Select new gem
+                            selectedGem = gem;
+                            gem.setTint(0xaaaaaa);
+                            
+                            // Add pulsing effect to selected gem
+                            scene.tweens.add({
+                                targets: gem,
+                                scaleX: 1.1,
+                                scaleY: 1.1,
+                                duration: 200,
+                                yoyo: true,
+                                repeat: -1
+                            });
+                        }
+                    }
+                } else {
+                    // Handle drag gesture
+                    handleDragGesture(scene, gem, pointer);
+                }
+                
+                dragStartGem = null;
+            });
             
             // Add a subtle glow effect
             gem.setScale(0.9);
@@ -382,6 +797,80 @@
             return gem;
         }
 
+        function handleDragGesture(scene, gem, pointer) {
+            if (!dragStartGem || !canMove) return;
+            
+            const dragX = pointer.x - dragStartPosition.x;
+            const dragY = pointer.y - dragStartPosition.y;
+            const absDragX = Math.abs(dragX);
+            const absDragY = Math.abs(dragY);
+            
+            // Determine drag direction (prioritize larger movement)
+            if (absDragX > absDragY && absDragX > gemSize * 0.3) {
+                // Horizontal drag
+                const targetCol = dragStartGem.getData('col') + (dragX > 0 ? 1 : -1);
+                const targetRow = dragStartGem.getData('row');
+                
+                if (targetCol >= 0 && targetCol < boardSize) {
+                    const targetGem = board[targetRow][targetCol];
+                    if (targetGem) {
+                        swapGemsWithDrag(dragStartGem, targetGem, scene);
+                    }
+                }
+            } else if (absDragY > gemSize * 0.3) {
+                // Vertical drag
+                const targetRow = dragStartGem.getData('row') + (dragY > 0 ? 1 : -1);
+                const targetCol = dragStartGem.getData('col');
+                
+                if (targetRow >= 0 && targetRow < boardSize) {
+                    const targetGem = board[targetRow][targetCol];
+                    if (targetGem) {
+                        swapGemsWithDrag(dragStartGem, targetGem, scene);
+                    }
+                }
+            }
+        }
+
+        function swapGemsWithDrag(gem1, gem2, scene) {
+            canMove = false;
+            
+            // Remove selection effects if any
+            if (selectedGem) {
+                scene.tweens.killTweensOf(selectedGem);
+                selectedGem.clearTint();
+                selectedGem.setScale(1);
+                selectedGem = null;
+            }
+            
+            // Swap gems
+            swapGems(gem1, gem2, scene);
+            
+            // Check for matches after swap
+            setTimeout(() => {
+                const matches = findMatches();
+                if (matches.length > 0) {
+                    // Matches found
+                    removeMatches(matches, scene);
+                    movesLeft--;
+                    document.getElementById('moves').textContent = movesLeft;
+                    
+                    // Check for level completion
+                    if (score >= targetScore) {
+                        levelUp(scene);
+                    }
+                    
+                    // Check for game over
+                    if (movesLeft <= 0 && score < targetScore) {
+                        gameOver(scene);
+                    }
+                } else {
+                    // No matches - swap back
+                    swapGems(gem1, gem2, scene);
+                    canMove = true;
+                }
+            }, 500);
+        }
+
         function removeInitialMatches(scene) {
             let matches = findMatches();
             while (matches.length > 0) {
@@ -394,84 +883,13 @@
                         gem.setTexture(gemType.key);
                         gem.setData('type', gemType.key);
                         gem.setData('value', gemType.value);
+                        
+                        // Update icon
+                        const icon = gem.getData('icon');
+                        icon.setText(gemType.icon);
                     });
                 });
                 matches = findMatches();
-            }
-        }
-
-        function selectGem(gem, scene) {
-            if (!canMove) return;
-            
-            if (!selectedGem) {
-                // First gem selected
-                selectedGem = gem;
-                gem.setTint(0xaaaaaa);
-                
-                // Add pulsing effect to selected gem
-                scene.tweens.add({
-                    targets: gem,
-                    scaleX: 1.1,
-                    scaleY: 1.1,
-                    duration: 200,
-                    yoyo: true,
-                    repeat: -1
-                });
-            } else {
-                // Second gem selected
-                const row1 = selectedGem.getData('row');
-                const col1 = selectedGem.getData('col');
-                const row2 = gem.getData('row');
-                const col2 = gem.getData('col');
-                
-                // Check if gems are adjacent
-                const isAdjacent = 
-                    (Math.abs(row1 - row2) === 1 && col1 === col2) ||
-                    (Math.abs(col1 - col2) === 1 && row1 === row2);
-                
-                if (isAdjacent) {
-                    canMove = false;
-                    
-                    // Remove selection effects
-                    scene.tweens.killTweensOf(selectedGem);
-                    selectedGem.clearTint();
-                    selectedGem.setScale(1);
-                    
-                    // Swap gems
-                    swapGems(selectedGem, gem, scene);
-                    
-                    // Check for matches after swap
-                    setTimeout(() => {
-                        const matches = findMatches();
-                        if (matches.length > 0) {
-                            // Matches found
-                            removeMatches(matches, scene);
-                            movesLeft--;
-                            document.getElementById('moves').textContent = movesLeft;
-                            
-                            // Check for level completion
-                            if (score >= targetScore) {
-                                levelUp(scene);
-                            }
-                            
-                            // Check for game over
-                            if (movesLeft <= 0 && score < targetScore) {
-                                gameOver(scene);
-                            }
-                        } else {
-                            // No matches - swap back
-                            swapGems(selectedGem, gem, scene);
-                            canMove = true;
-                        }
-                    }, 500);
-                } else {
-                    // Not adjacent - deselect first gem
-                    scene.tweens.killTweensOf(selectedGem);
-                    selectedGem.clearTint();
-                    selectedGem.setScale(1);
-                }
-                
-                selectedGem = null;
             }
         }
 
@@ -496,6 +914,26 @@
                 ease: 'Cubic.easeOut'
             });
             
+            // Swap icons positions
+            const icon1 = gem1.getData('icon');
+            const icon2 = gem2.getData('icon');
+            
+            scene.tweens.add({
+                targets: icon1,
+                x: gem2.x,
+                y: gem2.y,
+                duration: 300,
+                ease: 'Cubic.easeOut'
+            });
+            
+            scene.tweens.add({
+                targets: icon2,
+                x: tempX,
+                y: tempY,
+                duration: 300,
+                ease: 'Cubic.easeOut'
+            });
+            
             // Swap board positions
             const row1 = gem1.getData('row');
             const col1 = gem1.getData('col');
@@ -513,7 +951,6 @@
 
         function findMatches() {
             const matches = [];
-            const boardSize = 8;
             
             // Check horizontal matches
             for (let row = 0; row < boardSize; row++) {
@@ -604,8 +1041,10 @@
             
             // Remove gems with animation
             gemsToRemove.forEach(gem => {
+                const icon = gem.getData('icon');
+                
                 scene.tweens.add({
-                    targets: gem,
+                    targets: [gem, icon],
                     scaleX: 0,
                     scaleY: 0,
                     alpha: 0,
@@ -613,6 +1052,7 @@
                     ease: 'Back.easeIn',
                     onComplete: () => {
                         gem.destroy();
+                        icon.destroy();
                     }
                 });
                 
@@ -640,11 +1080,6 @@
         }
 
         function dropGems(scene) {
-            const boardSize = 8;
-            const gemSize = 60;
-            const offsetX = (600 - boardSize * gemSize) / 2;
-            const offsetY = (600 - boardSize * gemSize) / 2 + 20;
-            
             // Move gems down to fill empty spaces
             for (let col = 0; col < boardSize; col++) {
                 let emptySpaces = 0;
@@ -654,6 +1089,7 @@
                         emptySpaces++;
                     } else if (emptySpaces > 0) {
                         const gem = board[row][col];
+                        const icon = gem.getData('icon');
                         const newRow = row + emptySpaces;
                         
                         // Update board position
@@ -665,7 +1101,7 @@
                         
                         // Animate movement
                         scene.tweens.add({
-                            targets: gem,
+                            targets: [gem, icon],
                             y: offsetY + newRow * gemSize + gemSize / 2,
                             duration: 400,
                             ease: 'Bounce.out'
@@ -676,11 +1112,6 @@
         }
 
         function addNewGems(scene) {
-            const boardSize = 8;
-            const gemSize = 60;
-            const offsetX = (600 - boardSize * gemSize) / 2;
-            const offsetY = (600 - boardSize * gemSize) / 2 + 20;
-            
             // Add new gems at the top
             for (let col = 0; col < boardSize; col++) {
                 for (let row = 0; row < boardSize; row++) {
@@ -692,18 +1123,145 @@
                             gemType.key
                         ).setInteractive();
                         
+                        // Add icon to gem
+                        const icon = scene.add.text(
+                            offsetX + col * gemSize + gemSize / 2,
+                            offsetY - (boardSize - row) * gemSize,
+                            gemType.icon,
+                            {
+                                fontSize: Math.floor(gemSize * 0.4) + 'px',
+                                color: '#FFFFFF',
+                                fontStyle: 'bold',
+                                stroke: '#000000',
+                                strokeThickness: 2
+                            }
+                        ).setOrigin(0.5);
+                        
                         gem.setData('row', row);
                         gem.setData('col', col);
                         gem.setData('type', gemType.key);
                         gem.setData('value', gemType.value);
+                        gem.setData('icon', icon);
+                        gem.setData('soundColor', gemType.soundColor);
                         
-                        gem.on('pointerdown', () => selectGem(gem, scene));
+                        // Add event listeners for the new gem
+                        gem.on('pointerdown', function(pointer) {
+                            if (!canMove) return;
+                            
+                            // Store drag start position
+                            dragStartGem = gem;
+                            dragStartPosition.x = pointer.x;
+                            dragStartPosition.y = pointer.y;
+                            
+                            // Select the gem
+                            if (!selectedGem) {
+                                selectedGem = gem;
+                                gem.setTint(0xaaaaaa);
+                                
+                                // Add pulsing effect to selected gem
+                                scene.tweens.add({
+                                    targets: gem,
+                                    scaleX: 1.1,
+                                    scaleY: 1.1,
+                                    duration: 200,
+                                    yoyo: true,
+                                    repeat: -1
+                                });
+                            }
+                        });
+                        
+                        gem.on('pointerup', function(pointer) {
+                            if (!canMove || !dragStartGem) return;
+                            
+                            // Calculate drag distance
+                            const dragDistance = Phaser.Math.Distance.Between(
+                                dragStartPosition.x, dragStartPosition.y,
+                                pointer.x, pointer.y
+                            );
+                            
+                            // If drag distance is small, treat it as a tap
+                            if (dragDistance < 10) {
+                                // If we already have a selected gem, try to swap
+                                if (selectedGem && selectedGem !== gem) {
+                                    const row1 = selectedGem.getData('row');
+                                    const col1 = selectedGem.getData('col');
+                                    const row2 = gem.getData('row');
+                                    const col2 = gem.getData('col');
+                                    
+                                    // Check if gems are adjacent
+                                    const isAdjacent = 
+                                        (Math.abs(row1 - row2) === 1 && col1 === col2) ||
+                                        (Math.abs(col1 - col2) === 1 && row1 === row2);
+                                    
+                                    if (isAdjacent) {
+                                        canMove = false;
+                                        
+                                        // Remove selection effects
+                                        scene.tweens.killTweensOf(selectedGem);
+                                        selectedGem.clearTint();
+                                        selectedGem.setScale(1);
+                                        
+                                        // Swap gems
+                                        swapGems(selectedGem, gem, scene);
+                                        
+                                        // Check for matches after swap
+                                        setTimeout(() => {
+                                            const matches = findMatches();
+                                            if (matches.length > 0) {
+                                                // Matches found
+                                                removeMatches(matches, scene);
+                                                movesLeft--;
+                                                document.getElementById('moves').textContent = movesLeft;
+                                                
+                                                // Check for level completion
+                                                if (score >= targetScore) {
+                                                    levelUp(scene);
+                                                }
+                                                
+                                                // Check for game over
+                                                if (movesLeft <= 0 && score < targetScore) {
+                                                    gameOver(scene);
+                                                }
+                                            } else {
+                                                // No matches - swap back
+                                                swapGems(selectedGem, gem, scene);
+                                                canMove = true;
+                                            }
+                                        }, 500);
+                                    } else {
+                                        // Not adjacent - deselect first gem
+                                        scene.tweens.killTweensOf(selectedGem);
+                                        selectedGem.clearTint();
+                                        selectedGem.setScale(1);
+                                        
+                                        // Select new gem
+                                        selectedGem = gem;
+                                        gem.setTint(0xaaaaaa);
+                                        
+                                        // Add pulsing effect to selected gem
+                                        scene.tweens.add({
+                                            targets: gem,
+                                            scaleX: 1.1,
+                                            scaleY: 1.1,
+                                            duration: 200,
+                                            yoyo: true,
+                                            repeat: -1
+                                        });
+                                    }
+                                }
+                            } else {
+                                // Handle drag gesture
+                                handleDragGesture(scene, gem, pointer);
+                            }
+                            
+                            dragStartGem = null;
+                        });
                         
                         board[row][col] = gem;
                         
                         // Animate falling with slight delay per column for visual effect
                         scene.tweens.add({
-                            targets: gem,
+                            targets: [gem, icon],
                             y: offsetY + row * gemSize + gemSize / 2,
                             duration: 600 + (col * 100),
                             ease: 'Bounce.out'
@@ -714,23 +1272,6 @@
         }
 
         function addScore(points, scene) {
-            // Create floating score text
-            const scoreText = scene.add.text(500, 100, `+${points}`, {
-                fontSize: '24px',
-                fill: '#ffcc00',
-                fontStyle: 'bold'
-            }).setOrigin(0.5);
-            
-            // Animate the score text
-            scene.tweens.add({
-                targets: scoreText,
-                y: 50,
-                alpha: 0,
-                duration: 1000,
-                ease: 'Power2',
-                onComplete: () => scoreText.destroy()
-            });
-            
             // Update score
             score += points;
             document.getElementById('score').textContent = score;
@@ -752,9 +1293,9 @@
             document.getElementById('moves').textContent = movesLeft;
             
             // Show level up message
-            const levelUpText = scene.add.text(300, 300, `LEVEL ${level}!`,
+            const levelUpText = scene.add.text(game.scale.width / 2, game.scale.height / 2, `LEVEL ${level}!`,
             {
-                fontSize: '48px',
+                fontSize: Math.min(48, game.scale.width * 0.08) + 'px',
                 fill: '#ffcc00',
                 fontStyle: 'bold',
                 stroke: '#000',
@@ -776,46 +1317,21 @@
         function gameOver(scene) {
             canMove = false;
             
-            // Show game over message
-            const gameOverText = scene.add.text(300, 250, 'GAME OVER',
-            {
-                fontSize: '64px',
-                fill: '#ff6b6b',
-                fontStyle: 'bold',
-                stroke: '#000',
-                strokeThickness: 8
-            }).setOrigin(0.5);
+            // Update final score
+            document.getElementById('final-score').textContent = score;
             
-            const finalScore = scene.add.text(300, 320, `Final Score: ${score}`,
-            {
-                fontSize: '36px',
-                fill: '#ffffff',
-                fontStyle: 'bold'
-            }).setOrigin(0.5);
-            
-            const restartText = scene.add.text(300, 380, 'Click "New Game" to play again',
-            {
-                fontSize: '24px',
-                fill: '#4ecdc4'
-            }).setOrigin(0.5);
-            
-            // Add pulsing effect to game over text
-            scene.tweens.add({
-                targets: gameOverText,
-                scaleX: 1.1,
-                scaleY: 1.1,
-                duration: 800,
-                yoyo: true,
-                repeat: -1
-            });
+            // Show game over popup
+            setTimeout(() => {
+                document.getElementById('game-over-popup').classList.add('active');
+            }, 1000);
         }
 
         function showHint(scene) {
             if (!canMove) return;
             
             // Find a possible move
-            for (let row = 0; row < 8; row++) {
-                for (let col = 0; col < 7; col++) {
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize - 1; col++) {
                     // Check horizontal swap
                     const gem1 = board[row][col];
                     const gem2 = board[row][col + 1];
@@ -851,8 +1367,8 @@
             }
             
             // Check vertical swaps
-            for (let row = 0; row < 7; row++) {
-                for (let col = 0; col < 8; col++) {
+            for (let row = 0; row < boardSize - 1; row++) {
+                for (let col = 0; col < boardSize; col++) {
                     const gem1 = board[row][col];
                     const gem2 = board[row + 1][col];
                     
@@ -902,6 +1418,16 @@
             gem2.setData('row', row1);
             gem2.setData('col', col1);
         }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            game.scale.resize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Prevent context menu on mobile
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html>
