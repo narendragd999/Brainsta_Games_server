@@ -23,10 +23,12 @@
             color: #c9d1d9;
             margin: 0;
             padding: 0;
+            /* स्क्रॉलिंग बंद रखने के लिए */
             overflow: hidden; 
             display: flex;
             justify-content: center;
             align-items: center;
+            /* सुनिश्चित करता है कि यह पूरे उपलब्ध व्यूपोर्ट को कवर करे */
             min-height: 100vh;
         }
 
@@ -51,6 +53,7 @@
             background-size: 50px 50px;
             background-position: 0 0;
             border-radius: 0.5rem;
+            /* कैनवस को बची हुई सारी जगह लेने देता है */
             flex-grow: 1; 
             cursor: pointer;
             border: 2px solid #58a6ff;
@@ -114,7 +117,8 @@
 </head>
 <body>
 
-    <div id="game-container" class="p-4 flex flex-col gap-4">
+    <!-- पैडिंग को p-2 (मोबाइल के लिए) और sm:p-4 (बड़े स्क्रीन के लिए) में बदला गया है -->
+    <div id="game-container" class="p-2 sm:p-4 flex flex-col gap-2 sm:gap-4">
         <h1 class="text-4xl font-black text-center text-[#58a6ff] mt-2 tracking-widest" style="text-shadow: 0 0 10px #58a6ff;">
             &lt;ZIPLINE_RUNNER/&gt;
         </h1>
@@ -140,23 +144,23 @@
     <!-- Instructions Modal -->
     <div id="instructionsModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-3xl font-bold mb-6 text-[#58a6ff]">HOW TO ENGAGE</h2>
+            <h2 class="text-3xl font-bold mb-6 text-[#58a6ff]">कैसे खेलें</h2>
             <p class="text-left mb-6 leading-relaxed">
-                You are a test subject in the **Synthetic Zipline Simulation**. <br><br>
-                Press **SPACE** or **TAP** the screen to toggle between running on the synthetic ground and grappling onto the overhead power line.<br><br> 
-                **AVOID** the aggressive red **SPIKES**. Survival is the only metric.
+                आप **Synthetic Zipline Simulation** में एक टेस्ट विषय हैं। <br><br>
+                सिंथेटिक ज़मीन पर दौड़ने और ऊपर की पावर लाइन पर झूलने के बीच टॉगल करने के लिए **SPACE** दबाएं या स्क्रीन पर **टैप** करें।<br><br> 
+                आक्रामक लाल **काँटों (SPIKES)** से बचें। जीवित रहना ही एकमात्र लक्ष्य है।
             </p>
-            <button onclick="window.hideInstructions()" class="btn primary-btn mt-4 text-xl">PROCEED &gt;&gt;</button>
+            <button onclick="window.hideInstructions()" class="btn primary-btn mt-4 text-xl">आगे बढ़ें &gt;&gt;</button>
         </div>
     </div>
 
     <!-- Game Over Modal -->
     <div id="gameOverModal" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-4xl font-bold mb-4 text-red-400" style="text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);">TERMINATED</h2>
-            <p class="text-2xl mb-6">DISTANCE: <span id="finalScore" class="font-extrabold text-[#58a6ff]">0</span>m</p>
+            <h2 class="text-4xl font-bold mb-4 text-red-400" style="text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);">समाप्त (TERMINATED)</h2>
+            <p class="text-2xl mb-6">दूरी (DISTANCE): <span id="finalScore" class="font-extrabold text-[#58a6ff]">0</span>m</p>
             
-            <button id="closeGameOver" onclick="window.hideGameOver()" class="btn primary-btn mt-2 text-xl w-full">RESTART SIMULATION</button>
+            <button id="closeGameOver" onclick="window.hideGameOver()" class="btn primary-btn mt-2 text-xl w-full">सिमुलेशन पुनः आरंभ करें</button>
         </div>
     </div>
 
@@ -227,8 +231,6 @@
                         this.startGame();
                     }
                 });
-                
-                // Removed: Gemini button listener
             }
 
             toggleGrapple() {
@@ -241,7 +243,7 @@
                 }
                 
                 // UI updates
-                document.getElementById('startGameBtn').textContent = 'RESTART RUN (SPACE / TAP)';
+                document.getElementById('startGameBtn').textContent = 'पुनः आरंभ करें (SPACE / TAP)';
 
                 // Reset state
                 this.currentScore = 0;
