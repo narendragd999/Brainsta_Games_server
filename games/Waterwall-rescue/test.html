@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Waterwall Rescue: जल भित्ति बचाव</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-blue: #3498db;
+            --primary-purple: #6a11cb;
+            --dark-text: #333;
+            --light-text: #fff;
+            --card-bg: #ffffff;
+            --shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            --gold: #FFD700; /* Added gold for selection */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            /* Using a lighter gradient for better contrast */
+            background: linear-gradient(to bottom, #9370DB, #f0f4f8); 
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 2px;
+            border: 4px solid var(--primary-blue);
+            box-shadow: inset 0 0 15px rgba(0, 0, 255, 0.3);
+            background-color: #000;
+        }
+
+        .gem {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            transition: transform 0.15s ease-out, opacity 0.1s;
+            border-radius: 8px;
+            user-select: none;
+            box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        .gem-selected {
+            transform: scale(1.1);
+            border: 3px solid var(--gold);
+            z-index: 10;
+        }
+
+        .gem-remove {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        /* Pressure & Character Visuals */
+        .pressure-bar-container {
+            position: relative;
+            width: 100%;
+            height: 30px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            background-color: #333;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        #pressure-level {
+            height: 100%;
+            background: linear-gradient(90deg, #1e90ff, #00bfff);
+            transition: width 0.3s ease;
+            position: absolute;
+            left: 0;
+            z-index: 1;
+        }
+        
+        /* Base styles for character and monster to align them visually */
+        .game-entity {
+            position: absolute;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: left 0.3s ease;
+            z-index: 3;
+        }
+
+        #character {
+            background-color: #fca311; /* Orange/Gold for character */
+            z-index: 4; /* Higher Z-index for character */
+        }
+
+        #monster {
+            background-color: #e63946; /* Red for monster */
+            z-index: 3;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 1rem;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: var(--shadow);
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+
+    <div class="game-container">
+        <h1 class="text-3xl font-bold mb-4 text-gray-800">जल भित्ति बचाव (Waterwall Rescue)</h1>
+
+        <!-- Score and Control Panel -->
+        <div class="w-full flex justify-between items-center mb-4 p-3 bg-gray-50 rounded-lg shadow-inner">
+            <div class="text-xl font-semibold text-gray-700">स्कोर: <span id="score">0</span></div>
+            <div class="text-xl font-semibold text-gray-700">संकेत: <span id="hints">3</span></div>
+            <div class="text-xl font-semibold text-gray-700">समय: <span id="game-time">0</span>s</div>
+            <div>
+                <button id="pause-btn" onclick="togglePause()" class="p-2 mx-1 text-2xl bg-yellow-400 rounded-full hover:bg-yellow-500 transition-colors shadow-md">⏸️</button>
+                <button id="sound-btn" onclick="toggleSound()" class="p-2 mx-1 text-2xl bg-green-400 rounded-full hover:bg-green-500 transition-colors shadow-md">🔊</button>
+            </div>
+        </div>
+
+        <!-- Water Pressure / Character / Monster Visuals -->
+        <div class="w-full">
+            <p class="text-sm text-gray-600 mb-1">दबाव सूचक (Pressure Gauge) - पानी का बढ़ता दबाव चरित्र को दाईं ओर धकेलता है।</p>
+            <div class="pressure-bar-container">
+                <div id="pressure-level" style="width: 0%"></div>
+                <div id="character" class="game-entity" style="left: 0%">🦸</div> <!-- Char: Hero -->
+                <div id="monster" class="game-entity" style="left: 100%">👹</div> <!-- Monster -->
+            </div>
+        </div>
+        
+        <!-- Match 3 Grid -->
+        <div id="game-grid" class="grid-container">
+            <!-- Gems will be inserted here by JavaScript -->
+        </div>
+
+        <button id="hint-btn" onclick="useHint()" class="mt-4 w-full p-3 text-lg font-bold bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shadow-lg">
+            संकेत प्रयोग करें (Use Hint)
+        </button>
+
+        <button id="restart-btn" onclick="init()" class="mt-2 w-full p-3 text-lg font-bold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-lg">
+            पुनः आरंभ करें (Restart Game)
+        </button>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-4xl font-bold text-red-600 mb-4">खेल समाप्त! 💀</h2>
+            <p class="text-xl text-gray-700 mb-4">मॉन्स्टर आप तक पहुँच गया या दबाव बहुत अधिक हो गया!</p>
+            <p class="text-2xl font-semibold mb-6">आपका अंतिम स्कोर: <span id="final-score">0</span></p>
+            <button onclick="init()" class="px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors">फिर से कोशिश करें</button>
+        </div>
+    </div>
+
+    <!-- Pause Modal -->
+    <div id="pause-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 class="text-4xl font-bold text-yellow-600 mb-4">रोका गया (Paused)</h2>
+            <p class="text-xl text-gray-700 mb-6">पहेली को रोकने के लिए फिर से दबाएँ।</p>
+            <button onclick="togglePause()" class="px-6 py-3 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition-colors">खेल जारी रखें</button>
+        </div>
+    </div>
+
+    <!-- Message Box (Replacing alert) -->
+    <div id="message-box" class="fixed top-5 right-5 z-50 p-4 bg-blue-500 text-white rounded-lg shadow-xl transition-opacity duration-300 opacity-0 hidden">
+        यह एक संकेत है!
+    </div>
+
+    <script>
+        // Global Constants
+        const ROWS = 8;
+        const COLS = 8;
+        const GEM_TYPES = ['🔴', '🟢', '🔵', '🟡', '🟣']; // Emojis
+        const GEM_COLORS = ['#e74c3c', '#2ecc71', '#3498db', '#f1c40f', '#9b59b6'];
+
+        // Game State
+        let gameState = {
+            board: [],
+            score: 0,
+            hints: 3,
+            isPaused: false,
+            isGameOver: false,
+            selectedGem: null,
+            isProcessing: false, // Prevents multiple swaps/matches
+            lastTime: 0,
+            
+            // New Pressure and Monster Mechanics
+            waterLevel: 2, // 0 to 100% - Initialized slightly above 0 for visibility
+            pressureRate: 0.8, // % increase per second
+            drainAmount: 10, // % reduction per successful match
+            characterX: 2, // 0 to 100% position in the bar
+            monsterX: 98, // 0 to 100% position in the bar
+            monsterSpeed: 0.05, // % movement per second towards character
+        };
+
+        // DOM Elements
+        const gameGrid = document.getElementById('game-grid');
+        const scoreElement = document.getElementById('score');
+        const hintsElement = document.getElementById('hints');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const finalScoreElement = document.getElementById('final-score');
+        const pauseModal = document.getElementById('pause-modal');
+        const soundBtn = document.getElementById('sound-btn');
+        const messageBox = document.getElementById('message-box');
+        
+        // New DOM Elements
+        const pressureLevelEl = document.getElementById('pressure-level');
+        const characterEl = document.getElementById('character');
+        const monsterEl = document.getElementById('monster');
+
+        // --- Utility Functions ---
+
+        // Display a message box instead of alert()
+        function showMessage(msg) {
+            messageBox.textContent = msg;
+            messageBox.classList.remove('hidden');
+            messageBox.classList.remove('opacity-0');
+            setTimeout(() => {
+                messageBox.classList.add('opacity-0');
+                setTimeout(() => messageBox.classList.add('hidden'), 300);
+            }, 2000);
+        }
+
+        // Get Gem Type based on index
+        function getGemType(index) {
+            return GEM_TYPES[index % GEM_TYPES.length];
+        }
+
+        // Get Gem Color based on index
+        function getGemColor(index) {
+            return GEM_COLORS[index % GEM_COLORS.length];
+        }
+
+        // Update UI elements
+        function updateUI() {
+            scoreElement.textContent = gameState.score;
+            hintsElement.textContent = gameState.hints;
+            
+            // Update Pressure/Monster Bar UI
+            pressureLevelEl.style.width = `${gameState.waterLevel}%`;
+            characterEl.style.left = `${gameState.characterX}%`;
+            monsterEl.style.left = `${gameState.monsterX}%`;
+
+            // Adjust character element style based on danger (pressure)
+            if (gameState.waterLevel > 70) {
+                 characterEl.style.backgroundColor = '#ff6b6b'; // Reddish tint
+            } else if (gameState.waterLevel > 50) {
+                 characterEl.style.backgroundColor = '#fca311'; // Orange
+            } else {
+                 characterEl.style.backgroundColor = '#4169E1'; // Safer Blue
+            }
+        }
+
+        // --- Game Setup ---
+
+        // Create the board data structure
+        function createBoard() {
+            gameState.board = [];
+            for (let r = 0; r < ROWS; r++) {
+                gameState.board[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    let gemType;
+                    do {
+                        gemType = Math.floor(Math.random() * GEM_TYPES.length);
+                    } while (checkMatchAt(r, c, gemType)); // Ensure no immediate matches on start
+                    gameState.board[r][c] = gemType;
+                }
+            }
+            renderBoard();
+        }
+        
+        // Check for matches at a specific coordinate for a specific gem type (used for initial board creation)
+        function checkMatchAt(r, c, type) {
+            // Check horizontal
+            if (c >= 2 && gameState.board[r][c - 1] === type && gameState.board[r][c - 2] === type) return true;
+            if (c <= COLS - 3 && gameState.board[r][c + 1] === type && gameState.board[r][c + 2] === type) return true;
+            // Check vertical
+            if (r >= 2 && gameState.board[r - 1] && gameState.board[r - 1][c] === type && gameState.board[r - 2][c] === type) return true;
+            if (r <= ROWS - 3 && gameState.board[r + 1] && gameState.board[r + 1][c] === type && gameState.board[r + 2][c] === type) return true;
+            return false;
+        }
+
+        // Render the board to the DOM
+        function renderBoard() {
+            gameGrid.innerHTML = '';
+            gameGrid.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`;
+            gameGrid.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    const gemIndex = gameState.board[r][c];
+                    const gemDiv = document.createElement('div');
+                    gemDiv.classList.add('gem');
+                    gemDiv.id = `gem-${r}-${c}`;
+                    gemDiv.textContent = getGemType(gemIndex);
+                    gemDiv.style.backgroundColor = getGemColor(gemIndex);
+                    gemDiv.dataset.row = r;
+                    gemDiv.dataset.col = c;
+                    gemDiv.addEventListener('click', handleGemClick);
+                    gameGrid.appendChild(gemDiv);
+                }
+            }
+        }
+
+        // --- Game Loop and Logic (Updated) ---
+
+        // Main game loop
+        function gameLoop(timestamp) {
+            if (gameState.isPaused || gameState.isGameOver) {
+                // If paused or game over, stop the loop.
+                return;
+            }
+
+            const deltaTime = timestamp - gameState.lastTime;
+            gameState.lastTime = timestamp;
+
+            // Update game time (for display purposes)
+            // Note: Game time logic removed in the previous snippet, adding simple time tracking back
+            if (!gameState.gameStartTime) {
+                 gameState.gameStartTime = timestamp;
+            }
+            const timeElapsed = Math.floor((timestamp - gameState.gameStartTime) / 1000);
+            document.getElementById('game-time').textContent = timeElapsed;
+            
+            // Call the new game logic update
+            updateGameLogic(deltaTime / 1000); // Pass delta time in seconds
+
+            updateUI();
+
+            // Check Game Over
+            if (gameState.isGameOver) {
+                gameOver();
+                return;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // New core game mechanics update function
+        function updateGameLogic(dt) {
+            // 1. Water Pressure Increases (Pushing Character Right)
+            // पानी का स्तर (दबाव) स्वतः बढ़ता है
+            gameState.waterLevel = Math.min(100, gameState.waterLevel + gameState.pressureRate * dt);
+            
+            // 2. Character Position is driven by Water Level / Pressure Wall (FIXED: Character moves with water)
+            // चरित्र की स्थिति पानी के बढ़ते स्तर (दबाव) से सीधे जुड़ी हुई है।
+            const charOffset = 2; // Keep character slightly away from the edge for visibility
+            gameState.characterX = Math.min(98, Math.max(charOffset, gameState.waterLevel)); // Character moves with water
+
+            
+            // 3. Monster Movement (Moving Left towards Character)
+            // मॉन्स्टर बाईं ओर चरित्र की ओर बढ़ता है
+            // The monster only moves if there is space between it and the character (5% minimum distance)
+            if (gameState.monsterX > gameState.characterX + 5) { 
+                gameState.monsterX = Math.max(gameState.characterX + 5, gameState.monsterX - gameState.monsterSpeed * dt * 10);
+            }
+
+            // 4. Game Over Conditions
+            // A. Pressure too high (pushed off the edge)
+            if (gameState.characterX >= 98) {
+                showMessage("दबाव बहुत अधिक हो गया! (Pressure Overload!)");
+                gameState.isGameOver = true;
+                return;
+            }
+            
+            // B. Monster reaches the character
+            if (gameState.monsterX <= gameState.characterX + 3) { // 3% tolerance for collision
+                showMessage("मॉन्स्टर पहुँच गया! (Monster Reached You!)");
+                gameState.isGameOver = true;
+                return;
+            }
+        }
+
+
+        // --- Match-3 Core Logic ---
+
+        // Handles gem selection and swapping
+        function handleGemClick(event) {
+            if (gameState.isPaused || gameState.isGameOver || gameState.isProcessing) return;
+
+            const r = parseInt(event.target.dataset.row);
+            const c = parseInt(event.target.dataset.col);
+            const currentGemEl = document.getElementById(`gem-${r}-${c}`);
+
+            if (!gameState.selectedGem) {
+                // First gem selected
+                gameState.selectedGem = { r, c, el: currentGemEl };
+                currentGemEl.classList.add('gem-selected');
+            } else {
+                // Second gem selected - check for validity
+                const s = gameState.selectedGem;
+
+                // Check if it's an adjacent gem (horizontal or vertical)
+                const isAdjacent = (Math.abs(r - s.r) === 1 && c === s.c) || (Math.abs(c - s.c) === 1 && r === s.r);
+
+                s.el.classList.remove('gem-selected'); // Deselect the first gem
+
+                if (isAdjacent) {
+                    gameState.isProcessing = true;
+                    // Swap, check for matches, then process
+                    swapGems(r, c, s.r, s.c);
+                } else {
+                    // Not adjacent or clicked the same gem, select the new one
+                    gameState.selectedGem = { r, c, el: currentGemEl };
+                    currentGemEl.classList.add('gem-selected');
+                }
+            }
+        }
+
+        // Swaps gems in the data array and then processes matches
+        function swapGems(r1, c1, r2, c2) {
+            // Swap in data array
+            [gameState.board[r1][c1], gameState.board[r2][c2]] = [gameState.board[r2][c2], gameState.board[r1][c1]];
+
+            // Check for matches at both positions
+            const matches = findMatches();
+
+            if (matches.length > 0) {
+                // Successful swap: process matches
+                handleMatch(matches);
+            } else {
+                // Unsuccessful swap: swap back after a brief visual delay
+                setTimeout(() => {
+                    [gameState.board[r1][c1], gameState.board[r2][c2]] = [gameState.board[r2][c2], gameState.board[r1][c1]];
+                    renderBoard(); // Re-render to show original state
+                    gameState.isProcessing = false;
+                }, 300);
+            }
+            
+            gameState.selectedGem = null;
+            renderBoard();
+        }
+
+        // Finds all matches (3 or more in a row/column)
+        function findMatches() {
+            const matches = [];
+
+            // Helper to add unique matches
+            const addMatch = (r, c) => {
+                const id = `${r}-${c}`;
+                if (!matches.some(m => m.id === id)) {
+                    matches.push({ r, c, id });
+                }
+            };
+
+            // Check Horizontal Matches
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS - 2; c++) {
+                    const type = gameState.board[r][c];
+                    if (gameState.board[r][c + 1] === type && gameState.board[r][c + 2] === type) {
+                        let count = 0;
+                        while (c + count < COLS && gameState.board[r][c + count] === type) {
+                            addMatch(r, c + count);
+                            count++;
+                        }
+                        c += count - 1; // Skip already checked gems
+                    }
+                }
+            }
+
+            // Check Vertical Matches
+            for (let c = 0; c < COLS; c++) {
+                for (let r = 0; r < ROWS - 2; r++) {
+                    const type = gameState.board[r][c];
+                    if (gameState.board[r + 1][c] === type && gameState.board[r + 2][c] === type) {
+                        let count = 0;
+                        while (r + count < ROWS && gameState.board[r + count][c] === type) {
+                            addMatch(r + count, c);
+                            count++;
+                        }
+                        r += count - 1; // Skip already checked gems
+                    }
+                }
+            }
+            return matches;
+        }
+
+        // Processes the matched gems
+        function handleMatch(matches) {
+            gameState.isProcessing = true;
+
+            // 1. Scoring and Draining Pressure
+            const scorePerGem = 10;
+            const scoreGain = matches.length * scorePerGem;
+            gameState.score += scoreGain;
+            
+            // DRAIN PRESSURE: Match-3 सफल होने पर पानी का स्तर (दबाव) कम होता है
+            const drain = Math.min(gameState.waterLevel, gameState.drainAmount);
+            gameState.waterLevel = Math.max(2, gameState.waterLevel - drain); // Don't drain below the starting point (2%)
+            
+            // Character is pulled back to safety (since waterLevel drives characterX, this happens automatically)
+
+            // Monster is pushed back to give the player breathing room (NEW LOGIC)
+            const monsterPushback = drain * 0.8; // Pushes monster back 80% of the drain amount
+            gameState.monsterX = Math.min(98, gameState.monsterX + monsterPushback); 
+
+            showMessage(`मैच! +${scoreGain} अंक, दबाव कम हुआ, और मॉन्स्टर पीछे हटा! (${drain.toFixed(1)}%)`);
+
+            // 2. Visual removal
+            matches.forEach(m => {
+                const gemEl = document.getElementById(`gem-${m.r}-${m.c}`);
+                if (gemEl) gemEl.classList.add('gem-remove');
+            });
+
+            setTimeout(() => {
+                // 3. Drop and Refill
+                removeMatches(matches);
+                dropGems();
+                refillBoard();
+                
+                // 4. Check for cascade matches
+                const newMatches = findMatches();
+                if (newMatches.length > 0) {
+                    handleMatch(newMatches); // Recursively process cascades
+                } else {
+                    // All cascades finished
+                    gameState.isProcessing = false;
+                }
+                renderBoard();
+            }, 300); // Wait for removal animation
+        }
+
+        // Remove matched gems from the data array
+        function removeMatches(matches) {
+            matches.forEach(m => {
+                gameState.board[m.r][m.c] = -1; // -1 represents an empty spot
+            });
+        }
+
+        // Drop gems down to fill empty spaces
+        function dropGems() {
+            for (let c = 0; c < COLS; c++) {
+                let emptySpots = 0;
+                // Start from the bottom
+                for (let r = ROWS - 1; r >= 0; r--) {
+                    if (gameState.board[r][c] === -1) {
+                        emptySpots++;
+                    } else if (emptySpots > 0) {
+                        // Move the gem down to the lowest empty spot
+                        gameState.board[r + emptySpots][c] = gameState.board[r][c];
+                        gameState.board[r][c] = -1;
+                    }
+                }
+            }
+        }
+
+        // Refill the top empty spaces with new random gems
+        function refillBoard() {
+            for (let c = 0; c < COLS; c++) {
+                for (let r = 0; r < ROWS; r++) {
+                    if (gameState.board[r][c] === -1) {
+                        let gemType;
+                        do {
+                             gemType = Math.floor(Math.random() * GEM_TYPES.length);
+                        } while (checkMatchAt(r, c, gemType)); // Ensure no immediate matches on refill
+                        gameState.board[r][c] = gemType;
+                    }
+                }
+            }
+        }
+
+        // Use a hint to find a possible swap
+        function useHint() {
+            if (gameState.isPaused || gameState.isGameOver || gameState.hints <= 0) {
+                showMessage("संकेत नहीं बचे हैं या खेल रुका हुआ है।");
+                return;
+            }
+
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    // Check right swap
+                    if (c < COLS - 1) {
+                        if (canSwapAndMatch(r, c, r, c + 1)) return highlightHint(r, c, r, c + 1);
+                    }
+                    // Check down swap
+                    if (r < ROWS - 1) {
+                        if (canSwapAndMatch(r, c, r + 1, c)) return highlightHint(r, c, r + 1, c);
+                    }
+                }
+            }
+            showMessage("कोई चाल नहीं मिली!");
+        }
+
+        function canSwapAndMatch(r1, c1, r2, c2) {
+            // Temporarily swap
+            [gameState.board[r1][c1], gameState.board[r2][c2]] = [gameState.board[r2][c2], gameState.board[r1][c1]];
+
+            const matches = findMatches();
+
+            // Swap back
+            [gameState.board[r1][c1], gameState.board[r2][c2]] = [gameState.board[r2][c2], gameState.board[r1][c1]];
+
+            return matches.length > 0;
+        }
+
+        function highlightHint(r1, c1, r2, c2) {
+            gameState.hints--;
+            updateUI();
+            
+            const el1 = document.getElementById(`gem-${r1}-${c1}`);
+            const el2 = document.getElementById(`gem-${r2}-${c2}`);
+
+            // Highlight the two gems for a short duration
+            el1.style.boxShadow = '0 0 20px 5px #00FFFF';
+            el2.style.boxShadow = '0 0 20px 5px #00FFFF';
+            
+            setTimeout(() => {
+                el1.style.boxShadow = 'none';
+                el2.style.boxShadow = 'none';
+            }, 1000);
+            
+            showMessage("संकेत मिला! इन दो रत्नों को बदलें।");
+        }
+
+
+        // --- Game Flow Control ---
+
+        // Initialize or restart the game
+        function init() {
+            // Reset state
+            gameState.score = 0;
+            gameState.hints = 3;
+            gameState.isPaused = false;
+            gameState.isGameOver = false;
+            gameState.selectedGem = null;
+            gameState.isProcessing = false;
+            gameState.gameStartTime = performance.now(); // Reset game timer
+            
+            // Reset new mechanics state
+            gameState.waterLevel = 2; // Start slightly off 0
+            gameState.characterX = 2; // Start left (safe)
+            gameState.monsterX = 98; // Start right (far)
+
+            gameOverModal.classList.add('hidden');
+            pauseModal.classList.add('hidden');
+            
+            createBoard();
+            updateUI();
+            
+            // Start the main loop
+            gameState.lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Game over
+        function gameOver() {
+            gameState.isGameOver = true;
+            finalScoreElement.textContent = gameState.score;
+            gameOverModal.classList.remove('hidden');
+        }
+
+        // Toggle pause
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            
+            if (gameState.isPaused) {
+                pauseModal.classList.remove('hidden');
+            } else {
+                pauseModal.classList.add('hidden');
+                // Restart the loop with the new timestamp
+                gameState.lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Toggle sound (Placeholder)
+        function toggleSound() {
+            // Placeholder: In a real game, this would toggle audio
+            showMessage("ध्वनि नियंत्रण अभी लागू नहीं है।");
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
