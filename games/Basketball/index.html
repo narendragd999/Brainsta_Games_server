@@ -94,8 +94,8 @@
   /* Powerups column */
   .power-ups{
     position:absolute;
-    left:14px;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    left:0px;
+    bottom:calc(50px + env(safe-area-inset-bottom));
     z-index:30;
     display:flex;
     gap:10px;
@@ -111,7 +111,7 @@
   /* Bottom controls */
   .controls{
     position:absolute;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    bottom:calc(70px + env(safe-area-inset-bottom));
     right:14px;
     z-index:30;
     display:flex;
@@ -178,11 +178,57 @@
     50% { opacity: 0.4; }
   }
 
+  /* Challenges display */
+  .challenges-display {
+    position: absolute;
+    top: calc(72px + env(safe-area-inset-top));
+    left: 14px;
+    z-index: 30;
+    background: #fff;
+    color: #111;
+    padding: 10px 14px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-weight: 700;
+    font-size: 13px;
+    max-width: 200px;
+  }
+  
+  .challenge-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .challenge-check {
+    color: #2ecc71;
+    font-size: 12px;
+  }
+  
+  .challenge-unchecked {
+    color: #e74c3c;
+    font-size: 12px;
+  }
+  
+  .challenge-progress {
+    font-size: 11px;
+    color: #7f8c8d;
+    margin-left: 5px;
+  }
+
   /* responsive tweaks */
   @media (max-width:420px){
     .control-btn{width:50px;height:50px;font-size:18px;border-radius:12px}
     .power-up{width:44px;height:44px}
     .score-display,.timer-card{padding:8px 10px;font-size:13px;border-radius:12px}
+    .challenges-display {
+      padding: 8px 10px;
+      font-size: 11px;
+      max-width: 170px;
+    }
   }
 
   /* Full-screen mode */
@@ -204,7 +250,7 @@
     font-size: 18px;
   }
   
-  /* Court overlay for alignment */
+  /* Court overlay for alignment - COMPLETELY TRANSPARENT */
   .court-overlay {
     position: absolute;
     top: 0;
@@ -213,8 +259,100 @@
     height: 100%;
     pointer-events: none;
     z-index: 10;
-    opacity: 0.7;
+    opacity: 0; /* Completely transparent */
+    visibility: hidden; /* Hidden from view */
   }
+  
+  /* Wind indicator */
+  .wind-indicator {
+    position: absolute;
+    top: calc(180px + env(safe-area-inset-top));
+    right: 14px;
+    z-index: 30;
+    background: #fff;
+    color: #111;
+    padding: 8px 12px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Updated controls positioning */
+.controls{
+  position: absolute;
+  bottom: max(calc(40px + env(safe-area-inset-bottom)), 20px);
+  right: 14px;
+  z-index: 30;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Updated power-ups positioning */
+.power-ups{
+  position: absolute;
+  left: 0px;
+  bottom: max(calc(70px + env(safe-area-inset-bottom)), 20px);
+  z-index: 30;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+}
+
+/* Additional responsive adjustments */
+@media (max-height: 700px) {
+  .controls {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
+  }
+  
+  .power-ups {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
+  }
+  
+  .control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 18px;
+  }
+  
+  .power-up {
+    width: 42px;
+    height: 42px;
+  }
+}
+
+@media (max-height: 600px) {
+  .controls {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
+  }
+  
+  .power-ups {
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
+  }
+  
+  .control-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 16px;
+  }
+  
+  .power-up {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .challenges-display {
+    display: none; /* Hide challenges on very small screens */
+  }
+  
+  .wind-indicator {
+    display: none; /* Hide wind indicator on very small screens */
+  }
+}
 </style>
 </head>
 
@@ -223,9 +361,9 @@
     <div class="projector-beam"></div>
     <canvas id="gameCanvas" width="360" height="720"></canvas>
     
-    <!-- Court overlay with fixed hoop position -->
+    <!-- Court overlay - COMPLETELY TRANSPARENT -->
     <div class="court-overlay" id="courtOverlay">
-      <!-- This will be positioned to match the background image hoop -->
+      <!-- No SVG or visible elements - completely transparent -->
     </div>
 
     <div class="score-display" role="status" aria-live="polite">
@@ -235,6 +373,24 @@
     <div class="timer-card" role="status" aria-live="polite">
       <i class="fas fa-clock"></i>&nbsp;<span id="timerText">60</span>s
     </div>
+    
+    <div class="challenges-display" id="challengesDisplay">
+      <div class="challenge-item" id="challengeStreak">
+        <i class="fas fa-circle challenge-unchecked" id="streakIcon"></i>
+        <span>3 in a row</span>
+        <span class="challenge-progress" id="streakProgress">(0/3)</span>
+      </div>
+      <div class="challenge-item" id="challengeDistance">
+        <i class="fas fa-circle challenge-unchecked" id="distanceIcon"></i>
+        <span>Long shot</span>
+        <span class="challenge-progress" id="distanceProgress">(0/1)</span>
+      </div>
+      <div class="challenge-item" id="challengePerfect">
+        <i class="fas fa-circle challenge-unchecked" id="perfectIcon"></i>
+        <span>Perfect shot</span>
+        <span class="challenge-progress" id="perfectProgress">(0/2)</span>
+      </div>
+    </div>
 
     <div class="instructions" id="instructionsBtn" title="How to play">
       <i class="fas fa-question"></i>
@@ -242,6 +398,11 @@
 
     <div class="fullscreen-btn" id="fullscreenBtn" title="Toggle Fullscreen">
       <i class="fas fa-expand"></i>
+    </div>
+    
+    <div class="wind-indicator" id="windIndicator" style="display: none;">
+      <i class="fas fa-wind"></i>
+      <span id="windText">0 m/s</span>
     </div>
 
     <div class="power-ups" aria-hidden="false">
@@ -262,6 +423,7 @@
         <h2>How to Play</h2>
         <p>Drag the ball backward and release (or flick) to shoot. The dotted arc shows the trajectory preview while dragging.</p>
         <p>Make as many baskets as possible before time runs out (Time Attack).</p>
+        <p>Complete challenges for bonus points: 3 shots in a row, long distance shots, and perfect shots.</p>
         <p>Use Hint or Auto-solve buttons for assistance. Tap the blue shoot button for a quick auto-aim shot.</p>
         <div class="modal-actions">
           <button id="closeInstr" class="btn primary">Got it</button>
@@ -274,6 +436,7 @@
       <div class="modal-card">
         <h2>Time's Up!</h2>
         <p>Your score: <strong id="finalScore">0</strong></p>
+        <p>Challenges completed: <strong id="challengesCompleted">0</strong></p>
         <p id="finalFeedback">Nice shooting!</p>
         <div class="modal-actions">
           <button id="playAgainBtn" class="btn primary">Play Again</button>
@@ -294,6 +457,7 @@
    - Physics-based arc
    - Time attack mode (60s)
    - Hint & AutoSolve
+   - Challenges system
    - Background image with fixed hoop position
    ------------------------------ */
 
@@ -316,7 +480,11 @@
     netStretchDuration: 700,        // milliseconds
     ballPauseDuration: 500,         // milliseconds after scoring
     fixedHoopX: null,               // Will be set based on background image
-    fixedHoopY: null                // Will be set based on background image
+    fixedHoopY: null,               // Will be set based on background image
+    challengesEnabled: true,         // Enable challenges
+    windEnabled: true,               // Enable wind effect
+    windChangeInterval: 3000,       // How often wind changes (ms)
+    maxWindForce: 150               // Maximum wind force
   };
 
   // DOM elements
@@ -338,9 +506,23 @@
   const gameOverModal = document.getElementById('gameOverModal');
   const finalScore = document.getElementById('finalScore');
   const finalFeedback = document.getElementById('finalFeedback');
+  const challengesCompleted = document.getElementById('challengesCompleted');
   const playAgainBtn = document.getElementById('playAgainBtn');
   const container = document.getElementById('gameContainer');
   const courtOverlay = document.getElementById('courtOverlay');
+  const windIndicator = document.getElementById('windIndicator');
+  const windText = document.getElementById('windText');
+  
+  // Challenge elements
+  const challengeStreak = document.getElementById('challengeStreak');
+  const challengeDistance = document.getElementById('challengeDistance');
+  const challengePerfect = document.getElementById('challengePerfect');
+  const streakIcon = document.getElementById('streakIcon');
+  const distanceIcon = document.getElementById('distanceIcon');
+  const perfectIcon = document.getElementById('perfectIcon');
+  const streakProgress = document.getElementById('streakProgress');
+  const distanceProgress = document.getElementById('distanceProgress');
+  const perfectProgress = document.getElementById('perfectProgress');
 
   // state
   let cw = window.innerWidth;
@@ -374,14 +556,48 @@
   let netStretchProgress = 0; // 0-1 value for net stretching animation
   let ballPaused = false;
   let ballPauseTimer = 0;
-  let hoopPosition = { x: cw*0.1, y: ch*0.2 }; // Fixed position matching background
+  let hoopPosition = { x: cw*0.5, y: ch*0.3 }; // Fixed position matching background
+  let windForce = 0; // Current wind force affecting the ball
+  let lastWindChange = 0; // Last time wind changed
+  
+  // Challenge tracking
+  let challenges = {
+    streak: {
+      name: "3 in a row",
+      description: "Make 3 consecutive baskets",
+      target: 3,
+      progress: 0,
+      completed: false,
+      bonus: 10
+    },
+    distance: {
+      name: "Long shot",
+      description: "Score from the far side of the court",
+      target: 1,
+      progress: 0,
+      completed: false,
+      bonus: 15
+    },
+    perfect: {
+      name: "Perfect shot",
+      description: "Score 2 perfect shots (swish)",
+      target: 2,
+      progress: 0,
+      completed: false,
+      bonus: 20
+    }
+  };
+  
+  let consecutiveBaskets = 0;
+  let perfectShots = 0;
 
   // Sounds (using Web Audio API for better compatibility)
   let audioContext = null;
   const sounds = {
     swish: null,
     bounce: null,
-    crowd: null
+    crowd: null,
+    challengeComplete: null
   };
 
   // Utility functions
@@ -472,6 +688,40 @@
     oscillator2.stop(audioContext.currentTime + duration);
   }
 
+  // Create challenge complete sound
+  function createChallengeCompleteSound() {
+    if (!audioContext) return;
+    
+    const duration = 1.2;
+    const oscillator1 = audioContext.createOscillator();
+    const oscillator2 = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator1.type = 'sine';
+    oscillator2.type = 'sine';
+    
+    oscillator1.frequency.setValueAtTime(400, audioContext.currentTime);
+    oscillator2.frequency.setValueAtTime(600, audioContext.currentTime);
+    
+    oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + duration/2);
+    oscillator1.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + duration);
+    oscillator2.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + duration/2);
+    oscillator2.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + duration);
+    
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.3, audioContext.currentTime + duration/2);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator1.start();
+    oscillator2.start();
+    oscillator1.stop(audioContext.currentTime + duration);
+    oscillator2.stop(audioContext.currentTime + duration);
+  }
+
   // Play sound with Web Audio API
   function playSound(name) {
     if (!soundEnabled || !audioContext) return;
@@ -487,6 +737,9 @@
         case 'crowd':
           createCrowdSound();
           break;
+        case 'challengeComplete':
+          createChallengeCompleteSound();
+          break;
       }
     };
 
@@ -499,7 +752,17 @@
 
   // Initialize the stage elements: player, ball, hoop
   function resetStage(resetScore=false){
-    if (resetScore) score = 0;
+    if (resetScore) {
+      score = 0;
+      // Reset challenges
+      for (let key in challenges) {
+        challenges[key].progress = 0;
+        challenges[key].completed = false;
+      }
+      consecutiveBaskets = 0;
+      perfectShots = 0;
+      updateChallengeDisplay();
+    }
     scoreText.textContent = score;
     // player position
     player = {
@@ -519,7 +782,8 @@
       r: CONFIG.ballRadius,
       inPlay: false,
       lastScoredTick: -1, // for debounce
-      paused: false
+      paused: false,
+      startX: player.x // Track starting position for distance calculation
     };
     // hoop position - FIXED to match background image
     hoop = {
@@ -537,6 +801,10 @@
     netStretchProgress = 0;
     ballPaused = false;
     ballPauseTimer = 0;
+    
+    // Reset wind
+    windForce = 0;
+    windIndicator.style.display = 'none';
   }
 
   // Load background image and detect hoop position
@@ -551,7 +819,7 @@
         // For now, we'll use a fixed position based on typical court layout
         // You can adjust these values based on your specific image
         hoopPosition.x = cw * 0.5; // Center of court
-        hoopPosition.y = ch * 0.3; // Top 20% of court
+        hoopPosition.y = ch * 0.3; // Top 30% of court
         
         // Update the overlay to show the hoop position
         updateCourtOverlay();
@@ -575,46 +843,99 @@
   // Update court overlay to match background image hoop position
   function updateCourtOverlay() {
     resetStage(true);
-    // Clear previous overlay content
+    // Clear previous overlay content - NO SVG CREATION
     courtOverlay.innerHTML = '';
     
-    // Create SVG hoop that matches the background image
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS, "svg");
-    // svg.setAttribute("width", "100%");
-    // svg.setAttribute("height", "100%");
-    // svg.setAttribute("viewBox", `0 0 ${cw} ${ch}`);
-    
-    // Backboard
-    const backboard = document.createElementNS(svgNS, "rect");
-    // backboard.setAttribute("x", hoopPosition.x - 36);
-    // backboard.setAttribute("y", hoopPosition.y - 36);
-    // backboard.setAttribute("width", "72");
-    // backboard.setAttribute("height", "28");
-    // backboard.setAttribute("fill", "rgba(255,255,255,0.8)");
-    svg.appendChild(backboard);
-    
-    // Rim
-    const rim = document.createElementNS(svgNS, "path");
-    // rim.setAttribute("d", `M ${hoopPosition.x - 60} ${hoopPosition.y} A 60 60 0 0 1 ${hoopPosition.x + 60} ${hoopPosition.y}`);
-    // rim.setAttribute("stroke", "#ff6bcb");
-    // rim.setAttribute("stroke-width", CONFIG.hoopThickness);
-    // rim.setAttribute("fill", "none");
-    // rim.setAttribute("stroke-linecap", "round");
-    svg.appendChild(rim);
-    
-    // Net
-    for (let i = -4; i <= 4; i++) {
-      //const rx = hoopPosition.x + (i * (CONFIG.hoopWidth / 10));
-      //const netLine = document.createElementNS(svgNS, "path");
-      // netLine.setAttribute("d", `M ${rx} ${hoopPosition.y + CONFIG.hoopThickness/2} Q ${rx - 4} ${hoopPosition.y + 28} ${rx} ${hoopPosition.y + 52}`);
-      // netLine.setAttribute("stroke", "rgba(255,255,255,0.9)");
-      // netLine.setAttribute("stroke-width", "2");
-      // netLine.setAttribute("fill", "none");
-      //svg.appendChild(netLine);
+    // Court overlay is completely transparent - no SVG elements created
+    // This ensures no vertical lines or any elements are visible
+  }
+
+  // Update challenge display
+  function updateChallengeDisplay() {
+    // Streak challenge
+    streakProgress.textContent = `(${challenges.streak.progress}/${challenges.streak.target})`;
+    if (challenges.streak.completed) {
+      streakIcon.className = "fas fa-check-circle challenge-check";
+    } else {
+      streakIcon.className = "fas fa-circle challenge-unchecked";
     }
     
-    //courtOverlay.appendChild(svg);
+    // Distance challenge
+    distanceProgress.textContent = `(${challenges.distance.progress}/${challenges.distance.target})`;
+    if (challenges.distance.completed) {
+      distanceIcon.className = "fas fa-check-circle challenge-check";
+    } else {
+      distanceIcon.className = "fas fa-circle challenge-unchecked";
+    }
+    
+    // Perfect challenge
+    perfectProgress.textContent = `(${challenges.perfect.progress}/${challenges.perfect.target})`;
+    if (challenges.perfect.completed) {
+      perfectIcon.className = "fas fa-check-circle challenge-check";
+    } else {
+      perfectIcon.className = "fas fa-circle challenge-unchecked";
+    }
+  }
+
+  // Update wind effect
+  function updateWind(dt) {
+    if (!CONFIG.windEnabled) return;
+    
+    // Change wind occasionally
+    if (performance.now() - lastWindChange > CONFIG.windChangeInterval) {
+      windForce = (Math.random() - 0.5) * 2 * CONFIG.maxWindForce;
+      lastWindChange = performance.now();
+      
+      // Show wind indicator
+      if (Math.abs(windForce) > 10) {
+        windIndicator.style.display = 'flex';
+        windText.textContent = `${Math.round(windForce)} m/s`;
+      } else {
+        windIndicator.style.display = 'none';
+      }
+    }
+    
+    // Apply wind to ball if in play
+    if (ball.inPlay && !ballPaused) {
+      ball.vx += windForce * (dt/1000);
+    }
+  }
+
+  // Check and update challenges
+  function updateChallenges(isPerfect = false, distance = 0) {
+    let bonusPoints = 0;
+    
+    // Streak challenge
+    if (isPerfect) {
+      perfectShots++;
+      if (perfectShots >= challenges.perfect.target && !challenges.perfect.completed) {
+        challenges.perfect.completed = true;
+        challenges.perfect.progress = challenges.perfect.target;
+        bonusPoints += challenges.perfect.bonus;
+        showFloatingText(`Perfect Challenge! +${challenges.perfect.bonus}`, cw/2, ch/2);
+        playSound('challengeComplete');
+      } else {
+        challenges.perfect.progress = perfectShots;
+      }
+    }
+    
+    // Distance challenge
+    if (distance > cw * 0.6 && !challenges.distance.completed) {
+      challenges.distance.completed = true;
+      challenges.distance.progress = challenges.distance.target;
+      bonusPoints += challenges.distance.bonus;
+      showFloatingText(`Long Shot! +${challenges.distance.bonus}`, cw/2, ch/2);
+      playSound('challengeComplete');
+    }
+    
+    // Update display
+    updateChallengeDisplay();
+    
+    // Add bonus points to score
+    if (bonusPoints > 0) {
+      score += bonusPoints;
+      scoreText.textContent = score;
+    }
   }
 
   // Time & Game Loop
@@ -635,6 +956,14 @@
   function gameOver(){
     isPlaying = false;
     finalScore.textContent = score;
+    
+    // Count completed challenges
+    let completedCount = 0;
+    for (let key in challenges) {
+      if (challenges[key].completed) completedCount++;
+    }
+    challengesCompleted.textContent = completedCount;
+    
     let fb = 'Nice shooting!';
     if (score >= 30) fb = 'Amazing accuracy!';
     else if (score >= 18) fb = 'Great shooting!';
@@ -650,6 +979,7 @@
     ball.vx = velX;
     ball.vy = velY;
     ball.inPlay = true;
+    ball.startX = ball.x; // Record starting position for distance calculation
   }
 
   // Simple overlap check for scoring through rim:
@@ -670,6 +1000,32 @@
           playSound('swish');
           showFloatingText('+2', ball.x, ball.y);
           scoreText.textContent = score;
+          
+          // Check if this was a perfect shot (swish)
+          const isPerfect = Math.abs(ball.x - hoop.x) < 10;
+          
+          // Calculate shot distance
+          const distance = Math.abs(ball.startX - hoop.x);
+          
+          // Update challenges
+          if (CONFIG.challengesEnabled) {
+            updateChallenges(isPerfect, distance);
+          }
+          
+          // Update streak
+          consecutiveBaskets++;
+          if (consecutiveBaskets >= challenges.streak.target && !challenges.streak.completed) {
+            challenges.streak.completed = true;
+            challenges.streak.progress = challenges.streak.target;
+            score += challenges.streak.bonus;
+            showFloatingText(`Streak! +${challenges.streak.bonus}`, cw/2, ch/2);
+            playSound('challengeComplete');
+            updateChallengeDisplay();
+            scoreText.textContent = score;
+          } else {
+            challenges.streak.progress = consecutiveBaskets;
+            updateChallengeDisplay();
+          }
           
           // Activate net stretch animation
           netStretchProgress = 1;
@@ -772,6 +1128,10 @@
       x += pvx * dt;
       y += pvy * dt;
       pvy += CONFIG.gravity * dt;
+      // Apply wind effect to trajectory preview
+      if (CONFIG.windEnabled) {
+        pvx += windForce * dt;
+      }
       points.push({x,y});
       if (y > ch) break;
     }
@@ -866,8 +1226,8 @@
     ctx.scale(deviceRatio, deviceRatio);
     
     // Update hoop position to maintain alignment with background
-    hoopPosition.x = cw * 0.1;
-    hoopPosition.y = ch * 0.2;
+    hoopPosition.x = cw * 0.5;
+    hoopPosition.y = ch * 0.3;
     
     // Update the overlay
     updateCourtOverlay();
@@ -898,6 +1258,9 @@
 
   /* ---------- Render loop ---------- */
   function render(dt){
+    // Update wind
+    updateWind(dt);
+    
     // Update net stretch animation
     if (netStretchProgress > 0) {
       netStretchProgress -= dt / CONFIG.netStretchDuration;
@@ -936,7 +1299,7 @@
     
     // Draw converging lines for 3D effect
     const vanishingPointX = cw * 0.5;
-    const vanishingPointY = ch * 0.4;
+    const vanishingPointY = ch * 0.3;
     for (let i = 0; i <= cw; i += 40) {
       ctx.beginPath();
       ctx.moveTo(i, ch);
@@ -1003,18 +1366,18 @@
     // Draw hoop (rim + backboard simple)
     ctx.save();
     ctx.fillStyle = 'rgba(255,255,255,0.92)';
-    //ctx.fillRect(hoop.x - 36, hoop.y - 36, 72, 28); // small backboard
+    
     // rim
     ctx.beginPath();
-    ctx.strokeStyle = 'transparent';
-    ctx.lineWidth = hoop.thickness;
-    ctx.lineCap = 'round';
-    ctx.arc(hoop.x, hoop.y, hoop.w/2, 0.15*Math.PI, 0.85*Math.PI, false);
+    ctx.strokeStyle = '#ff6bcb';
+    //ctx.lineWidth = hoop.thickness;
+    //ctx.lineCap = 'round';
+    //ctx.arc(hoop.x, hoop.y, hoop.w/2, 0.15*Math.PI, 0.85*Math.PI, false);
     ctx.stroke();
     
     // net (with stretch animation)
-    // ctx.lineWidth = 2;
-    // ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'transparent';
     const stretchFactor = 1 + netStretchProgress * 0.5; // 1 to 1.5 stretch
     for (let i=-4;i<=4;i++){
       const rx = hoop.x + (i*(hoop.w/10));

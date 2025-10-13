@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
-<title>Basketball — Time Attack Flick</title>
+<title>Basketball — Time Attack Adventure</title>
 
 <!-- Font Awesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,14 +20,9 @@
     align-items:center;
     justify-content:center;
     color:#111;
-<<<<<<< HEAD
-    margin: 0;
-    overflow: hidden;
-=======
     overflow:hidden;
     margin:0;
     padding:0;
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   }
 
   /* --- Game container sized for mobile --- */
@@ -37,8 +32,6 @@
     overflow:hidden;
     position:relative;
     background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.85));
-    /* iOS Safari specific fix */
-    height: -webkit-fill-available;
   }
 
   /* Canvas covers entire container */
@@ -49,10 +42,6 @@
     background-size:cover;
     background-position:center;
     touch-action:none;
-    /* Prevent flickering */
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
-    image-rendering: pixelated;
   }
 
   /* White UI card for score */
@@ -91,6 +80,25 @@
     font-size:15px;
   }
 
+  /* Level display */
+  .level-display{
+    position:absolute;
+    top:calc(14px + env(safe-area-inset-top));
+    left:50%;
+    transform:translateX(-50%);
+    z-index:30;
+    background:#fff;
+    color:#111;
+    padding:10px 14px;
+    border-radius:16px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.12);
+    display:flex;
+    gap:8px;
+    align-items:center;
+    font-weight:700;
+    font-size:15px;
+  }
+
   /* Instructions icon */
   .instructions{
     position:absolute;
@@ -105,8 +113,8 @@
   /* Powerups column */
   .power-ups{
     position:absolute;
-    left:14px;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    left:0px;
+    bottom:calc(50px + env(safe-area-inset-bottom));
     z-index:30;
     display:flex;
     gap:10px;
@@ -116,13 +124,15 @@
     width:48px;height:48px;border-radius:12px;background:#fff;display:flex;
     align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,0.12);
     cursor:pointer;font-size:18px;color:#111;
+    transition: all 0.2s ease;
   }
   .power-up:active{transform:scale(0.96)}
+  .power-up.disabled{opacity:0.5;cursor:not-allowed;}
 
   /* Bottom controls */
   .controls{
     position:absolute;
-    bottom:calc(16px + env(safe-area-inset-bottom));
+    bottom:calc(70px + env(safe-area-inset-bottom));
     right:14px;
     z-index:30;
     display:flex;
@@ -133,6 +143,7 @@
     width:58px;height:58px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;
     box-shadow:0 12px 24px rgba(0,0,0,0.12);cursor:pointer;color:#fff;font-weight:700;border:none;
     user-select:none;
+    transition: all 0.2s ease;
   }
   .control-btn.shoot{background:#3498db} /* primary blue */
   .control-btn.secondary{background:#6a11cb} /* purple */
@@ -201,13 +212,8 @@
     border-radius: 16px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     display: flex;
-<<<<<<< HEAD
-    gap: 8px;
-    align-items: center;
-=======
     flex-direction: column;
     gap: 5px;
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
     font-weight: 700;
     font-size: 13px;
     max-width: 200px;
@@ -235,50 +241,45 @@
     margin-left: 5px;
   }
 
-  /* responsive tweaks */
-  @media (max-width:420px){
-    .control-btn{width:50px;height:50px;font-size:18px;border-radius:12px}
-    .power-up{width:44px;height:44px}
-    .score-display,.timer-card{padding:8px 10px;font-size:13px;border-radius:12px}
-    .challenges-display {
-      padding: 8px 10px;
-      font-size: 11px;
-      max-width: 170px;
-    }
+  /* Progress bar */
+  .progress-bar {
+    position: absolute;
+    top: calc(72px + env(safe-area-inset-top));
+    right: 14px;
+    z-index: 30;
+    width: 120px;
+    height: 8px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #6a11cb);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
   }
 
-  /* Full-screen mode */
-  .fullscreen-btn {
+  /* XP display */
+  .xp-display {
     position: absolute;
-    right: 14px;
-    top: calc(130px + env(safe-area-inset-top));
+    bottom: calc(70px + env(safe-area-inset-bottom));
+    left: 14px;
     z-index: 30;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
     background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-    cursor: pointer;
     color: #111;
-    font-size: 18px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    font-weight: 700;
+    font-size: 13px;
   }
-  
-  /* Court overlay for alignment - COMPLETELY TRANSPARENT */
-  .court-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 10;
-    opacity: 0; /* Completely transparent */
-    visibility: hidden; /* Hidden from view */
-  }
-  
+
   /* Wind indicator */
   .wind-indicator {
     position: absolute;
@@ -296,23 +297,141 @@
     font-weight: 700;
     font-size: 13px;
   }
+
+  /* Moving obstacles */
+  .obstacle {
+    position: absolute;
+    background: rgba(231, 76, 60, 0.8);
+    border-radius: 8px;
+    z-index: 15;
+  }
+
+  /* Achievement popup */
+  .achievement-popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    background: linear-gradient(135deg, #f39c12, #e74c3c);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    animation: achievementPop 2.5s ease forwards;
+    text-align: center;
+    max-width: 80%;
+  }
+  
+  .achievement-popup h3 {
+    font-size: 18px;
+    margin: 0;
+  }
+  
+  .achievement-popup p {
+    font-size: 14px;
+    margin: 0;
+    opacity: 0.9;
+  }
+  
+  @keyframes achievementPop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    30%, 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+  }
+
+  /* Updated controls positioning */
+  .controls{
+    position: absolute;
+    bottom: max(calc(40px + env(safe-area-inset-bottom)), 20px);
+    right: 14px;
+    z-index: 30;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* Updated power-ups positioning */
+  .power-ups{
+    position: absolute;
+    left: 0px;
+    bottom: max(calc(70px + env(safe-area-inset-bottom)), 20px);
+    z-index: 30;
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+  }
+
+  /* Additional responsive adjustments */
+  @media (max-height: 700px) {
+    .controls {
+      bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
+    }
+    
+    .power-ups {
+      bottom: max(calc(70px + env(safe-area-inset-bottom)), 15px);
+    }
+    
+    .control-btn {
+      width: 50px;
+      height: 50px;
+      font-size: 18px;
+    }
+    
+    .power-up {
+      width: 42px;
+      height: 42px;
+    }
+    
+    .challenges-display {
+      max-width: 170px;
+    }
+  }
+
+  @media (max-height: 600px) {
+    .controls {
+      bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
+    }
+    
+    .power-ups {
+      bottom: max(calc(70px + env(safe-area-inset-bottom)), 10px);
+    }
+    
+    .control-btn {
+      width: 46px;
+      height: 46px;
+      font-size: 16px;
+    }
+    
+    .power-up {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .challenges-display {
+      display: none; /* Hide challenges on very small screens */
+    }
+    
+    .wind-indicator {
+      display: none; /* Hide wind indicator on very small screens */
+    }
+    
+    .xp-display {
+      display: none; /* Hide XP on very small screens */
+    }
+  }
 </style>
 </head>
 
 <body>
-  <div id="gameContainer" aria-label="Basketball time attack game">
+  <div id="gameContainer" aria-label="Basketball time attack adventure game">
     <div class="projector-beam"></div>
-    <canvas id="gameCanvas"></canvas>
-    
-<<<<<<< HEAD
-    <!-- Court overlay with fixed hoop position -->
-    <div class="court-overlay" id="courtOverlay"></div>
-=======
-    <!-- Court overlay - COMPLETELY TRANSPARENT -->
-    <div class="court-overlay" id="courtOverlay">
-      <!-- No SVG or visible elements - completely transparent -->
-    </div>
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
+    <canvas id="gameCanvas" width="360" height="720"></canvas>
 
     <div class="score-display" role="status" aria-live="polite">
       <i class="fas fa-basketball-ball"></i>&nbsp;<span id="scoreText">0</span>
@@ -322,6 +441,14 @@
       <i class="fas fa-clock"></i>&nbsp;<span id="timerText">60</span>s
     </div>
     
+    <div class="level-display" role="status" aria-live="polite">
+      <i class="fas fa-flag"></i>&nbsp;Level <span id="levelText">1</span>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="levelProgress"></div>
+    </div>
+
     <div class="challenges-display" id="challengesDisplay">
       <div class="challenge-item" id="challengeStreak">
         <i class="fas fa-circle challenge-unchecked" id="streakIcon"></i>
@@ -353,9 +480,15 @@
       <span id="windText">0 m/s</span>
     </div>
 
+    <div class="xp-display" id="xpDisplay">
+      <i class="fas fa-star"></i>
+      <span id="xpText">0 XP</span>
+    </div>
+
     <div class="power-ups" aria-hidden="false">
-      <div class="power-up" id="hintBtn" title="Hint"><i class="fas fa-lightbulb"></i></div>
-      <div class="power-up" id="autoBtn" title="Auto-solve shot"><i class="fas fa-robot"></i></div>
+      <div class="power-up" id="hintBtn" title="Hint (3 uses)"><i class="fas fa-lightbulb"></i></div>
+      <div class="power-up" id="freezeBtn" title="Freeze time (2 uses)"><i class="fas fa-clock"></i></div>
+      <div class="power-up" id="autoBtn" title="Auto-solve shot (2 uses)"><i class="fas fa-robot"></i></div>
       <div class="power-up" id="resetBtn" title="Restart (new game)"><i class="fas fa-redo"></i></div>
     </div>
 
@@ -368,13 +501,13 @@
     <!-- Instructions Modal -->
     <div id="instructionModal" class="modal hidden" aria-hidden="true">
       <div class="modal-card">
-        <h2>How to Play</h2>
-        <p>Drag the ball backward and release (or flick) to shoot. The dotted arc shows the trajectory preview while dragging.</p>
-        <p>Make as many baskets as possible before time runs out (Time Attack).</p>
-        <p>Complete challenges for bonus points: 3 shots in a row, long distance shots, and perfect shots.</p>
-        <p>Use Hint or Auto-solve buttons for assistance. Tap the blue shoot button for a quick auto-aim shot.</p>
+        <h2>Basketball Adventure</h2>
+        <p>Drag the ball backward and release to shoot. Make baskets to earn points and XP.</p>
+        <p>Complete challenges for bonus points and level up to unlock new courts and abilities.</p>
+        <p>Watch out for moving obstacles and changing wind conditions!</p>
+        <p>Use power-ups strategically: hints, time freeze, and auto-shots.</p>
         <div class="modal-actions">
-          <button id="closeInstr" class="btn primary">Got it</button>
+          <button id="closeInstr" class="btn primary">Let's Play!</button>
         </div>
       </div>
     </div>
@@ -384,10 +517,23 @@
       <div class="modal-card">
         <h2>Time's Up!</h2>
         <p>Your score: <strong id="finalScore">0</strong></p>
-        <p>Challenges completed: <strong id="challengesCompleted">0</strong></p>
+        <p>Level reached: <strong id="finalLevel">1</strong></p>
+        <p>XP earned: <strong id="finalXP">0</strong></p>
         <p id="finalFeedback">Nice shooting!</p>
         <div class="modal-actions">
           <button id="playAgainBtn" class="btn primary">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level Up Modal -->
+    <div id="levelUpModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <h2>Level Up!</h2>
+        <p>Congratulations! You've reached level <strong id="newLevel">2</strong></p>
+        <p id="levelUpReward">New court unlocked!</p>
+        <div class="modal-actions">
+          <button id="continueBtn" class="btn primary">Continue</button>
         </div>
       </div>
     </div>
@@ -400,18 +546,15 @@
 
 <script>
 /* ------------------------------
-   Basketball Flick — Vanilla Canvas
+   Basketball Flick Adventure — Vanilla Canvas
    - Drag / flick shooting
    - Physics-based arc
    - Time attack mode (60s)
-   - Hint & AutoSolve
-   - Challenges system
-   - Background image with fixed hoop position
-<<<<<<< HEAD
-   - ADDITIONAL CHALLENGES
-   - BALL DRAGGING FIXED
-=======
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
+   - Level progression system
+   - XP and achievements
+   - Moving obstacles
+   - Multiple court backgrounds
+   - Enhanced power-ups with limited uses
    ------------------------------ */
 
 (() => {
@@ -426,10 +569,14 @@
     hoopY: 140,                     // vertical position of hoop center
     hoopWidth: 120,
     hoopThickness: 8,
-    // Update this path to match your image location
-    courtImageSrc: 'basketball-court.png', // user-supplied image filename
+    // Multiple court images for progression
+    courtImages: [
+      'basketball-court.png', // Level 1 court
+      'basketball-court-2.png', // Level 2 court
+      'basketball-court-3.png'  // Level 3 court
+    ],
     trailSteps: 30,                 // trajectory preview points
-    autoSolveVariance: 0.02,        // slight randomness for auto solve (not perfect every time)
+    autoSolveVariance: 0.02,        // slight randomness for auto solve
     netStretchDuration: 700,        // milliseconds
     ballPauseDuration: 500,         // milliseconds after scoring
     fixedHoopX: null,               // Will be set based on background image
@@ -437,19 +584,32 @@
     challengesEnabled: true,         // Enable challenges
     windEnabled: true,               // Enable wind effect
     windChangeInterval: 3000,       // How often wind changes (ms)
-    maxWindForce: 150               // Maximum wind force
+    maxWindForce: 150,              // Maximum wind force
+    obstaclesEnabled: true,          // Enable moving obstacles
+    obstacleSpawnInterval: 4000,    // How often obstacles spawn (ms)
+    xpPerBasket: 5,                 // XP earned per basket
+    xpPerChallenge: 20,             // XP earned per completed challenge
+    levelThresholds: [0, 50, 150, 300, 500, 800, 1200, 1700, 2300, 3000], // XP needed for each level
+    powerUpUses: {                  // Maximum uses for each power-up
+      hint: 3,
+      freeze: 2,
+      auto: 2
+    }
   };
 
   // DOM elements
   const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d', { alpha: true });
+  const ctx = canvas.getContext('2d', { alpha: false });
   const scoreText = document.getElementById('scoreText');
   const timerText = document.getElementById('timerText');
+  const levelText = document.getElementById('levelText');
+  const levelProgress = document.getElementById('levelProgress');
   const instructionModal = document.getElementById('instructionModal');
   const closeInstr = document.getElementById('closeInstr');
   const instructionsBtn = document.getElementById('instructionsBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   const hintBtn = document.getElementById('hintBtn');
+  const freezeBtn = document.getElementById('freezeBtn');
   const autoBtn = document.getElementById('autoBtn');
   const resetBtn = document.getElementById('resetBtn');
   const leftBtn = document.getElementById('leftBtn');
@@ -458,13 +618,20 @@
   const loader = document.getElementById('loader');
   const gameOverModal = document.getElementById('gameOverModal');
   const finalScore = document.getElementById('finalScore');
+  const finalLevel = document.getElementById('finalLevel');
+  const finalXP = document.getElementById('finalXP');
   const finalFeedback = document.getElementById('finalFeedback');
   const challengesCompleted = document.getElementById('challengesCompleted');
   const playAgainBtn = document.getElementById('playAgainBtn');
+  const levelUpModal = document.getElementById('levelUpModal');
+  const newLevel = document.getElementById('newLevel');
+  const levelUpReward = document.getElementById('levelUpReward');
+  const continueBtn = document.getElementById('continueBtn');
   const container = document.getElementById('gameContainer');
-  const courtOverlay = document.getElementById('courtOverlay');
   const windIndicator = document.getElementById('windIndicator');
   const windText = document.getElementById('windText');
+  const xpDisplay = document.getElementById('xpDisplay');
+  const xpText = document.getElementById('xpText');
   
   // Challenge elements
   const challengeStreak = document.getElementById('challengeStreak');
@@ -478,43 +645,6 @@
   const perfectProgress = document.getElementById('perfectProgress');
 
   // state
-<<<<<<< HEAD
-  let cw, ch, deviceRatio;
-  let canvasInitialized = false;
-  
-  // Initialize canvas size with mobile fixes
-  function initCanvasSize() {
-    if (canvasInitialized) return;
-    
-    // Use container dimensions instead of window for better mobile behavior
-    const containerRect = container.getBoundingClientRect();
-    cw = Math.floor(containerRect.width);
-    ch = Math.floor(containerRect.height);
-    
-    // Handle iOS Safari viewport height quirk
-    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      ch = Math.floor(window.innerHeight);
-    }
-    
-    deviceRatio = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
-    
-    // Set canvas dimensions
-    canvas.width = cw * deviceRatio;
-    canvas.height = ch * deviceRatio;
-    canvas.style.width = cw + 'px';
-    canvas.style.height = ch + 'px';
-    
-    // Scale context properly
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
-    ctx.scale(deviceRatio, deviceRatio);
-    
-    console.log(`Canvas initialized: ${cw}x${ch}, device ratio: ${deviceRatio}`);
-    canvasInitialized = true;
-  }
-  
-  // Initialize immediately
-  initCanvasSize();
-=======
   let cw = window.innerWidth;
   let ch = window.innerHeight;
   let deviceRatio = window.devicePixelRatio || 1;
@@ -524,7 +654,6 @@
   canvas.style.width = cw + 'px';
   canvas.style.height = ch + 'px';
   ctx.scale(deviceRatio, deviceRatio);
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
 
   // game variables
   let score = 0;
@@ -550,6 +679,14 @@
   let hoopPosition = { x: cw*0.5, y: ch*0.3 }; // Fixed position matching background
   let windForce = 0; // Current wind force affecting the ball
   let lastWindChange = 0; // Last time wind changed
+  let timeFrozen = false; // Whether time is currently frozen
+  let freezeTimeLeft = 0; // Time left in freeze (seconds)
+  let obstacles = []; // Array of moving obstacles
+  let lastObstacleSpawn = 0; // Last time an obstacle was spawned
+  let currentLevel = 1; // Player's current level
+  let xp = 0; // Player's experience points
+  let powerUpUses = {...CONFIG.powerUpUses}; // Current power-up uses
+  let currentCourtIndex = 0; // Index of current court image
   
   // Challenge tracking
   let challenges = {
@@ -582,25 +719,21 @@
   let consecutiveBaskets = 0;
   let perfectShots = 0;
 
-<<<<<<< HEAD
-=======
   // Sounds (using Web Audio API for better compatibility)
   let audioContext = null;
   const sounds = {
     swish: null,
     bounce: null,
     crowd: null,
-    challengeComplete: null
+    challengeComplete: null,
+    levelUp: null
   };
 
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   // Utility functions
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
   function randRange(a,b){ return a + Math.random()*(b-a); }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
-<<<<<<< HEAD
-=======
   // Initialize Web Audio API
   function initAudio() {
     try {
@@ -718,6 +851,40 @@
     oscillator2.stop(audioContext.currentTime + duration);
   }
 
+  // Create level up sound
+  function createLevelUpSound() {
+    if (!audioContext) return;
+    
+    const duration = 1.5;
+    const oscillator1 = audioContext.createOscillator();
+    const oscillator2 = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator1.type = 'sine';
+    oscillator2.type = 'sine';
+    
+    oscillator1.frequency.setValueAtTime(300, audioContext.currentTime);
+    oscillator2.frequency.setValueAtTime(500, audioContext.currentTime);
+    
+    oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + duration/2);
+    oscillator1.frequency.exponentialRampToValueAtTime(800, audioContext.currentTime + duration);
+    oscillator2.frequency.exponentialRampToValueAtTime(700, audioContext.currentTime + duration/2);
+    oscillator2.frequency.exponentialRampToValueAtTime(1000, audioContext.currentTime + duration);
+    
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.4, audioContext.currentTime + duration/2);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator1.start();
+    oscillator2.start();
+    oscillator1.stop(audioContext.currentTime + duration);
+    oscillator2.stop(audioContext.currentTime + duration);
+  }
+
   // Play sound with Web Audio API
   function playSound(name) {
     if (!soundEnabled || !audioContext) return;
@@ -736,6 +903,9 @@
         case 'challengeComplete':
           createChallengeCompleteSound();
           break;
+        case 'levelUp':
+          createLevelUpSound();
+          break;
       }
     };
 
@@ -746,7 +916,6 @@
     }
   }
 
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   // Initialize the stage elements: player, ball, hoop
   function resetStage(resetScore=false){
     if (resetScore) {
@@ -759,6 +928,10 @@
       consecutiveBaskets = 0;
       perfectShots = 0;
       updateChallengeDisplay();
+      
+      // Reset power-up uses
+      powerUpUses = {...CONFIG.powerUpUses};
+      updatePowerUpButtons();
     }
     scoreText.textContent = score;
     // player position
@@ -802,9 +975,12 @@
     // Reset wind
     windForce = 0;
     windIndicator.style.display = 'none';
+    
+    // Clear obstacles
+    obstacles = [];
   }
 
-  // Load background image and detect hoop position
+  // Load background image based on current level
   function loadBackground() {
     return new Promise((resolve) => {
       loader.classList.remove('hidden');
@@ -812,14 +988,9 @@
       img.onload = () => { 
         bgReady = true;
         
-        // Analyze image to determine hoop position
-        // For now, we'll use a fixed position based on typical court layout
-        // You can adjust these values based on your specific image
-        hoopPosition.x = cw * 0.5; // Center of court
-        hoopPosition.y = ch * 0.3; // Top 30% of court
-        
-        // Update the overlay to show the hoop position
-        updateCourtOverlay();
+        // Set hoop position based on court
+        hoopPosition.x = cw * 0.5;
+        hoopPosition.y = ch * 0.3;
         
         loader.classList.add('hidden'); 
         resolve(true); 
@@ -829,22 +1000,26 @@
         // Use default position if image fails to load
         hoopPosition.x = cw * 0.5;
         hoopPosition.y = CONFIG.hoopY;
-        updateCourtOverlay();
         loader.classList.add('hidden'); 
         resolve(false); 
       };
-      img.src = CONFIG.courtImageSrc; // attempt to load provided image
+      
+      // Select court based on level
+      currentCourtIndex = Math.min(currentLevel - 1, CONFIG.courtImages.length - 1);
+      img.src = CONFIG.courtImages[currentCourtIndex];
     });
   }
 
-  // Update court overlay to match background image hoop position
-  function updateCourtOverlay() {
-    resetStage(true);
-    // Clear previous overlay content - NO SVG CREATION
-    courtOverlay.innerHTML = '';
+  // Update power-up button states
+  function updatePowerUpButtons() {
+    hintBtn.classList.toggle('disabled', powerUpUses.hint <= 0);
+    freezeBtn.classList.toggle('disabled', powerUpUses.freeze <= 0);
+    autoBtn.classList.toggle('disabled', powerUpUses.auto <= 0);
     
-    // Court overlay is completely transparent - no SVG elements created
-    // This ensures no vertical lines or any elements are visible
+    // Update tooltips
+    hintBtn.title = `Hint (${powerUpUses.hint} uses)`;
+    freezeBtn.title = `Freeze time (${powerUpUses.freeze} uses)`;
+    autoBtn.title = `Auto-solve shot (${powerUpUses.auto} uses)`;
   }
 
   // Update challenge display
@@ -898,6 +1073,142 @@
     }
   }
 
+  // Spawn obstacles
+  function spawnObstacles(dt) {
+    if (!CONFIG.obstaclesEnabled || currentLevel < 2) return;
+    
+    if (performance.now() - lastObstacleSpawn > CONFIG.obstacleSpawnInterval) {
+      // Create a new obstacle
+      const obstacle = {
+        x: Math.random() * (cw - 60) + 30,
+        y: -30,
+        width: 40 + Math.random() * 40,
+        height: 20 + Math.random() * 20,
+        speed: 100 + Math.random() * 100,
+        color: `hsl(${Math.random() * 360}, 70%, 50%)`
+      };
+      
+      obstacles.push(obstacle);
+      lastObstacleSpawn = performance.now();
+    }
+    
+    // Update existing obstacles
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+      const obstacle = obstacles[i];
+      obstacle.y += obstacle.speed * (dt/1000);
+      
+      // Remove if off screen
+      if (obstacle.y > ch + 50) {
+        obstacles.splice(i, 1);
+      }
+    }
+  }
+
+  // Check for obstacle collisions
+  function checkObstacleCollisions() {
+    if (!ball.inPlay || ballPaused) return;
+    
+    for (let i = 0; i < obstacles.length; i++) {
+      const obstacle = obstacles[i];
+      
+      // Simple rectangle collision
+      if (ball.x + ball.r > obstacle.x && 
+          ball.x - ball.r < obstacle.x + obstacle.width &&
+          ball.y + ball.r > obstacle.y && 
+          ball.y - ball.r < obstacle.y + obstacle.height) {
+        
+        // Bounce off obstacle
+        ball.vx *= -0.7;
+        ball.vy *= -0.5;
+        playSound('bounce');
+        
+        // Show collision effect
+        showFloatingText('Obstacle!', ball.x, ball.y);
+        
+        // Remove the obstacle
+        obstacles.splice(i, 1);
+        break;
+      }
+    }
+  }
+
+  // Add XP and check for level up
+  function addXP(amount) {
+    xp += amount;
+    xpText.textContent = `${xp} XP`;
+    
+    // Update level progress
+    updateLevelProgress();
+    
+    // Check for level up
+    const nextLevelIndex = currentLevel;
+    if (nextLevelIndex < CONFIG.levelThresholds.length && xp >= CONFIG.levelThresholds[nextLevelIndex]) {
+      levelUp();
+    }
+  }
+
+  // Update level progress bar
+  function updateLevelProgress() {
+    const currentLevelXP = CONFIG.levelThresholds[currentLevel - 1] || 0;
+    const nextLevelXP = CONFIG.levelThresholds[currentLevel] || CONFIG.levelThresholds[CONFIG.levelThresholds.length - 1] * 1.5;
+    
+    const progress = (xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
+    levelProgress.style.width = `${Math.min(progress * 100, 100)}%`;
+  }
+
+  // Level up the player
+  function levelUp() {
+    currentLevel++;
+    levelText.textContent = currentLevel;
+    
+    // Show level up modal
+    newLevel.textContent = currentLevel;
+    
+    // Determine reward based on level
+    let rewardText = '';
+    if (currentLevel <= CONFIG.courtImages.length) {
+      rewardText = `New court unlocked!`;
+    } else if (currentLevel % 3 === 0) {
+      rewardText = `Power-up uses refreshed!`;
+      // Refresh power-up uses
+      powerUpUses = {...CONFIG.powerUpUses};
+      updatePowerUpButtons();
+    } else {
+      rewardText = `Keep going!`;
+    }
+    
+    levelUpReward.textContent = rewardText;
+    levelUpModal.classList.remove('hidden');
+    
+    // Play level up sound
+    playSound('levelUp');
+    
+    // Show achievement popup
+    showAchievementPopup(`Level ${currentLevel}`, rewardText);
+    
+    // Load new background if available
+    if (currentLevel <= CONFIG.courtImages.length) {
+      loadBackground();
+    }
+  }
+
+  // Show achievement popup
+  function showAchievementPopup(title, description) {
+    const popup = document.createElement('div');
+    popup.className = 'achievement-popup';
+    popup.innerHTML = `
+      <h3>${title}</h3>
+      <p>${description}</p>
+    `;
+    
+    container.appendChild(popup);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+      popup.remove();
+    }, 2500);
+  }
+
   // Check and update challenges
   function updateChallenges(isPerfect = false, distance = 0) {
     let bonusPoints = 0;
@@ -909,8 +1220,10 @@
         challenges.perfect.completed = true;
         challenges.perfect.progress = challenges.perfect.target;
         bonusPoints += challenges.perfect.bonus;
+        addXP(CONFIG.xpPerChallenge);
         showFloatingText(`Perfect Challenge! +${challenges.perfect.bonus}`, cw/2, ch/2);
         playSound('challengeComplete');
+        showAchievementPopup('Perfect Shot Master', 'Scored 2 perfect shots!');
       } else {
         challenges.perfect.progress = perfectShots;
       }
@@ -921,8 +1234,10 @@
       challenges.distance.completed = true;
       challenges.distance.progress = challenges.distance.target;
       bonusPoints += challenges.distance.bonus;
+      addXP(CONFIG.xpPerChallenge);
       showFloatingText(`Long Shot! +${challenges.distance.bonus}`, cw/2, ch/2);
       playSound('challengeComplete');
+      showAchievementPopup('Long Shot Expert', 'Scored from far away!');
     }
     
     // Update display
@@ -935,14 +1250,50 @@
     }
   }
 
+  // Freeze time power-up
+  function freezeTime() {
+    if (powerUpUses.freeze <= 0 || timeFrozen) return;
+    
+    powerUpUses.freeze--;
+    updatePowerUpButtons();
+    
+    timeFrozen = true;
+    freezeTimeLeft = 5; // 5 seconds of frozen time
+    
+    // Visual effect for frozen time
+    showFloatingText('Time Freeze!', cw/2, ch/2);
+    
+    // Update timer display to show freeze
+    timerText.textContent = `${timeLeft}s (FROZEN)`;
+    timerText.style.color = '#3498db';
+    
+    // Play a special sound
+    playSound('challengeComplete');
+  }
+
+  // Update freeze time
+  function updateFreezeTime(dt) {
+    if (!timeFrozen) return;
+    
+    freezeTimeLeft -= dt / 1000;
+    
+    if (freezeTimeLeft <= 0) {
+      timeFrozen = false;
+      timerText.style.color = '#111';
+      timerText.textContent = `${timeLeft}s`;
+    }
+  }
+
   // Time & Game Loop
   function startTimer(){
     timeLeft = CONFIG.timeLimit;
     timerText.textContent = timeLeft;
     clearInterval(timerInterval);
     timerInterval = setInterval(() => {
-      timeLeft--;
-      timerText.textContent = timeLeft;
+      if (!timeFrozen) {
+        timeLeft--;
+        timerText.textContent = timeLeft;
+      }
       if (timeLeft <= 0){
         clearInterval(timerInterval);
         gameOver();
@@ -953,13 +1304,8 @@
   function gameOver(){
     isPlaying = false;
     finalScore.textContent = score;
-    
-    // Count completed challenges
-    let completedCount = 0;
-    for (let key in challenges) {
-      if (challenges[key].completed) completedCount++;
-    }
-    challengesCompleted.textContent = completedCount;
+    finalLevel.textContent = currentLevel;
+    finalXP.textContent = xp;
     
     let fb = 'Nice shooting!';
     if (score >= 30) fb = 'Amazing accuracy!';
@@ -967,15 +1313,7 @@
     else if (score >= 8) fb = 'Good job!';
     finalFeedback.textContent = fb;
     gameOverModal.classList.remove('hidden');
-<<<<<<< HEAD
-    
-    // Clear all challenge timers
-    for (let timer in challengeTimers) {
-      clearTimeout(challengeTimers[timer]);
-    }
-=======
     playSound('crowd');
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   }
 
   /* ---------- Physics + Shot logic ---------- */
@@ -1001,18 +1339,10 @@
         // ensure ball was moving downward enough and gives some debounce
         if (ball.vy > 150 && performance.now() - (ball.lastScoredTick || 0) > 600){
           ball.lastScoredTick = performance.now();
-<<<<<<< HEAD
-          
-          // Calculate points (double if challenge active)
-          const points = isDoublePoints ? 4 : 2;
-          score += points;
-          
-          showFloatingText(`+${points}`, ball.x, ball.y);
-=======
           score += 2;
+          addXP(CONFIG.xpPerBasket);
           playSound('swish');
           showFloatingText('+2', ball.x, ball.y);
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
           scoreText.textContent = score;
           
           // Check if this was a perfect shot (swish)
@@ -1032,8 +1362,10 @@
             challenges.streak.completed = true;
             challenges.streak.progress = challenges.streak.target;
             score += challenges.streak.bonus;
+            addXP(CONFIG.xpPerChallenge);
             showFloatingText(`Streak! +${challenges.streak.bonus}`, cw/2, ch/2);
             playSound('challengeComplete');
+            showAchievementPopup('Hot Streak', 'Made 3 baskets in a row!');
             updateChallengeDisplay();
             scoreText.textContent = score;
           } else {
@@ -1068,137 +1400,11 @@
   }
 
   /* ---------- Input: pointer & touch friendly ---------- */
-<<<<<<< HEAD
-  function getPointerPos(e){
-    const rect = canvas.getBoundingClientRect();
-    const touch = (e.touches && e.touches[0]) || e;
-    // FIXED: Proper coordinate conversion without complex scaling
-    return {
-      x: (touch.clientX - rect.left) * (cw / rect.width),
-      y: (touch.clientY - rect.top) * (ch / rect.height)
-    };
-  }
-
-  // FIXED: Improved touch handling without preventDefault errors
-  function handleTouchStart(e) {
-    // Only prevent default if we're actually handling the touch
-    if (!isPlaying) return;
-    
-    const touches = e.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const p = getPointerPos({ touches: [touch] });
-      
-      // Check if touch is close to ball
-      const dx = p.x - ball.x;
-      const dy = p.y - ball.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      
-      if (!ball.inPlay && dist <= ball.r + 16 && !dragging) {
-        // Only prevent default when we're going to handle the touch
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-        dragging = true;
-        dragStart = { 
-          x: p.x, 
-          y: p.y,
-          ballX: ball.x,  // Store initial ball position
-          ballY: ball.y
-        };
-        currentPreview = [];
-        isHintActive = false;
-        activeTouches.set(touch.identifier, { type: 'ball', startX: p.x, startY: p.y });
-        break;
-      } else {
-        // Check if touch is on control buttons
-        activeTouches.set(touch.identifier, { type: 'other', x: p.x, y: p.y });
-      }
-    }
-  }
-
-  function handleTouchMove(e) {
-    if (!dragging) return;
-    
-    // Only prevent default if we're actually handling the movement
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-    
-    const touches = e.changedTouches;
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const touchInfo = activeTouches.get(touch.identifier);
-      
-      if (touchInfo && touchInfo.type === 'ball') {
-        const p = getPointerPos({ touches: [touch] });
-        
-        // Compute "pull-back" vector (drag backwards to aim forward)
-        const dx = p.x - dragStart.x;
-        const dy = p.y - dragStart.y;
-        const pullX = -dx;
-        const pullY = -dy;
-        
-        // FIXED: Update ball position during drag
-        ball.x = dragStart.ballX + pullX * 0.3;
-        ball.y = dragStart.ballY + pullY * 0.3;
-        
-        // Constrain ball position to reasonable limits
-        ball.x = clamp(ball.x, 40, cw - 40);
-        ball.y = clamp(ball.y, ch - CONFIG.playerYoffset - 100, ch - CONFIG.playerYoffset + 20);
-        
-        // raw power magnitude
-        const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
-        const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
-        const angle = Math.atan2(pullY, pullX); // radians
-        
-        // store preview points (with wind effect)
-        currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
-        break;
-      }
-    }
-  }
-
-  function handleTouchEnd(e) {
-    const touches = e.changedTouches;
-    
-    for (let i = 0; i < touches.length; i++) {
-      const touch = touches[i];
-      const touchInfo = activeTouches.get(touch.identifier);
-      
-      if (touchInfo && touchInfo.type === 'ball' && dragging) {
-        // Only prevent default if we're actually handling the touch end
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-        
-        dragging = false;
-        
-        if (currentPreview.length){
-          const p = getPointerPos({ changedTouches: [touch] });
-          const dx = p.x - dragStart.x;
-          const dy = p.y - dragStart.y;
-          const pullX = -dx;
-          const pullY = -dy;
-          const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
-          const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
-          const angle = Math.atan2(pullY, pullX);
-          
-          // shoot (with wind effect)
-          shootBall(Math.cos(angle)*speed + windForce/10, Math.sin(angle)*speed);
-        }
-        currentPreview = [];
-      }
-      
-      activeTouches.delete(touch.identifier);
-    }
-  }
-
-  // Start drag if touch on ball
-=======
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   function pointerDown(e){
     if (!isPlaying) return;
+    // enable sounds on first user gesture
+    soundEnabled = true;
+    initAudio();
 
     const p = (e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY});
     // check if pointer is close to ball
@@ -1210,18 +1416,10 @@
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (!ball.inPlay && dist <= ball.r + 16){
       dragging = true;
-<<<<<<< HEAD
-      dragStart = { 
-        x: p.x, 
-        y: p.y,
-        ballX: ball.x,  // Store initial ball position
-        ballY: ball.y
-      };
-=======
       dragStart = { x: px, y: py };
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
       currentPreview = [];
       isHintActive = false;
+      e.preventDefault && e.preventDefault();
     }
   }
 
@@ -1236,21 +1434,13 @@
     const dy = py - dragStart.y;
     const pullX = -dx;
     const pullY = -dy;
-    
-    // FIXED: Update ball position during drag
-    ball.x = dragStart.ballX + pullX * 0.3;
-    ball.y = dragStart.ballY + pullY * 0.3;
-    
-    // Constrain ball position to reasonable limits
-    ball.x = clamp(ball.x, 40, cw - 40);
-    ball.y = clamp(ball.y, ch - CONFIG.playerYoffset - 100, ch - CONFIG.playerYoffset + 20);
-    
     // raw power magnitude
     const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
     const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
     const angle = Math.atan2(pullY, pullX); // radians
     // store preview points
     currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
+    e.preventDefault && e.preventDefault();
   }
 
   function pointerUp(e){
@@ -1296,7 +1486,11 @@
 
   /* ---------- Hint & Auto-solve ---------- */
   function doHint(){
-    if (ball.inPlay || ballPaused) return;
+    if (ball.inPlay || ballPaused || powerUpUses.hint <= 0) return;
+    
+    powerUpUses.hint--;
+    updatePowerUpButtons();
+    
     const dx = hoop.x - ball.x;
     const dy = hoop.y - ball.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -1308,7 +1502,11 @@
   }
 
   function doAutoSolve(){
-    if (ball.inPlay || ballPaused) return;
+    if (ball.inPlay || ballPaused || powerUpUses.auto <= 0) return;
+    
+    powerUpUses.auto--;
+    updatePowerUpButtons();
+    
     const dx = hoop.x - ball.x;
     const dy = hoop.y - ball.y;
     const dist = Math.sqrt(dx*dx + dy*dy);
@@ -1321,123 +1519,46 @@
     setTimeout(()=>{ isHintActive=false; currentPreview=[]; shootBall(Math.cos(angle)*power, Math.sin(angle)*power); }, 700);
   }
 
-  // Challenge management functions
-  function updateWind() {
-    // Change wind force and direction randomly
-    windForce = randRange(-CONFIG.windMaxForce, CONFIG.windMaxForce);
-    windDirection = windForce > 0 ? 1 : -1;
-    windValue.textContent = Math.abs(Math.round(windForce/10));
-    
-    // Show/hide wind indicator
-    if (Math.abs(windForce) > 20) {
-      windIndicator.classList.add('active');
-    } else {
-      windIndicator.classList.remove('active');
-    }
-  }
-  
-  function startMovingHoop() {
-    isMovingHoop = true;
-    movingIndicator.classList.add('active');
-    
-    // Set a timer to stop moving hoop
-    clearTimeout(challengeTimers.movingHoop);
-    challengeTimers.movingHoop = setTimeout(() => {
-      isMovingHoop = false;
-      movingIndicator.classList.remove('active');
-    }, CONFIG.challengeInterval);
-  }
-  
-  function startSmallHoop() {
-    isSmallHoop = true;
-    smallIndicator.classList.add('active');
-    
-    // Set a timer to return to normal hoop
-    clearTimeout(challengeTimers.smallHoop);
-    challengeTimers.smallHoop = setTimeout(() => {
-      isSmallHoop = false;
-      smallIndicator.classList.remove('active');
-    }, CONFIG.smallHoopDuration);
-  }
-  
-  function startDoublePoints() {
-    isDoublePoints = true;
-    doubleIndicator.classList.add('active');
-    
-    // Set a timer to end double points
-    clearTimeout(challengeTimers.doublePoints);
-    challengeTimers.doublePoints = setTimeout(() => {
-      isDoublePoints = false;
-      doubleIndicator.classList.remove('active');
-    }, CONFIG.doublePointsDuration);
-  }
-  
-  function triggerRandomChallenge() {
-    const challenges = [
-      updateWind,
-      startMovingHoop,
-      startSmallHoop,
-      startDoublePoints
-    ];
-    
-    // Pick a random challenge
-    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
-    randomChallenge();
-    
-    // Schedule next challenge
-    clearTimeout(challengeTimers.nextChallenge);
-    challengeTimers.nextChallenge = setTimeout(triggerRandomChallenge, CONFIG.challengeInterval);
-  }
-
   /* ---------- UI / Controls ---------- */
   instructionsBtn.addEventListener('click', ()=>{ instructionModal.classList.remove('hidden'); instructionModal.setAttribute('aria-hidden','false'); });
   closeInstr.addEventListener('click', ()=>{ instructionModal.classList.add('hidden'); instructionModal.setAttribute('aria-hidden','true'); });
   fullscreenBtn.addEventListener('click', toggleFullscreen);
   hintBtn.addEventListener('click', ()=> doHint());
+  freezeBtn.addEventListener('click', ()=> freezeTime());
   autoBtn.addEventListener('click', ()=> doAutoSolve());
-  resetBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
-  playAgainBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
+  resetBtn.addEventListener('click', ()=> { 
+    currentLevel = 1;
+    xp = 0;
+    xpText.textContent = `${xp} XP`;
+    levelText.textContent = currentLevel;
+    updateLevelProgress();
+    resetStage(true); 
+    startTimer(); 
+    isPlaying=true; 
+    gameOverModal.classList.add('hidden');
+    loadBackground();
+  });
+  playAgainBtn.addEventListener('click', ()=> { 
+    currentLevel = 1;
+    xp = 0;
+    xpText.textContent = `${xp} XP`;
+    levelText.textContent = currentLevel;
+    updateLevelProgress();
+    resetStage(true); 
+    startTimer(); 
+    isPlaying=true; 
+    gameOverModal.classList.add('hidden');
+    loadBackground();
+  });
+  continueBtn.addEventListener('click', ()=> { 
+    levelUpModal.classList.add('hidden'); 
+  });
 
-<<<<<<< HEAD
-  // FIXED: Movement controls with proper touch handling
-  function handleControlTouchStart(e, direction) {
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-    if (direction === 'left') leftHold = true;
-    if (direction === 'right') rightHold = true;
-  }
-  
-  function handleControlTouchEnd(e, direction) {
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-    if (direction === 'left') leftHold = false;
-    if (direction === 'right') rightHold = false;
-  }
-
-  leftBtn.addEventListener('touchstart', (e) => handleControlTouchStart(e, 'left'));
-  leftBtn.addEventListener('touchend', (e) => handleControlTouchEnd(e, 'left'));
-  leftBtn.addEventListener('touchcancel', (e) => handleControlTouchEnd(e, 'left'));
-  
-  rightBtn.addEventListener('touchstart', (e) => handleControlTouchStart(e, 'right'));
-  rightBtn.addEventListener('touchend', (e) => handleControlTouchEnd(e, 'right'));
-  rightBtn.addEventListener('touchcancel', (e) => handleControlTouchEnd(e, 'right'));
-  
-  leftBtn.addEventListener('mousedown', ()=> leftHold=true); 
-  leftBtn.addEventListener('mouseup', ()=> leftHold=false);
-  leftBtn.addEventListener('mouseleave', ()=> leftHold=false);
-  
-  rightBtn.addEventListener('mousedown', ()=> rightHold=true); 
-  rightBtn.addEventListener('mouseup', ()=> rightHold=false);
-  rightBtn.addEventListener('mouseleave', ()=> rightHold=false);
-=======
   // movement controls for mobile (hold to move)
   leftBtn.addEventListener('touchstart', (e)=>{ leftHold=true; }, {passive:false}); leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
   rightBtn.addEventListener('touchstart', (e)=>{ rightHold=true; }, {passive:false}); rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
   leftBtn.addEventListener('mousedown', ()=> leftHold=true); leftBtn.addEventListener('mouseup', ()=> leftHold=false);
   rightBtn.addEventListener('mousedown', ()=> rightHold=true); rightBtn.addEventListener('mouseup', ()=> rightHold=false);
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
 
   // quick shoot button (auto-aim)
   shootBtn.addEventListener('click', ()=> {
@@ -1466,52 +1587,16 @@
     }
   }
 
-<<<<<<< HEAD
-  // FIXED: Pointer events with proper passive handling
-  canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
-  canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
-  canvas.addEventListener('touchend', handleTouchEnd, {passive: false});
-  canvas.addEventListener('touchcancel', handleTouchEnd, {passive: false});
-  
-=======
   // Pointer events on canvas
   canvas.addEventListener('touchstart', pointerDown, {passive:false});
   canvas.addEventListener('touchmove', pointerMove, {passive:false});
   canvas.addEventListener('touchend', pointerUp, {passive:false});
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   canvas.addEventListener('mousedown', pointerDown);
   window.addEventListener('mousemove', pointerMove);
   window.addEventListener('mouseup', pointerUp);
 
   // Resize handling
   window.addEventListener('resize', ()=> {
-<<<<<<< HEAD
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      canvasInitialized = false;
-      initCanvasSize();
-      
-      // Update hoop position to maintain alignment with background
-      hoopPosition.x = cw * 0.5;
-      hoopPosition.y = ch * 0.2;
-      
-      // Update the overlay
-      updateCourtOverlay();
-      
-      // Update ball position to align with holder
-      if (!ball.inPlay && player) {
-        ball.x = player.x;
-        ball.y = player.y - 42;
-      }
-      
-      // Update hoop position in game
-      if (hoop) {
-        hoop.x = hoopPosition.x;
-        hoop.y = hoopPosition.y;
-        hoop.baseX = hoopPosition.x;
-      }
-    }, 250); // Debounce resize events
-=======
     cw = window.innerWidth;
     ch = window.innerHeight;
     canvas.width = Math.floor(cw * deviceRatio);
@@ -1524,9 +1609,6 @@
     hoopPosition.x = cw * 0.5;
     hoopPosition.y = ch * 0.3;
     
-    // Update the overlay
-    updateCourtOverlay();
-    
     // Update ball position to align with holder
     if (!ball.inPlay && player) {
       ball.x = player.x;
@@ -1538,7 +1620,6 @@
       hoop.x = hoopPosition.x;
       hoop.y = hoopPosition.y;
     }
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   });
 
   // Floating text helper
@@ -1554,13 +1635,14 @@
 
   /* ---------- Render loop ---------- */
   function render(dt){
-<<<<<<< HEAD
-    // Clear the entire canvas first - FIXED: Proper clearing to prevent flickering
-    ctx.clearRect(0, 0, cw, ch);
-=======
     // Update wind
     updateWind(dt);
->>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
+    
+    // Update obstacles
+    spawnObstacles(dt);
+    
+    // Update freeze time
+    updateFreezeTime(dt);
     
     // Update net stretch animation
     if (netStretchProgress > 0) {
@@ -1618,8 +1700,21 @@
     }
     ctx.restore();
 
+    // Draw obstacles
+    for (const obstacle of obstacles) {
+      ctx.save();
+      ctx.fillStyle = obstacle.color;
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      
+      // Add a glow effect
+      ctx.shadowColor = obstacle.color;
+      ctx.shadowBlur = 10;
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+      ctx.restore();
+    }
+
     // update player movement
-    if (!ball.inPlay && !ballPaused && !dragging){
+    if (!ball.inPlay && !ballPaused){
       if (leftHold) player.vx = -player.speed;
       else if (rightHold) player.vx = player.speed;
       else player.vx = 0;
@@ -1627,9 +1722,8 @@
       // keep inside bounds
       player.x = clamp(player.x, 40, cw-40);
       // ball follows player when not in play & not dragging
-      ball.x = player.x;
-      ball.y = player.y - 42;
-    } else if (!ballPaused && !dragging) {
+      if (!dragging) { ball.x = player.x; ball.y = player.y - 42; }
+    } else if (!ballPaused) {
       // when in play, player can still be moved lightly by controls for realism
       if (leftHold) player.x -= player.speed * 0.3 * (dt/1000);
       if (rightHold) player.x += player.speed * 0.3 * (dt/1000);
@@ -1649,6 +1743,7 @@
         ball.y = floorY;
         ball.vy = -ball.vy * 0.45;
         ball.vx = ball.vx * 0.82;
+        playSound('bounce');
         // small threshold -> stop
         if (Math.abs(ball.vy) < 60) { ball.vy = 0; ball.vx *= 0.7; }
         // if nearly stopped, reset
@@ -1662,6 +1757,9 @@
 
       // scoring detection
       checkScore(dt);
+      
+      // obstacle collision detection
+      checkObstacleCollisions();
     }
 
     // Draw hoop (rim + backboard simple)
@@ -1671,8 +1769,8 @@
     // rim
     ctx.beginPath();
     ctx.strokeStyle = '#ff6bcb';
-    ctx.lineWidth = hoop.thickness;
-    ctx.lineCap = 'round';
+    //ctx.lineWidth = hoop.thickness;
+    //ctx.lineCap = 'round';
     //ctx.arc(hoop.x, hoop.y, hoop.w/2, 0.15*Math.PI, 0.85*Math.PI, false);
     ctx.stroke();
     
@@ -1713,7 +1811,6 @@
     ctx.fillRect(player.x - 18, player.y - 2, 36, 36);
     ctx.restore();
 
-    // FIXED: Always draw the ball, even during dragging
     // draw ball
     ctx.save();
     ctx.beginPath();
@@ -1750,15 +1847,14 @@
     }
   }
 
-  // main loop - FIXED: Proper animation frame handling
-  let animationId;
+  // main loop
   function loop(ts){
     const dt = ts - lastTime;
     lastTime = ts;
     if (isPlaying){
       render(dt);
     }
-    animationId = requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
   }
 
   // Kickoff
@@ -1769,25 +1865,14 @@
     // start timer & loop
     startTimer();
     lastTime = performance.now();
-    animationId = requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
   })();
 
   // checkScore runs inside render loop physics; additionally, do periodic small checks
   setInterval(()=>{ if (isPlaying) checkScore(1000/60); }, 100);
 
-  // Clean up on page unload
-  window.addEventListener('beforeunload', () => {
-    if (animationId) {
-      cancelAnimationFrame(animationId);
-    }
-    clearInterval(timerInterval);
-    for (let timer in challengeTimers) {
-      clearTimeout(challengeTimers[timer]);
-    }
-  });
-
   // expose small globals for debugging in console (optional)
-  window._BB = { resetStage, doHint, doAutoSolve };
+  window._BB = { resetStage, doHint, doAutoSolve, playSound };
 
 })();
 </script>
