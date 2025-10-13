@@ -20,6 +20,8 @@
     justify-content:center;
     padding:12px;
     color:#111;
+    margin: 0;
+    overflow: hidden;
   }
 
   /* --- Game container sized for mobile --- */
@@ -33,6 +35,8 @@
     position:relative;
     box-shadow:0 18px 40px rgba(0,0,0,0.18);
     background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.85));
+    /* iOS Safari specific fix */
+    height: -webkit-fill-available;
   }
 
   /* Canvas covers entire container */
@@ -43,6 +47,10 @@
     background-size:cover;
     background-position:center;
     touch-action:none;
+    /* Prevent flickering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
   }
 
   /* White UI card for score */
@@ -192,7 +200,7 @@
     border-radius: 16px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     display: flex;
-    gap: 4px;
+    gap: 8px;
     align-items: center;
     font-weight: 700;
     font-size: 14px;
@@ -294,12 +302,10 @@
 <body>
   <div id="gameContainer" aria-label="Basketball time attack game">
     <div class="projector-beam"></div>
-    <canvas id="gameCanvas" width="360" height="720"></canvas>
+    <canvas id="gameCanvas"></canvas>
     
     <!-- Court overlay with fixed hoop position -->
-    <div class="court-overlay" id="courtOverlay">
-      <!-- This will be positioned to match the background image hoop -->
-    </div>
+    <div class="court-overlay" id="courtOverlay"></div>
 
     <div class="score-display" role="status" aria-live="polite">
       <i class="fas fa-basketball-ball"></i>&nbsp;<span id="scoreText">0</span>
@@ -390,6 +396,7 @@
    - Hint & AutoSolve
    - Background image with fixed hoop position
    - ADDITIONAL CHALLENGES
+   - BALL DRAGGING FIXED
    ------------------------------ */
 
 (() => {
@@ -426,7 +433,7 @@
 
   // DOM elements
   const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas.getContext('2d', { alpha: true });
   const scoreText = document.getElementById('scoreText');
   const timerText = document.getElementById('timerText');
   const instructionModal = document.getElementById('instructionModal');
@@ -456,31 +463,39 @@
 
   // state
   let cw, ch, deviceRatio;
+  let canvasInitialized = false;
   
   // Initialize canvas size with mobile fixes
   function initCanvasSize() {
+    if (canvasInitialized) return;
+    
     // Use container dimensions instead of window for better mobile behavior
     const containerRect = container.getBoundingClientRect();
-    cw = Math.min(containerRect.width, 520);
-    ch = Math.min(containerRect.height, 880);
+    cw = Math.floor(containerRect.width);
+    ch = Math.floor(containerRect.height);
     
     // Handle iOS Safari viewport height quirk
     if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-      ch = Math.min(window.innerHeight, 880);
+      ch = Math.floor(window.innerHeight);
     }
     
     deviceRatio = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
     
     // Set canvas dimensions
-    canvas.width = Math.floor(cw * deviceRatio);
-    canvas.height = Math.floor(ch * deviceRatio);
+    canvas.width = cw * deviceRatio;
+    canvas.height = ch * deviceRatio;
     canvas.style.width = cw + 'px';
     canvas.style.height = ch + 'px';
     
-    // Scale context
+    // Scale context properly
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
     ctx.scale(deviceRatio, deviceRatio);
+    
+    console.log(`Canvas initialized: ${cw}x${ch}, device ratio: ${deviceRatio}`);
+    canvasInitialized = true;
   }
   
+  // Initialize immediately
   initCanvasSize();
 
   // game variables
@@ -519,203 +534,10 @@
   // Mobile-specific touch tracking
   let activeTouches = new Map();
 
-  // Sounds (using Web Audio API for better compatibility)
-  let audioContext = null;
-  const sounds = {
-    swish: null,
-    bounce: null,
-    crowd: null
-  };
-
   // Utility functions
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
   function randRange(a,b){ return a + Math.random()*(b-a); }
   function lerp(a, b, t) { return a + (b - a) * t; }
-
-  // Initialize Web Audio API
-  function initAudio() {
-    try {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      
-      // Create sound effects using Web Audio API
-      sounds.swish = createSwishSound();
-      sounds.bounce = createBounceSound();
-      sounds.crowd = createCrowdSound();
-    } catch (e) {
-      console.log("Web Audio API not supported, sounds disabled");
-    }
-  }
-
-  // Create swish sound using Web Audio API
-  function createSwishSound() {
-    if (!audioContext) return null;
-    
-    const duration = 0.8;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + duration);
-    
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + duration);
-    
-    return { oscillator, gainNode };
-  }
-
-  // Create bounce sound
-  function createBounceSound() {
-    if (!audioContext) return null;
-    
-    const duration = 0.3;
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + duration);
-    
-    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + duration);
-    
-    return { oscillator, gainNode };
-  }
-
-  // Create crowd cheer sound
-  function createCrowdSound() {
-    if (!audioContext) return null;
-    
-    const duration = 1.5;
-    const oscillator1 = audioContext.createOscillator();
-    const oscillator2 = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator1.connect(gainNode);
-    oscillator2.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator1.type = 'sine';
-    oscillator2.type = 'sine';
-    
-    oscillator1.frequency.setValueAtTime(300, audioContext.currentTime);
-    oscillator2.frequency.setValueAtTime(400, audioContext.currentTime);
-    
-    oscillator1.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + duration);
-    oscillator2.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + duration);
-    
-    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-    
-    oscillator1.start();
-    oscillator2.start();
-    oscillator1.stop(audioContext.currentTime + duration);
-    oscillator2.stop(audioContext.currentTime + duration);
-    
-    return { oscillator1, oscillator2, gainNode };
-  }
-
-  // Play sound with Web Audio API
-  function playSound(name) {
-    if (!soundEnabled || !audioContext) return;
-    
-    // Resume audio context if it's suspended (browser policy)
-    if (audioContext.state === 'suspended') {
-      audioContext.resume();
-    }
-    
-    // Create a new sound instance
-    switch(name) {
-      case 'swish':
-        createSwishSound();
-        break;
-      case 'bounce':
-        createBounceSound();
-        break;
-      case 'crowd':
-        createCrowdSound();
-        break;
-    }
-  }
-
-  // Challenge management functions
-  function updateWind() {
-    // Change wind force and direction randomly
-    windForce = randRange(-CONFIG.windMaxForce, CONFIG.windMaxForce);
-    windDirection = windForce > 0 ? 1 : -1;
-    windValue.textContent = Math.abs(Math.round(windForce/10));
-    
-    // Show/hide wind indicator
-    if (Math.abs(windForce) > 20) {
-      windIndicator.classList.add('active');
-    } else {
-      windIndicator.classList.remove('active');
-    }
-  }
-  
-  function startMovingHoop() {
-    isMovingHoop = true;
-    movingIndicator.classList.add('active');
-    
-    // Set a timer to stop moving hoop
-    clearTimeout(challengeTimers.movingHoop);
-    challengeTimers.movingHoop = setTimeout(() => {
-      isMovingHoop = false;
-      movingIndicator.classList.remove('active');
-    }, CONFIG.challengeInterval);
-  }
-  
-  function startSmallHoop() {
-    isSmallHoop = true;
-    smallIndicator.classList.add('active');
-    
-    // Set a timer to return to normal hoop
-    clearTimeout(challengeTimers.smallHoop);
-    challengeTimers.smallHoop = setTimeout(() => {
-      isSmallHoop = false;
-      smallIndicator.classList.remove('active');
-    }, CONFIG.smallHoopDuration);
-  }
-  
-  function startDoublePoints() {
-    isDoublePoints = true;
-    doubleIndicator.classList.add('active');
-    
-    // Set a timer to end double points
-    clearTimeout(challengeTimers.doublePoints);
-    challengeTimers.doublePoints = setTimeout(() => {
-      isDoublePoints = false;
-      doubleIndicator.classList.remove('active');
-    }, CONFIG.doublePointsDuration);
-  }
-  
-  function triggerRandomChallenge() {
-    const challenges = [
-      updateWind,
-      startMovingHoop,
-      startSmallHoop,
-      startDoublePoints
-    ];
-    
-    // Pick a random challenge
-    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
-    randomChallenge();
-    
-    // Schedule next challenge
-    clearTimeout(challengeTimers.nextChallenge);
-    challengeTimers.nextChallenge = setTimeout(triggerRandomChallenge, CONFIG.challengeInterval);
-  }
 
   // Initialize the stage elements: player, ball, hoop
   function resetStage(resetScore=false){
@@ -848,7 +670,6 @@
     else if (score >= 8) fb = 'Good job!';
     finalFeedback.textContent = fb;
     gameOverModal.classList.remove('hidden');
-    playSound('crowd');
     
     // Clear all challenge timers
     for (let timer in challengeTimers) {
@@ -887,7 +708,6 @@
           const points = isDoublePoints ? 4 : 2;
           score += points;
           
-          playSound('swish');
           showFloatingText(`+${points}`, ball.x, ball.y);
           scoreText.textContent = score;
           
@@ -921,20 +741,17 @@
   function getPointerPos(e){
     const rect = canvas.getBoundingClientRect();
     const touch = (e.touches && e.touches[0]) || e;
+    // FIXED: Proper coordinate conversion without complex scaling
     return {
-      x: (touch.clientX - rect.left) * (canvas.width / deviceRatio) / rect.width / (canvas.width/(deviceRatio*rect.width)) || (touch.clientX - rect.left),
-      y: (touch.clientY - rect.top)
+      x: (touch.clientX - rect.left) * (cw / rect.width),
+      y: (touch.clientY - rect.top) * (ch / rect.height)
     };
   }
 
-  // Improved touch handling for mobile
+  // FIXED: Improved touch handling without preventDefault errors
   function handleTouchStart(e) {
-    e.preventDefault();
+    // Only prevent default if we're actually handling the touch
     if (!isPlaying) return;
-    
-    // enable sounds on first user gesture
-    soundEnabled = true;
-    initAudio();
     
     const touches = e.changedTouches;
     for (let i = 0; i < touches.length; i++) {
@@ -947,8 +764,17 @@
       const dist = Math.sqrt(dx*dx + dy*dy);
       
       if (!ball.inPlay && dist <= ball.r + 16 && !dragging) {
+        // Only prevent default when we're going to handle the touch
+        if (e.cancelable) {
+          e.preventDefault();
+        }
         dragging = true;
-        dragStart = { x: p.x, y: p.y };
+        dragStart = { 
+          x: p.x, 
+          y: p.y,
+          ballX: ball.x,  // Store initial ball position
+          ballY: ball.y
+        };
         currentPreview = [];
         isHintActive = false;
         activeTouches.set(touch.identifier, { type: 'ball', startX: p.x, startY: p.y });
@@ -961,8 +787,12 @@
   }
 
   function handleTouchMove(e) {
-    e.preventDefault();
     if (!dragging) return;
+    
+    // Only prevent default if we're actually handling the movement
+    if (e.cancelable) {
+      e.preventDefault();
+    }
     
     const touches = e.changedTouches;
     for (let i = 0; i < touches.length; i++) {
@@ -978,6 +808,14 @@
         const pullX = -dx;
         const pullY = -dy;
         
+        // FIXED: Update ball position during drag
+        ball.x = dragStart.ballX + pullX * 0.3;
+        ball.y = dragStart.ballY + pullY * 0.3;
+        
+        // Constrain ball position to reasonable limits
+        ball.x = clamp(ball.x, 40, cw - 40);
+        ball.y = clamp(ball.y, ch - CONFIG.playerYoffset - 100, ch - CONFIG.playerYoffset + 20);
+        
         // raw power magnitude
         const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
         const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
@@ -991,7 +829,6 @@
   }
 
   function handleTouchEnd(e) {
-    e.preventDefault();
     const touches = e.changedTouches;
     
     for (let i = 0; i < touches.length; i++) {
@@ -999,6 +836,11 @@
       const touchInfo = activeTouches.get(touch.identifier);
       
       if (touchInfo && touchInfo.type === 'ball' && dragging) {
+        // Only prevent default if we're actually handling the touch end
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        
         dragging = false;
         
         if (currentPreview.length){
@@ -1024,9 +866,6 @@
   // Start drag if touch on ball
   function pointerDown(e){
     if (!isPlaying) return;
-    // enable sounds on first user gesture
-    soundEnabled = true;
-    initAudio();
 
     const p = getPointerPos(e);
     // check if pointer is close to ball
@@ -1035,10 +874,14 @@
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (!ball.inPlay && dist <= ball.r + 16){
       dragging = true;
-      dragStart = { x: p.x, y: p.y };
+      dragStart = { 
+        x: p.x, 
+        y: p.y,
+        ballX: ball.x,  // Store initial ball position
+        ballY: ball.y
+      };
       currentPreview = [];
       isHintActive = false;
-      e.preventDefault && e.preventDefault();
     }
   }
 
@@ -1050,13 +893,21 @@
     const dy = p.y - dragStart.y;
     const pullX = -dx;
     const pullY = -dy;
+    
+    // FIXED: Update ball position during drag
+    ball.x = dragStart.ballX + pullX * 0.3;
+    ball.y = dragStart.ballY + pullY * 0.3;
+    
+    // Constrain ball position to reasonable limits
+    ball.x = clamp(ball.x, 40, cw - 40);
+    ball.y = clamp(ball.y, ch - CONFIG.playerYoffset - 100, ch - CONFIG.playerYoffset + 20);
+    
     // raw power magnitude
     const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
     const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
     const angle = Math.atan2(pullY, pullX); // radians
     // store preview points (with wind effect)
     currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
-    e.preventDefault && e.preventDefault();
   }
 
   function pointerUp(e){
@@ -1123,6 +974,74 @@
     setTimeout(()=>{ isHintActive=false; currentPreview=[]; shootBall(Math.cos(angle)*power + windForce/10, Math.sin(angle)*power); }, 700);
   }
 
+  // Challenge management functions
+  function updateWind() {
+    // Change wind force and direction randomly
+    windForce = randRange(-CONFIG.windMaxForce, CONFIG.windMaxForce);
+    windDirection = windForce > 0 ? 1 : -1;
+    windValue.textContent = Math.abs(Math.round(windForce/10));
+    
+    // Show/hide wind indicator
+    if (Math.abs(windForce) > 20) {
+      windIndicator.classList.add('active');
+    } else {
+      windIndicator.classList.remove('active');
+    }
+  }
+  
+  function startMovingHoop() {
+    isMovingHoop = true;
+    movingIndicator.classList.add('active');
+    
+    // Set a timer to stop moving hoop
+    clearTimeout(challengeTimers.movingHoop);
+    challengeTimers.movingHoop = setTimeout(() => {
+      isMovingHoop = false;
+      movingIndicator.classList.remove('active');
+    }, CONFIG.challengeInterval);
+  }
+  
+  function startSmallHoop() {
+    isSmallHoop = true;
+    smallIndicator.classList.add('active');
+    
+    // Set a timer to return to normal hoop
+    clearTimeout(challengeTimers.smallHoop);
+    challengeTimers.smallHoop = setTimeout(() => {
+      isSmallHoop = false;
+      smallIndicator.classList.remove('active');
+    }, CONFIG.smallHoopDuration);
+  }
+  
+  function startDoublePoints() {
+    isDoublePoints = true;
+    doubleIndicator.classList.add('active');
+    
+    // Set a timer to end double points
+    clearTimeout(challengeTimers.doublePoints);
+    challengeTimers.doublePoints = setTimeout(() => {
+      isDoublePoints = false;
+      doubleIndicator.classList.remove('active');
+    }, CONFIG.doublePointsDuration);
+  }
+  
+  function triggerRandomChallenge() {
+    const challenges = [
+      updateWind,
+      startMovingHoop,
+      startSmallHoop,
+      startDoublePoints
+    ];
+    
+    // Pick a random challenge
+    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+    randomChallenge();
+    
+    // Schedule next challenge
+    clearTimeout(challengeTimers.nextChallenge);
+    challengeTimers.nextChallenge = setTimeout(triggerRandomChallenge, CONFIG.challengeInterval);
+  }
+
   /* ---------- UI / Controls ---------- */
   instructionsBtn.addEventListener('click', ()=>{ instructionModal.classList.remove('hidden'); instructionModal.setAttribute('aria-hidden','false'); });
   closeInstr.addEventListener('click', ()=>{ instructionModal.classList.add('hidden'); instructionModal.setAttribute('aria-hidden','true'); });
@@ -1132,14 +1051,30 @@
   resetBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
   playAgainBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
 
-  // movement controls for mobile (hold to move)
-  leftBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); leftHold=true; }, {passive:false}); 
-  leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
-  leftBtn.addEventListener('touchcancel', ()=>{ leftHold=false; });
+  // FIXED: Movement controls with proper touch handling
+  function handleControlTouchStart(e, direction) {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    if (direction === 'left') leftHold = true;
+    if (direction === 'right') rightHold = true;
+  }
   
-  rightBtn.addEventListener('touchstart', (e)=>{ e.preventDefault(); rightHold=true; }, {passive:false}); 
-  rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
-  rightBtn.addEventListener('touchcancel', ()=>{ rightHold=false; });
+  function handleControlTouchEnd(e, direction) {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    if (direction === 'left') leftHold = false;
+    if (direction === 'right') rightHold = false;
+  }
+
+  leftBtn.addEventListener('touchstart', (e) => handleControlTouchStart(e, 'left'));
+  leftBtn.addEventListener('touchend', (e) => handleControlTouchEnd(e, 'left'));
+  leftBtn.addEventListener('touchcancel', (e) => handleControlTouchEnd(e, 'left'));
+  
+  rightBtn.addEventListener('touchstart', (e) => handleControlTouchStart(e, 'right'));
+  rightBtn.addEventListener('touchend', (e) => handleControlTouchEnd(e, 'right'));
+  rightBtn.addEventListener('touchcancel', (e) => handleControlTouchEnd(e, 'right'));
   
   leftBtn.addEventListener('mousedown', ()=> leftHold=true); 
   leftBtn.addEventListener('mouseup', ()=> leftHold=false);
@@ -1176,11 +1111,11 @@
     }
   }
 
-  // Pointer events on canvas - improved for mobile
-  canvas.addEventListener('touchstart', handleTouchStart, {passive:false});
-  canvas.addEventListener('touchmove', handleTouchMove, {passive:false});
-  canvas.addEventListener('touchend', handleTouchEnd, {passive:false});
-  canvas.addEventListener('touchcancel', handleTouchEnd, {passive:false});
+  // FIXED: Pointer events with proper passive handling
+  canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+  canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+  canvas.addEventListener('touchend', handleTouchEnd, {passive: false});
+  canvas.addEventListener('touchcancel', handleTouchEnd, {passive: false});
   
   canvas.addEventListener('mousedown', pointerDown);
   window.addEventListener('mousemove', pointerMove);
@@ -1191,6 +1126,7 @@
   window.addEventListener('resize', ()=> {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(() => {
+      canvasInitialized = false;
       initCanvasSize();
       
       // Update hoop position to maintain alignment with background
@@ -1228,6 +1164,9 @@
 
   /* ---------- Render loop ---------- */
   function render(dt){
+    // Clear the entire canvas first - FIXED: Proper clearing to prevent flickering
+    ctx.clearRect(0, 0, cw, ch);
+    
     // Update net stretch animation
     if (netStretchProgress > 0) {
       netStretchProgress -= dt / CONFIG.netStretchDuration;
@@ -1257,11 +1196,7 @@
     // clear background: draw image if ready else gradient
     if (bgReady){
       // draw bg image to fill canvas area while preserving aspect ratio
-      ctx.save();
-      ctx.resetTransform && ctx.resetTransform();
-      ctx.clearRect(0,0,cw,ch);
       ctx.drawImage(backgroundImage, 0, 0, cw, ch);
-      ctx.restore();
     } else {
       // fallback gradient fill (purple to subtle ground)
       const g = ctx.createLinearGradient(0,0,0,ch);
@@ -1299,7 +1234,7 @@
     ctx.restore();
 
     // update player movement
-    if (!ball.inPlay && !ballPaused){
+    if (!ball.inPlay && !ballPaused && !dragging){
       if (leftHold) player.vx = -player.speed;
       else if (rightHold) player.vx = player.speed;
       else player.vx = 0;
@@ -1307,8 +1242,9 @@
       // keep inside bounds
       player.x = clamp(player.x, 40, cw-40);
       // ball follows player when not in play & not dragging
-      if (!dragging) { ball.x = player.x; ball.y = player.y - 42; }
-    } else if (!ballPaused) {
+      ball.x = player.x;
+      ball.y = player.y - 42;
+    } else if (!ballPaused && !dragging) {
       // when in play, player can still be moved lightly by controls for realism
       if (leftHold) player.x -= player.speed * 0.3 * (dt/1000);
       if (rightHold) player.x += player.speed * 0.3 * (dt/1000);
@@ -1330,7 +1266,6 @@
         ball.y = floorY;
         ball.vy = -ball.vy * 0.45;
         ball.vx = ball.vx * 0.82;
-        playSound('bounce');
         // small threshold -> stop
         if (Math.abs(ball.vy) < 60) { ball.vy = 0; ball.vx *= 0.7; }
         // if nearly stopped, reset
@@ -1398,6 +1333,7 @@
     ctx.fillRect(player.x - 18, player.y - 2, 36, 36);
     ctx.restore();
 
+    // FIXED: Always draw the ball, even during dragging
     // draw ball
     ctx.save();
     ctx.beginPath();
@@ -1432,20 +1368,17 @@
       ctx.fillRect(cw/2 - 46, ch - 44, 92 * ratio, 8);
       ctx.restore();
     }
-
-    // debug: draw sensor rect (hidden in final, but we skip rendering it)
-
-    // overlay UI (no need to draw DOM elements here)
   }
 
-  // main loop
+  // main loop - FIXED: Proper animation frame handling
+  let animationId;
   function loop(ts){
     const dt = ts - lastTime;
     lastTime = ts;
     if (isPlaying){
       render(dt);
     }
-    requestAnimationFrame(loop);
+    animationId = requestAnimationFrame(loop);
   }
 
   // Kickoff
@@ -1456,14 +1389,25 @@
     // start timer & loop
     startTimer();
     lastTime = performance.now();
-    requestAnimationFrame(loop);
+    animationId = requestAnimationFrame(loop);
   })();
 
   // checkScore runs inside render loop physics; additionally, do periodic small checks
   setInterval(()=>{ if (isPlaying) checkScore(1000/60); }, 100);
 
+  // Clean up on page unload
+  window.addEventListener('beforeunload', () => {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+    }
+    clearInterval(timerInterval);
+    for (let timer in challengeTimers) {
+      clearTimeout(challengeTimers[timer]);
+    }
+  });
+
   // expose small globals for debugging in console (optional)
-  window._BB = { resetStage, doHint, doAutoSolve, playSound };
+  window._BB = { resetStage, doHint, doAutoSolve };
 
 })();
 </script>
