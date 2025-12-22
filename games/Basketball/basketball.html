@@ -20,9 +20,14 @@
     align-items:center;
     justify-content:center;
     color:#111;
+<<<<<<< HEAD
+    margin: 0;
+    overflow: hidden;
+=======
     overflow:hidden;
     margin:0;
     padding:0;
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   }
 
   /* --- Game container sized for mobile --- */
@@ -32,6 +37,8 @@
     overflow:hidden;
     position:relative;
     background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.85));
+    /* iOS Safari specific fix */
+    height: -webkit-fill-available;
   }
 
   /* Canvas covers entire container */
@@ -42,6 +49,10 @@
     background-size:cover;
     background-position:center;
     touch-action:none;
+    /* Prevent flickering */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    image-rendering: pixelated;
   }
 
   /* White UI card for score */
@@ -190,8 +201,13 @@
     border-radius: 16px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     display: flex;
+<<<<<<< HEAD
+    gap: 8px;
+    align-items: center;
+=======
     flex-direction: column;
     gap: 5px;
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
     font-weight: 700;
     font-size: 13px;
     max-width: 200px;
@@ -286,12 +302,17 @@
 <body>
   <div id="gameContainer" aria-label="Basketball time attack game">
     <div class="projector-beam"></div>
-    <canvas id="gameCanvas" width="360" height="720"></canvas>
+    <canvas id="gameCanvas"></canvas>
     
+<<<<<<< HEAD
+    <!-- Court overlay with fixed hoop position -->
+    <div class="court-overlay" id="courtOverlay"></div>
+=======
     <!-- Court overlay - COMPLETELY TRANSPARENT -->
     <div class="court-overlay" id="courtOverlay">
       <!-- No SVG or visible elements - completely transparent -->
     </div>
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
 
     <div class="score-display" role="status" aria-live="polite">
       <i class="fas fa-basketball-ball"></i>&nbsp;<span id="scoreText">0</span>
@@ -386,6 +407,11 @@
    - Hint & AutoSolve
    - Challenges system
    - Background image with fixed hoop position
+<<<<<<< HEAD
+   - ADDITIONAL CHALLENGES
+   - BALL DRAGGING FIXED
+=======
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
    ------------------------------ */
 
 (() => {
@@ -416,7 +442,7 @@
 
   // DOM elements
   const canvas = document.getElementById('gameCanvas');
-  const ctx = canvas.getContext('2d', { alpha: false });
+  const ctx = canvas.getContext('2d', { alpha: true });
   const scoreText = document.getElementById('scoreText');
   const timerText = document.getElementById('timerText');
   const instructionModal = document.getElementById('instructionModal');
@@ -452,6 +478,43 @@
   const perfectProgress = document.getElementById('perfectProgress');
 
   // state
+<<<<<<< HEAD
+  let cw, ch, deviceRatio;
+  let canvasInitialized = false;
+  
+  // Initialize canvas size with mobile fixes
+  function initCanvasSize() {
+    if (canvasInitialized) return;
+    
+    // Use container dimensions instead of window for better mobile behavior
+    const containerRect = container.getBoundingClientRect();
+    cw = Math.floor(containerRect.width);
+    ch = Math.floor(containerRect.height);
+    
+    // Handle iOS Safari viewport height quirk
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      ch = Math.floor(window.innerHeight);
+    }
+    
+    deviceRatio = Math.min(window.devicePixelRatio || 1, 2); // Cap at 2x for performance
+    
+    // Set canvas dimensions
+    canvas.width = cw * deviceRatio;
+    canvas.height = ch * deviceRatio;
+    canvas.style.width = cw + 'px';
+    canvas.style.height = ch + 'px';
+    
+    // Scale context properly
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+    ctx.scale(deviceRatio, deviceRatio);
+    
+    console.log(`Canvas initialized: ${cw}x${ch}, device ratio: ${deviceRatio}`);
+    canvasInitialized = true;
+  }
+  
+  // Initialize immediately
+  initCanvasSize();
+=======
   let cw = window.innerWidth;
   let ch = window.innerHeight;
   let deviceRatio = window.devicePixelRatio || 1;
@@ -461,6 +524,7 @@
   canvas.style.width = cw + 'px';
   canvas.style.height = ch + 'px';
   ctx.scale(deviceRatio, deviceRatio);
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
 
   // game variables
   let score = 0;
@@ -518,6 +582,8 @@
   let consecutiveBaskets = 0;
   let perfectShots = 0;
 
+<<<<<<< HEAD
+=======
   // Sounds (using Web Audio API for better compatibility)
   let audioContext = null;
   const sounds = {
@@ -527,11 +593,14 @@
     challengeComplete: null
   };
 
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   // Utility functions
   function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
   function randRange(a,b){ return a + Math.random()*(b-a); }
   function lerp(a, b, t) { return a + (b - a) * t; }
 
+<<<<<<< HEAD
+=======
   // Initialize Web Audio API
   function initAudio() {
     try {
@@ -677,6 +746,7 @@
     }
   }
 
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   // Initialize the stage elements: player, ball, hoop
   function resetStage(resetScore=false){
     if (resetScore) {
@@ -897,7 +967,15 @@
     else if (score >= 8) fb = 'Good job!';
     finalFeedback.textContent = fb;
     gameOverModal.classList.remove('hidden');
+<<<<<<< HEAD
+    
+    // Clear all challenge timers
+    for (let timer in challengeTimers) {
+      clearTimeout(challengeTimers[timer]);
+    }
+=======
     playSound('crowd');
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   }
 
   /* ---------- Physics + Shot logic ---------- */
@@ -923,9 +1001,18 @@
         // ensure ball was moving downward enough and gives some debounce
         if (ball.vy > 150 && performance.now() - (ball.lastScoredTick || 0) > 600){
           ball.lastScoredTick = performance.now();
+<<<<<<< HEAD
+          
+          // Calculate points (double if challenge active)
+          const points = isDoublePoints ? 4 : 2;
+          score += points;
+          
+          showFloatingText(`+${points}`, ball.x, ball.y);
+=======
           score += 2;
           playSound('swish');
           showFloatingText('+2', ball.x, ball.y);
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
           scoreText.textContent = score;
           
           // Check if this was a perfect shot (swish)
@@ -981,11 +1068,137 @@
   }
 
   /* ---------- Input: pointer & touch friendly ---------- */
+<<<<<<< HEAD
+  function getPointerPos(e){
+    const rect = canvas.getBoundingClientRect();
+    const touch = (e.touches && e.touches[0]) || e;
+    // FIXED: Proper coordinate conversion without complex scaling
+    return {
+      x: (touch.clientX - rect.left) * (cw / rect.width),
+      y: (touch.clientY - rect.top) * (ch / rect.height)
+    };
+  }
+
+  // FIXED: Improved touch handling without preventDefault errors
+  function handleTouchStart(e) {
+    // Only prevent default if we're actually handling the touch
+    if (!isPlaying) return;
+    
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
+      const p = getPointerPos({ touches: [touch] });
+      
+      // Check if touch is close to ball
+      const dx = p.x - ball.x;
+      const dy = p.y - ball.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      
+      if (!ball.inPlay && dist <= ball.r + 16 && !dragging) {
+        // Only prevent default when we're going to handle the touch
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        dragging = true;
+        dragStart = { 
+          x: p.x, 
+          y: p.y,
+          ballX: ball.x,  // Store initial ball position
+          ballY: ball.y
+        };
+        currentPreview = [];
+        isHintActive = false;
+        activeTouches.set(touch.identifier, { type: 'ball', startX: p.x, startY: p.y });
+        break;
+      } else {
+        // Check if touch is on control buttons
+        activeTouches.set(touch.identifier, { type: 'other', x: p.x, y: p.y });
+      }
+    }
+  }
+
+  function handleTouchMove(e) {
+    if (!dragging) return;
+    
+    // Only prevent default if we're actually handling the movement
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    
+    const touches = e.changedTouches;
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
+      const touchInfo = activeTouches.get(touch.identifier);
+      
+      if (touchInfo && touchInfo.type === 'ball') {
+        const p = getPointerPos({ touches: [touch] });
+        
+        // Compute "pull-back" vector (drag backwards to aim forward)
+        const dx = p.x - dragStart.x;
+        const dy = p.y - dragStart.y;
+        const pullX = -dx;
+        const pullY = -dy;
+        
+        // FIXED: Update ball position during drag
+        ball.x = dragStart.ballX + pullX * 0.3;
+        ball.y = dragStart.ballY + pullY * 0.3;
+        
+        // Constrain ball position to reasonable limits
+        ball.x = clamp(ball.x, 40, cw - 40);
+        ball.y = clamp(ball.y, ch - CONFIG.playerYoffset - 100, ch - CONFIG.playerYoffset + 20);
+        
+        // raw power magnitude
+        const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
+        const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
+        const angle = Math.atan2(pullY, pullX); // radians
+        
+        // store preview points (with wind effect)
+        currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
+        break;
+      }
+    }
+  }
+
+  function handleTouchEnd(e) {
+    const touches = e.changedTouches;
+    
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
+      const touchInfo = activeTouches.get(touch.identifier);
+      
+      if (touchInfo && touchInfo.type === 'ball' && dragging) {
+        // Only prevent default if we're actually handling the touch end
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        
+        dragging = false;
+        
+        if (currentPreview.length){
+          const p = getPointerPos({ changedTouches: [touch] });
+          const dx = p.x - dragStart.x;
+          const dy = p.y - dragStart.y;
+          const pullX = -dx;
+          const pullY = -dy;
+          const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
+          const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
+          const angle = Math.atan2(pullY, pullX);
+          
+          // shoot (with wind effect)
+          shootBall(Math.cos(angle)*speed + windForce/10, Math.sin(angle)*speed);
+        }
+        currentPreview = [];
+      }
+      
+      activeTouches.delete(touch.identifier);
+    }
+  }
+
+  // Start drag if touch on ball
+=======
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   function pointerDown(e){
     if (!isPlaying) return;
-    // enable sounds on first user gesture
-    soundEnabled = true;
-    initAudio();
 
     const p = (e.touches ? {x:e.touches[0].clientX, y:e.touches[0].clientY} : {x:e.clientX,y:e.clientY});
     // check if pointer is close to ball
@@ -997,10 +1210,18 @@
     const dist = Math.sqrt(dx*dx + dy*dy);
     if (!ball.inPlay && dist <= ball.r + 16){
       dragging = true;
+<<<<<<< HEAD
+      dragStart = { 
+        x: p.x, 
+        y: p.y,
+        ballX: ball.x,  // Store initial ball position
+        ballY: ball.y
+      };
+=======
       dragStart = { x: px, y: py };
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
       currentPreview = [];
       isHintActive = false;
-      e.preventDefault && e.preventDefault();
     }
   }
 
@@ -1015,13 +1236,21 @@
     const dy = py - dragStart.y;
     const pullX = -dx;
     const pullY = -dy;
+    
+    // FIXED: Update ball position during drag
+    ball.x = dragStart.ballX + pullX * 0.3;
+    ball.y = dragStart.ballY + pullY * 0.3;
+    
+    // Constrain ball position to reasonable limits
+    ball.x = clamp(ball.x, 40, cw - 40);
+    ball.y = clamp(ball.y, ch - CONFIG.playerYoffset - 100, ch - CONFIG.playerYoffset + 20);
+    
     // raw power magnitude
     const magnitude = Math.sqrt(pullX*pullX + pullY*pullY);
     const speed = clamp(magnitude * 9, CONFIG.minPower, CONFIG.maxPower);
     const angle = Math.atan2(pullY, pullX); // radians
     // store preview points
     currentPreview = simulateTrajectory(ball.x, ball.y, Math.cos(angle)*speed, Math.sin(angle)*speed, CONFIG.trailSteps);
-    e.preventDefault && e.preventDefault();
   }
 
   function pointerUp(e){
@@ -1092,6 +1321,74 @@
     setTimeout(()=>{ isHintActive=false; currentPreview=[]; shootBall(Math.cos(angle)*power, Math.sin(angle)*power); }, 700);
   }
 
+  // Challenge management functions
+  function updateWind() {
+    // Change wind force and direction randomly
+    windForce = randRange(-CONFIG.windMaxForce, CONFIG.windMaxForce);
+    windDirection = windForce > 0 ? 1 : -1;
+    windValue.textContent = Math.abs(Math.round(windForce/10));
+    
+    // Show/hide wind indicator
+    if (Math.abs(windForce) > 20) {
+      windIndicator.classList.add('active');
+    } else {
+      windIndicator.classList.remove('active');
+    }
+  }
+  
+  function startMovingHoop() {
+    isMovingHoop = true;
+    movingIndicator.classList.add('active');
+    
+    // Set a timer to stop moving hoop
+    clearTimeout(challengeTimers.movingHoop);
+    challengeTimers.movingHoop = setTimeout(() => {
+      isMovingHoop = false;
+      movingIndicator.classList.remove('active');
+    }, CONFIG.challengeInterval);
+  }
+  
+  function startSmallHoop() {
+    isSmallHoop = true;
+    smallIndicator.classList.add('active');
+    
+    // Set a timer to return to normal hoop
+    clearTimeout(challengeTimers.smallHoop);
+    challengeTimers.smallHoop = setTimeout(() => {
+      isSmallHoop = false;
+      smallIndicator.classList.remove('active');
+    }, CONFIG.smallHoopDuration);
+  }
+  
+  function startDoublePoints() {
+    isDoublePoints = true;
+    doubleIndicator.classList.add('active');
+    
+    // Set a timer to end double points
+    clearTimeout(challengeTimers.doublePoints);
+    challengeTimers.doublePoints = setTimeout(() => {
+      isDoublePoints = false;
+      doubleIndicator.classList.remove('active');
+    }, CONFIG.doublePointsDuration);
+  }
+  
+  function triggerRandomChallenge() {
+    const challenges = [
+      updateWind,
+      startMovingHoop,
+      startSmallHoop,
+      startDoublePoints
+    ];
+    
+    // Pick a random challenge
+    const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+    randomChallenge();
+    
+    // Schedule next challenge
+    clearTimeout(challengeTimers.nextChallenge);
+    challengeTimers.nextChallenge = setTimeout(triggerRandomChallenge, CONFIG.challengeInterval);
+  }
+
   /* ---------- UI / Controls ---------- */
   instructionsBtn.addEventListener('click', ()=>{ instructionModal.classList.remove('hidden'); instructionModal.setAttribute('aria-hidden','false'); });
   closeInstr.addEventListener('click', ()=>{ instructionModal.classList.add('hidden'); instructionModal.setAttribute('aria-hidden','true'); });
@@ -1101,11 +1398,46 @@
   resetBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
   playAgainBtn.addEventListener('click', ()=> { resetStage(true); startTimer(); isPlaying=true; gameOverModal.classList.add('hidden'); });
 
+<<<<<<< HEAD
+  // FIXED: Movement controls with proper touch handling
+  function handleControlTouchStart(e, direction) {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    if (direction === 'left') leftHold = true;
+    if (direction === 'right') rightHold = true;
+  }
+  
+  function handleControlTouchEnd(e, direction) {
+    if (e.cancelable) {
+      e.preventDefault();
+    }
+    if (direction === 'left') leftHold = false;
+    if (direction === 'right') rightHold = false;
+  }
+
+  leftBtn.addEventListener('touchstart', (e) => handleControlTouchStart(e, 'left'));
+  leftBtn.addEventListener('touchend', (e) => handleControlTouchEnd(e, 'left'));
+  leftBtn.addEventListener('touchcancel', (e) => handleControlTouchEnd(e, 'left'));
+  
+  rightBtn.addEventListener('touchstart', (e) => handleControlTouchStart(e, 'right'));
+  rightBtn.addEventListener('touchend', (e) => handleControlTouchEnd(e, 'right'));
+  rightBtn.addEventListener('touchcancel', (e) => handleControlTouchEnd(e, 'right'));
+  
+  leftBtn.addEventListener('mousedown', ()=> leftHold=true); 
+  leftBtn.addEventListener('mouseup', ()=> leftHold=false);
+  leftBtn.addEventListener('mouseleave', ()=> leftHold=false);
+  
+  rightBtn.addEventListener('mousedown', ()=> rightHold=true); 
+  rightBtn.addEventListener('mouseup', ()=> rightHold=false);
+  rightBtn.addEventListener('mouseleave', ()=> rightHold=false);
+=======
   // movement controls for mobile (hold to move)
   leftBtn.addEventListener('touchstart', (e)=>{ leftHold=true; }, {passive:false}); leftBtn.addEventListener('touchend', ()=>{ leftHold=false; });
   rightBtn.addEventListener('touchstart', (e)=>{ rightHold=true; }, {passive:false}); rightBtn.addEventListener('touchend', ()=>{ rightHold=false; });
   leftBtn.addEventListener('mousedown', ()=> leftHold=true); leftBtn.addEventListener('mouseup', ()=> leftHold=false);
   rightBtn.addEventListener('mousedown', ()=> rightHold=true); rightBtn.addEventListener('mouseup', ()=> rightHold=false);
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
 
   // quick shoot button (auto-aim)
   shootBtn.addEventListener('click', ()=> {
@@ -1134,16 +1466,52 @@
     }
   }
 
+<<<<<<< HEAD
+  // FIXED: Pointer events with proper passive handling
+  canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
+  canvas.addEventListener('touchmove', handleTouchMove, {passive: false});
+  canvas.addEventListener('touchend', handleTouchEnd, {passive: false});
+  canvas.addEventListener('touchcancel', handleTouchEnd, {passive: false});
+  
+=======
   // Pointer events on canvas
   canvas.addEventListener('touchstart', pointerDown, {passive:false});
   canvas.addEventListener('touchmove', pointerMove, {passive:false});
   canvas.addEventListener('touchend', pointerUp, {passive:false});
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   canvas.addEventListener('mousedown', pointerDown);
   window.addEventListener('mousemove', pointerMove);
   window.addEventListener('mouseup', pointerUp);
 
   // Resize handling
   window.addEventListener('resize', ()=> {
+<<<<<<< HEAD
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      canvasInitialized = false;
+      initCanvasSize();
+      
+      // Update hoop position to maintain alignment with background
+      hoopPosition.x = cw * 0.5;
+      hoopPosition.y = ch * 0.2;
+      
+      // Update the overlay
+      updateCourtOverlay();
+      
+      // Update ball position to align with holder
+      if (!ball.inPlay && player) {
+        ball.x = player.x;
+        ball.y = player.y - 42;
+      }
+      
+      // Update hoop position in game
+      if (hoop) {
+        hoop.x = hoopPosition.x;
+        hoop.y = hoopPosition.y;
+        hoop.baseX = hoopPosition.x;
+      }
+    }, 250); // Debounce resize events
+=======
     cw = window.innerWidth;
     ch = window.innerHeight;
     canvas.width = Math.floor(cw * deviceRatio);
@@ -1170,6 +1538,7 @@
       hoop.x = hoopPosition.x;
       hoop.y = hoopPosition.y;
     }
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
   });
 
   // Floating text helper
@@ -1185,8 +1554,13 @@
 
   /* ---------- Render loop ---------- */
   function render(dt){
+<<<<<<< HEAD
+    // Clear the entire canvas first - FIXED: Proper clearing to prevent flickering
+    ctx.clearRect(0, 0, cw, ch);
+=======
     // Update wind
     updateWind(dt);
+>>>>>>> 6cb772fdd39ec014a9f804db3fdf2c481534da17
     
     // Update net stretch animation
     if (netStretchProgress > 0) {
@@ -1245,7 +1619,7 @@
     ctx.restore();
 
     // update player movement
-    if (!ball.inPlay && !ballPaused){
+    if (!ball.inPlay && !ballPaused && !dragging){
       if (leftHold) player.vx = -player.speed;
       else if (rightHold) player.vx = player.speed;
       else player.vx = 0;
@@ -1253,8 +1627,9 @@
       // keep inside bounds
       player.x = clamp(player.x, 40, cw-40);
       // ball follows player when not in play & not dragging
-      if (!dragging) { ball.x = player.x; ball.y = player.y - 42; }
-    } else if (!ballPaused) {
+      ball.x = player.x;
+      ball.y = player.y - 42;
+    } else if (!ballPaused && !dragging) {
       // when in play, player can still be moved lightly by controls for realism
       if (leftHold) player.x -= player.speed * 0.3 * (dt/1000);
       if (rightHold) player.x += player.speed * 0.3 * (dt/1000);
@@ -1274,7 +1649,6 @@
         ball.y = floorY;
         ball.vy = -ball.vy * 0.45;
         ball.vx = ball.vx * 0.82;
-        playSound('bounce');
         // small threshold -> stop
         if (Math.abs(ball.vy) < 60) { ball.vy = 0; ball.vx *= 0.7; }
         // if nearly stopped, reset
@@ -1339,6 +1713,7 @@
     ctx.fillRect(player.x - 18, player.y - 2, 36, 36);
     ctx.restore();
 
+    // FIXED: Always draw the ball, even during dragging
     // draw ball
     ctx.save();
     ctx.beginPath();
@@ -1375,14 +1750,15 @@
     }
   }
 
-  // main loop
+  // main loop - FIXED: Proper animation frame handling
+  let animationId;
   function loop(ts){
     const dt = ts - lastTime;
     lastTime = ts;
     if (isPlaying){
       render(dt);
     }
-    requestAnimationFrame(loop);
+    animationId = requestAnimationFrame(loop);
   }
 
   // Kickoff
@@ -1393,14 +1769,25 @@
     // start timer & loop
     startTimer();
     lastTime = performance.now();
-    requestAnimationFrame(loop);
+    animationId = requestAnimationFrame(loop);
   })();
 
   // checkScore runs inside render loop physics; additionally, do periodic small checks
   setInterval(()=>{ if (isPlaying) checkScore(1000/60); }, 100);
 
+  // Clean up on page unload
+  window.addEventListener('beforeunload', () => {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+    }
+    clearInterval(timerInterval);
+    for (let timer in challengeTimers) {
+      clearTimeout(challengeTimers[timer]);
+    }
+  });
+
   // expose small globals for debugging in console (optional)
-  window._BB = { resetStage, doHint, doAutoSolve, playSound };
+  window._BB = { resetStage, doHint, doAutoSolve };
 
 })();
 </script>
