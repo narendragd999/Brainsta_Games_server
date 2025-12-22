@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>Brain Puzzle Pro</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+  --primary: #4361ee;
+  --secondary: #3a0ca3;
+  --success: #4cc9f0;
+  --danger: #f72585;
+  --warning: #f8961e;
+  --info: #7209b7;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --card-bg: rgba(255, 255, 255, 0.97);
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 550px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.logo i {
+  color: #ffd166;
+}
+
+.difficulty-select {
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: 2px solid white;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.difficulty-select option {
+  background: #3a0ca3;
+  color: white;
+}
+
+/* Stats Bar */
+.stats-bar {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+
+.stat-item:hover {
+  transform: translateY(-2px);
+}
+
+.stat-item i {
+  font-size: 1.2rem;
+}
+
+.streak { color: #ef476f; }
+.coins { color: #06d6a0; }
+.level { color: #118ab2; }
+
+/* Main Card */
+.card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  margin-bottom: 20px;
+}
+
+/* Category Tabs */
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 25px;
+  justify-content: center;
+}
+
+.category-tab {
+  flex: 1;
+  min-width: 80px;
+  padding: 12px 8px;
+  border: none;
+  border-radius: 12px;
+  background: var(--light);
+  color: var(--dark);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  border: 2px solid transparent;
+}
+
+.category-tab i {
+  font-size: 1.3rem;
+}
+
+.category-tab.active {
+  background: var(--secondary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(58, 12, 163, 0.3);
+}
+
+.category-tab:hover:not(.active) {
+  border-color: var(--secondary);
+}
+
+/* Category Labels */
+.category-label {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: 10px;
+  background: var(--light);
+}
+
+.math-label { background: #e3f2fd; color: #1976d2; }
+.logic-label { background: #f3e5f5; color: #7b1fa2; }
+.finance-label { background: #e8f5e9; color: #388e3c; }
+.pattern-label { background: #fff3e0; color: #f57c00; }
+.word-label { background: #fce4ec; color: #c2185b; }
+.spatial-label { background: #e8eaf6; color: #303f9f; }
+.sequence-label { background: #e0f2f1; color: #00796b; }
+
+/* Puzzle Container */
+.puzzle-container {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 25px;
+  border: 2px solid #e9ecef;
+}
+
+.puzzle-title {
+  text-align: center;
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.sequence {
+  font-size: 28px;
+  text-align: center;
+  margin: 25px 0;
+  font-weight: 700;
+  color: var(--dark);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 8px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.sequence span {
+  padding: 5px 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.missing {
+  background: linear-gradient(45deg, #4361ee, #3a0ca3) !important;
+  color: white;
+  animation: pulse 2s infinite;
+  padding: 10px 20px !important;
+}
+
+/* Word Puzzle Styles */
+.word-puzzle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--dark);
+  margin: 20px 0;
+  line-height: 1.5;
+}
+
+.word-hint {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+  margin-top: 10px;
+}
+
+/* Options Grid */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.option-btn {
+  padding: 18px 10px;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+}
+
+.option-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
+}
+
+.option-btn:active {
+  transform: translateY(-1px);
+}
+
+/* Word Options */
+.word-option {
+  font-size: 16px;
+  padding: 15px;
+}
+
+/* Actions */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.hint-btn {
+  background: var(--warning);
+  color: white;
+}
+
+.solution-btn {
+  background: var(--danger);
+  color: white;
+}
+
+.next-btn {
+  background: var(--success);
+  color: white;
+  font-size: 16px;
+}
+
+.action-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-top: 20px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  color: var(--dark);
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4cc9f0, #4361ee);
+  border-radius: 4px;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .sequence {
+    font-size: 22px;
+    letter-spacing: 5px;
+    gap: 10px;
+  }
+  
+  .option-btn {
+    padding: 16px 8px;
+    font-size: 16px;
+  }
+  
+  .action-bar {
+    flex-wrap: wrap;
+  }
+  
+  .action-btn {
+    min-width: calc(50% - 5px);
+    font-size: 13px;
+  }
+  
+  .category-tab {
+    min-width: 70px;
+    padding: 10px 5px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 400px) {
+  .category-tab {
+    min-width: 60px;
+    font-size: 10px;
+  }
+  
+  .category-tab i {
+    font-size: 1rem;
+  }
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.modal-body {
+  line-height: 1.6;
+}
+
+.modal-body h3 {
+  margin: 20px 0 10px 0;
+  color: var(--secondary);
+}
+
+.modal-body ul {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.modal-body li {
+  margin-bottom: 8px;
+}
+
+/* Tutorial Button */
+.tutorial-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+
+.tutorial-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 15px 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: none;
+  animation: slideIn 0.3s ease;
+  min-width: 300px;
+  text-align: center;
+}
+
+.notification.success {
+  border-left: 5px solid var(--success);
+}
+
+.notification.error {
+  border-left: 5px solid var(--danger);
+}
+
+.notification.warning {
+  border-left: 5px solid var(--warning);
+}
+
+/* Loading Spinner */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  display: none;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #4361ee;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Puzzle Counter */
+.puzzle-counter {
+  text-align: center;
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <i class="fas fa-brain"></i>
+      <span>Brain Puzzle Pro</span>
+    </div>
+    <div class="difficulty">
+      <select id="difficulty" class="difficulty-select">
+        <option value="easy">Easy</option>
+        <option value="medium" selected>Medium</option>
+        <option value="hard">Hard</option>
+        <option value="expert">Expert</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <i class="fas fa-fire"></i>
+      <span>Streak: <span id="streak">0</span></span>
+    </div>
+    <div class="stat-item">
+      <i class="fas fa-coins"></i>
+      <span>Coins: <span id="coins">100</span></span>
+    </div>
+    <div class="stat-item">
+      <i class="fas fa-chart-line"></i>
+      <span>Level: <span id="level">1</span></span>
+    </div>
+  </div>
+
+  <!-- Main Card -->
+  <div class="card">
+    <!-- Category Tabs -->
+    <div class="category-tabs" id="category-tabs">
+      <!-- Tabs will be populated by JavaScript -->
+    </div>
+
+    <!-- Puzzle Container -->
+    <div class="puzzle-container">
+      <div class="puzzle-title">
+        <span id="puzzle-title">Find the Missing Number</span>
+        <span id="category-label" class="category-label math-label">Math</span>
+      </div>
+      <div class="sequence" id="sequence"></div>
+      <div class="word-puzzle" id="word-puzzle" style="display: none;"></div>
+      
+      <!-- Options -->
+      <div class="options-grid" id="options"></div>
+      
+      <!-- Result -->
+      <div class="result-container" id="result"></div>
+      
+      <!-- Puzzle Counter -->
+      <div class="puzzle-counter">
+        <span id="puzzle-counter">Puzzle 1 of category</span>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>Progress to Next Level</span>
+        <span id="progress-text">0/10</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+      <button class="action-btn hint-btn" id="hint-btn">
+        <i class="fas fa-lightbulb"></i>
+        <span>Hint (-5)</span>
+      </button>
+      <button class="action-btn solution-btn" id="solution-btn">
+        <i class="fas fa-eye"></i>
+        <span>Solution</span>
+      </button>
+      <button class="action-btn next-btn" id="next-btn">
+        <i class="fas fa-forward"></i>
+        <span>Next Puzzle</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Tutorial Button -->
+<button class="tutorial-btn" id="tutorial-btn">
+  <i class="fas fa-question"></i>
+</button>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification"></div>
+
+<!-- Tutorial Modal -->
+<div class="modal" id="tutorial-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>How to Play</h2>
+      <button class="close-modal" id="close-modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <h3><i class="fas fa-gamepad"></i> Game Rules</h3>
+      <ul>
+        <li>Choose from 7 different puzzle categories</li>
+        <li>Find the missing element in the sequence</li>
+        <li>Select the correct answer from 4 options</li>
+        <li>Maintain streaks for bonus coins</li>
+        <li>Progress through levels for bigger rewards</li>
+      </ul>
+      
+      <h3><i class="fas fa-star"></i> Scoring</h3>
+      <ul>
+        <li>Correct answer: +10 coins</li>
+        <li>3+ streak: Bonus +5 coins per puzzle</li>
+        <li>Level up: +50 coins + special rewards</li>
+        <li>Wrong answer: Streak resets</li>
+      </ul>
+      
+      <h3><i class="fas fa-tags"></i> Categories</h3>
+      <ul>
+        <li><strong>Math:</strong> Number sequences and calculations</li>
+        <li><strong>Logic:</strong> Pattern recognition and reasoning</li>
+        <li><strong>Finance:</strong> Money and investment patterns</li>
+        <li><strong>Patterns:</strong> Visual and abstract patterns</li>
+        <li><strong>Word:</strong> Language and vocabulary puzzles</li>
+        <li><strong>Spatial:</strong> Visual-spatial reasoning</li>
+        <li><strong>Sequence:</strong> Complex sequence patterns</li>
+      </ul>
+      
+      <button class="action-btn next-btn" id="start-playing-btn" style="width:100%;margin-top:20px;">
+        Start Playing!
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Game State - Simplified to prevent freezing
+let gameState = {
+  streak: 0,
+  coins: 100,
+  level: 1,
+  progress: 0,
+  currentCategory: 'math',
+  difficulty: 'medium',
+  answer: null,
+  explanation: '',
+  hint: '',
+  puzzleCount: 0,
+  // Simplified tracking - only store recent puzzles
+  recentPuzzles: new Set(),
+  maxRecentPuzzles: 50
+};
+
+// Category Configuration
+const categoryConfig = {
+  math: { 
+    label: 'Math', 
+    class: 'math-label', 
+    color: '#1976d2',
+    icon: 'fa-calculator',
+    name: 'Mathematics'
+  },
+  logic: { 
+    label: 'Logic', 
+    class: 'logic-label', 
+    color: '#7b1fa2',
+    icon: 'fa-brain',
+    name: 'Logic'
+  },
+  finance: { 
+    label: 'Finance', 
+    class: 'finance-label', 
+    color: '#388e3c',
+    icon: 'fa-chart-line',
+    name: 'Finance'
+  },
+  patterns: { 
+    label: 'Patterns', 
+    class: 'pattern-label', 
+    color: '#f57c00',
+    icon: 'fa-shapes',
+    name: 'Patterns'
+  },
+  word: { 
+    label: 'Word', 
+    class: 'word-label', 
+    color: '#c2185b',
+    icon: 'fa-font',
+    name: 'Word'
+  },
+  spatial: { 
+    label: 'Spatial', 
+    class: 'spatial-label', 
+    color: '#303f9f',
+    icon: 'fa-cube',
+    name: 'Spatial'
+  },
+  sequence: { 
+    label: 'Sequence', 
+    class: 'sequence-label', 
+    color: '#00796b',
+    icon: 'fa-list-ol',
+    name: 'Sequence'
+  }
+};
+
+// Predefined word puzzles to ensure no undefined issues
+const wordPuzzles = [
+  {
+    type: 'anagram',
+    question: 'Anagram of "LISTEN":',
+    answer: 'SILENT',
+    hint: 'It means quiet',
+    options: ['SILENT', 'ENLIST', 'TINSEL', 'LISTEN']
+  },
+  {
+    type: 'anagram',
+    question: 'Anagram of "EARTH":',
+    answer: 'HEART',
+    hint: 'A vital organ',
+    options: ['HEART', 'HATER', 'RATHE', 'EARTH']
+  },
+  {
+    type: 'synonym',
+    question: 'Synonym for "HAPPY":',
+    answer: 'JOYFUL',
+    hint: 'Full of joy',
+    options: ['JOYFUL', 'SAD', 'ANGRY', 'TIRED']
+  },
+  {
+    type: 'synonym',
+    question: 'Synonym for "BIG":',
+    answer: 'LARGE',
+    hint: 'Opposite of small',
+    options: ['LARGE', 'TINY', 'SMALL', 'MEDIUM']
+  },
+  {
+    type: 'antonym',
+    question: 'Antonym of "HOT":',
+    answer: 'COLD',
+    hint: 'Opposite temperature',
+    options: ['COLD', 'WARM', 'HEATED', 'BOILING']
+  },
+  {
+    type: 'antonym',
+    question: 'Antonym of "UP":',
+    answer: 'DOWN',
+    hint: 'Opposite direction',
+    options: ['DOWN', 'LEFT', 'RIGHT', 'SIDE']
+  },
+  {
+    type: 'riddle',
+    question: 'What has keys but can\'t open locks?',
+    answer: 'PIANO',
+    hint: 'Musical instrument',
+    options: ['PIANO', 'DOOR', 'COMPUTER', 'CAR']
+  },
+  {
+    type: 'riddle',
+    question: 'What gets wet while drying?',
+    answer: 'TOWEL',
+    hint: 'Bathroom item',
+    options: ['TOWEL', 'UMBRELLA', 'RAIN', 'HAIR']
+  }
+];
+
+// DOM Elements
+const elements = {
+  streak: document.getElementById('streak'),
+  coins: document.getElementById('coins'),
+  level: document.getElementById('level'),
+  sequence: document.getElementById('sequence'),
+  options: document.getElementById('options'),
+  result: document.getElementById('result'),
+  progressFill: document.getElementById('progress-fill'),
+  progressText: document.getElementById('progress-text'),
+  puzzleTitle: document.getElementById('puzzle-title'),
+  categoryLabel: document.getElementById('category-label'),
+  difficulty: document.getElementById('difficulty'),
+  hintBtn: document.getElementById('hint-btn'),
+  solutionBtn: document.getElementById('solution-btn'),
+  nextBtn: document.getElementById('next-btn'),
+  tutorialBtn: document.getElementById('tutorial-btn'),
+  tutorialModal: document.getElementById('tutorial-modal'),
+  closeModal: document.getElementById('close-modal'),
+  startPlayingBtn: document.getElementById('start-playing-btn'),
+  notification: document.getElementById('notification'),
+  wordPuzzle: document.getElementById('word-puzzle'),
+  categoryTabs: document.getElementById('category-tabs'),
+  puzzleCounter: document.getElementById('puzzle-counter'),
+  loadingOverlay: document.getElementById('loading-overlay')
+};
+
+// Initialize Game
+function initGame() {
+  loadGameState();
+  setupCategoryTabs();
+  setupEventListeners();
+  generatePuzzle();
+  updateUI();
+  
+  // Show tutorial on first visit
+  if (!localStorage.getItem('tutorialShown')) {
+    setTimeout(() => showTutorial(), 500);
+    localStorage.setItem('tutorialShown', 'true');
+  }
+}
+
+// Setup Category Tabs
+function setupCategoryTabs() {
+  const categories = Object.keys(categoryConfig);
+  elements.categoryTabs.innerHTML = '';
+  
+  categories.forEach(catKey => {
+    const config = categoryConfig[catKey];
+    const tab = document.createElement('button');
+    tab.className = `category-tab ${catKey === gameState.currentCategory ? 'active' : ''}`;
+    tab.dataset.category = catKey;
+    tab.innerHTML = `
+      <i class="fas ${config.icon}"></i>
+      <span>${config.name}</span>
+    `;
+    elements.categoryTabs.appendChild(tab);
+  });
+}
+
+// Setup Event Listeners
+function setupEventListeners() {
+  // Category tabs - with debouncing to prevent rapid clicks
+  let categoryChangeTimeout;
+  document.querySelectorAll('.category-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Clear any pending category change
+      if (categoryChangeTimeout) clearTimeout(categoryChangeTimeout);
+      
+      // Disable all category tabs temporarily
+      document.querySelectorAll('.category-tab').forEach(t => {
+        t.disabled = true;
+      });
+      
+      // Show loading
+      showLoading();
+      
+      // Change category after a short delay
+      categoryChangeTimeout = setTimeout(() => {
+        setCategory(tab.dataset.category);
+        hideLoading();
+        
+        // Re-enable tabs
+        document.querySelectorAll('.category-tab').forEach(t => {
+          t.disabled = false;
+        });
+      }, 100);
+    });
+  });
+  
+  // Difficulty selector
+  elements.difficulty.addEventListener('change', (e) => {
+    gameState.difficulty = e.target.value;
+    generatePuzzle();
+  });
+  
+  // Action buttons
+  elements.hintBtn.addEventListener('click', useHint);
+  elements.solutionBtn.addEventListener('click', showSolution);
+  elements.nextBtn.addEventListener('click', nextPuzzle);
+  
+  // Tutorial buttons
+  elements.tutorialBtn.addEventListener('click', showTutorial);
+  elements.closeModal.addEventListener('click', closeTutorial);
+  elements.startPlayingBtn.addEventListener('click', closeTutorial);
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key >= '1' && e.key <= '4') {
+      const index = parseInt(e.key) - 1;
+      const options = document.querySelectorAll('.option-btn');
+      if (options[index]) {
+        const value = parseInt(options[index].dataset.value) || options[index].dataset.value;
+        checkAnswer(value);
+      }
+    } else if (e.key === 'h' || e.key === 'H') {
+      useHint();
+    } else if (e.key === 's' || e.key === 'S') {
+      showSolution();
+    } else if (e.key === 'n' || e.key === 'N') {
+      nextPuzzle();
+    }
+  });
+}
+
+// Show loading overlay
+function showLoading() {
+  elements.loadingOverlay.style.display = 'flex';
+}
+
+// Hide loading overlay
+function hideLoading() {
+  elements.loadingOverlay.style.display = 'none';
+}
+
+// Set Category - Fixed to prevent freezing
+function setCategory(category) {
+  if (!categoryConfig[category]) return;
+  
+  // Update UI immediately
+  const config = categoryConfig[category];
+  elements.categoryLabel.textContent = config.label;
+  elements.categoryLabel.className = `category-label ${config.class}`;
+  
+  // Update active tab
+  document.querySelectorAll('.category-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.category === category) {
+      tab.classList.add('active');
+    }
+  });
+  
+  // Update puzzle title
+  const titles = {
+    math: 'Find the Missing Number',
+    logic: 'Logical Reasoning Puzzle',
+    finance: 'Financial Pattern Analysis',
+    patterns: 'Pattern Recognition Challenge',
+    word: 'Word Puzzle Challenge',
+    spatial: 'Spatial Reasoning Test',
+    sequence: 'Complex Sequence Analysis'
+  };
+  elements.puzzleTitle.textContent = titles[category];
+  
+  // Update game state
+  gameState.currentCategory = category;
+  
+  // Generate new puzzle
+  generatePuzzle();
+}
+
+// Generate Puzzle - Simplified to prevent freezing
+function generatePuzzle() {
+  const category = gameState.currentCategory;
+  const difficulty = gameState.difficulty;
+  
+  let puzzleData;
+  let attempts = 0;
+  
+  // Simple check to prevent infinite loops
+  while (attempts < 20) {
+    attempts++;
+    
+    // Generate puzzle based on category
+    switch (category) {
+      case 'math':
+        puzzleData = generateMathPuzzle(difficulty);
+        break;
+      case 'logic':
+        puzzleData = generateLogicPuzzle(difficulty);
+        break;
+      case 'finance':
+        puzzleData = generateFinancePuzzle(difficulty);
+        break;
+      case 'patterns':
+        puzzleData = generatePatternPuzzle(difficulty);
+        break;
+      case 'word':
+        puzzleData = generateWordPuzzle(difficulty);
+        break;
+      case 'spatial':
+        puzzleData = generateSpatialPuzzle(difficulty);
+        break;
+      case 'sequence':
+        puzzleData = generateSequencePuzzle(difficulty);
+        break;
+      default:
+        puzzleData = generateMathPuzzle(difficulty);
+    }
+    
+    // Create a simple hash for the puzzle
+    const puzzleHash = `${category}-${puzzleData.answer}-${JSON.stringify(puzzleData.options)}`;
+    
+    // Check if we've seen this puzzle recently
+    if (!gameState.recentPuzzles.has(puzzleHash)) {
+      gameState.recentPuzzles.add(puzzleHash);
+      
+      // Limit the size of recent puzzles
+      if (gameState.recentPuzzles.size > gameState.maxRecentPuzzles) {
+        // Remove the oldest entry (convert to array, shift first)
+        const array = Array.from(gameState.recentPuzzles);
+        array.shift();
+        gameState.recentPuzzles = new Set(array);
+      }
+      
+      break;
+    }
+  }
+  
+  // Update game state
+  gameState.answer = puzzleData.answer;
+  gameState.explanation = puzzleData.explanation || 'No explanation available';
+  gameState.hint = puzzleData.hint || 'No hint available';
+  gameState.puzzleCount++;
+  
+  // Render puzzle
+  renderPuzzle(puzzleData);
+}
+
+// Generate Math Puzzle
+function generateMathPuzzle(difficulty) {
+  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
+  const types = ['arithmetic', 'geometric', 'fibonacci', 'square'];
+  const type = types[Math.floor(Math.random() * types.length)];
+  
+  let sequence = [], answer, explanation = '', hint = '';
+  const base = Math.floor(10 * diffMultiplier);
+  
+  switch (type) {
+    case 'arithmetic':
+      const start = rand(2, base);
+      const diff = rand(2, Math.floor(5 * diffMultiplier));
+      sequence = [start, start + diff, '?', start + 3*diff, start + 4*diff];
+      answer = start + 2*diff;
+      explanation = `Arithmetic sequence: Add ${diff} each time`;
+      hint = `The difference between consecutive numbers is constant`;
+      break;
+      
+    case 'geometric':
+      const gStart = rand(2, Math.floor(5 * diffMultiplier));
+      const ratio = rand(2, Math.floor(3 * diffMultiplier));
+      sequence = [gStart, gStart * ratio, '?', gStart * ratio * ratio * ratio];
+      answer = gStart * ratio * ratio;
+      explanation = `Geometric sequence: Multiply by ${ratio} each time`;
+      hint = `Each number is multiplied by the same value`;
+      break;
+      
+    case 'fibonacci':
+      const f1 = rand(1, Math.floor(5 * diffMultiplier));
+      const f2 = rand(1, Math.floor(5 * diffMultiplier));
+      sequence = [f1, f2, f1 + f2, '?', (f1 + f2) + f2 + (f1 + f2)];
+      answer = (f1 + f2) + f2;
+      explanation = `Fibonacci-like sequence: Each term is sum of two previous`;
+      hint = `Add the two numbers before the missing one`;
+      break;
+      
+    case 'square':
+      const startSq = rand(1, 5);
+      sequence = [startSq*startSq, (startSq+1)*(startSq+1), '?', (startSq+3)*(startSq+3)];
+      answer = (startSq+2)*(startSq+2);
+      explanation = `Square numbers: n²`;
+      hint = `These are perfect squares`;
+      break;
+  }
+  
+  const options = generateOptions(answer, diffMultiplier);
+  return { sequence, answer, explanation, hint, options };
+}
+
+// Generate Logic Puzzle
+function generateLogicPuzzle(difficulty) {
+  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
+  const base = rand(3, Math.floor(8 * diffMultiplier));
+  
+  let sequence = [], answer, explanation = '', hint = '';
+  
+  const type = Math.random() > 0.5 ? 'alternating' : 'positional';
+  
+  if (type === 'alternating') {
+    const pattern = Math.random() > 0.5 ? ['×2', '+3'] : ['+3', '×2'];
+    let current = base;
+    for (let i = 0; i < 5; i++) {
+      if (i === 2) {
+        sequence.push('?');
+      } else if (i === 0) {
+        sequence.push(current);
+      } else {
+        const op = pattern[(i-1) % 2];
+        if (op === '×2') current *= 2;
+        else if (op === '+3') current += 3;
+        sequence.push(current);
+      }
+    }
+    // Calculate answer
+    let calc = base;
+    for (let i = 0; i < 3; i++) {
+      const op = pattern[i % 2];
+      if (op === '×2') calc *= 2;
+      else if (op === '+3') calc += 3;
+    }
+    answer = calc;
+    explanation = `Alternating pattern: ${pattern[0]}, ${pattern[1]}`;
+    hint = `The operations alternate regularly`;
+  } else {
+    // Positional
+    const pos = rand(2, 5);
+    sequence = [pos, pos*2, pos*3, '?', pos*5];
+    answer = pos*4;
+    explanation = `Multiply by position number`;
+    hint = `Think about the position of each number`;
+  }
+  
+  const options = generateOptions(answer, diffMultiplier);
+  return { sequence, answer, explanation, hint, options };
+}
+
+// Generate Finance Puzzle
+function generateFinancePuzzle(difficulty) {
+  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
+  const principal = rand(1000, Math.floor(10000 * diffMultiplier));
+  const rate = rand(5, Math.floor(20 * diffMultiplier));
+  
+  const sequence = [];
+  for (let i = 0; i < 4; i++) {
+    if (i === 2) {
+      sequence.push('?');
+    } else {
+      const amount = Math.round(principal * Math.pow(1 + rate/100, i));
+      sequence.push(`$${amount.toLocaleString()}`);
+    }
+  }
+  
+  const answer = Math.round(principal * Math.pow(1 + rate/100, 2));
+  const explanation = `Compound interest at ${rate}% annually: Principal × (1 + ${rate}%)^years`;
+  const hint = `Use the formula: Principal × (1 + rate/100)^years`;
+  
+  const options = generateOptions(answer, diffMultiplier, true);
+  return { sequence, answer, explanation, hint, options };
+}
+
+// Generate Pattern Puzzle
+function generatePatternPuzzle(difficulty) {
+  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
+  const base = rand(2, Math.floor(6 * diffMultiplier));
+  
+  let sequence = [], answer, explanation = '', hint = '';
+  
+  const patterns = [
+    [1, 4, 9, 16, '?', 36], // Squares
+    [1, 3, 6, 10, '?', 21], // Triangular
+    [2, 6, 12, 20, '?', 42] // n*(n+1)
+  ];
+  
+  const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+  sequence = pattern;
+  
+  if (pattern[0] === 1 && pattern[1] === 4) {
+    answer = 25; // squares
+    explanation = 'Square numbers pattern: 1², 2², 3², 4², 5², 6²';
+    hint = 'These are perfect squares';
+  } else if (pattern[0] === 1 && pattern[1] === 3) {
+    answer = 15; // triangular
+    explanation = 'Triangular numbers pattern: n(n+1)/2';
+    hint = 'Triangular numbers: 1, 3, 6, 10, 15, 21';
+  } else {
+    answer = 30; // n*(n+1)
+    explanation = 'Pattern: n × (n+1)';
+    hint = 'Multiply each position by (position + 1)';
+  }
+  
+  const options = generateOptions(answer, diffMultiplier);
+  return { sequence, answer, explanation, hint, options };
+}
+
+// Generate Word Puzzle - Fixed to ensure no undefined
+function generateWordPuzzle(difficulty) {
+  // Get a random word puzzle from our predefined list
+  const puzzle = wordPuzzles[Math.floor(Math.random() * wordPuzzles.length)];
+  
+  return {
+    isWordPuzzle: true,
+    question: puzzle.question,
+    answer: puzzle.answer,
+    explanation: `${puzzle.type.toUpperCase()} puzzle: ${puzzle.answer}`,
+    hint: puzzle.hint,
+    options: shuffleArray([...puzzle.options])
+  };
+}
+
+// Generate Spatial Puzzle
+function generateSpatialPuzzle(difficulty) {
+  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
+  const base = rand(2, Math.floor(6 * diffMultiplier));
+  
+  let sequence = [], answer, explanation = '', hint = '';
+  
+  // Simple spatial pattern represented as numbers
+  sequence = [base, base*3, base*9, '?', base*81];
+  answer = base*27;
+  explanation = 'Spatial growth pattern: Multiply by 3 each step';
+  hint = 'Each number is 3 times the previous';
+  
+  const options = generateOptions(answer, diffMultiplier);
+  return { sequence, answer, explanation, hint, options };
+}
+
+// Generate Sequence Puzzle
+function generateSequencePuzzle(difficulty) {
+  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
+  const base = rand(2, Math.floor(6 * diffMultiplier));
+  
+  let sequence = [], answer, explanation = '', hint = '';
+  
+  // Complex sequence
+  sequence = [base, base + 2, (base + 2) * 2, '?', ((base + 2) * 2 + 2) * 2];
+  answer = (base + 2) * 2 + 2;
+  explanation = 'Complex pattern: +2, ×2, +2, ×2';
+  hint = 'Alternate between adding 2 and multiplying by 2';
+  
+  const options = generateOptions(answer, diffMultiplier);
+  return { sequence, answer, explanation, hint, options };
+}
+
+// Generate Options
+function generateOptions(correctAnswer, diffMultiplier, isCurrency = false) {
+  const options = [correctAnswer];
+  const range = Math.max(10, Math.floor(correctAnswer * 0.25 * diffMultiplier));
+  
+  while (options.length < 4) {
+    let wrongAnswer;
+    
+    // Generate different types of wrong answers
+    if (options.length === 1) {
+      wrongAnswer = correctAnswer + rand(-range, range);
+    } else if (options.length === 2) {
+      wrongAnswer = correctAnswer + (Math.random() > 0.5 ? range : -range);
+    } else {
+      wrongAnswer = correctAnswer * (Math.random() > 0.5 ? 1.5 : 0.5);
+    }
+    
+    // Ensure it's different and positive
+    if (!options.includes(wrongAnswer) && wrongAnswer > 0) {
+      options.push(Math.round(wrongAnswer));
+    }
+  }
+  
+  return shuffleArray(options);
+}
+
+// Shuffle Array
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Render Puzzle
+function renderPuzzle(puzzleData) {
+  const isWordPuzzle = puzzleData.isWordPuzzle || gameState.currentCategory === 'word';
+  
+  // Hide/show appropriate elements
+  elements.sequence.style.display = isWordPuzzle ? 'none' : 'flex';
+  elements.wordPuzzle.style.display = isWordPuzzle ? 'block' : 'none';
+  
+  if (isWordPuzzle && puzzleData.question) {
+    // Render word puzzle
+    elements.wordPuzzle.innerHTML = `
+      <div style="font-size: 20px; margin-bottom: 10px;">${puzzleData.question}</div>
+      <div class="word-hint">Word Puzzle</div>
+    `;
+  } else {
+    // Render sequence puzzle
+    let sequenceHTML = '';
+    puzzleData.sequence.forEach(item => {
+      if (item === '?') {
+        sequenceHTML += `<span class="missing">?</span>`;
+      } else {
+        sequenceHTML += `<span>${item}</span>`;
+      }
+    });
+    elements.sequence.innerHTML = sequenceHTML;
+  }
+  
+  // Clear previous options
+  elements.options.innerHTML = '';
+  
+  // Create option buttons
+  puzzleData.options.forEach((option, index) => {
+    const button = document.createElement('button');
+    button.className = `option-btn ${isWordPuzzle ? 'word-option' : ''}`;
+    
+    if (isWordPuzzle) {
+      button.textContent = option;
+      button.dataset.value = option;
+    } else {
+      button.textContent = gameState.currentCategory === 'finance' 
+        ? `$${option.toLocaleString()}` 
+        : option;
+      button.dataset.value = option;
+    }
+    
+    button.style.animationDelay = `${index * 0.1}s`;
+    
+    elements.options.appendChild(button);
+  });
+  
+  // Reset result display
+  elements.result.style.display = 'none';
+  elements.result.className = 'result-container';
+  
+  // Update hint button state
+  elements.hintBtn.disabled = gameState.coins < 5;
+  
+  // Update puzzle counter
+  elements.puzzleCounter.textContent = `Puzzle ${gameState.puzzleCount}`;
+}
+
+// Check Answer
+function checkAnswer(selectedAnswer) {
+  const isCorrect = selectedAnswer == gameState.answer; // Use == for string/number comparison
+  
+  // Show result
+  elements.result.style.display = 'block';
+  elements.result.className = `result-container ${isCorrect ? 'correct' : 'wrong'}`;
+  
+  if (isCorrect) {
+    elements.result.innerHTML = `
+      <i class="fas fa-check-circle"></i> 
+      <span>Correct! +10 coins</span>
+      ${gameState.streak >= 2 ? `<br><small>Streak Bonus: +5 coins!</small>` : ''}
+    `;
+    
+    // Update game state
+    gameState.streak++;
+    gameState.coins += 10;
+    
+    // Streak bonus
+    if (gameState.streak >= 3) {
+      gameState.coins += 5;
+      if (gameState.streak === 3 || gameState.streak === 5 || gameState.streak === 10) {
+        showNotification(`🔥 ${gameState.streak} Streak! +5 coins bonus`, 'success');
+      }
+    }
+    
+    // Progress to next level
+    gameState.progress++;
+    if (gameState.progress >= 10) {
+      levelUp();
+    }
+    
+    // Special achievements
+    if (gameState.streak === 5) {
+      gameState.coins += 25;
+      showNotification('🎯 5-Streak Master! +25 coins', 'success');
+    } else if (gameState.streak === 10) {
+      gameState.coins += 50;
+      showNotification('🏆 10-Streak Legend! +50 coins', 'success');
+    }
+    
+    // Highlight correct answer
+    highlightAnswers(selectedAnswer, true);
+    
+  } else {
+    elements.result.innerHTML = `
+      <i class="fas fa-times-circle"></i> 
+      <span>Incorrect! The answer was ${formatAnswer(gameState.answer)}</span>
+    `;
+    
+    // Reset streak
+    gameState.streak = 0;
+    
+    // Highlight correct and wrong answers
+    highlightAnswers(selectedAnswer, false);
+  }
+  
+  // Update UI and save
+  updateUI();
+  saveGameState();
+}
+
+// Highlight answers
+function highlightAnswers(selectedAnswer, isCorrect) {
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    const btnValue = btn.dataset.value;
+    
+    if (btnValue == gameState.answer) { // Use == for comparison
+      btn.style.background = 'var(--success)';
+      btn.style.animation = 'pulse 0.5s 2';
+    } else if (!isCorrect && btnValue == selectedAnswer) {
+      btn.style.background = 'var(--danger)';
+    }
+  });
+}
+
+// Format answer based on category
+function formatAnswer(answer) {
+  if (gameState.currentCategory === 'finance') {
+    return `$${answer.toLocaleString()}`;
+  }
+  return answer;
+}
+
+// Level Up
+function levelUp() {
+  gameState.level++;
+  gameState.progress = 0;
+  gameState.coins += 50;
+  
+  // Bonus based on level
+  if (gameState.level % 5 === 0) {
+    gameState.coins += 100;
+    showNotification(`🎉 Level ${gameState.level} Milestone! +150 coins total`, 'success');
+  } else {
+    showNotification(`🎉 Level ${gameState.level}! +50 coins`, 'success');
+  }
+  
+  updateUI();
+}
+
+// Use Hint
+function useHint() {
+  if (gameState.coins < 5) {
+    showNotification('Not enough coins! Need 5 coins for a hint.', 'error');
+    return;
+  }
+  
+  gameState.coins -= 5;
+  
+  // Show hint
+  elements.result.style.display = 'block';
+  elements.result.className = 'result-container correct';
+  elements.result.innerHTML = `
+    <i class="fas fa-lightbulb"></i>
+    <span>Hint: ${gameState.hint}</span>
+  `;
+  
+  updateUI();
+  saveGameState();
+}
+
+// Show Solution - Fixed for word puzzles
+function showSolution() {
+  if (confirm("Show solution? This will reset your streak.")) {
+    gameState.streak = 0;
+    
+    elements.result.style.display = 'block';
+    elements.result.className = 'result-container wrong';
+    elements.result.innerHTML = `
+      <i class="fas fa-eye"></i>
+      <span>Solution: ${formatAnswer(gameState.answer)}</span>
+      <br>
+      <small>${gameState.explanation}</small>
+    `;
+    
+    // Highlight correct answer
+    highlightAnswers(null, false);
+    
+    updateUI();
+    saveGameState();
+  }
+}
+
+// Next Puzzle
+function nextPuzzle() {
+  generatePuzzle();
+  elements.result.style.display = 'none';
+}
+
+// Update UI
+function updateUI() {
+  elements.streak.textContent = gameState.streak;
+  elements.coins.textContent = gameState.coins;
+  elements.level.textContent = gameState.level;
+  elements.progressText.textContent = `${gameState.progress}/10`;
+  elements.progressFill.style.width = `${(gameState.progress / 10) * 100}%`;
+  
+  // Update hint button state
+  elements.hintBtn.disabled = gameState.coins < 5;
+  elements.hintBtn.innerHTML = gameState.coins < 5 
+    ? `<i class="fas fa-lightbulb"></i><span>Need 5 coins</span>`
+    : `<i class="fas fa-lightbulb"></i><span>Hint (-5)</span>`;
+}
+
+// Show Notification
+function showNotification(message, type = 'success') {
+  elements.notification.textContent = message;
+  elements.notification.className = `notification ${type}`;
+  elements.notification.style.display = 'block';
+  
+  setTimeout(() => {
+    elements.notification.style.display = 'none';
+  }, 3000);
+}
+
+// Show Tutorial
+function showTutorial() {
+  elements.tutorialModal.style.display = 'flex';
+}
+
+// Close Tutorial
+function closeTutorial() {
+  elements.tutorialModal.style.display = 'none';
+}
+
+// Save Game State
+function saveGameState() {
+  const saveData = {
+    coins: gameState.coins,
+    level: gameState.level,
+    streak: gameState.streak,
+    progress: gameState.progress,
+    puzzleCount: gameState.puzzleCount,
+    currentCategory: gameState.currentCategory
+  };
+  
+  localStorage.setItem('brainPuzzleState', JSON.stringify(saveData));
+}
+
+// Load Game State
+function loadGameState() {
+  const saved = localStorage.getItem('brainPuzzleState');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      gameState.coins = data.coins || 100;
+      gameState.level = data.level || 1;
+      gameState.streak = data.streak || 0;
+      gameState.progress = data.progress || 0;
+      gameState.puzzleCount = data.puzzleCount || 0;
+      gameState.currentCategory = data.currentCategory || 'math';
+    } catch (e) {
+      console.error('Error loading saved game:', e);
+    }
+  }
+}
+
+// Utility: Random number
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Initialize game when page loads
+window.addEventListener('DOMContentLoaded', () => {
+  initGame();
+  
+  // Add click listeners to option buttons (delegated)
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('option-btn')) {
+      const value = e.target.dataset.value;
+      if (value) {
+        // Convert to number if it's a numeric string
+        const numValue = isNaN(value) ? value : Number(value);
+        checkAnswer(numValue);
+      }
+    }
+  });
+  
+  // Auto-save every 30 seconds
+  setInterval(() => {
+    saveGameState();
+  }, 30000);
+});
+</script>
+</body>
+</html>
