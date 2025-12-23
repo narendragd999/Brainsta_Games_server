@@ -403,17 +403,17 @@
         <div class="inputs">
             <div class="input-group">
                 <span class="shape circle">●</span>
-                <input type="number" id="circle" placeholder="?" inputmode="decimal">
+                <input type="number" id="circle" placeholder="?" inputmode="decimal" readonly onfocus="blurInput(this)">
             </div>
             
             <div class="input-group">
                 <span class="shape diamond">◆</span>
-                <input type="number" id="diamond" placeholder="?" inputmode="decimal">
+                <input type="number" id="diamond" placeholder="?" inputmode="decimal" readonly onfocus="blurInput(this)">
             </div>
             
             <div class="input-group">
                 <span class="shape triangle">▲</span>
-                <input type="number" id="triangle" placeholder="?" inputmode="decimal">
+                <input type="number" id="triangle" placeholder="?" inputmode="decimal" readonly onfocus="blurInput(this)">
             </div>
         </div>
         
@@ -458,6 +458,7 @@
         let currentDifficulty = 'easy';
         let currentSolution = {};
         let isCurrentSolved = false;
+        let isTouchDevice = false;
         
         // DOM elements
         const equationsDiv = document.getElementById('equations');
@@ -475,6 +476,156 @@
         const faultsSpan = document.getElementById('faults');
         const diffBtns = document.querySelectorAll('.diff-btn');
         
+        // Detect touch device
+        function detectTouchDevice() {
+            return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        }
+        
+        // Blur input immediately on focus (for mobile)
+        function blurInput(input) {
+            if (isTouchDevice) {
+                setTimeout(() => {
+                    input.blur();
+                    // Instead, show a custom keyboard
+                    showCustomKeyboard(input);
+                }, 100);
+            }
+        }
+        
+        // Show custom number input
+        function showCustomKeyboard(input) {
+            // Clear any existing keyboard
+            const existingKeyboard = document.getElementById('customKeyboard');
+            if (existingKeyboard) {
+                existingKeyboard.remove();
+            }
+            
+            // Create keyboard
+            const keyboard = document.createElement('div');
+            keyboard.id = 'customKeyboard';
+            keyboard.style.cssText = `
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 15px;
+                border-top: 2px solid #ddd;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                z-index: 1000;
+            `;
+            
+            // Number buttons 0-9
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.style.cssText = `
+                    padding: 15px;
+                    font-size: 20px;
+                    border: none;
+                    background: #f0f0f0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                `;
+                btn.onclick = () => {
+                    input.value = input.value === '?' ? i.toString() : input.value + i;
+                };
+                keyboard.appendChild(btn);
+            }
+            
+            // Zero, decimal, and backspace
+            const zeroBtn = document.createElement('button');
+            zeroBtn.textContent = '0';
+            zeroBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #f0f0f0;
+                border-radius: 8px;
+                cursor: pointer;
+            `;
+            zeroBtn.onclick = () => {
+                if (input.value === '?' || input.value === '') {
+                    input.value = '0';
+                } else {
+                    input.value += '0';
+                }
+            };
+            keyboard.appendChild(zeroBtn);
+            
+            const decimalBtn = document.createElement('button');
+            decimalBtn.textContent = '.';
+            decimalBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #f0f0f0;
+                border-radius: 8px;
+                cursor: pointer;
+            `;
+            decimalBtn.onclick = () => {
+                if (input.value === '?' || input.value === '') {
+                    input.value = '0.';
+                } else if (!input.value.includes('.')) {
+                    input.value += '.';
+                }
+            };
+            keyboard.appendChild(decimalBtn);
+            
+            const backspaceBtn = document.createElement('button');
+            backspaceBtn.textContent = '⌫';
+            backspaceBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #ff6b6b;
+                color: white;
+                border-radius: 8px;
+                cursor: pointer;
+            `;
+            backspaceBtn.onclick = () => {
+                if (input.value.length > 0 && input.value !== '?') {
+                    input.value = input.value.slice(0, -1);
+                    if (input.value === '') input.value = '?';
+                }
+            };
+            keyboard.appendChild(backspaceBtn);
+            
+            // Done button
+            const doneBtn = document.createElement('button');
+            doneBtn.textContent = 'Done';
+            doneBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #4CAF50;
+                color: white;
+                border-radius: 8px;
+                cursor: pointer;
+                grid-column: span 3;
+            `;
+            doneBtn.onclick = () => {
+                keyboard.remove();
+                validateInput(input, currentSolution[input.id]);
+            };
+            keyboard.appendChild(doneBtn);
+            
+            document.body.appendChild(keyboard);
+            
+            // Close keyboard when clicking outside
+            setTimeout(() => {
+                const closeKeyboard = (e) => {
+                    if (!keyboard.contains(e.target) && e.target !== input) {
+                        keyboard.remove();
+                        document.removeEventListener('click', closeKeyboard);
+                    }
+                };
+                document.addEventListener('click', closeKeyboard);
+            }, 100);
+        }
+        
         // Generate random number
         function randomNumber(min, max, allowDecimal) {
             if (allowDecimal) {
@@ -486,7 +637,7 @@
         }
         
         // Generate new puzzle
-        function generatePuzzle() {
+        function generatePuzzle(focusInput = false) {
             const config = DIFFICULTY_CONFIG[currentDifficulty];
             
             // Generate unique values
@@ -546,7 +697,7 @@
                 </div>
             `;
             
-            // Reset inputs
+            // Reset inputs (don't focus on mobile)
             resetInputs();
             isCurrentSolved = false;
             
@@ -559,22 +710,25 @@
         
         // Reset input fields
         function resetInputs() {
-            circleInput.value = '';
-            diamondInput.value = '';
-            triangleInput.value = '';
+            circleInput.value = '?';
+            diamondInput.value = '?';
+            triangleInput.value = '?';
             
             circleInput.classList.remove('correct', 'wrong');
             diamondInput.classList.remove('correct', 'wrong');
             triangleInput.classList.remove('correct', 'wrong');
             
-            circleInput.focus();
+            // Don't auto-focus on mobile
+            if (!isTouchDevice) {
+                circleInput.focus();
+            }
         }
         
         // Validate input
         function validateInput(input, expected) {
             input.classList.remove('correct', 'wrong');
             
-            if (input.value === '') return false;
+            if (input.value === '?' || input.value === '') return false;
             
             const userValue = parseFloat(input.value);
             const isCorrect = Math.abs(userValue - expected) < 0.01;
@@ -622,9 +776,20 @@
         
         // Go to next puzzle
         function nextPuzzle() {
+            // Remove any custom keyboard
+            const keyboard = document.getElementById('customKeyboard');
+            if (keyboard) {
+                keyboard.remove();
+            }
+            
+            // Blur any focused inputs
+            circleInput.blur();
+            diamondInput.blur();
+            triangleInput.blur();
+            
             if (currentPuzzle < totalPuzzles) {
                 currentPuzzle++;
-                generatePuzzle();
+                generatePuzzle(false); // Don't focus on next puzzle
             } else {
                 // Completed all puzzles
                 showMessage('🎉 Congratulations! You completed all puzzles!', 'success');
@@ -633,7 +798,7 @@
                 // Restart from beginning
                 setTimeout(() => {
                     currentPuzzle = 1;
-                    generatePuzzle();
+                    generatePuzzle(false);
                     nextBtn.disabled = false;
                 }, 2000);
             }
@@ -641,12 +806,23 @@
         
         // Reset entire game
         function resetGame() {
+            // Remove any custom keyboard
+            const keyboard = document.getElementById('customKeyboard');
+            if (keyboard) {
+                keyboard.remove();
+            }
+            
+            // Blur any focused inputs
+            circleInput.blur();
+            diamondInput.blur();
+            triangleInput.blur();
+            
             currentPuzzle = 1;
             score = 0;
             solved = 0;
             faults = 0;
             
-            generatePuzzle();
+            generatePuzzle(!isTouchDevice); // Focus only if not touch device
             updateStats();
             nextBtn.disabled = false;
         }
@@ -684,37 +860,67 @@
             }, 3000);
         }
         
-        // Event listeners
-        checkBtn.addEventListener('click', checkAnswers);
-        nextBtn.addEventListener('click', nextPuzzle);
-        resetBtn.addEventListener('click', resetGame);
+        // Initialize touch detection
+        isTouchDevice = detectTouchDevice();
+        
+        // Event listeners - use touch events for mobile
+        checkBtn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            checkAnswers();
+        });
+        
+        nextBtn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            nextPuzzle();
+        });
+        
+        resetBtn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            resetGame();
+        });
         
         // Difficulty buttons
         diffBtns.forEach(btn => {
-            btn.addEventListener('click', () => changeDifficulty(btn.dataset.level));
+            btn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+                e.preventDefault();
+                changeDifficulty(this.dataset.level);
+            });
         });
         
-        // Auto-validate on input
+        // Input click handlers for mobile
+        if (isTouchDevice) {
+            [circleInput, diamondInput, triangleInput].forEach(input => {
+                input.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.focus();
+                });
+            });
+        }
+        
+        // Auto-validate on input change
         circleInput.addEventListener('input', () => validateInput(circleInput, currentSolution.circle));
         diamondInput.addEventListener('input', () => validateInput(diamondInput, currentSolution.diamond));
         triangleInput.addEventListener('input', () => validateInput(triangleInput, currentSolution.triangle));
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkAnswers();
-            if (e.key === ' ' || e.key === 'ArrowRight') nextPuzzle();
-            if (e.key === 'Escape') resetGame();
-        });
+        // Keyboard shortcuts for desktop
+        if (!isTouchDevice) {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') checkAnswers();
+                if (e.key === ' ' || e.key === 'ArrowRight') nextPuzzle();
+                if (e.key === 'Escape') resetGame();
+            });
+        }
         
         // Prevent zoom on input focus for mobile
         document.addEventListener('touchstart', function(e) {
-            if (e.target.tagName === 'INPUT') {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
+                // Allow default behavior but prevent zoom
                 e.preventDefault();
             }
         }, { passive: false });
         
         // Initialize game
-        generatePuzzle();
+        generatePuzzle(!isTouchDevice);
         updateStats();
     </script>
 </body>
