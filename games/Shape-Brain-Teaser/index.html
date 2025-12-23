@@ -2,76 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape Puzzle Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shape Puzzle</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 15px;
+            padding: 0;
+            overflow: hidden;
+            touch-action: manipulation;
         }
         
         .game {
             width: 100%;
-            max-width: 380px;
+            max-width: 100%;
+            height: 100%;
+            max-height: 100%;
             background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            padding: 5px;
         }
         
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 10px 15px;
+            border-bottom: 2px solid #f0f0f0;
+            flex-shrink: 0;
         }
         
         h1 {
             color: #333;
-            font-size: 22px;
+            font-size: 18px;
+            white-space: nowrap;
         }
         
         .puzzle-info {
             background: #f8f9fa;
-            padding: 8px 15px;
-            border-radius: 50px;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-weight: 600;
             color: #666;
-            font-size: 14px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        .difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 5px;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+        
+        .diff-btn {
+            padding: 6px 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            flex: 1;
+            max-width: 80px;
+        }
+        
+        .diff-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
         }
         
         .equations {
-            margin: 15px 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 5px 10px;
+            min-height: 0;
+            overflow: hidden;
         }
         
         .equation {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
         
         .shape {
-            font-size: 28px;
-            width: 40px;
-            height: 40px;
+            font-size: 20px;
+            width: 30px;
+            height: 30px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -82,30 +125,31 @@
         .triangle { color: #2ecc71; }
         
         .operator {
-            font-size: 20px;
+            font-size: 16px;
             color: #666;
-            margin: 0 5px;
+            margin: 0 3px;
         }
         
         .equals {
-            font-size: 20px;
+            font-size: 16px;
             color: #333;
-            margin: 0 10px;
+            margin: 0 8px;
             font-weight: bold;
         }
         
         .result {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
             color: #333;
-            min-width: 40px;
+            min-width: 30px;
         }
         
         .inputs {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 20px 0;
+            gap: 10px;
+            padding: 10px;
+            flex-shrink: 0;
         }
         
         .input-group {
@@ -114,19 +158,22 @@
         
         .input-group span {
             display: block;
-            font-size: 28px;
-            margin-bottom: 8px;
+            font-size: 22px;
+            margin-bottom: 5px;
+            height: 30px;
         }
         
         .input-group input {
             width: 100%;
-            padding: 12px;
-            font-size: 18px;
+            padding: 10px;
+            font-size: 16px;
             text-align: center;
             border: 2px solid #ddd;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: bold;
             transition: all 0.3s;
+            -webkit-appearance: none;
+            -moz-appearance: textfield;
         }
         
         .input-group input:focus {
@@ -147,15 +194,16 @@
         .buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 8px;
+            padding: 10px;
+            flex-shrink: 0;
         }
         
         button {
-            padding: 15px;
+            padding: 12px;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: 0.2s;
@@ -170,17 +218,9 @@
             color: white;
         }
         
-        .check:hover {
-            background: #27ae60;
-        }
-        
         .next {
             background: #9b59b6;
             color: white;
-        }
-        
-        .next:hover {
-            background: #8e44ad;
         }
         
         .reset {
@@ -189,17 +229,15 @@
             grid-column: span 2;
         }
         
-        .reset:hover {
-            background: #c0392b;
-        }
-        
         .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 14px;
+            margin: 5px 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 500;
+            text-align: center;
             display: none;
+            flex-shrink: 0;
         }
         
         .success {
@@ -226,9 +264,9 @@
         .stats {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #eee;
+            padding: 10px;
+            border-top: 2px solid #f0f0f0;
+            flex-shrink: 0;
         }
         
         .stat-item {
@@ -237,67 +275,111 @@
         }
         
         .stat-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #333;
         }
         
         .stat-label {
-            font-size: 12px;
+            font-size: 10px;
             color: #666;
-            margin-top: 5px;
+            margin-top: 3px;
             font-weight: 600;
         }
         
-        .difficulty {
-            margin: 15px 0;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .diff-btn {
-            padding: 8px 15px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #666;
-            cursor: pointer;
-        }
-        
-        .diff-btn.active {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-        
-        @media (max-width: 480px) {
+        /* Landscape orientation */
+        @media (orientation: landscape) {
             .game {
-                padding: 20px;
+                max-width: 500px;
+                max-height: 95vh;
+                border-radius: 15px;
+                overflow: hidden;
+            }
+            
+            .equations {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 5px;
             }
             
             .equation {
-                padding: 12px;
+                flex: 1;
+                min-width: 30%;
+                margin: 2px;
+                padding: 8px;
+            }
+            
+            .inputs {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .buttons {
+                grid-template-columns: repeat(3, 1fr);
+                padding: 15px;
+            }
+            
+            .reset {
+                grid-column: span 3;
+            }
+        }
+        
+        /* Very small screens */
+        @media (max-height: 600px) {
+            .header {
+                padding: 8px 12px;
+            }
+            
+            .equation {
+                padding: 8px;
+                margin: 3px 0;
             }
             
             .shape {
-                font-size: 24px;
-                width: 35px;
-                height: 35px;
+                font-size: 18px;
+                width: 25px;
+                height: 25px;
+            }
+            
+            .inputs {
+                padding: 8px;
+                gap: 8px;
+            }
+            
+            .input-group span {
+                font-size: 20px;
+                margin-bottom: 3px;
+                height: 25px;
+            }
+            
+            .input-group input {
+                padding: 8px;
+                font-size: 14px;
+            }
+            
+            .buttons {
+                padding: 8px;
+            }
+            
+            button {
+                padding: 10px;
+                font-size: 13px;
+            }
+            
+            .stats {
+                padding: 8px;
+            }
+            
+            .stat-value {
+                font-size: 18px;
             }
         }
         
-        @media (max-height: 700px) {
-            .game {
-                padding: 18px;
-            }
-            
-            .equation {
-                padding: 10px;
-                margin: 8px 0;
-            }
+        /* Prevent zoom on input focus */
+        input, select, textarea {
+            font-size: 16px !important;
         }
     </style>
 </head>
@@ -321,27 +403,27 @@
         <div class="inputs">
             <div class="input-group">
                 <span class="shape circle">●</span>
-                <input type="number" id="circle" placeholder="?">
+                <input type="number" id="circle" placeholder="?" inputmode="decimal" readonly onfocus="blurInput(this)">
             </div>
             
             <div class="input-group">
                 <span class="shape diamond">◆</span>
-                <input type="number" id="diamond" placeholder="?">
+                <input type="number" id="diamond" placeholder="?" inputmode="decimal" readonly onfocus="blurInput(this)">
             </div>
             
             <div class="input-group">
                 <span class="shape triangle">▲</span>
-                <input type="number" id="triangle" placeholder="?">
+                <input type="number" id="triangle" placeholder="?" inputmode="decimal" readonly onfocus="blurInput(this)">
             </div>
         </div>
         
+        <div class="message" id="message"></div>
+        
         <div class="buttons">
             <button class="check" id="checkBtn">Check</button>
-            <button class="next" id="nextBtn">Next Puzzle</button>
+            <button class="next" id="nextBtn">Next</button>
             <button class="reset" id="resetBtn">Reset All</button>
         </div>
-        
-        <div class="message" id="message"></div>
         
         <div class="stats">
             <div class="stat-item">
@@ -376,6 +458,7 @@
         let currentDifficulty = 'easy';
         let currentSolution = {};
         let isCurrentSolved = false;
+        let isTouchDevice = false;
         
         // DOM elements
         const equationsDiv = document.getElementById('equations');
@@ -393,36 +476,188 @@
         const faultsSpan = document.getElementById('faults');
         const diffBtns = document.querySelectorAll('.diff-btn');
         
+        // Detect touch device
+        function detectTouchDevice() {
+            return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        }
+        
+        // Blur input immediately on focus (for mobile)
+        function blurInput(input) {
+            if (isTouchDevice) {
+                setTimeout(() => {
+                    input.blur();
+                    // Instead, show a custom keyboard
+                    showCustomKeyboard(input);
+                }, 100);
+            }
+        }
+        
+        // Show custom number input
+        function showCustomKeyboard(input) {
+            // Clear any existing keyboard
+            const existingKeyboard = document.getElementById('customKeyboard');
+            if (existingKeyboard) {
+                existingKeyboard.remove();
+            }
+            
+            // Create keyboard
+            const keyboard = document.createElement('div');
+            keyboard.id = 'customKeyboard';
+            keyboard.style.cssText = `
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 15px;
+                border-top: 2px solid #ddd;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+                z-index: 1000;
+            `;
+            
+            // Number buttons 0-9
+            for (let i = 1; i <= 9; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.style.cssText = `
+                    padding: 15px;
+                    font-size: 20px;
+                    border: none;
+                    background: #f0f0f0;
+                    border-radius: 8px;
+                    cursor: pointer;
+                `;
+                btn.onclick = () => {
+                    input.value = input.value === '?' ? i.toString() : input.value + i;
+                };
+                keyboard.appendChild(btn);
+            }
+            
+            // Zero, decimal, and backspace
+            const zeroBtn = document.createElement('button');
+            zeroBtn.textContent = '0';
+            zeroBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #f0f0f0;
+                border-radius: 8px;
+                cursor: pointer;
+            `;
+            zeroBtn.onclick = () => {
+                if (input.value === '?' || input.value === '') {
+                    input.value = '0';
+                } else {
+                    input.value += '0';
+                }
+            };
+            keyboard.appendChild(zeroBtn);
+            
+            const decimalBtn = document.createElement('button');
+            decimalBtn.textContent = '.';
+            decimalBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #f0f0f0;
+                border-radius: 8px;
+                cursor: pointer;
+            `;
+            decimalBtn.onclick = () => {
+                if (input.value === '?' || input.value === '') {
+                    input.value = '0.';
+                } else if (!input.value.includes('.')) {
+                    input.value += '.';
+                }
+            };
+            keyboard.appendChild(decimalBtn);
+            
+            const backspaceBtn = document.createElement('button');
+            backspaceBtn.textContent = '⌫';
+            backspaceBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #ff6b6b;
+                color: white;
+                border-radius: 8px;
+                cursor: pointer;
+            `;
+            backspaceBtn.onclick = () => {
+                if (input.value.length > 0 && input.value !== '?') {
+                    input.value = input.value.slice(0, -1);
+                    if (input.value === '') input.value = '?';
+                }
+            };
+            keyboard.appendChild(backspaceBtn);
+            
+            // Done button
+            const doneBtn = document.createElement('button');
+            doneBtn.textContent = 'Done';
+            doneBtn.style.cssText = `
+                padding: 15px;
+                font-size: 20px;
+                border: none;
+                background: #4CAF50;
+                color: white;
+                border-radius: 8px;
+                cursor: pointer;
+                grid-column: span 3;
+            `;
+            doneBtn.onclick = () => {
+                keyboard.remove();
+                validateInput(input, currentSolution[input.id]);
+            };
+            keyboard.appendChild(doneBtn);
+            
+            document.body.appendChild(keyboard);
+            
+            // Close keyboard when clicking outside
+            setTimeout(() => {
+                const closeKeyboard = (e) => {
+                    if (!keyboard.contains(e.target) && e.target !== input) {
+                        keyboard.remove();
+                        document.removeEventListener('click', closeKeyboard);
+                    }
+                };
+                document.addEventListener('click', closeKeyboard);
+            }, 100);
+        }
+        
         // Generate random number
         function randomNumber(min, max, allowDecimal) {
             if (allowDecimal) {
-                return Math.round((Math.random() * (max - min) + min) * 2) / 2;
+                // Generate numbers like 0.5, 1, 1.5, 2, etc.
+                const value = Math.random() * (max - min) + min;
+                return Math.round(value * 2) / 2;
             }
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
         
         // Generate new puzzle
-        function generatePuzzle() {
+        function generatePuzzle(focusInput = false) {
             const config = DIFFICULTY_CONFIG[currentDifficulty];
             
-            // Generate unique values for shapes
+            // Generate unique values
             let circle, diamond, triangle;
+            let attempts = 0;
             
             do {
                 circle = randomNumber(config.min, config.max, config.decimal);
                 diamond = randomNumber(config.min, config.max, config.decimal);
                 triangle = randomNumber(config.min, config.max, config.decimal);
+                attempts++;
             } while (
-                circle === diamond || 
-                diamond === triangle || 
-                circle === triangle ||
-                circle + diamond + triangle < 5 // Ensure reasonable values
+                (circle === diamond || diamond === triangle || circle === triangle) && 
+                attempts < 10
             );
             
             // Store solution
             currentSolution = { circle, diamond, triangle };
             
-            // Calculate equation results
+            // Calculate equations
             const eq1 = circle * 3;  // ● + ● + ●
             const eq2 = diamond + circle;  // ◆ + ●
             const eq3 = triangle * 2 + diamond;  // ▲ + ◆ + ▲
@@ -462,7 +697,7 @@
                 </div>
             `;
             
-            // Reset inputs
+            // Reset inputs (don't focus on mobile)
             resetInputs();
             isCurrentSolved = false;
             
@@ -475,30 +710,33 @@
         
         // Reset input fields
         function resetInputs() {
-            circleInput.value = '';
-            diamondInput.value = '';
-            triangleInput.value = '';
+            circleInput.value = '?';
+            diamondInput.value = '?';
+            triangleInput.value = '?';
             
             circleInput.classList.remove('correct', 'wrong');
             diamondInput.classList.remove('correct', 'wrong');
             triangleInput.classList.remove('correct', 'wrong');
             
-            circleInput.focus();
+            // Don't auto-focus on mobile
+            if (!isTouchDevice) {
+                circleInput.focus();
+            }
         }
         
         // Validate input
         function validateInput(input, expected) {
             input.classList.remove('correct', 'wrong');
             
-            if (input.value === '') return false;
+            if (input.value === '?' || input.value === '') return false;
             
             const userValue = parseFloat(input.value);
             const isCorrect = Math.abs(userValue - expected) < 0.01;
             
             if (isCorrect) {
-                //input.classList.add('correct');
+                input.classList.add('correct');
             } else {
-                //input.classList.add('wrong');
+                input.classList.add('wrong');
             }
             
             return isCorrect;
@@ -538,9 +776,20 @@
         
         // Go to next puzzle
         function nextPuzzle() {
+            // Remove any custom keyboard
+            const keyboard = document.getElementById('customKeyboard');
+            if (keyboard) {
+                keyboard.remove();
+            }
+            
+            // Blur any focused inputs
+            circleInput.blur();
+            diamondInput.blur();
+            triangleInput.blur();
+            
             if (currentPuzzle < totalPuzzles) {
                 currentPuzzle++;
-                generatePuzzle();
+                generatePuzzle(false); // Don't focus on next puzzle
             } else {
                 // Completed all puzzles
                 showMessage('🎉 Congratulations! You completed all puzzles!', 'success');
@@ -549,20 +798,31 @@
                 // Restart from beginning
                 setTimeout(() => {
                     currentPuzzle = 1;
-                    generatePuzzle();
+                    generatePuzzle(false);
                     nextBtn.disabled = false;
-                }, 3000);
+                }, 2000);
             }
         }
         
         // Reset entire game
         function resetGame() {
+            // Remove any custom keyboard
+            const keyboard = document.getElementById('customKeyboard');
+            if (keyboard) {
+                keyboard.remove();
+            }
+            
+            // Blur any focused inputs
+            circleInput.blur();
+            diamondInput.blur();
+            triangleInput.blur();
+            
             currentPuzzle = 1;
             score = 0;
             solved = 0;
             faults = 0;
             
-            generatePuzzle();
+            generatePuzzle(!isTouchDevice); // Focus only if not touch device
             updateStats();
             nextBtn.disabled = false;
         }
@@ -600,30 +860,67 @@
             }, 3000);
         }
         
-        // Event listeners
-        checkBtn.addEventListener('click', checkAnswers);
-        nextBtn.addEventListener('click', nextPuzzle);
-        resetBtn.addEventListener('click', resetGame);
+        // Initialize touch detection
+        isTouchDevice = detectTouchDevice();
+        
+        // Event listeners - use touch events for mobile
+        checkBtn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            checkAnswers();
+        });
+        
+        nextBtn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            nextPuzzle();
+        });
+        
+        resetBtn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+            e.preventDefault();
+            resetGame();
+        });
         
         // Difficulty buttons
         diffBtns.forEach(btn => {
-            btn.addEventListener('click', () => changeDifficulty(btn.dataset.level));
+            btn.addEventListener(isTouchDevice ? 'touchstart' : 'click', function(e) {
+                e.preventDefault();
+                changeDifficulty(this.dataset.level);
+            });
         });
         
-        // Auto-validate on input
+        // Input click handlers for mobile
+        if (isTouchDevice) {
+            [circleInput, diamondInput, triangleInput].forEach(input => {
+                input.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    this.focus();
+                });
+            });
+        }
+        
+        // Auto-validate on input change
         circleInput.addEventListener('input', () => validateInput(circleInput, currentSolution.circle));
         diamondInput.addEventListener('input', () => validateInput(diamondInput, currentSolution.diamond));
         triangleInput.addEventListener('input', () => validateInput(triangleInput, currentSolution.triangle));
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkAnswers();
-            if (e.key === ' ' || e.key === 'ArrowRight') nextPuzzle();
-            if (e.key === 'Escape') resetGame();
-        });
+        // Keyboard shortcuts for desktop
+        if (!isTouchDevice) {
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') checkAnswers();
+                if (e.key === ' ' || e.key === 'ArrowRight') nextPuzzle();
+                if (e.key === 'Escape') resetGame();
+            });
+        }
+        
+        // Prevent zoom on input focus for mobile
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
+                // Allow default behavior but prevent zoom
+                e.preventDefault();
+            }
+        }, { passive: false });
         
         // Initialize game
-        generatePuzzle();
+        generatePuzzle(!isTouchDevice);
         updateStats();
     </script>
 </body>
