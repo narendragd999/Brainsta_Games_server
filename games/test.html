@@ -1,630 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shape Puzzle Game</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-        
-        .game {
-            width: 100%;
-            max-width: 380px;
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        h1 {
-            color: #333;
-            font-size: 22px;
-        }
-        
-        .puzzle-info {
-            background: #f8f9fa;
-            padding: 8px 15px;
-            border-radius: 50px;
-            font-weight: 600;
-            color: #666;
-            font-size: 14px;
-        }
-        
-        .equations {
-            margin: 15px 0;
-        }
-        
-        .equation {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .shape {
-            font-size: 28px;
-            width: 40px;
-            height: 40px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .circle { color: #e74c3c; }
-        .diamond { color: #3498db; }
-        .triangle { color: #2ecc71; }
-        
-        .operator {
-            font-size: 20px;
-            color: #666;
-            margin: 0 5px;
-        }
-        
-        .equals {
-            font-size: 20px;
-            color: #333;
-            margin: 0 10px;
-            font-weight: bold;
-        }
-        
-        .result {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            min-width: 40px;
-        }
-        
-        .inputs {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .input-group {
-            text-align: center;
-        }
-        
-        .input-group span {
-            display: block;
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            font-size: 18px;
-            text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        .input-group input:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-        
-        .input-group input.correct {
-            border-color: #2ecc71;
-            background: #f0fff4;
-        }
-        
-        .input-group input.wrong {
-            border-color: #e74c3c;
-            background: #fff0f0;
-        }
-        
-        .buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        
-        button:active {
-            transform: scale(0.98);
-        }
-        
-        .check {
-            background: #2ecc71;
-            color: white;
-        }
-        
-        .check:hover {
-            background: #27ae60;
-        }
-        
-        .next {
-            background: #9b59b6;
-            color: white;
-        }
-        
-        .next:hover {
-            background: #8e44ad;
-        }
-        
-        .reset {
-            background: #e74c3c;
-            color: white;
-            grid-column: span 2;
-        }
-        
-        .reset:hover {
-            background: #c0392b;
-        }
-        
-        .message {
-            margin-top: 15px;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 500;
-            display: none;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 2px solid #2ecc71;
-            display: block;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 2px solid #e74c3c;
-            display: block;
-        }
-        
-        .info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 2px solid #bee5eb;
-            display: block;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #eee;
-        }
-        
-        .stat-item {
-            text-align: center;
-            flex: 1;
-        }
-        
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            font-weight: 600;
-        }
-        
-        .difficulty {
-            margin: 15px 0;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .diff-btn {
-            padding: 8px 15px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #666;
-            cursor: pointer;
-        }
-        
-        .diff-btn.active {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-        
-        @media (max-width: 480px) {
-            .game {
-                padding: 20px;
-            }
-            
-            .equation {
-                padding: 12px;
-            }
-            
-            .shape {
-                font-size: 24px;
-                width: 35px;
-                height: 35px;
-            }
-        }
-        
-        @media (max-height: 700px) {
-            .game {
-                padding: 18px;
-            }
-            
-            .equation {
-                padding: 10px;
-                margin: 8px 0;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="game">
-        <div class="header">
-            <h1>Shape Puzzle</h1>
-            <div class="puzzle-info">Puzzle: <span id="puzzleNum">1</span>/<span id="totalPuzzles">10</span></div>
-        </div>
-        
-        <div class="difficulty">
-            <button class="diff-btn active" data-level="easy">Easy</button>
-            <button class="diff-btn" data-level="medium">Medium</button>
-            <button class="diff-btn" data-level="hard">Hard</button>
-        </div>
-        
-        <div class="equations" id="equations">
-            <!-- Equations will be generated here -->
-        </div>
-        
-        <div class="inputs">
-            <div class="input-group">
-                <span class="shape circle">●</span>
-                <input type="number" id="circle" placeholder="?">
-            </div>
-            
-            <div class="input-group">
-                <span class="shape diamond">◆</span>
-                <input type="number" id="diamond" placeholder="?">
-            </div>
-            
-            <div class="input-group">
-                <span class="shape triangle">▲</span>
-                <input type="number" id="triangle" placeholder="?">
-            </div>
-        </div>
-        
-        <div class="buttons">
-            <button class="check" id="checkBtn">Check</button>
-            <button class="next" id="nextBtn">Next Puzzle</button>
-            <button class="reset" id="resetBtn">Reset All</button>
-        </div>
-        
-        <div class="message" id="message"></div>
-        
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="score">0</div>
-                <div class="stat-label">SCORE</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="solved">0</div>
-                <div class="stat-label">SOLVED</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="faults">0</div>
-                <div class="stat-label">FAULTS</div>
-            </div>
-        </div>
-    </div>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balance the Scale</title>
 
-    <script>
-        // Game configuration
-        const DIFFICULTY_CONFIG = {
-            easy: { min: 1, max: 10, decimal: false, puzzles: 10 },
-            medium: { min: 1, max: 20, decimal: false, puzzles: 8 },
-            hard: { min: 0.5, max: 15, decimal: true, puzzles: 6 }
-        };
-        
-        // Game state
-        let currentPuzzle = 1;
-        let totalPuzzles = 10;
-        let score = 0;
-        let solved = 0;
-        let faults = 0;
-        let currentDifficulty = 'easy';
-        let currentSolution = {};
-        let isCurrentSolved = false;
-        
-        // DOM elements
-        const equationsDiv = document.getElementById('equations');
-        const circleInput = document.getElementById('circle');
-        const diamondInput = document.getElementById('diamond');
-        const triangleInput = document.getElementById('triangle');
-        const checkBtn = document.getElementById('checkBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const messageDiv = document.getElementById('message');
-        const puzzleNumSpan = document.getElementById('puzzleNum');
-        const totalPuzzlesSpan = document.getElementById('totalPuzzles');
-        const scoreSpan = document.getElementById('score');
-        const solvedSpan = document.getElementById('solved');
-        const faultsSpan = document.getElementById('faults');
-        const diffBtns = document.querySelectorAll('.diff-btn');
-        
-        // Generate random number
-        function randomNumber(min, max, allowDecimal) {
-            if (allowDecimal) {
-                return Math.round((Math.random() * (max - min) + min) * 2) / 2;
-            }
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        }
-        
-        // Generate new puzzle
-        function generatePuzzle() {
-            const config = DIFFICULTY_CONFIG[currentDifficulty];
-            
-            // Generate unique values for shapes
-            let circle, diamond, triangle;
-            
-            do {
-                circle = randomNumber(config.min, config.max, config.decimal);
-                diamond = randomNumber(config.min, config.max, config.decimal);
-                triangle = randomNumber(config.min, config.max, config.decimal);
-            } while (
-                circle === diamond || 
-                diamond === triangle || 
-                circle === triangle ||
-                circle + diamond + triangle < 5 // Ensure reasonable values
-            );
-            
-            // Store solution
-            currentSolution = { circle, diamond, triangle };
-            
-            // Calculate equation results
-            const eq1 = circle * 3;  // ● + ● + ●
-            const eq2 = diamond + circle;  // ◆ + ●
-            const eq3 = triangle * 2 + diamond;  // ▲ + ◆ + ▲
-            
-            // Update total puzzles
-            totalPuzzles = config.puzzles;
-            totalPuzzlesSpan.textContent = totalPuzzles;
-            
-            // Generate equation HTML
-            equationsDiv.innerHTML = `
-                <div class="equation">
-                    <span class="shape circle">●</span>
-                    <span class="operator">+</span>
-                    <span class="shape circle">●</span>
-                    <span class="operator">+</span>
-                    <span class="shape circle">●</span>
-                    <span class="equals">=</span>
-                    <span class="result">${eq1}</span>
-                </div>
-                
-                <div class="equation">
-                    <span class="shape diamond">◆</span>
-                    <span class="operator">+</span>
-                    <span class="shape circle">●</span>
-                    <span class="equals">=</span>
-                    <span class="result">${eq2}</span>
-                </div>
-                
-                <div class="equation">
-                    <span class="shape triangle">▲</span>
-                    <span class="operator">+</span>
-                    <span class="shape diamond">◆</span>
-                    <span class="operator">+</span>
-                    <span class="shape triangle">▲</span>
-                    <span class="equals">=</span>
-                    <span class="result">${eq3}</span>
-                </div>
-            `;
-            
-            // Reset inputs
-            resetInputs();
-            isCurrentSolved = false;
-            
-            // Update puzzle number
-            puzzleNumSpan.textContent = currentPuzzle;
-            
-            // Show puzzle info
-            showMessage(`Puzzle ${currentPuzzle} of ${totalPuzzles}`, 'info');
-        }
-        
-        // Reset input fields
-        function resetInputs() {
-            circleInput.value = '';
-            diamondInput.value = '';
-            triangleInput.value = '';
-            
-            circleInput.classList.remove('correct', 'wrong');
-            diamondInput.classList.remove('correct', 'wrong');
-            triangleInput.classList.remove('correct', 'wrong');
-            
-            circleInput.focus();
-        }
-        
-        // Validate input
-        function validateInput(input, expected) {
-            input.classList.remove('correct', 'wrong');
-            
-            if (input.value === '') return false;
-            
-            const userValue = parseFloat(input.value);
-            const isCorrect = Math.abs(userValue - expected) < 0.01;
-            
-            if (isCorrect) {
-                //input.classList.add('correct');
-            } else {
-                //input.classList.add('wrong');
-            }
-            
-            return isCorrect;
-        }
-        
-        // Check answers
-        function checkAnswers() {
-            if (isCurrentSolved) {
-                showMessage('Already solved! Try next puzzle.', 'info');
-                return;
-            }
-            
-            const circleCorrect = validateInput(circleInput, currentSolution.circle);
-            const diamondCorrect = validateInput(diamondInput, currentSolution.diamond);
-            const triangleCorrect = validateInput(triangleInput, currentSolution.triangle);
-            
-            if (circleCorrect && diamondCorrect && triangleCorrect) {
-                // All correct
-                score += currentDifficulty === 'easy' ? 10 : 
-                        currentDifficulty === 'medium' ? 15 : 20;
-                solved++;
-                isCurrentSolved = true;
-                
-                showMessage(
-                    `✅ Correct! ● = ${currentSolution.circle}, ◆ = ${currentSolution.diamond}, ▲ = ${currentSolution.triangle}`,
-                    'success'
-                );
-                
-                updateStats();
-            } else {
-                // Some wrong
-                faults++;
-                showMessage('❌ Some answers are incorrect. Try again!', 'error');
-                updateStats();
-            }
-        }
-        
-        // Go to next puzzle
-        function nextPuzzle() {
-            if (currentPuzzle < totalPuzzles) {
-                currentPuzzle++;
-                generatePuzzle();
-            } else {
-                // Completed all puzzles
-                showMessage('🎉 Congratulations! You completed all puzzles!', 'success');
-                nextBtn.disabled = true;
-                
-                // Restart from beginning
-                setTimeout(() => {
-                    currentPuzzle = 1;
-                    generatePuzzle();
-                    nextBtn.disabled = false;
-                }, 3000);
-            }
-        }
-        
-        // Reset entire game
-        function resetGame() {
-            currentPuzzle = 1;
-            score = 0;
-            solved = 0;
-            faults = 0;
-            
-            generatePuzzle();
-            updateStats();
-            nextBtn.disabled = false;
-        }
-        
-        // Change difficulty
-        function changeDifficulty(level) {
-            currentDifficulty = level;
-            
-            // Update button states
-            diffBtns.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.level === level);
-            });
-            
-            // Reset game with new difficulty
-            resetGame();
-        }
-        
-        // Update stats display
-        function updateStats() {
-            scoreSpan.textContent = score;
-            solvedSpan.textContent = solved;
-            faultsSpan.textContent = faults;
-        }
-        
-        // Show message
-        function showMessage(text, type) {
-            messageDiv.textContent = text;
-            messageDiv.className = `message ${type}`;
-            
-            // Auto-hide after 3 seconds
-            setTimeout(() => {
-                if (messageDiv.textContent === text) {
-                    messageDiv.className = 'message';
-                }
-            }, 3000);
-        }
-        
-        // Event listeners
-        checkBtn.addEventListener('click', checkAnswers);
-        nextBtn.addEventListener('click', nextPuzzle);
-        resetBtn.addEventListener('click', resetGame);
-        
-        // Difficulty buttons
-        diffBtns.forEach(btn => {
-            btn.addEventListener('click', () => changeDifficulty(btn.dataset.level));
-        });
-        
-        // Auto-validate on input
-        circleInput.addEventListener('input', () => validateInput(circleInput, currentSolution.circle));
-        diamondInput.addEventListener('input', () => validateInput(diamondInput, currentSolution.diamond));
-        triangleInput.addEventListener('input', () => validateInput(triangleInput, currentSolution.triangle));
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') checkAnswers();
-            if (e.key === ' ' || e.key === 'ArrowRight') nextPuzzle();
-            if (e.key === 'Escape') resetGame();
-        });
-        
-        // Initialize game
-        generatePuzzle();
-        updateStats();
-    </script>
+<style>
+body{
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:linear-gradient(180deg,#6a11cb,#fff);
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+.card{
+  width:100%;
+  max-width:380px;
+  background:#fff;
+  border-radius:18px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+h2{text-align:center;margin:6px 0;color:#333}
+
+.scale{
+  display:flex;
+  justify-content:space-between;
+  margin:10px 0;
+}
+.pan{
+  width:45%;
+  min-height:60px;
+  background:#f9f9f9;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  box-shadow:inset 0 0 4px rgba(0,0,0,.1);
+}
+.eq{
+  text-align:center;
+  font-size:24px;
+}
+
+.shape{
+  width:32px;
+  height:32px;
+}
+.circle{background:#d45b5b;border-radius:50%}
+.square{background:#5fd39c}
+.triangle{
+  width:0;height:0;
+  border-left:16px solid transparent;
+  border-right:16px solid transparent;
+  border-bottom:28px solid #f7c948;
+}
+
+.options button{
+  width:100%;
+  margin-top:6px;
+  padding:10px;
+  border:none;
+  border-radius:12px;
+  font-weight:600;
+  color:#fff;
+}
+.primary{background:#3498db}
+.secondary{background:#6a11cb}
+
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+.popup-content{
+  background:#fff;
+  padding:18px;
+  border-radius:14px;
+  width:85%;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h2>⚖️ Balance the Scale</h2>
+
+  <!-- Scale 1 -->
+  <div class="scale">
+    <div class="pan">
+      <div class="shape circle"></div>
+    </div>
+    <div class="eq">=</div>
+    <div class="pan">
+      <div class="shape square"></div>
+    </div>
+  </div>
+
+  <!-- Scale 2 -->
+  <div class="scale">
+    <div class="pan">
+      <div class="shape square"></div>
+    </div>
+    <div class="eq">=</div>
+    <div class="pan">
+      <div class="triangle"></div>
+    </div>
+  </div>
+
+  <p style="text-align:center;font-weight:600">
+    Which is heavier?
+  </p>
+
+  <div class="options">
+    <button class="primary" onclick="answer('circle')">Circle</button>
+    <button class="primary" onclick="answer('triangle')">Triangle</button>
+    <button class="secondary" onclick="answer('equal')">Both Equal</button>
+  </div>
+</div>
+
+<div class="popup" id="pop">
+  <div class="popup-content">
+    <h3 id="pt"></h3>
+    <p id="pm"></p>
+    <button class="primary" onclick="closePop()">OK</button>
+  </div>
+</div>
+
+<script>
+const correct = "equal";
+
+function answer(a){
+  if(a === correct){
+    show(
+      "Correct 🎉",
+      "Circle = Square and Square = Triangle<br><br>So Circle = Triangle"
+    );
+  }else{
+    show(
+      "Wrong ❌",
+      "If A = B and B = C, then A = C"
+    );
+  }
+}
+
+function show(t,m){
+  pt.innerHTML=t;
+  pm.innerHTML=m;
+  pop.style.display="flex";
+}
+function closePop(){pop.style.display="none";}
+</script>
+
 </body>
 </html>

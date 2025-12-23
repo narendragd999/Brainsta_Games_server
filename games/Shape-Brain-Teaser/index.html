@@ -306,6 +306,12 @@
         
         .keyboard.active {
             display: grid;
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
         }
         
         .key {
@@ -318,10 +324,12 @@
             font-weight: bold;
             -webkit-user-select: none;
             user-select: none;
+            touch-action: manipulation;
         }
         
         .key:active {
             background: #e9ecef;
+            transform: scale(0.95);
         }
         
         .key-zero {
@@ -337,11 +345,20 @@
             color: white;
         }
         
+        .key-backspace:active {
+            background: #ff5252;
+        }
+        
         .key-done {
             background: #4CAF50;
             color: white;
             grid-column: span 3;
             font-size: 18px;
+            padding: 12px;
+        }
+        
+        .key-done:active {
+            background: #45a049;
         }
         
         .keyboard-overlay {
@@ -357,6 +374,12 @@
         
         .keyboard-overlay.active {
             display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         /* Landscape orientation */
@@ -532,7 +555,7 @@
         <button class="key key-zero" data-value="0">0</button>
         <button class="key key-decimal" data-value=".">.</button>
         <button class="key key-backspace" id="backspace">⌫</button>
-        <button class="key key-done" id="keyboardDone">Done</button>
+        <button class="key key-done" id="keyboardDone">Done ✓</button>
     </div>
 
     <script>
@@ -675,13 +698,24 @@
             currentInput = inputElement;
             keyboard.classList.add('active');
             keyboardOverlay.classList.add('active');
+            
+            // Highlight the active input
+            [circleValue, diamondValue, triangleValue].forEach(input => {
+                input.style.boxShadow = input === inputElement ? '0 0 0 2px #3498db' : 'none';
+            });
         }
         
-        // Hide custom keyboard
+        // Hide custom keyboard - FIXED
         function hideKeyboard() {
-            currentInput = null;
             keyboard.classList.remove('active');
             keyboardOverlay.classList.remove('active');
+            
+            // Remove highlight from all inputs
+            [circleValue, diamondValue, triangleValue].forEach(input => {
+                input.style.boxShadow = 'none';
+            });
+            
+            currentInput = null;
         }
         
         // Update input value
@@ -843,61 +877,94 @@
             }, 3000);
         }
         
-        // Initialize event listeners
+        // Initialize event listeners - FIXED
         function initEventListeners() {
             // Input click handlers
             [circleValue, diamondValue, triangleValue].forEach(input => {
-                input.addEventListener('click', () => showKeyboard(input));
+                input.addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent event bubbling
+                    showKeyboard(this);
+                });
             });
             
             // Keyboard buttons
             keyButtons.forEach(btn => {
-                btn.addEventListener('click', () => updateInputValue(btn.dataset.value));
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    updateInputValue(this.dataset.value);
+                });
             });
             
             // Backspace button
-            backspaceBtn.addEventListener('click', handleBackspace);
+            backspaceBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                handleBackspace();
+            });
             
-            // Done button
-            keyboardDoneBtn.addEventListener('click', hideKeyboard);
+            // Done button - FIXED: Now properly closes keyboard
+            keyboardDoneBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                hideKeyboard();
+            });
             
             // Overlay click to hide keyboard
-            keyboardOverlay.addEventListener('click', hideKeyboard);
+            keyboardOverlay.addEventListener('click', function(e) {
+                e.stopPropagation();
+                hideKeyboard();
+            });
             
             // Game control buttons
+            [checkBtn, nextBtn, resetBtn].forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            });
+            
             checkBtn.addEventListener('click', checkAnswers);
             nextBtn.addEventListener('click', nextPuzzle);
             resetBtn.addEventListener('click', resetGame);
             
             // Difficulty buttons
             diffBtns.forEach(btn => {
-                btn.addEventListener('click', () => changeDifficulty(btn.dataset.level));
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    changeDifficulty(this.dataset.level);
+                });
             });
             
-            // Keyboard shortcuts for desktop
-            document.addEventListener('keydown', function(e) {
-                if (keyboard.classList.contains('active')) {
-                    if (e.key >= '0' && e.key <= '9') {
-                        updateInputValue(e.key);
-                    } else if (e.key === '.') {
-                        updateInputValue('.');
-                    } else if (e.key === 'Backspace') {
-                        handleBackspace();
-                    } else if (e.key === 'Enter' || e.key === 'Escape') {
-                        hideKeyboard();
-                    }
-                } else {
-                    if (e.key === 'Enter') checkAnswers();
-                    if (e.key === ' ' || e.key === 'ArrowRight') nextPuzzle();
-                    if (e.key === 'Escape') resetGame();
+            // Close keyboard when clicking outside (except on keyboard buttons)
+            document.addEventListener('click', function(e) {
+                if (keyboard.classList.contains('active') && 
+                    !keyboard.contains(e.target) && 
+                    !e.target.classList.contains('input-value')) {
+                    hideKeyboard();
                 }
             });
+            
+            // Also close keyboard on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && keyboard.classList.contains('active')) {
+                    hideKeyboard();
+                }
+            });
+            
+            // Touch events for better mobile
+            document.addEventListener('touchstart', function(e) {
+                if (keyboard.classList.contains('active') && 
+                    !keyboard.contains(e.target) && 
+                    !e.target.classList.contains('input-value')) {
+                    hideKeyboard();
+                }
+            }, { passive: true });
         }
         
         // Initialize game
         generatePuzzle();
         updateStats();
         initEventListeners();
+        
+        // Debug helper
+        console.log('Game loaded. Keyboard should close when Done is clicked.');
     </script>
 </body>
 </html>
