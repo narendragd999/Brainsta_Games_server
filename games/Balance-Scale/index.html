@@ -22,12 +22,12 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   color: #fff;
 }
 
-/* Main Layout */
+/* Main Container */
 .game-container {
   width: 100vw;
   height: 100vh;
@@ -35,44 +35,40 @@ html, body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  padding: 16px;
-  position: relative;
+  padding: 10px;
+  gap: 8px;
 }
 
 /* Header */
 .game-header {
   text-align: center;
-  padding: 0px 0;
-  margin-bottom: 8px;
+  padding: 8px 0 6px;
 }
 
 .game-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(90deg, #6ee7b7, #3b82f6);
+  background: linear-gradient(90deg, #60a5fa, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: -0.5px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .game-subtitle {
-  font-size: 13px;
+  font-size: 11px;
   color: #94a3b8;
   font-weight: 400;
 }
 
-/* Stats Bar */
+/* Stats */
 .stats-bar {
   display: flex;
   justify-content: space-between;
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 0px 20px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  background: rgba(30, 41, 59, 0.9);
+  border-radius: 12px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .stat-item {
@@ -80,15 +76,15 @@ html, body {
 }
 
 .stat-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #60a5fa;
   display: block;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 10px;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -96,55 +92,46 @@ html, body {
 
 /* Progress */
 .level-progress {
-  margin-bottom: 20px;
+  margin: 4px 0;
 }
 
 .progress-label {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 13px;
+  font-size: 12px;
   color: #cbd5e1;
+  margin-bottom: 4px;
 }
 
 .progress-bar {
-  height: 6px;
+  height: 4px;
   background: rgba(30, 41, 59, 0.6);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-  border-radius: 3px;
-  width: 10%;
+  border-radius: 2px;
   transition: width 0.3s ease;
 }
 
-/* Game Area */
-.game-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Scale Container */
+/* Scale */
 .scale-container {
-  background: rgba(30, 41, 59, 0.5);
-  border-radius: 20px;
-  padding: 20px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 14px;
+  padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  margin: 2px 0;
 }
 
 .scale-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-  position: relative;
+  margin-bottom: 12px;
+  min-height: 60px;
 }
 
 .scale-row:last-child {
@@ -153,40 +140,37 @@ html, body {
 
 .scale-pan {
   flex: 1;
-  min-height: 80px;
+  min-height: 50px;
   background: linear-gradient(145deg, #1e293b, #0f172a);
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .scale-equals {
-  width: 40px;
+  width: 32px;
   text-align: center;
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  color: #6ee7b7;
-  text-shadow: 0 0 10px rgba(110, 231, 183, 0.3);
+  color: #10b981;
 }
 
 /* Shapes */
 .shape {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 12px;
   color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .circle {
@@ -196,7 +180,7 @@ html, body {
 
 .square {
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .triangle {
@@ -204,113 +188,89 @@ html, body {
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
 
-.diamond {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  transform: rotate(45deg);
-  border-radius: 4px;
-}
-
-.diamond::before {
-  content: '';
-  display: block;
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  border-radius: 4px;
-  transform: rotate(45deg);
-}
-
-/* Question Box */
+/* Question */
 .question-box {
   background: rgba(30, 41, 59, 0.8);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 12px;
   text-align: center;
+  margin: 4px 0;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .question-text {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #f8fafc;
-  margin-bottom: 4px;
 }
 
-.question-subtext {
-  font-size: 13px;
-  color: #94a3b8;
-}
-
-/* Answer Options */
+/* Answers */
 .answer-options {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin: 6px 0;
 }
 
 .option-btn {
   background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 2px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 16px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 10px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.15s ease;
 }
 
 .option-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
 }
 
 .option-btn.selected {
   border-color: #3b82f6;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(30, 41, 59, 0.8));
+  background: rgba(59, 130, 246, 0.15);
 }
 
 .option-shape {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
 }
 
 .option-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #cbd5e1;
 }
 
-/* Control Buttons */
+/* Controls */
 .control-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .control-btn {
-  padding: 14px;
+  padding: 10px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .control-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
 }
 
 .btn-hint {
@@ -328,6 +288,20 @@ html, body {
   color: white;
 }
 
+/* Timer */
+.timer {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 /* Popup */
 .popup-overlay {
   position: fixed;
@@ -335,154 +309,104 @@ html, body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.9);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: 16px;
 }
 
 .popup-content {
   background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-radius: 24px;
-  padding: 30px;
-  max-width: 400px;
+  border-radius: 18px;
+  padding: 20px;
+  max-width: 320px;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  animation: popupIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: popupIn 0.2s ease;
 }
 
 @keyframes popupIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .popup-icon {
-  font-size: 48px;
+  font-size: 36px;
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .popup-title {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: #f8fafc;
 }
 
 .popup-message {
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 1.4;
   color: #cbd5e1;
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .popup-btn {
   width: 100%;
-  padding: 16px;
+  padding: 12px;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   color: white;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
-.popup-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Level Dots */
-.level-dots {
+/* Level Indicator */
+.level-indicator {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-top: 12px;
+  gap: 4px;
+  margin: 4px 0;
 }
 
 .level-dot {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
 }
 
 .level-dot.active {
-  width: 20px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  background: #3b82f6;
+  box-shadow: 0 0 4px #3b82f6;
 }
 
-/* Timer */
-.timer {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(239, 68, 68, 0.15);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* Mobile Optimization */
-@media (max-height: 700px) {
-  .game-container {
-    padding: 12px;
-  }
-  
-  .scale-pan {
-    min-height: 70px;
-  }
-  
-  .shape {
-    width: 42px;
-    height: 42px;
-  }
-  
-  .option-btn {
-    padding: 12px 6px;
-  }
-  
-  .control-btn {
-    padding: 12px;
-  }
+.control-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
 </head>
 <body>
 <div class="game-container">
   <!-- Timer -->
-  <div class="timer" id="timer">01:30</div>
+  <div class="timer" id="timer">02:00</div>
   
   <!-- Header -->
   <div class="game-header">
     <h1 class="game-title">Balance Logic Pro</h1>
-    <p class="game-subtitle">Deduce weights from balanced scales</p>
+    <p class="game-subtitle">Analyze scales & deduce weights</p>
   </div>
   
   <!-- Stats -->
   <div class="stats-bar">
     <div class="stat-item">
-      <span class="stat-value" id="score">270</span>
+      <span class="stat-value" id="score">0</span>
       <span class="stat-label">Score</span>
     </div>
     <div class="stat-item">
@@ -490,7 +414,7 @@ html, body {
       <span class="stat-label">Level</span>
     </div>
     <div class="stat-item">
-      <span class="stat-value" id="streak">5</span>
+      <span class="stat-value" id="streak">0</span>
       <span class="stat-label">Streak</span>
     </div>
   </div>
@@ -498,75 +422,60 @@ html, body {
   <!-- Progress -->
   <div class="level-progress">
     <div class="progress-label">
-      <span>Progress</span>
-      <span id="progress-text">1/10</span>
+      <span>Puzzle <span id="current-puzzle">1</span>/20</span>
+      <span id="progress-text">5%</span>
     </div>
     <div class="progress-bar">
       <div class="progress-fill" id="progress-fill"></div>
     </div>
-    <div class="level-dots" id="level-dots"></div>
   </div>
   
+  <!-- Level Dots -->
+  <div class="level-indicator" id="level-indicator"></div>
+  
   <!-- Game Area -->
-  <div class="game-area">
+  <div class="scale-container">
     <!-- Scale 1 -->
-    <div class="scale-container">
-      <div class="scale-row">
-        <div class="scale-pan" id="scale1-left">
-          <div class="shape circle"></div>
-        </div>
-        <div class="scale-equals">=</div>
-        <div class="scale-pan" id="scale1-right">
-          <div class="shape square"></div>
-        </div>
-      </div>
-      
-      <!-- Scale 2 -->
-      <div class="scale-row">
-        <div class="scale-pan" id="scale2-left">
-          <div class="shape square"></div>
-        </div>
-        <div class="scale-equals">=</div>
-        <div class="scale-pan" id="scale2-right">
-          <div class="shape triangle"></div>
-        </div>
-      </div>
+    <div class="scale-row">
+      <div class="scale-pan" id="scale1-left"></div>
+      <div class="scale-equals">=</div>
+      <div class="scale-pan" id="scale1-right"></div>
     </div>
     
-    <!-- Question -->
-    <div class="question-box">
-      <p class="question-text">Which is heavier?</p>
-      <p class="question-subtext">Analyze both balanced scales to deduce</p>
+    <!-- Scale 2 -->
+    <div class="scale-row">
+      <div class="scale-pan" id="scale2-left"></div>
+      <div class="scale-equals">=</div>
+      <div class="scale-pan" id="scale2-right"></div>
     </div>
-    
-    <!-- Answer Options -->
-    <div class="answer-options">
-      <div class="option-btn" onclick="selectAnswer('circle')">
-        <div class="shape circle option-shape"></div>
-        <span class="option-label">Circle</span>
-      </div>
-      <div class="option-btn" onclick="selectAnswer('triangle')">
-        <div class="shape triangle option-shape"></div>
-        <span class="option-label">Triangle</span>
-      </div>
-      <div class="option-btn" onclick="selectAnswer('equal')">
-        <div class="shape square option-shape"></div>
-        <span class="option-label">Equal</span>
-      </div>
+  </div>
+  
+  <!-- Question -->
+  <div class="question-box">
+    <p class="question-text" id="question-text">Which is heavier?</p>
+  </div>
+  
+  <!-- Answer Options -->
+  <div class="answer-options">
+    <div class="option-btn" onclick="selectAnswer('circle')">
+      <div class="shape circle option-shape"></div>
+      <span class="option-label">Circle</span>
     </div>
-    
-    <!-- Controls -->
-    <div class="control-buttons">
-      <button class="control-btn btn-hint" onclick="showHint()">
-        💡 Hint
-      </button>
-      <button class="control-btn btn-next" onclick="nextLevel()" id="next-btn">
-        Next →
-      </button>
-      <button class="control-btn btn-reset" onclick="resetGame()">
-        Reset
-      </button>
+    <div class="option-btn" onclick="selectAnswer('triangle')">
+      <div class="shape triangle option-shape"></div>
+      <span class="option-label">Triangle</span>
     </div>
+    <div class="option-btn" onclick="selectAnswer('equal')">
+      <div class="shape square option-shape"></div>
+      <span class="option-label">Equal</span>
+    </div>
+  </div>
+  
+  <!-- Controls -->
+  <div class="control-buttons">
+    <button class="control-btn btn-hint" onclick="showHint()">💡 Hint</button>
+    <button class="control-btn btn-next" onclick="nextPuzzle()" id="next-btn" disabled>Next</button>
+    <button class="control-btn btn-reset" onclick="resetGame()">Reset</button>
   </div>
 </div>
 
@@ -575,10 +484,7 @@ html, body {
   <div class="popup-content">
     <div class="popup-icon" id="popup-icon">🎉</div>
     <h2 class="popup-title" id="popup-title">Correct!</h2>
-    <p class="popup-message" id="popup-message">
-      Circle = Square and Square = Triangle<br><br>
-      Therefore, Circle = Triangle
-    </p>
+    <p class="popup-message" id="popup-message"></p>
     <button class="popup-btn" onclick="closePopup()">Continue</button>
   </div>
 </div>
@@ -586,63 +492,220 @@ html, body {
 <script>
 // Game State
 const gameState = {
-  score: 270,
-  level: 1,
-  streak: 5,
-  selectedAnswer: null,
-  timeLeft: 90, // 1:30 in seconds
-  totalLevels: 10
+  score: 0,
+  currentPuzzleIndex: 0,
+  streak: 0,
+  timeLeft: 120,
+  totalPuzzles: 20,
+  selectedAnswer: null
 };
+
+// 20 Puzzles with VARIED answers (7 equal, 7 circle, 6 triangle)
+const puzzles = [
+  // Puzzle 1: Circle = Triangle
+  {
+    scale1: { left: ['circle'], right: ['square'] },
+    scale2: { left: ['square'], right: ['triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "Circle = Square and Square = Triangle, so Circle = Triangle"
+  },
+  // Puzzle 2: Circle > Triangle
+  {
+    scale1: { left: ['circle', 'circle'], right: ['square'] },
+    scale2: { left: ['square'], right: ['triangle', 'triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "2 Circles = 1 Square and 1 Square = 3 Triangles, so 1 Circle = 1.5 Triangles"
+  },
+  // Puzzle 3: Triangle > Circle
+  {
+    scale1: { left: ['circle', 'circle', 'circle'], right: ['square'] },
+    scale2: { left: ['square'], right: ['triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'triangle',
+    explanation: "3 Circles = 1 Square and 1 Square = 1 Triangle, so Triangle = 3 Circles"
+  },
+  // Puzzle 4: Circle = Triangle
+  {
+    scale1: { left: ['circle', 'triangle'], right: ['square'] },
+    scale2: { left: ['square'], right: ['circle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "Both equations show Circle + Triangle = Square, so Circle = Triangle"
+  },
+  // Puzzle 5: Circle > Triangle
+  {
+    scale1: { left: ['circle', 'square'], right: ['triangle', 'triangle', 'triangle'] },
+    scale2: { left: ['circle', 'triangle'], right: ['square'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "Solving gives: 2 Circles = 3 Triangles, so Circle is heavier"
+  },
+  // Puzzle 6: Triangle > Circle
+  {
+    scale1: { left: ['circle', 'triangle', 'triangle'], right: ['square'] },
+    scale2: { left: ['square'], right: ['circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'triangle',
+    explanation: "Circle + 2 Triangles = Square and Square = 2 Circles, so Triangle = 0.5 Circles"
+  },
+  // Puzzle 7: Circle = Triangle
+  {
+    scale1: { left: ['circle', 'circle'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
+    scale2: { left: ['square'], right: ['circle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "2 Circles = 4 Triangles (1 Circle = 2 Triangles) and Square = Circle + Triangle, solving gives Circle = Triangle"
+  },
+  // Puzzle 8: Circle > Triangle
+  {
+    scale1: { left: ['circle', 'circle', 'circle'], right: ['square', 'triangle'] },
+    scale2: { left: ['square', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "3 Circles = Square + Triangle and 2 Squares = 4 Triangles, solving gives Circle = 1.33 Triangles"
+  },
+  // Puzzle 9: Triangle > Circle
+  {
+    scale1: { left: ['circle', 'triangle'], right: ['square', 'square'] },
+    scale2: { left: ['square'], right: ['triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'triangle',
+    explanation: "Circle + Triangle = 2 Squares and 1 Square = 2 Triangles, so Triangle = 3 Circles"
+  },
+  // Puzzle 10: Circle = Triangle
+  {
+    scale1: { left: ['circle', 'square'], right: ['triangle', 'triangle'] },
+    scale2: { left: ['square', 'triangle'], right: ['circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "Circle + Square = 2 Triangles and Square + Triangle = 2 Circles, solving gives Circle = Triangle"
+  },
+  // Puzzle 11: Circle > Triangle
+  {
+    scale1: { left: ['circle', 'circle', 'triangle'], right: ['square', 'square'] },
+    scale2: { left: ['square', 'triangle', 'triangle'], right: ['circle', 'circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "2 Circles + Triangle = 2 Squares and Square + 2 Triangles = 3 Circles, solving gives Circle = 2 Triangles"
+  },
+  // Puzzle 12: Triangle > Circle
+  {
+    scale1: { left: ['circle', 'circle', 'circle', 'circle'], right: ['square', 'square', 'triangle'] },
+    scale2: { left: ['square', 'triangle', 'triangle'], right: ['circle', 'circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'triangle',
+    explanation: "4 Circles = 2 Squares + Triangle and Square + 2 Triangles = 3 Circles, solving gives Triangle = 2 Circles"
+  },
+  // Puzzle 13: Circle = Triangle
+  {
+    scale1: { left: ['circle', 'circle', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
+    scale2: { left: ['square', 'triangle'], right: ['circle', 'circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "2 Circles + Square = 4 Triangles and Square + Triangle = 3 Circles, solving gives Circle = Triangle"
+  },
+  // Puzzle 14: Circle > Triangle
+  {
+    scale1: { left: ['circle', 'triangle', 'triangle'], right: ['square', 'square'] },
+    scale2: { left: ['square', 'circle'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "Circle + 2 Triangles = 2 Squares and Square + Circle = 4 Triangles, solving gives Circle = 3 Triangles"
+  },
+  // Puzzle 15: Triangle > Circle
+  {
+    scale1: { left: ['circle', 'circle'], right: ['square', 'triangle'] },
+    scale2: { left: ['square', 'square'], right: ['triangle', 'triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'triangle',
+    explanation: "2 Circles = Square + Triangle and 2 Squares = 3 Triangles, solving gives Triangle = 1.5 Circles"
+  },
+  // Puzzle 16: Circle = Triangle
+  {
+    scale1: { left: ['circle', 'square', 'triangle'], right: ['circle', 'circle', 'triangle'] },
+    scale2: { left: ['square', 'square'], right: ['circle', 'triangle', 'triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "Circle + Square + Triangle = 2 Circles + Triangle and 2 Squares = Circle + 3 Triangles, solving gives Circle = Triangle"
+  },
+  // Puzzle 17: Circle > Triangle
+  {
+    scale1: { left: ['circle', 'circle', 'triangle', 'triangle'], right: ['square', 'square', 'square'] },
+    scale2: { left: ['square'], right: ['triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "2 Circles + 2 Triangles = 3 Squares and 1 Square = 2 Triangles, solving gives Circle = 2 Triangles"
+  },
+  // Puzzle 18: Triangle > Circle
+  {
+    scale1: { left: ['circle', 'square', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
+    scale2: { left: ['square', 'triangle'], right: ['circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'triangle',
+    explanation: "Circle + 2 Squares = 4 Triangles and Square + Triangle = 2 Circles, solving gives Triangle = 1.5 Circles"
+  },
+  // Puzzle 19: Circle = Triangle
+  {
+    scale1: { left: ['circle', 'circle', 'square', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle', 'triangle'] },
+    scale2: { left: ['square', 'triangle', 'triangle'], right: ['circle', 'circle', 'circle', 'circle'] },
+    question: "Circle vs Triangle?",
+    correct: 'equal',
+    explanation: "2 Circles + 2 Squares = 5 Triangles and Square + 2 Triangles = 4 Circles, solving gives Circle = Triangle"
+  },
+  // Puzzle 20: Final - Circle > Triangle
+  {
+    scale1: { left: ['circle', 'circle', 'circle'], right: ['square', 'triangle', 'triangle'] },
+    scale2: { left: ['square', 'square', 'square'], right: ['circle', 'circle', 'triangle', 'triangle', 'triangle'] },
+    question: "Circle vs Triangle?",
+    correct: 'circle',
+    explanation: "3 Circles = Square + 2 Triangles and 3 Squares = 2 Circles + 3 Triangles, solving gives Circle = 2 Triangles"
+  }
+];
+
+// Verify distribution
+function verifyDistribution() {
+  let equal = 0, circle = 0, triangle = 0;
+  puzzles.forEach(p => {
+    if (p.correct === 'equal') equal++;
+    if (p.correct === 'circle') circle++;
+    if (p.correct === 'triangle') triangle++;
+  });
+  console.log(`Distribution: ${equal} equal, ${circle} circle, ${triangle} triangle`);
+}
 
 // DOM Elements
 const scoreEl = document.getElementById('score');
 const levelEl = document.getElementById('level');
 const streakEl = document.getElementById('streak');
+const currentPuzzleEl = document.getElementById('current-puzzle');
 const progressText = document.getElementById('progress-text');
 const progressFill = document.getElementById('progress-fill');
-const levelDots = document.getElementById('level-dots');
+const questionText = document.getElementById('question-text');
+const levelIndicator = document.getElementById('level-indicator');
 const nextBtn = document.getElementById('next-btn');
 const timerEl = document.getElementById('timer');
 
 // Initialize
 function init() {
+  verifyDistribution();
   updateDisplay();
-  createLevelDots();
+  createLevelIndicators();
   startTimer();
-  nextBtn.disabled = true;
-  
-  // Set up first puzzle
-  loadPuzzle(1);
+  loadPuzzle(gameState.currentPuzzleIndex);
 }
 
-// Load puzzle data
-function loadPuzzle(level) {
-  // Example puzzles - in real game you'd have more
-  const puzzles = [
-    {
-      scale1: { left: ['circle'], right: ['square'] },
-      scale2: { left: ['square'], right: ['triangle'] },
-      question: "Which is heavier?",
-      correct: 'equal',
-      explanation: "Circle = Square and Square = Triangle, therefore Circle = Triangle"
-    },
-    {
-      scale1: { left: ['circle', 'circle'], right: ['square'] },
-      scale2: { left: ['square'], right: ['triangle', 'triangle'] },
-      question: "Which is heavier?",
-      correct: 'equal',
-      explanation: "2 Circles = 1 Square and 1 Square = 2 Triangles, so 1 Circle = 1 Triangle"
-    },
-    {
-      scale1: { left: ['circle', 'square'], right: ['triangle', 'triangle', 'triangle'] },
-      scale2: { left: ['circle', 'triangle'], right: ['square'] },
-      question: "Compare Circle and Triangle",
-      correct: 'equal',
-      explanation: "From equations: Circle = Triangle. They have equal weight."
-    }
-  ];
+// Load puzzle
+function loadPuzzle(index) {
+  if (index >= puzzles.length) {
+    showPopup('🏆 Complete!', `All puzzles solved!<br>Final Score: ${gameState.score}`);
+    return;
+  }
   
-  const puzzle = puzzles[(level - 1) % puzzles.length];
+  const puzzle = puzzles[index];
+  gameState.currentPuzzleIndex = index;
+  gameState.selectedAnswer = null;
   
   // Update scales
   updateScale('scale1-left', puzzle.scale1.left);
@@ -650,8 +713,19 @@ function loadPuzzle(level) {
   updateScale('scale2-left', puzzle.scale2.left);
   updateScale('scale2-right', puzzle.scale2.right);
   
-  // Store current puzzle
-  gameState.currentPuzzle = puzzle;
+  // Update question
+  questionText.textContent = puzzle.question;
+  
+  // Reset selection
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.classList.remove('selected');
+  });
+  
+  // Disable next button
+  nextBtn.disabled = true;
+  
+  // Update display
+  updateDisplay();
 }
 
 // Update scale display
@@ -668,6 +742,8 @@ function updateScale(scaleId, shapes) {
 
 // Select answer
 function selectAnswer(answer) {
+  if (gameState.selectedAnswer) return;
+  
   // Remove previous selection
   document.querySelectorAll('.option-btn').forEach(btn => {
     btn.classList.remove('selected');
@@ -678,46 +754,38 @@ function selectAnswer(answer) {
   gameState.selectedAnswer = answer;
   
   // Check answer
-  setTimeout(() => checkAnswer(answer), 300);
+  setTimeout(() => checkAnswer(answer), 200);
 }
 
 // Check answer
 function checkAnswer(answer) {
-  const correct = gameState.currentPuzzle.correct;
-  const isCorrect = answer === correct;
+  const puzzle = puzzles[gameState.currentPuzzleIndex];
+  const isCorrect = answer === puzzle.correct;
   
   if (isCorrect) {
     // Correct
-    gameState.score += 50;
+    gameState.score += 100;
     gameState.streak++;
     
     if (gameState.streak > 1) {
-      gameState.score += gameState.streak * 10;
+      gameState.score += gameState.streak * 20;
     }
     
-    showPopup(
-      '🎉 Correct!',
-      gameState.currentPuzzle.explanation
-    );
-    
-    // Enable next button
+    showPopup('🎉 Correct!', puzzle.explanation);
     nextBtn.disabled = false;
   } else {
     // Incorrect
     gameState.streak = 0;
-    gameState.score = Math.max(0, gameState.score - 20);
+    gameState.score = Math.max(0, gameState.score - 50);
     
     let correctText = '';
-    switch(correct) {
+    switch(puzzle.correct) {
       case 'circle': correctText = 'Circle is heavier'; break;
       case 'triangle': correctText = 'Triangle is heavier'; break;
       case 'equal': correctText = 'Both are equal'; break;
     }
     
-    showPopup(
-      '❌ Incorrect',
-      `The correct answer is: ${correctText}.<br><br>${gameState.currentPuzzle.explanation}`
-    );
+    showPopup('❌ Incorrect', `${correctText}.<br><br>${puzzle.explanation}`);
   }
   
   updateDisplay();
@@ -725,92 +793,85 @@ function checkAnswer(answer) {
 
 // Show hint
 function showHint() {
-  gameState.score = Math.max(0, gameState.score - 15);
+  gameState.score = Math.max(0, gameState.score - 30);
   updateDisplay();
   
   const hints = [
-    "If A = B and B = C, then A must equal C",
     "Look for shapes that appear on both scales",
     "Count the total number of each shape",
-    "Sometimes equal doesn't mean what it seems",
-    "Try substituting one shape for another"
+    "If A = B and B = C, then A = C",
+    "Try substituting from one equation to another",
+    "Sometimes the answer isn't what it seems"
   ];
   
   const randomHint = hints[Math.floor(Math.random() * hints.length)];
-  
-  showPopup(
-    '💡 Hint',
-    randomHint
-  );
+  showPopup('💡 Hint', randomHint);
 }
 
-// Next level
-function nextLevel() {
-  if (gameState.level < gameState.totalLevels) {
-    gameState.level++;
-    gameState.selectedAnswer = null;
-    nextBtn.disabled = true;
-    
-    // Clear selections
-    document.querySelectorAll('.option-btn').forEach(btn => {
-      btn.classList.remove('selected');
-    });
-    
-    // Load new puzzle
-    loadPuzzle(gameState.level);
-    updateDisplay();
+// Next puzzle
+function nextPuzzle() {
+  if (gameState.currentPuzzleIndex < puzzles.length - 1) {
+    gameState.currentPuzzleIndex++;
+    loadPuzzle(gameState.currentPuzzleIndex);
     
     // Reset timer
-    gameState.timeLeft = 90;
+    gameState.timeLeft = 120;
     updateTimerDisplay();
   } else {
-    showPopup(
-      '🏆 Game Complete!',
-      `Congratulations! You've completed all ${gameState.totalLevels} levels.<br><br>Final Score: ${gameState.score}`
-    );
+    showPopup('🏆 Complete!', `All ${puzzles.length} puzzles solved!<br>Final Score: ${gameState.score}`);
   }
 }
 
 // Reset game
 function resetGame() {
-  if (confirm("Reset game? Your progress will be lost.")) {
+  if (confirm("Reset game? All progress will be lost.")) {
     gameState.score = 0;
-    gameState.level = 1;
+    gameState.currentPuzzleIndex = 0;
     gameState.streak = 0;
-    gameState.timeLeft = 90;
+    gameState.timeLeft = 120;
     gameState.selectedAnswer = null;
     
-    nextBtn.disabled = true;
-    loadPuzzle(1);
+    loadPuzzle(0);
     updateDisplay();
     updateTimerDisplay();
-    
-    // Clear selections
-    document.querySelectorAll('.option-btn').forEach(btn => {
-      btn.classList.remove('selected');
-    });
   }
 }
 
 // Update display
 function updateDisplay() {
   scoreEl.textContent = gameState.score;
-  levelEl.textContent = gameState.level;
+  levelEl.textContent = gameState.currentPuzzleIndex + 1;
   streakEl.textContent = gameState.streak;
+  currentPuzzleEl.textContent = gameState.currentPuzzleIndex + 1;
   
-  const progressPercent = (gameState.level / gameState.totalLevels) * 100;
+  const progressPercent = ((gameState.currentPuzzleIndex + 1) / puzzles.length) * 100;
   progressFill.style.width = `${progressPercent}%`;
-  progressText.textContent = `${gameState.level}/${gameState.totalLevels}`;
+  progressText.textContent = `${Math.round(progressPercent)}%`;
+  
+  updateLevelIndicators();
 }
 
-// Create level dots
-function createLevelDots() {
-  levelDots.innerHTML = '';
-  for (let i = 1; i <= gameState.totalLevels; i++) {
+// Create level indicators
+function createLevelIndicators() {
+  levelIndicator.innerHTML = '';
+  for (let i = 0; i < puzzles.length; i++) {
     const dot = document.createElement('div');
-    dot.className = `level-dot ${i <= gameState.level ? 'active' : ''}`;
-    levelDots.appendChild(dot);
+    dot.className = 'level-dot';
+    if (i === 0) dot.classList.add('active');
+    levelIndicator.appendChild(dot);
   }
+}
+
+// Update level indicators
+function updateLevelIndicators() {
+  const dots = levelIndicator.querySelectorAll('.level-dot');
+  dots.forEach((dot, index) => {
+    if (index === gameState.currentPuzzleIndex) {
+      dot.classList.add('active');
+    } else {
+      dot.classList.remove('active');
+    }
+  });
 }
 
 // Timer functions
@@ -830,7 +891,6 @@ function updateTimerDisplay() {
   const seconds = gameState.timeLeft % 60;
   timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   
-  // Change color when time is low
   if (gameState.timeLeft < 30) {
     timerEl.style.background = 'rgba(239, 68, 68, 0.3)';
     timerEl.style.color = '#fecaca';
@@ -842,10 +902,7 @@ function updateTimerDisplay() {
 
 function timeUp() {
   clearInterval(gameState.timerInterval);
-  showPopup(
-    '⏰ Time\'s Up!',
-    'Time ran out for this puzzle. Try to solve faster next time!'
-  );
+  showPopup('⏰ Time\'s Up!', 'Time ran out! Try to solve faster next time.');
 }
 
 // Popup functions
@@ -853,7 +910,6 @@ function showPopup(icon, message) {
   document.getElementById('popup-icon').textContent = icon;
   document.getElementById('popup-message').innerHTML = message;
   
-  // Set title based on icon
   let title = '';
   if (icon.includes('🎉')) title = 'Correct!';
   else if (icon.includes('❌')) title = 'Incorrect';
@@ -875,7 +931,7 @@ document.addEventListener('touchmove', (e) => {
   if (e.scale !== 1) e.preventDefault();
 }, { passive: false });
 
-// Initialize on load
+// Initialize
 window.onload = init;
 </script>
 </body>
