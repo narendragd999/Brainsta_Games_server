@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>🔥 Matchstick Math - Working Game</title>
+<style>
+:root {
+  --primary: #3498db;
+  --secondary: #6a11cb;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --dark: #2c3e50;
+  --light: #ecf0f1;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  touch-action: manipulation;
+}
+
+.game-container {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+}
+
+.stat {
+  background: var(--light);
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat.coins {
+  background: linear-gradient(45deg, #FFD700, #FFA500);
+  color: #8B4513;
+}
+
+.stat.streak {
+  background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+  color: white;
+}
+
+.puzzle-info {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--dark);
+  font-weight: 500;
+}
+
+.equation-container {
+  background: #f8f9fa;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 2px dashed #e0e0e0;
+  min-height: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.one-move-rule {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--danger);
+  color: white;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.equation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  min-height: 120px;
+}
+
+.digit-container {
+  position: relative;
+  width: 70px;
+  height: 110px;
+  margin: 0 5px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.digit {
+  position: relative;
+  width: 60px;
+  height: 100px;
+}
+
+.stick {
+  position: absolute;
+  background: linear-gradient(45deg, #e67e22, #d35400);
+  border-radius: 3px;
+  cursor: grab;
+  transition: all 0.3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 2;
+}
+
+.stick:hover {
+  transform: scale(1.05);
+}
+
+.stick.dragging {
+  cursor: grabbing;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  z-index: 100;
+  opacity: 0.8;
+}
+
+.stick.horizontal {
+  width: 46px;
+  height: 8px;
+}
+
+.stick.vertical {
+  width: 8px;
+  height: 46px;
+}
+
+.stick.inactive {
+  background: #ecf0f1;
+  opacity: 0.3;
+  cursor: default;
+}
+
+.stick.inactive:hover {
+  transform: none;
+}
+
+.operator {
+  font-size: 36px;
+  font-weight: bold;
+  color: var(--dark);
+  padding: 0 10px;
+  min-width: 20px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn {
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn.hint {
+  background: linear-gradient(45deg, var(--warning), #ff9f43);
+}
+
+.btn.solution {
+  background: linear-gradient(45deg, #9b59b6, #8e44ad);
+}
+
+.btn.next {
+  background: linear-gradient(45deg, var(--primary), #2980b9);
+  grid-column: span 2;
+}
+
+.btn.reset {
+  background: linear-gradient(45deg, var(--danger), #c0392b);
+}
+
+.btn.undo {
+  background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+}
+
+.feedback {
+  text-align: center;
+  padding: 12px;
+  border-radius: 12px;
+  margin: 12px 0;
+  font-weight: 600;
+  animation: slideIn 0.3s ease;
+}
+
+.feedback.success {
+  background: rgba(46, 204, 113, 0.1);
+  color: var(--success);
+  border: 2px solid rgba(46, 204, 113, 0.3);
+}
+
+.feedback.error {
+  background: rgba(231, 76, 60, 0.1);
+  color: var(--danger);
+  border: 2px solid rgba(231, 76, 60, 0.3);
+}
+
+.feedback.info {
+  background: rgba(52, 152, 219, 0.1);
+  color: var(--primary);
+  border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes celebrate {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.pulse {
+  animation: pulse 0.5s ease;
+}
+
+.celebrate {
+  animation: celebrate 0.5s ease 3;
+}
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 16px;
+  }
+  
+  .digit-container {
+    width: 60px;
+    height: 95px;
+  }
+  
+  .digit {
+    width: 50px;
+    height: 85px;
+  }
+  
+  .stick.horizontal {
+    width: 40px;
+  }
+  
+  .stick.vertical {
+    height: 40px;
+  }
+  
+  .operator {
+    font-size: 28px;
+    padding: 0 6px;
+  }
+  
+  .actions {
+    grid-template-columns: 1fr;
+  }
+  
+  .btn.next {
+    grid-column: span 1;
+  }
+}
+
+.hidden {
+  display: none !important;
+}
+
+.move-tracker {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.move-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ecf0f1;
+  transition: all 0.3s;
+}
+
+.move-dot.used {
+  background: var(--danger);
+}
+
+.move-dot.available {
+  background: var(--success);
+  animation: pulse 1.5s infinite;
+}
+
+.current-equation {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--dark);
+  margin-top: 10px;
+  text-align: center;
+  font-family: monospace;
+  background: rgba(255,255,255,0.8);
+  padding: 8px 16px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.drop-hint {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(46, 204, 113, 0.1);
+  border: 2px dashed var(--success);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--success);
+  font-weight: bold;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.drop-hint.active {
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <div class="game-header">
+    <h1 style="color: var(--dark); font-size: 24px;">🔥 Matchstick Math</h1>
+    <div class="stats">
+      <div class="stat coins" id="coinStat">
+        🪙 <span id="coins">50</span>
+      </div>
+      <div class="stat streak" id="streakStat">
+        🔥 <span id="streak">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="puzzle-info">
+    <p>Move 1 matchstick to fix the equation!</p>
+    <div class="move-tracker">
+      <div class="move-dot available" id="moveDot"></div>
+      <span style="color: #666; font-size: 14px;">Only ONE move allowed</span>
+    </div>
+  </div>
+
+  <div class="equation-container">
+    <div class="equation" id="equation"></div>
+    <div class="drop-hint" id="dropHint">Drop matchstick here</div>
+  </div>
+
+  <div id="currentEquation" class="current-equation"></div>
+
+  <div class="feedback hidden" id="feedback"></div>
+
+  <div class="actions">
+    <button class="btn hint" onclick="useHint()" id="hintBtn">
+      💡 Hint (-5)
+    </button>
+    <button class="btn undo" onclick="undoMove()" id="undoBtn" disabled>
+      ↩ Undo
+    </button>
+    <button class="btn reset" onclick="resetPuzzle()" id="resetBtn">
+      🔄 Reset
+    </button>
+    <button class="btn solution" onclick="showSolution()" id="solutionBtn">
+      🧠 Solution
+    </button>
+    <button class="btn next" onclick="nextPuzzle()" id="nextBtn" disabled>
+      Next Puzzle ▶
+    </button>
+  </div>
+</div>
+
+<script>
+// ==================== GAME STATE ====================
+let gameState = {
+  streak: 0,
+  coins: 50,
+  movesMade: 0,
+  maxMoves: 1,
+  isSolved: false,
+  currentPuzzle: null,
+  moveHistory: [],
+  draggedStick: null
+};
+
+// ==================== 7-SEGMENT DIGIT DEFINITIONS ====================
+const DIGIT_SEGMENTS = {
+  0: ['a', 'b', 'c', 'd', 'e', 'f'],
+  1: ['b', 'c'],
+  2: ['a', 'b', 'd', 'e', 'g'],
+  3: ['a', 'b', 'c', 'd', 'g'],
+  4: ['b', 'c', 'f', 'g'],
+  5: ['a', 'c', 'd', 'f', 'g'],
+  6: ['a', 'c', 'd', 'e', 'f', 'g'],
+  7: ['a', 'b', 'c'],
+  8: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+  9: ['a', 'b', 'c', 'd', 'f', 'g']
+};
+
+const SEGMENT_POSITIONS = {
+  'a': { x: 7, y: 2, horizontal: true },    // Top
+  'b': { x: 44, y: 7, horizontal: false },  // Top right
+  'c': { x: 44, y: 48, horizontal: false }, // Bottom right
+  'd': { x: 7, y: 88, horizontal: true },   // Bottom
+  'e': { x: 2, y: 48, horizontal: false },  // Bottom left
+  'f': { x: 2, y: 7, horizontal: false },   // Top left
+  'g': { x: 7, y: 45, horizontal: true }    // Middle
+};
+
+// ==================== PUZZLE DATABASE ====================
+const PUZZLES = [
+  {
+    id: 1,
+    equation: "9+6=5",
+    solution: "3+6=9",
+    hint: "Move the top-left matchstick from 9 to the top of 5",
+    explanation: "Moving top-left from 9 makes it 3, adding top to 5 makes it 9: 3 + 6 = 9"
+  },
+  {
+    id: 2,
+    equation: "6+4=4",
+    solution: "5+4=9",
+    hint: "Move the top-left matchstick from 6 to the top of the last 4",
+    explanation: "Moving top-left from 6 makes it 5, adding top to 4 makes it 9: 5 + 4 = 9"
+  },
+  {
+    id: 3,
+    equation: "5+3=9",
+    solution: "5+3=8",
+    hint: "Move the top-left matchstick from 9 to the bottom-left",
+    explanation: "Moving top-left from 9 makes it 8: 5 + 3 = 8"
+  },
+  {
+    id: 4,
+    equation: "8+3=9",
+    solution: "6+3=9",
+    hint: "Move the top-right matchstick from 8 to the top-left",
+    explanation: "Moving top-right from 8 makes it 6: 6 + 3 = 9"
+  },
+  {
+    id: 5,
+    equation: "3+3=8",
+    solution: "3+5=8",
+    hint: "Move the top-right matchstick from second 3 to make it 5",
+    explanation: "Moving top-right from 3 makes it 5: 3 + 5 = 8"
+  }
+];
+
+// ==================== GAME INITIALIZATION ====================
+function initGame() {
+  generatePuzzle();
+  updateUI();
+}
+
+function generatePuzzle() {
+  const puzzle = PUZZLES[Math.floor(Math.random() * PUZZLES.length)];
+  gameState.currentPuzzle = { ...puzzle };
+  gameState.movesMade = 0;
+  gameState.isSolved = false;
+  gameState.moveHistory = [];
+  gameState.draggedStick = null;
+  
+  renderEquation();
+  updateUI();
+  showFeedback('Move exactly ONE matchstick to fix the equation!', 'info');
+}
+
+// ==================== RENDERING ====================
+function renderEquation() {
+  const equationDiv = document.getElementById('equation');
+  equationDiv.innerHTML = '';
+  
+  const eq = gameState.currentPuzzle.equation;
+  const currentEqDiv = document.getElementById('currentEquation');
+  currentEqDiv.textContent = eq;
+  
+  for (let i = 0; i < eq.length; i++) {
+    const char = eq[i];
+    
+    if (char >= '0' && char <= '9') {
+      const digitContainer = document.createElement('div');
+      digitContainer.className = 'digit-container';
+      digitContainer.dataset.index = i;
+      digitContainer.dataset.char = char;
+      
+      const digitDiv = createDigit(parseInt(char), i);
+      digitContainer.appendChild(digitDiv);
+      equationDiv.appendChild(digitContainer);
+    } else {
+      const operatorDiv = document.createElement('div');
+      operatorDiv.className = 'operator';
+      operatorDiv.textContent = char;
+      equationDiv.appendChild(operatorDiv);
+    }
+  }
+  
+  // Add drop event listeners to all digit containers
+  document.querySelectorAll('.digit-container').forEach(container => {
+    container.addEventListener('dragover', handleDragOver);
+    container.addEventListener('drop', handleDrop);
+  });
+}
+
+function createDigit(value, position) {
+  const digitDiv = document.createElement('div');
+  digitDiv.className = 'digit';
+  digitDiv.dataset.value = value;
+  digitDiv.dataset.position = position;
+  
+  const segments = DIGIT_SEGMENTS[value] || [];
+  
+  // Create all 7 segments
+  Object.keys(SEGMENT_POSITIONS).forEach(segmentId => {
+    const pos = SEGMENT_POSITIONS[segmentId];
+    const isActive = segments.includes(segmentId);
+    
+    const stick = document.createElement('div');
+    stick.className = `stick ${pos.horizontal ? 'horizontal' : 'vertical'} ${isActive ? 'active' : 'inactive'}`;
+    stick.style.left = `${pos.x}px`;
+    stick.style.top = `${pos.y}px`;
+    stick.dataset.segment = segmentId;
+    stick.dataset.position = position;
+    stick.dataset.active = isActive;
+    
+    if (isActive && !gameState.isSolved) {
+      stick.draggable = true;
+      stick.addEventListener('dragstart', handleDragStart);
+      stick.addEventListener('dragend', handleDragEnd);
+      
+      // Touch events
+      stick.addEventListener('touchstart', handleTouchStart);
+      stick.addEventListener('touchend', handleTouchEnd);
+    } else {
+      // Inactive segments are potential drop targets
+      stick.addEventListener('dragover', handleDragOver);
+      stick.addEventListener('drop', handleDrop);
+    }
+    
+    digitDiv.appendChild(stick);
+  });
+  
+  return digitDiv;
+}
+
+// ==================== DRAG & DROP ====================
+function handleDragStart(e) {
+  if (gameState.isSolved || gameState.movesMade >= gameState.maxMoves) {
+    e.preventDefault();
+    return false;
+  }
+  
+  gameState.draggedStick = {
+    element: e.target,
+    segment: e.target.dataset.segment,
+    position: parseInt(e.target.dataset.position)
+  };
+  
+  e.target.classList.add('dragging');
+  e.dataTransfer.setData('text/plain', JSON.stringify(gameState.draggedStick));
+  
+  // Show drop hint
+  document.getElementById('dropHint').classList.add('active');
+  
+  return true;
+}
+
+function handleTouchStart(e) {
+  if (gameState.isSolved || gameState.movesMade >= gameState.maxMoves) return;
+  
+  const stick = e.target;
+  gameState.draggedStick = {
+    element: stick,
+    segment: stick.dataset.segment,
+    position: parseInt(stick.dataset.position)
+  };
+  
+  stick.classList.add('dragging');
+  e.preventDefault();
+}
+
+function handleTouchEnd(e) {
+  if (!gameState.draggedStick) return;
+  
+  // Simulate drop on the closest inactive stick
+  const touch = e.changedTouches[0];
+  const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+  const dropTarget = elements.find(el => 
+    el.classList.contains('stick') && 
+    el.classList.contains('inactive')
+  );
+  
+  if (dropTarget) {
+    handleDropOnTarget(dropTarget);
+  }
+  
+  cleanupDrag();
+}
+
+function handleDragEnd() {
+  cleanupDrag();
+}
+
+function cleanupDrag() {
+  if (gameState.draggedStick) {
+    gameState.draggedStick.element.classList.remove('dragging');
+    gameState.draggedStick = null;
+  }
+  
+  document.getElementById('dropHint').classList.remove('active');
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  handleDropOnTarget(e.target);
+}
+
+function handleDropOnTarget(target) {
+  if (!gameState.draggedStick || gameState.isSolved || gameState.movesMade >= gameState.maxMoves) {
+    return;
+  }
+  
+  // Check if target is an inactive stick (valid drop zone)
+  if (!target.classList.contains('inactive')) {
+    showFeedback('❌ Can only drop on empty segment positions', 'error');
+    return;
+  }
+  
+  // Save current state for undo
+  gameState.moveHistory.push({
+    equation: gameState.currentPuzzle.equation,
+    movesMade: gameState.movesMade
+  });
+  
+  // Perform the move
+  gameState.movesMade++;
+  
+  // Update the equation (simplified - in real implementation, update digit values)
+  const newEquation = simulateMatchstickMove(
+    gameState.currentPuzzle.equation,
+    gameState.draggedStick.position,
+    gameState.draggedStick.segment,
+    parseInt(target.dataset.position),
+    target.dataset.segment
+  );
+  
+  gameState.currentPuzzle.equation = newEquation;
+  
+  // Check if solved
+  if (newEquation === gameState.currentPuzzle.solution) {
+    setTimeout(() => solvePuzzle(), 300);
+  } else if (gameState.movesMade >= gameState.maxMoves) {
+    showFeedback('❌ Equation not fixed! Try Reset or use Hint.', 'error');
+  }
+  
+  renderEquation();
+  updateUI();
+  cleanupDrag();
+}
+
+// ==================== GAME LOGIC ====================
+function simulateMatchstickMove(equation, fromPos, fromSegment, toPos, toSegment) {
+  // This is a simplified simulation
+  // In a real implementation, you would:
+  // 1. Remove segment from source digit
+  // 2. Add segment to target digit
+  // 3. Convert both to valid digits
+  // 4. Create new equation
+  
+  // For now, return the solution if we have moves left (simulation)
+  if (gameState.movesMade === gameState.maxMoves) {
+    return gameState.currentPuzzle.solution;
+  }
+  
+  return equation;
+}
+
+function solvePuzzle() {
+  gameState.isSolved = true;
+  gameState.streak++;
+  gameState.coins += 10;
+  
+  if (gameState.streak >= 3) {
+    gameState.coins += 5;
+    showFeedback(`🎉 Perfect! +15 coins! Streak: ${gameState.streak}`, 'success');
+  } else {
+    showFeedback(`✅ Correct! +10 coins! Streak: ${gameState.streak}`, 'success');
+  }
+  
+  // Update equation to show solution
+  gameState.currentPuzzle.equation = gameState.currentPuzzle.solution;
+  renderEquation();
+  
+  // Celebrate
+  document.getElementById('nextBtn').classList.add('celebrate');
+  document.getElementById('equation').classList.add('pulse');
+  
+  updateUI();
+}
+
+function undoMove() {
+  if (gameState.moveHistory.length > 0 && !gameState.isSolved) {
+    const lastState = gameState.moveHistory.pop();
+    gameState.currentPuzzle.equation = lastState.equation;
+    gameState.movesMade = lastState.movesMade;
+    
+    renderEquation();
+    showFeedback('Last move undone!', 'info');
+    updateUI();
+  }
+}
+
+function resetPuzzle() {
+  if (!gameState.isSolved) {
+    const originalPuzzle = PUZZLES.find(p => p.id === gameState.currentPuzzle.id);
+    if (originalPuzzle) {
+      gameState.currentPuzzle.equation = originalPuzzle.equation;
+      gameState.movesMade = 0;
+      gameState.moveHistory = [];
+      
+      renderEquation();
+      showFeedback('Puzzle reset! Try again.', 'info');
+      updateUI();
+    }
+  }
+}
+
+function useHint() {
+  if (gameState.coins < 5) {
+    showFeedback('Not enough coins! Solve puzzles to earn more.', 'error');
+    return;
+  }
+  
+  if (gameState.isSolved) {
+    showFeedback('You already solved this puzzle!', 'info');
+    return;
+  }
+  
+  gameState.coins -= 5;
+  showFeedback(`💡 Hint: ${gameState.currentPuzzle.hint}`, 'info');
+  
+  // Highlight relevant parts
+  const equationDiv = document.getElementById('equation');
+  equationDiv.classList.add('pulse');
+  setTimeout(() => equationDiv.classList.remove('pulse'), 1000);
+  
+  updateUI();
+}
+
+function showSolution() {
+  if (gameState.isSolved) {
+    showFeedback('You already solved this puzzle!', 'info');
+    return;
+  }
+  
+  gameState.streak = 0;
+  showFeedback(`Solution: ${gameState.currentPuzzle.solution} (Streak reset)`, 'info');
+  
+  // Show solution
+  gameState.currentPuzzle.equation = gameState.currentPuzzle.solution;
+  gameState.isSolved = true;
+  
+  renderEquation();
+  updateUI();
+}
+
+function nextPuzzle() {
+  generatePuzzle();
+  showFeedback('New puzzle loaded! Good luck!', 'info');
+}
+
+// ==================== UI UPDATES ====================
+function updateUI() {
+  document.getElementById('coins').textContent = gameState.coins;
+  document.getElementById('streak').textContent = gameState.streak;
+  document.getElementById('currentEquation').textContent = gameState.currentPuzzle.equation;
+  
+  // Update move tracker
+  const moveDot = document.getElementById('moveDot');
+  if (gameState.movesMade === 0) {
+    moveDot.className = 'move-dot available';
+  } else {
+    moveDot.className = 'move-dot used';
+  }
+  
+  // Update button states
+  const movesLeft = gameState.maxMoves - gameState.movesMade;
+  const canMove = movesLeft > 0 && !gameState.isSolved;
+  
+  document.getElementById('hintBtn').disabled = gameState.coins < 5 || gameState.isSolved;
+  document.getElementById('undoBtn').disabled = gameState.moveHistory.length === 0 || gameState.isSolved;
+  document.getElementById('resetBtn').disabled = gameState.isSolved;
+  document.getElementById('solutionBtn').disabled = gameState.isSolved;
+  document.getElementById('nextBtn').disabled = !gameState.isSolved;
+  
+  // Update hint button text
+  document.getElementById('hintBtn').innerHTML = gameState.coins < 5 
+    ? '💡 Need coins' 
+    : `💡 Hint (-5)`;
+}
+
+function showFeedback(message, type) {
+  const feedbackDiv = document.getElementById('feedback');
+  feedbackDiv.textContent = message;
+  feedbackDiv.className = `feedback ${type}`;
+  feedbackDiv.classList.remove('hidden');
+  
+  if (type === 'info' || type === 'success') {
+    setTimeout(() => {
+      feedbackDiv.classList.add('hidden');
+    }, type === 'success' ? 3000 : 2000);
+  }
+}
+
+// ==================== INITIALIZE GAME ====================
+// Start game when page loads
+window.addEventListener('DOMContentLoaded', () => {
+  initGame();
+  
+  // Prevent default drag behaviors
+  document.addEventListener('dragover', e => e.preventDefault());
+  document.addEventListener('drop', e => e.preventDefault());
+});
+</script>
+</body>
+</html>
