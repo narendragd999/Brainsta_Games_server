@@ -952,7 +952,7 @@
             document.addEventListener('touchstart', function(e) {
                 if (keyboard.classList.contains('active') && 
                     !keyboard.contains(e.target) && 
-                    !e.target.classList.contains('input-value')) {
+                    !e.target.classList.contains('input-value')) { 
                     hideKeyboard();
                 }
             }, { passive: true });
