@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Brain Puzzle Pro</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -15,15 +15,16 @@
   --info: #7209b7;
   --light: #f8f9fa;
   --dark: #212529;
-  --card-bg: rgba(255, 255, 255, 0.97);
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  --card-bg: rgba(255, 255, 255, 0.98);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -32,43 +33,51 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 10px;
   overflow-x: hidden;
+  touch-action: manipulation;
 }
 
 .container {
   width: 100%;
-  max-width: 550px;
+  max-width: 100%;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Header */
+/* Header - Compact */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 10px 0;
   color: white;
+  flex-shrink: 0;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1.5rem;
+  gap: 8px;
+  font-size: 1.2rem;
   font-weight: 700;
 }
 
 .logo i {
   color: #ffd166;
+  font-size: 1.5rem;
 }
 
 .difficulty-select {
-  padding: 8px 15px;
-  border-radius: 20px;
+  padding: 6px 12px;
+  border-radius: 16px;
   border: 2px solid white;
   background: rgba(255, 255, 255, 0.2);
   color: white;
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
@@ -77,33 +86,30 @@ body {
   color: white;
 }
 
-/* Stats Bar */
+/* Stats Bar - Compact */
 .stats-bar {
   display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .stat-item {
   flex: 1;
   background: rgba(255, 255, 255, 0.9);
-  padding: 12px;
-  border-radius: 12px;
+  padding: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
   box-shadow: var(--shadow);
-  transition: transform 0.2s;
-}
-
-.stat-item:hover {
-  transform: translateY(-2px);
+  font-size: 0.85rem;
 }
 
 .stat-item i {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .streak { color: #ef476f; }
@@ -113,64 +119,75 @@ body {
 /* Main Card */
 .card {
   background: var(--card-bg);
-  border-radius: 20px;
-  padding: 25px;
+  border-radius: 16px;
+  padding: 16px;
   box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  max-height: calc(100vh - 180px);
 }
 
-/* Category Tabs */
+/* Category Tabs - Compact */
 .category-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 25px;
-  justify-content: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .category-tab {
-  flex: 1;
-  min-width: 80px;
-  padding: 12px 8px;
+  flex: 0 0 auto;
+  padding: 10px 8px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--light);
   color: var(--dark);
   font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   border: 2px solid transparent;
+  min-width: 60px;
 }
 
 .category-tab i {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 .category-tab.active {
   background: var(--secondary);
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(58, 12, 163, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(58, 12, 163, 0.2);
 }
 
 .category-tab:hover:not(.active) {
   border-color: var(--secondary);
 }
 
-/* Category Labels */
+/* Category Label */
 .category-label {
   display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 10px;
   font-weight: 600;
-  margin-left: 10px;
+  margin-left: 6px;
   background: var(--light);
 }
 
@@ -182,126 +199,138 @@ body {
 .spatial-label { background: #e8eaf6; color: #303f9f; }
 .sequence-label { background: #e0f2f1; color: #00796b; }
 
-/* Puzzle Container */
+/* Puzzle Container - Compact */
 .puzzle-container {
   background: #f8f9fa;
-  border-radius: 15px;
-  padding: 25px;
-  margin-bottom: 25px;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
   border: 2px solid #e9ecef;
+  flex-shrink: 0;
 }
 
 .puzzle-title {
   text-align: center;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #6c757d;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sequence {
-  font-size: 28px;
+  font-size: 20px;
   text-align: center;
-  margin: 25px 0;
+  margin: 16px 0;
   font-weight: 700;
   color: var(--dark);
   font-family: 'Courier New', monospace;
-  letter-spacing: 8px;
-  min-height: 60px;
+  letter-spacing: 4px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 8px;
 }
 
 .sequence span {
-  padding: 5px 10px;
+  padding: 4px 8px;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  font-size: 18px;
 }
 
 .missing {
   background: linear-gradient(45deg, #4361ee, #3a0ca3) !important;
   color: white;
   animation: pulse 2s infinite;
-  padding: 10px 20px !important;
+  padding: 6px 12px !important;
 }
 
 /* Word Puzzle Styles */
 .word-puzzle {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--dark);
-  margin: 20px 0;
-  line-height: 1.5;
+  margin: 16px 0;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .word-hint {
-  font-size: 14px;
+  font-size: 12px;
   color: #666;
   font-style: italic;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 
-/* Options Grid */
+/* Options Grid - Compact */
 .options-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin-bottom: 25px;
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 .option-btn {
-  padding: 18px 10px;
+  padding: 14px 6px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--primary);
   color: white;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2);
+  box-shadow: 0 3px 5px rgba(67, 97, 238, 0.2);
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .option-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(67, 97, 238, 0.3);
 }
 
 .option-btn:active {
-  transform: translateY(-1px);
+  transform: translateY(0);
 }
 
 /* Word Options */
 .word-option {
-  font-size: 16px;
-  padding: 15px;
+  font-size: 14px;
+  padding: 12px 4px;
 }
 
-/* Actions */
+/* Actions - Compact */
 .action-bar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .action-btn {
   flex: 1;
-  padding: 14px;
+  padding: 12px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-  font-size: 14px;
+  gap: 6px;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  min-height: 44px;
 }
 
 .hint-btn {
@@ -317,12 +346,12 @@ body {
 .next-btn {
   background: var(--success);
   color: white;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .action-btn:hover:not(:disabled) {
   opacity: 0.9;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .action-btn:disabled {
@@ -331,30 +360,56 @@ body {
   transform: none;
 }
 
+/* Result Display */
+.result-container {
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  animation: slideIn 0.3s ease;
+  display: none;
+  flex-shrink: 0;
+}
+
+.result-container.correct {
+  background: rgba(76, 201, 240, 0.2);
+  color: #118ab2;
+  border: 2px solid #4cc9f0;
+}
+
+.result-container.wrong {
+  background: rgba(247, 37, 133, 0.1);
+  color: #f72585;
+  border: 2px solid #f72585;
+}
+
 /* Progress Bar */
 .progress-container {
-  margin-top: 20px;
+  margin-top: 16px;
+  flex-shrink: 0;
 }
 
 .progress-label {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
   color: var(--dark);
 }
 
 .progress-bar {
-  height: 8px;
+  height: 6px;
   background: #e9ecef;
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #4cc9f0, #4361ee);
-  border-radius: 4px;
+  border-radius: 3px;
   width: 0%;
   transition: width 0.5s ease;
 }
@@ -363,7 +418,7 @@ body {
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -373,7 +428,7 @@ body {
 
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.03); }
   100% { transform: scale(1); }
 }
 
@@ -382,168 +437,32 @@ body {
   to { opacity: 1; }
 }
 
-/* Responsive */
-@media (max-width: 600px) {
-  .container {
-    padding: 10px;
-  }
-  
-  .card {
-    padding: 20px;
-  }
-  
-  .sequence {
-    font-size: 22px;
-    letter-spacing: 5px;
-    gap: 10px;
-  }
-  
-  .option-btn {
-    padding: 16px 8px;
-    font-size: 16px;
-  }
-  
-  .action-bar {
-    flex-wrap: wrap;
-  }
-  
-  .action-btn {
-    min-width: calc(50% - 5px);
-    font-size: 13px;
-  }
-  
-  .category-tab {
-    min-width: 70px;
-    padding: 10px 5px;
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 400px) {
-  .category-tab {
-    min-width: 60px;
-    font-size: 10px;
-  }
-  
-  .category-tab i {
-    font-size: 1rem;
-  }
-}
-
-/* Modal */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  animation: slideIn 0.3s ease;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.close-modal {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #6c757d;
-}
-
-.modal-body {
-  line-height: 1.6;
-}
-
-.modal-body h3 {
-  margin: 20px 0 10px 0;
-  color: var(--secondary);
-}
-
-.modal-body ul {
-  margin-left: 20px;
-  margin-bottom: 20px;
-}
-
-.modal-body li {
-  margin-bottom: 8px;
-}
-
 /* Tutorial Button */
 .tutorial-btn {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
+  bottom: 16px;
+  right: 16px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--primary);
   color: white;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+  box-shadow: 0 3px 12px rgba(67, 97, 238, 0.4);
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s;
+  transition: transform 0.2s;
 }
 
 .tutorial-btn:hover {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
-/* Notification */
-.notification {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: white;
-  padding: 15px 25px;
-  border-radius: 10px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-  z-index: 1000;
-  display: none;
-  animation: slideIn 0.3s ease;
-  min-width: 300px;
-  text-align: center;
-}
-
-.notification.success {
-  border-left: 5px solid var(--success);
-}
-
-.notification.error {
-  border-left: 5px solid var(--danger);
-}
-
-.notification.warning {
-  border-left: 5px solid var(--warning);
-}
-
-/* Loading Spinner */
+/* Loading Overlay */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -559,9 +478,9 @@ body {
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
   border-top-color: #4361ee;
   animation: spin 1s ease-in-out infinite;
@@ -574,28 +493,222 @@ body {
 /* Puzzle Counter */
 .puzzle-counter {
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   color: #6c757d;
-  margin-top: 10px;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+/* Notification */
+.notification {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: none;
+  animation: slideIn 0.3s ease;
+  min-width: 280px;
+  max-width: 90%;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.notification.success {
+  border-left: 4px solid var(--success);
+}
+
+.notification.error {
+  border-left: 4px solid var(--danger);
+}
+
+.notification.warning {
+  border-left: 4px solid var(--warning);
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
+  padding: 16px;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideIn 0.3s ease;
+  max-width: 400px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.modal-body {
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.modal-body h3 {
+  margin: 16px 0 8px 0;
+  color: var(--secondary);
+  font-size: 1.1rem;
+}
+
+.modal-body ul {
+  margin-left: 16px;
+  margin-bottom: 16px;
+}
+
+.modal-body li {
+  margin-bottom: 6px;
+}
+
+/* Very small screens */
+@media (max-height: 700px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .puzzle-container {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .sequence {
+    font-size: 18px;
+    margin: 12px 0;
+    gap: 6px;
+  }
+  
+  .sequence span {
+    font-size: 16px;
+    padding: 3px 6px;
+  }
+  
+  .missing {
+    padding: 4px 10px !important;
+  }
+  
+  .options-grid {
+    gap: 8px;
+  }
+  
+  .option-btn {
+    padding: 12px 4px;
+    font-size: 15px;
+    min-height: 44px;
+  }
+  
+  .action-btn {
+    padding: 10px;
+    min-height: 40px;
+  }
+}
+
+/* Landscape orientation */
+@media (orientation: landscape) and (max-height: 500px) {
+  .container {
+    flex-direction: row;
+    gap: 12px;
+    padding: 10px;
+  }
+  
+  .card {
+    flex: 1;
+    max-height: 100vh;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .stats-bar {
+    flex-direction: column;
+  }
+  
+  .category-tabs {
+    flex-direction: column;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+}
+
+/* No scrollbars for Chrome/Safari */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Touch-friendly sizes */
+@media (pointer: coarse) {
+  .option-btn,
+  .action-btn,
+  .category-tab {
+    min-height: 44px;
+  }
+  
+  .option-btn {
+    padding: 16px 8px;
+  }
+}
+
+/* Prevent text selection */
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 </style>
 </head>
 
-<body>
+<body class="noselect">
 
 <div class="container">
   <!-- Header -->
   <div class="header">
     <div class="logo">
       <i class="fas fa-brain"></i>
-      <span>Brain Puzzle Pro</span>
+      <span>Puzzle Pro</span>
     </div>
     <div class="difficulty">
       <select id="difficulty" class="difficulty-select">
         <option value="easy">Easy</option>
         <option value="medium" selected>Medium</option>
         <option value="hard">Hard</option>
-        <option value="expert">Expert</option>
       </select>
     </div>
   </div>
@@ -604,15 +717,15 @@ body {
   <div class="stats-bar">
     <div class="stat-item">
       <i class="fas fa-fire"></i>
-      <span>Streak: <span id="streak">0</span></span>
+      <span><span id="streak">0</span></span>
     </div>
     <div class="stat-item">
       <i class="fas fa-coins"></i>
-      <span>Coins: <span id="coins">100</span></span>
+      <span><span id="coins">100</span></span>
     </div>
     <div class="stat-item">
       <i class="fas fa-chart-line"></i>
-      <span>Level: <span id="level">1</span></span>
+      <span><span id="level">1</span></span>
     </div>
   </div>
 
@@ -626,7 +739,7 @@ body {
     <!-- Puzzle Container -->
     <div class="puzzle-container">
       <div class="puzzle-title">
-        <span id="puzzle-title">Find the Missing Number</span>
+        <span id="puzzle-title">Find Missing Number</span>
         <span id="category-label" class="category-label math-label">Math</span>
       </div>
       <div class="sequence" id="sequence"></div>
@@ -640,14 +753,14 @@ body {
       
       <!-- Puzzle Counter -->
       <div class="puzzle-counter">
-        <span id="puzzle-counter">Puzzle 1 of category</span>
+        <span id="puzzle-counter">Puzzle 1</span>
       </div>
     </div>
 
     <!-- Progress Bar -->
     <div class="progress-container">
       <div class="progress-label">
-        <span>Progress to Next Level</span>
+        <span>Next Level</span>
         <span id="progress-text">0/10</span>
       </div>
       <div class="progress-bar">
@@ -667,7 +780,7 @@ body {
       </button>
       <button class="action-btn next-btn" id="next-btn">
         <i class="fas fa-forward"></i>
-        <span>Next Puzzle</span>
+        <span>Next</span>
       </button>
     </div>
   </div>
@@ -696,33 +809,29 @@ body {
     <div class="modal-body">
       <h3><i class="fas fa-gamepad"></i> Game Rules</h3>
       <ul>
-        <li>Choose from 7 different puzzle categories</li>
-        <li>Find the missing element in the sequence</li>
-        <li>Select the correct answer from 4 options</li>
+        <li>Choose from 7 puzzle categories</li>
+        <li>Find the missing element in sequence</li>
+        <li>Select correct answer from 4 options</li>
         <li>Maintain streaks for bonus coins</li>
-        <li>Progress through levels for bigger rewards</li>
+        <li>Progress through levels for rewards</li>
       </ul>
       
       <h3><i class="fas fa-star"></i> Scoring</h3>
       <ul>
         <li>Correct answer: +10 coins</li>
-        <li>3+ streak: Bonus +5 coins per puzzle</li>
-        <li>Level up: +50 coins + special rewards</li>
+        <li>3+ streak: Bonus +5 coins</li>
+        <li>Level up: +50 coins</li>
         <li>Wrong answer: Streak resets</li>
       </ul>
       
-      <h3><i class="fas fa-tags"></i> Categories</h3>
+      <h3><i class="fas fa-tools"></i> Controls</h3>
       <ul>
-        <li><strong>Math:</strong> Number sequences and calculations</li>
-        <li><strong>Logic:</strong> Pattern recognition and reasoning</li>
-        <li><strong>Finance:</strong> Money and investment patterns</li>
-        <li><strong>Patterns:</strong> Visual and abstract patterns</li>
-        <li><strong>Word:</strong> Language and vocabulary puzzles</li>
-        <li><strong>Spatial:</strong> Visual-spatial reasoning</li>
-        <li><strong>Sequence:</strong> Complex sequence patterns</li>
+        <li>Hint: Reveal clue (5 coins)</li>
+        <li>Solution: Show answer (resets streak)</li>
+        <li>Keyboard: 1-4 for options, H/S/N</li>
       </ul>
       
-      <button class="action-btn next-btn" id="start-playing-btn" style="width:100%;margin-top:20px;">
+      <button class="action-btn next-btn" id="start-playing-btn" style="width:100%;margin-top:16px;">
         Start Playing!
       </button>
     </div>
@@ -730,7 +839,7 @@ body {
 </div>
 
 <script>
-// Game State - Simplified to prevent freezing
+// Game State - Optimized for mobile
 let gameState = {
   streak: 0,
   coins: 100,
@@ -742,9 +851,8 @@ let gameState = {
   explanation: '',
   hint: '',
   puzzleCount: 0,
-  // Simplified tracking - only store recent puzzles
   recentPuzzles: new Set(),
-  maxRecentPuzzles: 50
+  maxRecentPuzzles: 30
 };
 
 // Category Configuration
@@ -754,7 +862,7 @@ const categoryConfig = {
     class: 'math-label', 
     color: '#1976d2',
     icon: 'fa-calculator',
-    name: 'Mathematics'
+    name: 'Math'
   },
   logic: { 
     label: 'Logic', 
@@ -800,64 +908,16 @@ const categoryConfig = {
   }
 };
 
-// Predefined word puzzles to ensure no undefined issues
+// Predefined word puzzles
 const wordPuzzles = [
-  {
-    type: 'anagram',
-    question: 'Anagram of "LISTEN":',
-    answer: 'SILENT',
-    hint: 'It means quiet',
-    options: ['SILENT', 'ENLIST', 'TINSEL', 'LISTEN']
-  },
-  {
-    type: 'anagram',
-    question: 'Anagram of "EARTH":',
-    answer: 'HEART',
-    hint: 'A vital organ',
-    options: ['HEART', 'HATER', 'RATHE', 'EARTH']
-  },
-  {
-    type: 'synonym',
-    question: 'Synonym for "HAPPY":',
-    answer: 'JOYFUL',
-    hint: 'Full of joy',
-    options: ['JOYFUL', 'SAD', 'ANGRY', 'TIRED']
-  },
-  {
-    type: 'synonym',
-    question: 'Synonym for "BIG":',
-    answer: 'LARGE',
-    hint: 'Opposite of small',
-    options: ['LARGE', 'TINY', 'SMALL', 'MEDIUM']
-  },
-  {
-    type: 'antonym',
-    question: 'Antonym of "HOT":',
-    answer: 'COLD',
-    hint: 'Opposite temperature',
-    options: ['COLD', 'WARM', 'HEATED', 'BOILING']
-  },
-  {
-    type: 'antonym',
-    question: 'Antonym of "UP":',
-    answer: 'DOWN',
-    hint: 'Opposite direction',
-    options: ['DOWN', 'LEFT', 'RIGHT', 'SIDE']
-  },
-  {
-    type: 'riddle',
-    question: 'What has keys but can\'t open locks?',
-    answer: 'PIANO',
-    hint: 'Musical instrument',
-    options: ['PIANO', 'DOOR', 'COMPUTER', 'CAR']
-  },
-  {
-    type: 'riddle',
-    question: 'What gets wet while drying?',
-    answer: 'TOWEL',
-    hint: 'Bathroom item',
-    options: ['TOWEL', 'UMBRELLA', 'RAIN', 'HAIR']
-  }
+  { type: 'anagram', question: 'Anagram of "LISTEN":', answer: 'SILENT', hint: 'Quiet', options: ['SILENT', 'ENLIST', 'TINSEL', 'LISTEN'] },
+  { type: 'anagram', question: 'Anagram of "EARTH":', answer: 'HEART', hint: 'Organ', options: ['HEART', 'HATER', 'RATHE', 'EARTH'] },
+  { type: 'synonym', question: 'Synonym for "HAPPY":', answer: 'JOYFUL', hint: 'Full of joy', options: ['JOYFUL', 'SAD', 'ANGRY', 'TIRED'] },
+  { type: 'synonym', question: 'Synonym for "BIG":', answer: 'LARGE', hint: 'Opposite of small', options: ['LARGE', 'TINY', 'SMALL', 'MEDIUM'] },
+  { type: 'antonym', question: 'Antonym of "HOT":', answer: 'COLD', hint: 'Temperature', options: ['COLD', 'WARM', 'HEATED', 'BOILING'] },
+  { type: 'antonym', question: 'Antonym of "UP":', answer: 'DOWN', hint: 'Direction', options: ['DOWN', 'LEFT', 'RIGHT', 'SIDE'] },
+  { type: 'riddle', question: 'What has keys but can\'t open locks?', answer: 'PIANO', hint: 'Instrument', options: ['PIANO', 'DOOR', 'COMPUTER', 'CAR'] },
+  { type: 'riddle', question: 'What gets wet while drying?', answer: 'TOWEL', hint: 'Bathroom', options: ['TOWEL', 'UMBRELLA', 'RAIN', 'HAIR'] }
 ];
 
 // DOM Elements
@@ -895,10 +955,21 @@ function initGame() {
   generatePuzzle();
   updateUI();
   
-  // Show tutorial on first visit
   if (!localStorage.getItem('tutorialShown')) {
-    setTimeout(() => showTutorial(), 500);
+    setTimeout(() => showTutorial(), 300);
     localStorage.setItem('tutorialShown', 'true');
+  }
+  
+  // Adjust viewport for mobile
+  adjustViewport();
+}
+
+// Adjust viewport for mobile
+function adjustViewport() {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile) {
+    document.body.style.padding = '5px';
+    document.querySelector('.container').style.maxWidth = '100%';
   }
 }
 
@@ -922,31 +993,27 @@ function setupCategoryTabs() {
 
 // Setup Event Listeners
 function setupEventListeners() {
-  // Category tabs - with debouncing to prevent rapid clicks
+  // Category tabs
   let categoryChangeTimeout;
   document.querySelectorAll('.category-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      // Clear any pending category change
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
       if (categoryChangeTimeout) clearTimeout(categoryChangeTimeout);
       
-      // Disable all category tabs temporarily
       document.querySelectorAll('.category-tab').forEach(t => {
-        t.disabled = true;
+        t.style.pointerEvents = 'none';
       });
       
-      // Show loading
       showLoading();
       
-      // Change category after a short delay
       categoryChangeTimeout = setTimeout(() => {
         setCategory(tab.dataset.category);
         hideLoading();
         
-        // Re-enable tabs
         document.querySelectorAll('.category-tab').forEach(t => {
-          t.disabled = false;
+          t.style.pointerEvents = 'auto';
         });
-      }, 100);
+      }, 50);
     });
   });
   
@@ -983,6 +1050,17 @@ function setupEventListeners() {
       nextPuzzle();
     }
   });
+  
+  // Prevent zoom on double tap
+  let lastTap = 0;
+  document.addEventListener('touchend', (e) => {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+    if (tapLength < 500 && tapLength > 0) {
+      e.preventDefault();
+    }
+    lastTap = currentTime;
+  });
 }
 
 // Show loading overlay
@@ -995,16 +1073,14 @@ function hideLoading() {
   elements.loadingOverlay.style.display = 'none';
 }
 
-// Set Category - Fixed to prevent freezing
+// Set Category
 function setCategory(category) {
   if (!categoryConfig[category]) return;
   
-  // Update UI immediately
   const config = categoryConfig[category];
   elements.categoryLabel.textContent = config.label;
   elements.categoryLabel.className = `category-label ${config.class}`;
   
-  // Update active tab
   document.querySelectorAll('.category-tab').forEach(tab => {
     tab.classList.remove('active');
     if (tab.dataset.category === category) {
@@ -1012,26 +1088,22 @@ function setCategory(category) {
     }
   });
   
-  // Update puzzle title
   const titles = {
-    math: 'Find the Missing Number',
-    logic: 'Logical Reasoning Puzzle',
-    finance: 'Financial Pattern Analysis',
-    patterns: 'Pattern Recognition Challenge',
-    word: 'Word Puzzle Challenge',
-    spatial: 'Spatial Reasoning Test',
-    sequence: 'Complex Sequence Analysis'
+    math: 'Find Missing Number',
+    logic: 'Logic Puzzle',
+    finance: 'Finance Pattern',
+    patterns: 'Pattern Challenge',
+    word: 'Word Puzzle',
+    spatial: 'Spatial Test',
+    sequence: 'Sequence Analysis'
   };
   elements.puzzleTitle.textContent = titles[category];
   
-  // Update game state
   gameState.currentCategory = category;
-  
-  // Generate new puzzle
   generatePuzzle();
 }
 
-// Generate Puzzle - Simplified to prevent freezing
+// Generate Puzzle
 function generatePuzzle() {
   const category = gameState.currentCategory;
   const difficulty = gameState.difficulty;
@@ -1039,47 +1111,26 @@ function generatePuzzle() {
   let puzzleData;
   let attempts = 0;
   
-  // Simple check to prevent infinite loops
-  while (attempts < 20) {
+  while (attempts < 10) {
     attempts++;
     
-    // Generate puzzle based on category
     switch (category) {
-      case 'math':
-        puzzleData = generateMathPuzzle(difficulty);
-        break;
-      case 'logic':
-        puzzleData = generateLogicPuzzle(difficulty);
-        break;
-      case 'finance':
-        puzzleData = generateFinancePuzzle(difficulty);
-        break;
-      case 'patterns':
-        puzzleData = generatePatternPuzzle(difficulty);
-        break;
-      case 'word':
-        puzzleData = generateWordPuzzle(difficulty);
-        break;
-      case 'spatial':
-        puzzleData = generateSpatialPuzzle(difficulty);
-        break;
-      case 'sequence':
-        puzzleData = generateSequencePuzzle(difficulty);
-        break;
-      default:
-        puzzleData = generateMathPuzzle(difficulty);
+      case 'math': puzzleData = generateMathPuzzle(difficulty); break;
+      case 'logic': puzzleData = generateLogicPuzzle(difficulty); break;
+      case 'finance': puzzleData = generateFinancePuzzle(difficulty); break;
+      case 'patterns': puzzleData = generatePatternPuzzle(difficulty); break;
+      case 'word': puzzleData = generateWordPuzzle(difficulty); break;
+      case 'spatial': puzzleData = generateSpatialPuzzle(difficulty); break;
+      case 'sequence': puzzleData = generateSequencePuzzle(difficulty); break;
+      default: puzzleData = generateMathPuzzle(difficulty);
     }
     
-    // Create a simple hash for the puzzle
-    const puzzleHash = `${category}-${puzzleData.answer}-${JSON.stringify(puzzleData.options)}`;
+    const puzzleHash = `${category}-${puzzleData.answer}`;
     
-    // Check if we've seen this puzzle recently
     if (!gameState.recentPuzzles.has(puzzleHash)) {
       gameState.recentPuzzles.add(puzzleHash);
       
-      // Limit the size of recent puzzles
       if (gameState.recentPuzzles.size > gameState.maxRecentPuzzles) {
-        // Remove the oldest entry (convert to array, shift first)
         const array = Array.from(gameState.recentPuzzles);
         array.shift();
         gameState.recentPuzzles = new Set(array);
@@ -1089,79 +1140,60 @@ function generatePuzzle() {
     }
   }
   
-  // Update game state
   gameState.answer = puzzleData.answer;
-  gameState.explanation = puzzleData.explanation || 'No explanation available';
-  gameState.hint = puzzleData.hint || 'No hint available';
+  gameState.explanation = puzzleData.explanation || 'Pattern recognition puzzle';
+  gameState.hint = puzzleData.hint || 'Look for a pattern';
   gameState.puzzleCount++;
   
-  // Render puzzle
   renderPuzzle(puzzleData);
 }
 
 // Generate Math Puzzle
 function generateMathPuzzle(difficulty) {
-  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
-  const types = ['arithmetic', 'geometric', 'fibonacci', 'square'];
-  const type = types[Math.floor(Math.random() * types.length)];
+  const diffMult = { easy: 0.7, medium: 1, hard: 1.3 }[difficulty];
+  const type = ['arithmetic', 'geometric', 'fibonacci'][Math.floor(Math.random() * 3)];
   
   let sequence = [], answer, explanation = '', hint = '';
-  const base = Math.floor(10 * diffMultiplier);
+  const base = Math.floor(8 * diffMult);
   
-  switch (type) {
-    case 'arithmetic':
-      const start = rand(2, base);
-      const diff = rand(2, Math.floor(5 * diffMultiplier));
-      sequence = [start, start + diff, '?', start + 3*diff, start + 4*diff];
-      answer = start + 2*diff;
-      explanation = `Arithmetic sequence: Add ${diff} each time`;
-      hint = `The difference between consecutive numbers is constant`;
-      break;
-      
-    case 'geometric':
-      const gStart = rand(2, Math.floor(5 * diffMultiplier));
-      const ratio = rand(2, Math.floor(3 * diffMultiplier));
-      sequence = [gStart, gStart * ratio, '?', gStart * ratio * ratio * ratio];
-      answer = gStart * ratio * ratio;
-      explanation = `Geometric sequence: Multiply by ${ratio} each time`;
-      hint = `Each number is multiplied by the same value`;
-      break;
-      
-    case 'fibonacci':
-      const f1 = rand(1, Math.floor(5 * diffMultiplier));
-      const f2 = rand(1, Math.floor(5 * diffMultiplier));
-      sequence = [f1, f2, f1 + f2, '?', (f1 + f2) + f2 + (f1 + f2)];
-      answer = (f1 + f2) + f2;
-      explanation = `Fibonacci-like sequence: Each term is sum of two previous`;
-      hint = `Add the two numbers before the missing one`;
-      break;
-      
-    case 'square':
-      const startSq = rand(1, 5);
-      sequence = [startSq*startSq, (startSq+1)*(startSq+1), '?', (startSq+3)*(startSq+3)];
-      answer = (startSq+2)*(startSq+2);
-      explanation = `Square numbers: n²`;
-      hint = `These are perfect squares`;
-      break;
+  if (type === 'arithmetic') {
+    const start = rand(2, base);
+    const diff = rand(2, Math.floor(4 * diffMult));
+    sequence = [start, start + diff, '?', start + 3*diff];
+    answer = start + 2*diff;
+    explanation = `Add ${diff} each time`;
+    hint = `Constant difference`;
+  } else if (type === 'geometric') {
+    const gStart = rand(2, Math.floor(4 * diffMult));
+    const ratio = rand(2, Math.floor(3 * diffMult));
+    sequence = [gStart, gStart * ratio, '?', gStart * ratio * ratio * ratio];
+    answer = gStart * ratio * ratio;
+    explanation = `Multiply by ${ratio}`;
+    hint = `Constant multiplier`;
+  } else {
+    const f1 = rand(1, Math.floor(4 * diffMult));
+    const f2 = rand(1, Math.floor(4 * diffMult));
+    sequence = [f1, f2, f1 + f2, '?', (f1 + f2) + f2];
+    answer = (f1 + f2) + f2;
+    explanation = `Fibonacci sequence`;
+    hint = `Sum of previous two`;
   }
   
-  const options = generateOptions(answer, diffMultiplier);
+  const options = generateOptions(answer, diffMult);
   return { sequence, answer, explanation, hint, options };
 }
 
 // Generate Logic Puzzle
 function generateLogicPuzzle(difficulty) {
-  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
-  const base = rand(3, Math.floor(8 * diffMultiplier));
+  const diffMult = { easy: 0.7, medium: 1, hard: 1.3 }[difficulty];
+  const base = rand(3, Math.floor(6 * diffMult));
   
   let sequence = [], answer, explanation = '', hint = '';
   
-  const type = Math.random() > 0.5 ? 'alternating' : 'positional';
-  
-  if (type === 'alternating') {
-    const pattern = Math.random() > 0.5 ? ['×2', '+3'] : ['+3', '×2'];
+  if (Math.random() > 0.5) {
+    const pattern = Math.random() > 0.5 ? ['×2', '+2'] : ['+2', '×2'];
     let current = base;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
       if (i === 2) {
         sequence.push('?');
       } else if (i === 0) {
@@ -1169,38 +1201,36 @@ function generateLogicPuzzle(difficulty) {
       } else {
         const op = pattern[(i-1) % 2];
         if (op === '×2') current *= 2;
-        else if (op === '+3') current += 3;
+        else current += 2;
         sequence.push(current);
       }
     }
-    // Calculate answer
     let calc = base;
     for (let i = 0; i < 3; i++) {
       const op = pattern[i % 2];
       if (op === '×2') calc *= 2;
-      else if (op === '+3') calc += 3;
+      else calc += 2;
     }
     answer = calc;
-    explanation = `Alternating pattern: ${pattern[0]}, ${pattern[1]}`;
-    hint = `The operations alternate regularly`;
+    explanation = `Pattern: ${pattern[0]}, ${pattern[1]}`;
+    hint = `Alternating operations`;
   } else {
-    // Positional
-    const pos = rand(2, 5);
+    const pos = rand(2, 4);
     sequence = [pos, pos*2, pos*3, '?', pos*5];
     answer = pos*4;
-    explanation = `Multiply by position number`;
-    hint = `Think about the position of each number`;
+    explanation = `Multiply by position`;
+    hint = `Position numbers`;
   }
   
-  const options = generateOptions(answer, diffMultiplier);
+  const options = generateOptions(answer, diffMult);
   return { sequence, answer, explanation, hint, options };
 }
 
 // Generate Finance Puzzle
 function generateFinancePuzzle(difficulty) {
-  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
-  const principal = rand(1000, Math.floor(10000 * diffMultiplier));
-  const rate = rand(5, Math.floor(20 * diffMultiplier));
+  const diffMult = { easy: 0.7, medium: 1, hard: 1.3 }[difficulty];
+  const principal = rand(1000, Math.floor(5000 * diffMult));
+  const rate = rand(5, Math.floor(15 * diffMult));
   
   const sequence = [];
   for (let i = 0; i < 4; i++) {
@@ -1213,57 +1243,55 @@ function generateFinancePuzzle(difficulty) {
   }
   
   const answer = Math.round(principal * Math.pow(1 + rate/100, 2));
-  const explanation = `Compound interest at ${rate}% annually: Principal × (1 + ${rate}%)^years`;
-  const hint = `Use the formula: Principal × (1 + rate/100)^years`;
+  const explanation = `${rate}% compound interest`;
+  const hint = `Use compound formula`;
   
-  const options = generateOptions(answer, diffMultiplier, true);
+  const options = generateOptions(answer, diffMult, true);
   return { sequence, answer, explanation, hint, options };
 }
 
 // Generate Pattern Puzzle
 function generatePatternPuzzle(difficulty) {
-  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
-  const base = rand(2, Math.floor(6 * diffMultiplier));
+  const diffMult = { easy: 0.7, medium: 1, hard: 1.3 }[difficulty];
   
   let sequence = [], answer, explanation = '', hint = '';
   
   const patterns = [
-    [1, 4, 9, 16, '?', 36], // Squares
-    [1, 3, 6, 10, '?', 21], // Triangular
-    [2, 6, 12, 20, '?', 42] // n*(n+1)
+    [1, 4, 9, '?', 25], // Squares
+    [2, 4, 6, '?', 10], // Even numbers
+    [1, 3, 6, '?', 15]  // Triangular
   ];
   
   const pattern = patterns[Math.floor(Math.random() * patterns.length)];
   sequence = pattern;
   
   if (pattern[0] === 1 && pattern[1] === 4) {
-    answer = 25; // squares
-    explanation = 'Square numbers pattern: 1², 2², 3², 4², 5², 6²';
-    hint = 'These are perfect squares';
-  } else if (pattern[0] === 1 && pattern[1] === 3) {
-    answer = 15; // triangular
-    explanation = 'Triangular numbers pattern: n(n+1)/2';
-    hint = 'Triangular numbers: 1, 3, 6, 10, 15, 21';
+    answer = 16;
+    explanation = 'Square numbers';
+    hint = 'n² pattern';
+  } else if (pattern[0] === 2 && pattern[1] === 4) {
+    answer = 8;
+    explanation = 'Even numbers';
+    hint = 'Add 2 each time';
   } else {
-    answer = 30; // n*(n+1)
-    explanation = 'Pattern: n × (n+1)';
-    hint = 'Multiply each position by (position + 1)';
+    answer = 10;
+    explanation = 'Triangular numbers';
+    hint = 'n(n+1)/2';
   }
   
-  const options = generateOptions(answer, diffMultiplier);
+  const options = generateOptions(answer, diffMult);
   return { sequence, answer, explanation, hint, options };
 }
 
-// Generate Word Puzzle - Fixed to ensure no undefined
+// Generate Word Puzzle
 function generateWordPuzzle(difficulty) {
-  // Get a random word puzzle from our predefined list
   const puzzle = wordPuzzles[Math.floor(Math.random() * wordPuzzles.length)];
   
   return {
     isWordPuzzle: true,
     question: puzzle.question,
     answer: puzzle.answer,
-    explanation: `${puzzle.type.toUpperCase()} puzzle: ${puzzle.answer}`,
+    explanation: `${puzzle.type}: ${puzzle.answer}`,
     hint: puzzle.hint,
     options: shuffleArray([...puzzle.options])
   };
@@ -1271,56 +1299,52 @@ function generateWordPuzzle(difficulty) {
 
 // Generate Spatial Puzzle
 function generateSpatialPuzzle(difficulty) {
-  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
-  const base = rand(2, Math.floor(6 * diffMultiplier));
+  const diffMult = { easy: 0.7, medium: 1, hard: 1.3 }[difficulty];
+  const base = rand(2, Math.floor(5 * diffMult));
   
   let sequence = [], answer, explanation = '', hint = '';
   
-  // Simple spatial pattern represented as numbers
-  sequence = [base, base*3, base*9, '?', base*81];
-  answer = base*27;
-  explanation = 'Spatial growth pattern: Multiply by 3 each step';
-  hint = 'Each number is 3 times the previous';
+  sequence = [base, base*2, base*4, '?', base*16];
+  answer = base*8;
+  explanation = 'Double each time';
+  hint = 'Multiply by 2';
   
-  const options = generateOptions(answer, diffMultiplier);
+  const options = generateOptions(answer, diffMult);
   return { sequence, answer, explanation, hint, options };
 }
 
 // Generate Sequence Puzzle
 function generateSequencePuzzle(difficulty) {
-  const diffMultiplier = { easy: 0.7, medium: 1, hard: 1.3, expert: 1.7 }[difficulty];
-  const base = rand(2, Math.floor(6 * diffMultiplier));
+  const diffMult = { easy: 0.7, medium: 1, hard: 1.3 }[difficulty];
+  const base = rand(2, Math.floor(5 * diffMult));
   
   let sequence = [], answer, explanation = '', hint = '';
   
-  // Complex sequence
-  sequence = [base, base + 2, (base + 2) * 2, '?', ((base + 2) * 2 + 2) * 2];
-  answer = (base + 2) * 2 + 2;
-  explanation = 'Complex pattern: +2, ×2, +2, ×2';
-  hint = 'Alternate between adding 2 and multiplying by 2';
+  sequence = [base, base + 3, (base + 3) * 2, '?', ((base + 3) * 2 + 3) * 2];
+  answer = (base + 3) * 2 + 3;
+  explanation = '+3 then ×2 pattern';
+  hint = 'Alternate operations';
   
-  const options = generateOptions(answer, diffMultiplier);
+  const options = generateOptions(answer, diffMult);
   return { sequence, answer, explanation, hint, options };
 }
 
 // Generate Options
-function generateOptions(correctAnswer, diffMultiplier, isCurrency = false) {
+function generateOptions(correctAnswer, diffMult, isCurrency = false) {
   const options = [correctAnswer];
-  const range = Math.max(10, Math.floor(correctAnswer * 0.25 * diffMultiplier));
+  const range = Math.max(5, Math.floor(correctAnswer * 0.2 * diffMult));
   
   while (options.length < 4) {
     let wrongAnswer;
     
-    // Generate different types of wrong answers
     if (options.length === 1) {
       wrongAnswer = correctAnswer + rand(-range, range);
     } else if (options.length === 2) {
       wrongAnswer = correctAnswer + (Math.random() > 0.5 ? range : -range);
     } else {
-      wrongAnswer = correctAnswer * (Math.random() > 0.5 ? 1.5 : 0.5);
+      wrongAnswer = correctAnswer * (Math.random() > 0.5 ? 1.5 : 0.7);
     }
     
-    // Ensure it's different and positive
     if (!options.includes(wrongAnswer) && wrongAnswer > 0) {
       options.push(Math.round(wrongAnswer));
     }
@@ -1343,18 +1367,15 @@ function shuffleArray(array) {
 function renderPuzzle(puzzleData) {
   const isWordPuzzle = puzzleData.isWordPuzzle || gameState.currentCategory === 'word';
   
-  // Hide/show appropriate elements
   elements.sequence.style.display = isWordPuzzle ? 'none' : 'flex';
   elements.wordPuzzle.style.display = isWordPuzzle ? 'block' : 'none';
   
   if (isWordPuzzle && puzzleData.question) {
-    // Render word puzzle
     elements.wordPuzzle.innerHTML = `
-      <div style="font-size: 20px; margin-bottom: 10px;">${puzzleData.question}</div>
+      <div style="font-size: 18px; margin-bottom: 8px;">${puzzleData.question}</div>
       <div class="word-hint">Word Puzzle</div>
     `;
   } else {
-    // Render sequence puzzle
     let sequenceHTML = '';
     puzzleData.sequence.forEach(item => {
       if (item === '?') {
@@ -1366,10 +1387,8 @@ function renderPuzzle(puzzleData) {
     elements.sequence.innerHTML = sequenceHTML;
   }
   
-  // Clear previous options
   elements.options.innerHTML = '';
   
-  // Create option buttons
   puzzleData.options.forEach((option, index) => {
     const button = document.createElement('button');
     button.className = `option-btn ${isWordPuzzle ? 'word-option' : ''}`;
@@ -1384,27 +1403,19 @@ function renderPuzzle(puzzleData) {
       button.dataset.value = option;
     }
     
-    button.style.animationDelay = `${index * 0.1}s`;
-    
     elements.options.appendChild(button);
   });
   
-  // Reset result display
   elements.result.style.display = 'none';
   elements.result.className = 'result-container';
-  
-  // Update hint button state
   elements.hintBtn.disabled = gameState.coins < 5;
-  
-  // Update puzzle counter
   elements.puzzleCounter.textContent = `Puzzle ${gameState.puzzleCount}`;
 }
 
 // Check Answer
 function checkAnswer(selectedAnswer) {
-  const isCorrect = selectedAnswer == gameState.answer; // Use == for string/number comparison
+  const isCorrect = selectedAnswer == gameState.answer;
   
-  // Show result
   elements.result.style.display = 'block';
   elements.result.className = `result-container ${isCorrect ? 'correct' : 'wrong'}`;
   
@@ -1412,53 +1423,41 @@ function checkAnswer(selectedAnswer) {
     elements.result.innerHTML = `
       <i class="fas fa-check-circle"></i> 
       <span>Correct! +10 coins</span>
-      ${gameState.streak >= 2 ? `<br><small>Streak Bonus: +5 coins!</small>` : ''}
+      ${gameState.streak >= 2 ? `<br><small>+5 streak bonus</small>` : ''}
     `;
     
-    // Update game state
     gameState.streak++;
     gameState.coins += 10;
     
-    // Streak bonus
     if (gameState.streak >= 3) {
       gameState.coins += 5;
-      if (gameState.streak === 3 || gameState.streak === 5 || gameState.streak === 10) {
-        showNotification(`🔥 ${gameState.streak} Streak! +5 coins bonus`, 'success');
+      if (gameState.streak === 3 || gameState.streak === 5) {
+        showNotification(`🔥 ${gameState.streak} Streak!`, 'success');
       }
     }
     
-    // Progress to next level
     gameState.progress++;
     if (gameState.progress >= 10) {
       levelUp();
     }
     
-    // Special achievements
     if (gameState.streak === 5) {
       gameState.coins += 25;
-      showNotification('🎯 5-Streak Master! +25 coins', 'success');
-    } else if (gameState.streak === 10) {
-      gameState.coins += 50;
-      showNotification('🏆 10-Streak Legend! +50 coins', 'success');
+      showNotification('🎯 5-Streak! +25 coins', 'success');
     }
     
-    // Highlight correct answer
     highlightAnswers(selectedAnswer, true);
     
   } else {
     elements.result.innerHTML = `
       <i class="fas fa-times-circle"></i> 
-      <span>Incorrect! The answer was ${formatAnswer(gameState.answer)}</span>
+      <span>Incorrect! Answer: ${formatAnswer(gameState.answer)}</span>
     `;
     
-    // Reset streak
     gameState.streak = 0;
-    
-    // Highlight correct and wrong answers
     highlightAnswers(selectedAnswer, false);
   }
   
-  // Update UI and save
   updateUI();
   saveGameState();
 }
@@ -1468,16 +1467,15 @@ function highlightAnswers(selectedAnswer, isCorrect) {
   document.querySelectorAll('.option-btn').forEach(btn => {
     const btnValue = btn.dataset.value;
     
-    if (btnValue == gameState.answer) { // Use == for comparison
+    if (btnValue == gameState.answer) {
       btn.style.background = 'var(--success)';
-      btn.style.animation = 'pulse 0.5s 2';
     } else if (!isCorrect && btnValue == selectedAnswer) {
       btn.style.background = 'var(--danger)';
     }
   });
 }
 
-// Format answer based on category
+// Format answer
 function formatAnswer(answer) {
   if (gameState.currentCategory === 'finance') {
     return `$${answer.toLocaleString()}`;
@@ -1491,10 +1489,9 @@ function levelUp() {
   gameState.progress = 0;
   gameState.coins += 50;
   
-  // Bonus based on level
   if (gameState.level % 5 === 0) {
     gameState.coins += 100;
-    showNotification(`🎉 Level ${gameState.level} Milestone! +150 coins total`, 'success');
+    showNotification(`🎉 Level ${gameState.level}! +150 coins`, 'success');
   } else {
     showNotification(`🎉 Level ${gameState.level}! +50 coins`, 'success');
   }
@@ -1505,39 +1502,37 @@ function levelUp() {
 // Use Hint
 function useHint() {
   if (gameState.coins < 5) {
-    showNotification('Not enough coins! Need 5 coins for a hint.', 'error');
+    showNotification('Need 5 coins!', 'error');
     return;
   }
   
   gameState.coins -= 5;
   
-  // Show hint
   elements.result.style.display = 'block';
   elements.result.className = 'result-container correct';
   elements.result.innerHTML = `
     <i class="fas fa-lightbulb"></i>
-    <span>Hint: ${gameState.hint}</span>
+    <span>${gameState.hint}</span>
   `;
   
   updateUI();
   saveGameState();
 }
 
-// Show Solution - Fixed for word puzzles
+// Show Solution
 function showSolution() {
-  if (confirm("Show solution? This will reset your streak.")) {
+  if (confirm("Show solution? This resets your streak.")) {
     gameState.streak = 0;
     
     elements.result.style.display = 'block';
     elements.result.className = 'result-container wrong';
     elements.result.innerHTML = `
       <i class="fas fa-eye"></i>
-      <span>Solution: ${formatAnswer(gameState.answer)}</span>
+      <span>${formatAnswer(gameState.answer)}</span>
       <br>
       <small>${gameState.explanation}</small>
     `;
     
-    // Highlight correct answer
     highlightAnswers(null, false);
     
     updateUI();
@@ -1559,10 +1554,9 @@ function updateUI() {
   elements.progressText.textContent = `${gameState.progress}/10`;
   elements.progressFill.style.width = `${(gameState.progress / 10) * 100}%`;
   
-  // Update hint button state
   elements.hintBtn.disabled = gameState.coins < 5;
   elements.hintBtn.innerHTML = gameState.coins < 5 
-    ? `<i class="fas fa-lightbulb"></i><span>Need 5 coins</span>`
+    ? `<i class="fas fa-lightbulb"></i><span>Need 5</span>`
     : `<i class="fas fa-lightbulb"></i><span>Hint (-5)</span>`;
 }
 
@@ -1574,7 +1568,7 @@ function showNotification(message, type = 'success') {
   
   setTimeout(() => {
     elements.notification.style.display = 'none';
-  }, 3000);
+  }, 2000);
 }
 
 // Show Tutorial
@@ -1614,7 +1608,7 @@ function loadGameState() {
       gameState.puzzleCount = data.puzzleCount || 0;
       gameState.currentCategory = data.currentCategory || 'math';
     } catch (e) {
-      console.error('Error loading saved game:', e);
+      console.error('Error loading game:', e);
     }
   }
 }
@@ -1624,26 +1618,31 @@ function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Initialize game when page loads
+// Initialize game
 window.addEventListener('DOMContentLoaded', () => {
   initGame();
   
-  // Add click listeners to option buttons (delegated)
   document.addEventListener('click', (e) => {
     if (e.target.classList.contains('option-btn')) {
       const value = e.target.dataset.value;
       if (value) {
-        // Convert to number if it's a numeric string
         const numValue = isNaN(value) ? value : Number(value);
         checkAnswer(numValue);
       }
     }
   });
   
-  // Auto-save every 30 seconds
+  // Auto-save
   setInterval(() => {
     saveGameState();
   }, 30000);
+  
+  // Prevent body scroll on mobile
+  document.body.addEventListener('touchmove', (e) => {
+    if (e.target.classList.contains('card')) {
+      e.stopPropagation();
+    }
+  }, { passive: false });
 });
 </script>
 </body>
