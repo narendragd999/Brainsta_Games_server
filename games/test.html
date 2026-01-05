@@ -1,882 +1,1063 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Balance Logic Pro</title>
-<style>
-/* Reset & Base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  touch-action: manipulation;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Physics Playground: Inclined Plane Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-html, body {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #fff;
-}
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
 
-/* Main Layout */
-.game-container {
-  width: 100vw;
-  height: 100vh;
-  max-width: 500px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  position: relative;
-}
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: calc(100vh - 20px);
+        }
 
-/* Header */
-.game-header {
-  text-align: center;
-  padding: 12px 0;
-  margin-bottom: 8px;
-}
+        header {
+            text-align: center;
+            padding: 15px 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
 
-.game-title {
-  font-size: 24px;
-  font-weight: 700;
-  background: linear-gradient(90deg, #6ee7b7, #3b82f6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.5px;
-  margin-bottom: 4px;
-}
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
 
-.game-subtitle {
-  font-size: 13px;
-  color: #94a3b8;
-  font-weight: 400;
-}
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
 
-/* Stats Bar */
-.stats-bar {
-  display: flex;
-  justify-content: space-between;
-  background: rgba(30, 41, 59, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  padding: 12px 20px;
-  margin-bottom: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-}
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
 
-.stat-item {
-  text-align: center;
-}
+        .canvas-container {
+            flex-grow: 1;
+            position: relative;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-.stat-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #60a5fa;
-  display: block;
-  line-height: 1.2;
-}
+        #gameCanvas {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+        }
 
-.stat-label {
-  font-size: 11px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
 
-/* Progress */
-.level-progress {
-  margin-bottom: 20px;
-}
+        @media (min-width: 500px) {
+            .controls {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
 
-.progress-label {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 13px;
-  color: #cbd5e1;
-}
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
 
-.progress-bar {
-  height: 6px;
-  background: rgba(30, 41, 59, 0.6);
-  border-radius: 3px;
-  overflow: hidden;
-}
+        .control-label {
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
 
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-  border-radius: 3px;
-  width: 10%;
-  transition: width 0.3s ease;
-}
+        .slider-container {
+            display: flex;
+            align-items: center;
+        }
 
-/* Game Area */
-.game-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
+        .slider-value {
+            margin-left: 8px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
 
-/* Scale Container */
-.scale-container {
-  background: rgba(30, 41, 59, 0.5);
-  border-radius: 20px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            outline: none;
+        }
 
-.scale-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  position: relative;
-}
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
 
-.scale-row:last-child {
-  margin-bottom: 0;
-}
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
 
-.scale-pan {
-  flex: 1;
-  min-height: 80px;
-  background: linear-gradient(145deg, #1e293b, #0f172a);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-}
+        @media (min-width: 500px) {
+            .buttons {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
 
-.scale-equals {
-  width: 40px;
-  text-align: center;
-  font-size: 28px;
-  font-weight: 700;
-  color: #6ee7b7;
-  text-shadow: 0 0 10px rgba(110, 231, 183, 0.3);
-}
+        .btn {
+            padding: 12px 10px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
 
-/* Shapes */
-.shape {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
 
-.circle {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  border-radius: 50%;
-}
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
 
-.square {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border-radius: 8px;
-}
+        .btn-primary {
+            background: linear-gradient(to right, #2196F3, #1976D2);
+        }
 
-.triangle {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-}
+        .btn-success {
+            background: linear-gradient(to right, #4CAF50, #388E3C);
+        }
 
-.diamond {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  transform: rotate(45deg);
-  border-radius: 4px;
-}
+        .btn-warning {
+            background: linear-gradient(to right, #FF9800, #F57C00);
+        }
 
-.diamond::before {
-  content: '';
-  display: block;
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  border-radius: 4px;
-  transform: rotate(45deg);
-}
+        .btn-danger {
+            background: linear-gradient(to right, #F44336, #D32F2F);
+        }
 
-/* Question Box */
-.question-box {
-  background: rgba(30, 41, 59, 0.8);
-  border-radius: 16px;
-  padding: 20px;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
+        .btn-info {
+            background: linear-gradient(to right, #00BCD4, #0097A7);
+        }
 
-.question-text {
-  font-size: 18px;
-  font-weight: 600;
-  color: #f8fafc;
-  margin-bottom: 4px;
-}
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
 
-.question-subtext {
-  font-size: 13px;
-  color: #94a3b8;
-}
+        .stat-item {
+            text-align: center;
+        }
 
-/* Answer Options */
-.answer-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #4CAF50;
+        }
 
-.option-btn {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border: 2px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 16px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
 
-.option-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
 
-.option-btn.selected {
-  border-color: #3b82f6;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(30, 41, 59, 0.8));
-}
+        .modal-content {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+            position: relative;
+        }
 
-.option-shape {
-  width: 32px;
-  height: 32px;
-}
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-.option-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #cbd5e1;
-}
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
 
-/* Control Buttons */
-.control-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-}
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: white;
+            cursor: pointer;
+        }
 
-.control-btn {
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
+        .modal-body {
+            line-height: 1.6;
+        }
 
-.control-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
+        .modal-body h3 {
+            margin: 15px 0 10px;
+            color: #4CAF50;
+        }
 
-.btn-hint {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  color: white;
-}
+        .modal-body ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
 
-.btn-next {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
+        .modal-body li {
+            margin-bottom: 8px;
+        }
 
-.btn-reset {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: white;
-}
+        .hint-container {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-/* Popup */
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(8px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
+        .hint-container:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
 
-.popup-content {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-radius: 24px;
-  padding: 30px;
-  max-width: 400px;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-  animation: popupIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
+        .hint-icon {
+            font-size: 1.5rem;
+            color: #FF9800;
+        }
 
-@keyframes popupIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+        .notification {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 100;
+            transition: transform 0.5s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            text-align: center;
+        }
 
-.popup-icon {
-  font-size: 48px;
-  text-align: center;
-  margin-bottom: 16px;
-}
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
 
-.popup-title {
-  font-size: 24px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 12px;
-  color: #f8fafc;
-}
+        .sound-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-.popup-message {
-  font-size: 15px;
-  line-height: 1.5;
-  color: #cbd5e1;
-  text-align: center;
-  margin-bottom: 24px;
-}
+        .sound-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
 
-.popup-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.popup-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* Level Dots */
-.level-dots {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.level-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.level-dot.active {
-  width: 20px;
-  border-radius: 10px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-}
-
-/* Timer */
-.timer {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(239, 68, 68, 0.15);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-/* Mobile Optimization */
-@media (max-height: 700px) {
-  .game-container {
-    padding: 12px;
-  }
-  
-  .scale-pan {
-    min-height: 70px;
-  }
-  
-  .shape {
-    width: 42px;
-    height: 42px;
-  }
-  
-  .option-btn {
-    padding: 12px 6px;
-  }
-  
-  .control-btn {
-    padding: 12px;
-  }
-}
-</style>
+        .sound-icon {
+            font-size: 1.3rem;
+            color: #4CAF50;
+        }
+    </style>
 </head>
 <body>
-<div class="game-container">
-  <!-- Timer -->
-  <div class="timer" id="timer">01:30</div>
-  
-  <!-- Header -->
-  <div class="game-header">
-    <h1 class="game-title">Balance Logic Pro</h1>
-    <p class="game-subtitle">Deduce weights from balanced scales</p>
-  </div>
-  
-  <!-- Stats -->
-  <div class="stats-bar">
-    <div class="stat-item">
-      <span class="stat-value" id="score">270</span>
-      <span class="stat-label">Score</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value" id="level">1</span>
-      <span class="stat-label">Level</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value" id="streak">5</span>
-      <span class="stat-label">Streak</span>
-    </div>
-  </div>
-  
-  <!-- Progress -->
-  <div class="level-progress">
-    <div class="progress-label">
-      <span>Progress</span>
-      <span id="progress-text">1/10</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill"></div>
-    </div>
-    <div class="level-dots" id="level-dots"></div>
-  </div>
-  
-  <!-- Game Area -->
-  <div class="game-area">
-    <!-- Scale 1 -->
-    <div class="scale-container">
-      <div class="scale-row">
-        <div class="scale-pan" id="scale1-left">
-          <div class="shape circle"></div>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-mountain"></i> Inclined Plane Challenge</h1>
+            <p class="subtitle">Adjust the parameters to achieve the target force and solve the physics puzzle!</p>
+        </header>
+
+        <div class="game-area">
+            <div class="canvas-container">
+                <div class="sound-toggle" id="soundToggle">
+                    <i class="fas fa-volume-up sound-icon" id="soundIcon"></i>
+                </div>
+                <div class="hint-container" id="hintButton">
+                    <i class="fas fa-lightbulb hint-icon"></i>
+                </div>
+                <canvas id="gameCanvas"></canvas>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">Angle: <span id="angleValue">30°</span></div>
+                    <div class="slider-container">
+                        <input type="range" id="angleSlider" min="5" max="85" value="30" step="1">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">Mass: <span id="massValue">10 kg</span></div>
+                    <div class="slider-container">
+                        <input type="range" id="massSlider" min="1" max="50" value="10" step="1">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">Friction: <span id="frictionValue">0.2</span></div>
+                    <div class="slider-container">
+                        <input type="range" id="frictionSlider" min="0" max="1" value="0.2" step="0.05">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <div class="control-label">Gravity: <span id="gravityValue">9.8 m/s²</span></div>
+                    <div class="slider-container">
+                        <input type="range" id="gravitySlider" min="3" max="20" value="9.8" step="0.1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-primary" id="checkBtn">
+                    <i class="fas fa-check-circle"></i> Check Solution
+                </button>
+                <button class="btn btn-success" id="newPuzzleBtn">
+                    <i class="fas fa-plus-circle"></i> New Puzzle
+                </button>
+                <button class="btn btn-warning" id="autoSolveBtn">
+                    <i class="fas fa-robot"></i> Auto-Solve
+                </button>
+                <button class="btn btn-info" id="instructionsBtn">
+                    <i class="fas fa-question-circle"></i> Instructions
+                </button>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div>Target Force</div>
+                    <div class="stat-value" id="targetForce">75 N</div>
+                </div>
+                <div class="stat-item">
+                    <div>Your Force</div>
+                    <div class="stat-value" id="currentForce">0 N</div>
+                </div>
+                <div class="stat-item">
+                    <div>Puzzles Solved</div>
+                    <div class="stat-value" id="solvedCount">0</div>
+                </div>
+                <div class="stat-item">
+                    <div>Accuracy</div>
+                    <div class="stat-value" id="accuracy">0%</div>
+                </div>
+            </div>
         </div>
-        <div class="scale-equals">=</div>
-        <div class="scale-pan" id="scale1-right">
-          <div class="shape square"></div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div class="modal" id="instructionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fas fa-info-circle"></i> How to Play</div>
+                <button class="close-modal" id="closeInstructions">&times;</button>
+            </div>
+            <div class="modal-body">
+                <h3>Game Objective</h3>
+                <p>Adjust the parameters of the inclined plane to achieve the target force shown at the top of the screen.</p>
+                
+                <h3>Physics Concepts</h3>
+                <p>The force parallel to the inclined plane is calculated using:</p>
+                <p><strong>F = m × g × sin(θ) - μ × m × g × cos(θ)</strong></p>
+                <ul>
+                    <li><strong>m</strong> = Mass of the object (kg)</li>
+                    <li><strong>g</strong> = Gravity (m/s²)</li>
+                    <li><strong>θ</strong> = Angle of the incline (degrees)</li>
+                    <li><strong>μ</strong> = Coefficient of friction</li>
+                </ul>
+                
+                <h3>Controls</h3>
+                <ul>
+                    <li><strong>Sliders:</strong> Adjust angle, mass, friction, and gravity</li>
+                    <li><strong>Check Solution:</strong> Verify if your calculated force matches the target</li>
+                    <li><strong>New Puzzle:</strong> Generate a new random target force</li>
+                    <li><strong>Auto-Solve:</strong> Let the computer solve the puzzle for you</li>
+                    <li><strong>Hint:</strong> Get a hint about which parameter to adjust</li>
+                </ul>
+                
+                <h3>Tips</h3>
+                <ul>
+                    <li>Increase mass or gravity to increase force</li>
+                    <li>Increase angle to increase the parallel component of force</li>
+                    <li>Increase friction to decrease the net force</li>
+                    <li>Target force range is between 10N and 300N</li>
+                </ul>
+            </div>
         </div>
-      </div>
-      
-      <!-- Scale 2 -->
-      <div class="scale-row">
-        <div class="scale-pan" id="scale2-left">
-          <div class="shape square"></div>
+    </div>
+
+    <!-- Hint Modal -->
+    <div class="modal" id="hintModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title"><i class="fas fa-lightbulb"></i> Hint</div>
+                <button class="close-modal" id="closeHint">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="hintText"></p>
+                <p>Remember the formula: <strong>F = m × g × sin(θ) - μ × m × g × cos(θ)</strong></p>
+                <p>Current difference: <span id="forceDifference">0 N</span></p>
+            </div>
         </div>
-        <div class="scale-equals">=</div>
-        <div class="scale-pan" id="scale2-right">
-          <div class="shape triangle"></div>
-        </div>
-      </div>
     </div>
-    
-    <!-- Question -->
-    <div class="question-box">
-      <p class="question-text">Which is heavier?</p>
-      <p class="question-subtext">Analyze both balanced scales to deduce</p>
-    </div>
-    
-    <!-- Answer Options -->
-    <div class="answer-options">
-      <div class="option-btn" onclick="selectAnswer('circle')">
-        <div class="shape circle option-shape"></div>
-        <span class="option-label">Circle</span>
-      </div>
-      <div class="option-btn" onclick="selectAnswer('triangle')">
-        <div class="shape triangle option-shape"></div>
-        <span class="option-label">Triangle</span>
-      </div>
-      <div class="option-btn" onclick="selectAnswer('equal')">
-        <div class="shape square option-shape"></div>
-        <span class="option-label">Equal</span>
-      </div>
-    </div>
-    
-    <!-- Controls -->
-    <div class="control-buttons">
-      <button class="control-btn btn-hint" onclick="showHint()">
-        💡 Hint
-      </button>
-      <button class="control-btn btn-next" onclick="nextLevel()" id="next-btn">
-        Next →
-      </button>
-      <button class="control-btn btn-reset" onclick="resetGame()">
-        Reset
-      </button>
-    </div>
-  </div>
-</div>
 
-<!-- Popup -->
-<div class="popup-overlay" id="popup">
-  <div class="popup-content">
-    <div class="popup-icon" id="popup-icon">🎉</div>
-    <h2 class="popup-title" id="popup-title">Correct!</h2>
-    <p class="popup-message" id="popup-message">
-      Circle = Square and Square = Triangle<br><br>
-      Therefore, Circle = Triangle
-    </p>
-    <button class="popup-btn" onclick="closePopup()">Continue</button>
-  </div>
-</div>
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
 
-<script>
-// Game State
-const gameState = {
-  score: 270,
-  level: 1,
-  streak: 5,
-  selectedAnswer: null,
-  timeLeft: 90, // 1:30 in seconds
-  totalLevels: 10
-};
+    <!-- Audio elements for sounds -->
+    <audio id="correctSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="wrongSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="slideSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="clickSound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+    </audio>
 
-// DOM Elements
-const scoreEl = document.getElementById('score');
-const levelEl = document.getElementById('level');
-const streakEl = document.getElementById('streak');
-const progressText = document.getElementById('progress-text');
-const progressFill = document.getElementById('progress-fill');
-const levelDots = document.getElementById('level-dots');
-const nextBtn = document.getElementById('next-btn');
-const timerEl = document.getElementById('timer');
+    <script>
+        // Game variables
+        let canvas, ctx;
+        let targetForce = 75;
+        let currentForce = 0;
+        let angle = 30;
+        let mass = 10;
+        let friction = 0.2;
+        let gravity = 9.8;
+        let puzzlesSolved = 0;
+        let attempts = 0;
+        let correctAttempts = 0;
+        let soundEnabled = true;
+        let gameRunning = true;
 
-// Initialize
-function init() {
-  updateDisplay();
-  createLevelDots();
-  startTimer();
-  nextBtn.disabled = true;
-  
-  // Set up first puzzle
-  loadPuzzle(1);
-}
+        // DOM elements
+        const gameCanvas = document.getElementById('gameCanvas');
+        const angleSlider = document.getElementById('angleSlider');
+        const massSlider = document.getElementById('massSlider');
+        const frictionSlider = document.getElementById('frictionSlider');
+        const gravitySlider = document.getElementById('gravitySlider');
+        const angleValue = document.getElementById('angleValue');
+        const massValue = document.getElementById('massValue');
+        const frictionValue = document.getElementById('frictionValue');
+        const gravityValue = document.getElementById('gravityValue');
+        const targetForceEl = document.getElementById('targetForce');
+        const currentForceEl = document.getElementById('currentForce');
+        const solvedCountEl = document.getElementById('solvedCount');
+        const accuracyEl = document.getElementById('accuracy');
+        const checkBtn = document.getElementById('checkBtn');
+        const newPuzzleBtn = document.getElementById('newPuzzleBtn');
+        const autoSolveBtn = document.getElementById('autoSolveBtn');
+        const instructionsBtn = document.getElementById('instructionsBtn');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const closeInstructions = document.getElementById('closeInstructions');
+        const hintButton = document.getElementById('hintButton');
+        const hintModal = document.getElementById('hintModal');
+        const closeHint = document.getElementById('closeHint');
+        const hintText = document.getElementById('hintText');
+        const forceDifference = document.getElementById('forceDifference');
+        const notification = document.getElementById('notification');
+        const soundToggle = document.getElementById('soundToggle');
+        const soundIcon = document.getElementById('soundIcon');
+        const correctSound = document.getElementById('correctSound');
+        const wrongSound = document.getElementById('wrongSound');
+        const slideSound = document.getElementById('slideSound');
+        const clickSound = document.getElementById('clickSound');
 
-// Load puzzle data
-function loadPuzzle(level) {
-  // Example puzzles - in real game you'd have more
-  const puzzles = [
-    {
-      scale1: { left: ['circle'], right: ['square'] },
-      scale2: { left: ['square'], right: ['triangle'] },
-      question: "Which is heavier?",
-      correct: 'equal',
-      explanation: "Circle = Square and Square = Triangle, therefore Circle = Triangle"
-    },
-    {
-      scale1: { left: ['circle', 'circle'], right: ['square'] },
-      scale2: { left: ['square'], right: ['triangle', 'triangle'] },
-      question: "Which is heavier?",
-      correct: 'equal',
-      explanation: "2 Circles = 1 Square and 1 Square = 2 Triangles, so 1 Circle = 1 Triangle"
-    },
-    {
-      scale1: { left: ['circle', 'square'], right: ['triangle', 'triangle', 'triangle'] },
-      scale2: { left: ['circle', 'triangle'], right: ['square'] },
-      question: "Compare Circle and Triangle",
-      correct: 'equal',
-      explanation: "From equations: Circle = Triangle. They have equal weight."
-    }
-  ];
-  
-  const puzzle = puzzles[(level - 1) % puzzles.length];
-  
-  // Update scales
-  updateScale('scale1-left', puzzle.scale1.left);
-  updateScale('scale1-right', puzzle.scale1.right);
-  updateScale('scale2-left', puzzle.scale2.left);
-  updateScale('scale2-right', puzzle.scale2.right);
-  
-  // Store current puzzle
-  gameState.currentPuzzle = puzzle;
-}
+        // Initialize canvas
+        function initCanvas() {
+            canvas = gameCanvas;
+            ctx = canvas.getContext('2d');
+            
+            // Set canvas dimensions
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // Draw initial scene
+            drawInclinedPlane();
+        }
 
-// Update scale display
-function updateScale(scaleId, shapes) {
-  const scale = document.getElementById(scaleId);
-  scale.innerHTML = '';
-  
-  shapes.forEach(shape => {
-    const shapeDiv = document.createElement('div');
-    shapeDiv.className = `shape ${shape}`;
-    scale.appendChild(shapeDiv);
-  });
-}
+        // Resize canvas for mobile responsiveness
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            drawInclinedPlane();
+        }
 
-// Select answer
-function selectAnswer(answer) {
-  // Remove previous selection
-  document.querySelectorAll('.option-btn').forEach(btn => {
-    btn.classList.remove('selected');
-  });
-  
-  // Mark selected
-  event.currentTarget.classList.add('selected');
-  gameState.selectedAnswer = answer;
-  
-  // Check answer
-  setTimeout(() => checkAnswer(answer), 300);
-}
+        // Calculate force parallel to the inclined plane
+        function calculateForce() {
+            const angleRad = angle * Math.PI / 180;
+            const forceParallel = mass * gravity * Math.sin(angleRad);
+            const frictionForce = friction * mass * gravity * Math.cos(angleRad);
+            return forceParallel - frictionForce;
+        }
 
-// Check answer
-function checkAnswer(answer) {
-  const correct = gameState.currentPuzzle.correct;
-  const isCorrect = answer === correct;
-  
-  if (isCorrect) {
-    // Correct
-    gameState.score += 50;
-    gameState.streak++;
-    
-    if (gameState.streak > 1) {
-      gameState.score += gameState.streak * 10;
-    }
-    
-    showPopup(
-      '🎉 Correct!',
-      gameState.currentPuzzle.explanation
-    );
-    
-    // Enable next button
-    nextBtn.disabled = false;
-  } else {
-    // Incorrect
-    gameState.streak = 0;
-    gameState.score = Math.max(0, gameState.score - 20);
-    
-    let correctText = '';
-    switch(correct) {
-      case 'circle': correctText = 'Circle is heavier'; break;
-      case 'triangle': correctText = 'Triangle is heavier'; break;
-      case 'equal': correctText = 'Both are equal'; break;
-    }
-    
-    showPopup(
-      '❌ Incorrect',
-      `The correct answer is: ${correctText}.<br><br>${gameState.currentPuzzle.explanation}`
-    );
-  }
-  
-  updateDisplay();
-}
+        // Draw the inclined plane with object
+        function drawInclinedPlane() {
+            if (!ctx) return;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 40;
+            const planeLength = Math.min(width, height) * 0.7;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Calculate positions
+            const angleRad = angle * Math.PI / 180;
+            const inclineX = planeLength * Math.cos(angleRad);
+            const inclineY = planeLength * Math.sin(angleRad);
+            
+            const startX = padding;
+            const startY = height - padding;
+            const endX = startX + inclineX;
+            const endY = startY - inclineY;
+            
+            // Draw inclined plane surface
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = '#555';
+            ctx.stroke();
+            
+            // Draw ground line
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(startX + planeLength, startY);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#777';
+            ctx.stroke();
+            
+            // Draw angle arc
+            ctx.beginPath();
+            ctx.arc(startX, startY, 30, 0, angleRad, false);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#FF9800';
+            ctx.stroke();
+            
+            // Draw angle label
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#FF9800";
+            ctx.fillText(`${angle}°`, startX + 20, startY - 15);
+            
+            // Draw the object (box)
+            const boxSize = 40 + mass * 2;
+            const boxX = startX + inclineX * 0.5 - boxSize/2;
+            const boxY = startY - inclineY * 0.5 - boxSize/2;
+            
+            ctx.fillStyle = '#2196F3';
+            ctx.fillRect(boxX, boxY, boxSize, boxSize);
+            
+            // Draw mass label
+            ctx.fillStyle = '#FFF';
+            ctx.font = "bold 14px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`${mass}kg`, boxX + boxSize/2, boxY + boxSize/2 + 5);
+            
+            // Draw force arrows
+            drawForceArrows(startX, startY, endX, endY, boxX + boxSize/2, boxY + boxSize/2);
+            
+            // Draw target and current force
+            ctx.font = "bold 18px Arial";
+            ctx.textAlign = "left";
+            ctx.fillStyle = "#4CAF50";
+            ctx.fillText(`Target: ${targetForce.toFixed(1)} N`, width - 200, 30);
+            ctx.fillStyle = "#2196F3";
+            ctx.fillText(`Current: ${currentForce.toFixed(1)} N`, width - 200, 60);
+            
+            // Draw formula
+            ctx.font = "14px Arial";
+            ctx.fillStyle = "#FFF";
+            ctx.fillStyle = "#FF9800";
+            ctx.fillText("F = m·g·sin(θ) - μ·m·g·cos(θ)", 20, 30);
+        }
 
-// Show hint
-function showHint() {
-  gameState.score = Math.max(0, gameState.score - 15);
-  updateDisplay();
-  
-  const hints = [
-    "If A = B and B = C, then A must equal C",
-    "Look for shapes that appear on both scales",
-    "Count the total number of each shape",
-    "Sometimes equal doesn't mean what it seems",
-    "Try substituting one shape for another"
-  ];
-  
-  const randomHint = hints[Math.floor(Math.random() * hints.length)];
-  
-  showPopup(
-    '💡 Hint',
-    randomHint
-  );
-}
+        // Draw force arrows on the object
+        function drawForceArrows(startX, startY, endX, endY, boxCenterX, boxCenterY) {
+            const angleRad = angle * Math.PI / 180;
+            
+            // Gravity force (downwards)
+            ctx.beginPath();
+            ctx.moveTo(boxCenterX, boxCenterY);
+            ctx.lineTo(boxCenterX, boxCenterY + 60);
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#F44336';
+            ctx.stroke();
+            
+            // Draw arrowhead for gravity
+            drawArrowhead(boxCenterX, boxCenterY + 60, Math.PI/2, 10);
+            ctx.fillStyle = '#F44336';
+            ctx.fillText("Fg", boxCenterX - 15, boxCenterY + 75);
+            
+            // Parallel force (down the incline)
+            ctx.beginPath();
+            ctx.moveTo(boxCenterX, boxCenterY);
+            ctx.lineTo(
+                boxCenterX + 60 * Math.cos(angleRad + Math.PI),
+                boxCenterY + 60 * Math.sin(angleRad + Math.PI)
+            );
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#4CAF50';
+            ctx.stroke();
+            
+            // Draw arrowhead for parallel force
+            drawArrowhead(
+                boxCenterX + 60 * Math.cos(angleRad + Math.PI),
+                boxCenterY + 60 * Math.sin(angleRad + Math.PI),
+                angleRad + Math.PI, 10
+            );
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillText("F∥", 
+                boxCenterX + 70 * Math.cos(angleRad + Math.PI) - 10,
+                boxCenterY + 70 * Math.sin(angleRad + Math.PI) + 5
+            );
+            
+            // Normal force (perpendicular to surface)
+            ctx.beginPath();
+            ctx.moveTo(boxCenterX, boxCenterY);
+            ctx.lineTo(
+                boxCenterX + 40 * Math.cos(angleRad - Math.PI/2),
+                boxCenterY + 40 * Math.sin(angleRad - Math.PI/2)
+            );
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#9C27B0';
+            ctx.stroke();
+            
+            // Draw arrowhead for normal force
+            drawArrowhead(
+                boxCenterX + 40 * Math.cos(angleRad - Math.PI/2),
+                boxCenterY + 40 * Math.sin(angleRad - Math.PI/2),
+                angleRad - Math.PI/2, 10
+            );
+            ctx.fillStyle = '#9C27B0';
+            ctx.fillText("Fn", 
+                boxCenterX + 50 * Math.cos(angleRad - Math.PI/2) - 5,
+                boxCenterY + 50 * Math.sin(angleRad - Math.PI/2) + 5
+            );
+            
+            // Friction force (opposing motion)
+            if (friction > 0) {
+                ctx.beginPath();
+                ctx.moveTo(boxCenterX, boxCenterY);
+                ctx.lineTo(
+                    boxCenterX + 40 * Math.cos(angleRad),
+                    boxCenterY + 40 * Math.sin(angleRad)
+                );
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#FF9800';
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Draw arrowhead for friction
+                drawArrowhead(
+                    boxCenterX + 40 * Math.cos(angleRad),
+                    boxCenterY + 40 * Math.sin(angleRad),
+                    angleRad, 10
+                );
+                ctx.fillStyle = '#FF9800';
+                ctx.fillText("Ff", 
+                    boxCenterX + 50 * Math.cos(angleRad) - 5,
+                    boxCenterY + 50 * Math.sin(angleRad) + 5
+                );
+            }
+        }
 
-// Next level
-function nextLevel() {
-  if (gameState.level < gameState.totalLevels) {
-    gameState.level++;
-    gameState.selectedAnswer = null;
-    nextBtn.disabled = true;
-    
-    // Clear selections
-    document.querySelectorAll('.option-btn').forEach(btn => {
-      btn.classList.remove('selected');
-    });
-    
-    // Load new puzzle
-    loadPuzzle(gameState.level);
-    updateDisplay();
-    
-    // Reset timer
-    gameState.timeLeft = 90;
-    updateTimerDisplay();
-  } else {
-    showPopup(
-      '🏆 Game Complete!',
-      `Congratulations! You've completed all ${gameState.totalLevels} levels.<br><br>Final Score: ${gameState.score}`
-    );
-  }
-}
+        // Draw arrowhead for force vectors
+        function drawArrowhead(x, y, angle, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-size, -size/2);
+            ctx.lineTo(-size, size/2);
+            ctx.closePath();
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.fill();
+            
+            ctx.restore();
+        }
 
-// Reset game
-function resetGame() {
-  if (confirm("Reset game? Your progress will be lost.")) {
-    gameState.score = 0;
-    gameState.level = 1;
-    gameState.streak = 0;
-    gameState.timeLeft = 90;
-    gameState.selectedAnswer = null;
-    
-    nextBtn.disabled = true;
-    loadPuzzle(1);
-    updateDisplay();
-    updateTimerDisplay();
-    
-    // Clear selections
-    document.querySelectorAll('.option-btn').forEach(btn => {
-      btn.classList.remove('selected');
-    });
-  }
-}
+        // Update UI values
+        function updateUI() {
+            angleValue.textContent = `${angle}°`;
+            massValue.textContent = `${mass} kg`;
+            frictionValue.textContent = friction.toFixed(2);
+            gravityValue.textContent = `${gravity.toFixed(1)} m/s²`;
+            
+            currentForce = calculateForce();
+            currentForceEl.textContent = `${currentForce.toFixed(1)} N`;
+            
+            drawInclinedPlane();
+        }
 
-// Update display
-function updateDisplay() {
-  scoreEl.textContent = gameState.score;
-  levelEl.textContent = gameState.level;
-  streakEl.textContent = gameState.streak;
-  
-  const progressPercent = (gameState.level / gameState.totalLevels) * 100;
-  progressFill.style.width = `${progressPercent}%`;
-  progressText.textContent = `${gameState.level}/${gameState.totalLevels}`;
-}
+        // Generate a new puzzle with random target force
+        function newPuzzle() {
+            targetForce = Math.floor(Math.random() * 291) + 10; // 10 to 300
+            targetForceEl.textContent = `${targetForce} N`;
+            
+            // Reset sliders to random values
+            angle = Math.floor(Math.random() * 50) + 20; // 20 to 70
+            mass = Math.floor(Math.random() * 30) + 5; // 5 to 35
+            friction = Math.floor(Math.random() * 16) / 20; // 0 to 0.8 in steps of 0.05
+            gravity = Math.floor(Math.random() * 13) + 7; // 7 to 19
+            
+            angleSlider.value = angle;
+            massSlider.value = mass;
+            frictionSlider.value = friction;
+            gravitySlider.value = gravity;
+            
+            updateUI();
+            playSound(clickSound);
+            showNotification("New puzzle generated! Target: " + targetForce + " N");
+        }
 
-// Create level dots
-function createLevelDots() {
-  levelDots.innerHTML = '';
-  for (let i = 1; i <= gameState.totalLevels; i++) {
-    const dot = document.createElement('div');
-    dot.className = `level-dot ${i <= gameState.level ? 'active' : ''}`;
-    levelDots.appendChild(dot);
-  }
-}
+        // Check if the current solution is correct
+        function checkSolution() {
+            attempts++;
+            const difference = Math.abs(currentForce - targetForce);
+            const tolerance = 0.5; // Allowable error margin
+            
+            if (difference <= tolerance) {
+                puzzlesSolved++;
+                correctAttempts++;
+                updateStats();
+                playSound(correctSound);
+                showNotification(`Correct! Force = ${currentForce.toFixed(1)} N (Target: ${targetForce} N)`, "success");
+                
+                // Auto-generate new puzzle after 2 seconds
+                if (gameRunning) {
+                    setTimeout(newPuzzle, 2000);
+                }
+            } else {
+                playSound(wrongSound);
+                showNotification(`Off by ${difference.toFixed(1)} N. Try adjusting the parameters.`, "error");
+            }
+            
+            updateStats();
+        }
 
-// Timer functions
-function startTimer() {
-  gameState.timerInterval = setInterval(() => {
-    if (gameState.timeLeft > 0) {
-      gameState.timeLeft--;
-      updateTimerDisplay();
-    } else {
-      timeUp();
-    }
-  }, 1000);
-}
+        // Automatically solve the puzzle
+        function autoSolve() {
+            // Simple algorithm to approach target force
+            let bestDifference = Math.abs(calculateForce() - targetForce);
+            let bestAngle = angle;
+            let bestMass = mass;
+            let bestFriction = friction;
+            let bestGravity = gravity;
+            
+            // Try random combinations to find a solution
+            for (let i = 0; i < 100; i++) {
+                const testAngle = Math.floor(Math.random() * 81) + 5;
+                const testMass = Math.floor(Math.random() * 49) + 1;
+                const testFriction = Math.floor(Math.random() * 21) / 20; // 0 to 1 in steps of 0.05
+                const testGravity = Math.floor(Math.random() * 18) + 3; // 3 to 20
+                
+                // Temporarily set values to test
+                const originalAngle = angle;
+                const originalMass = mass;
+                const originalFriction = friction;
+                const originalGravity = gravity;
+                
+                angle = testAngle;
+                mass = testMass;
+                friction = testFriction;
+                gravity = testGravity;
+                
+                const testForce = calculateForce();
+                const difference = Math.abs(testForce - targetForce);
+                
+                if (difference < bestDifference) {
+                    bestDifference = difference;
+                    bestAngle = testAngle;
+                    bestMass = testMass;
+                    bestFriction = testFriction;
+                    bestGravity = testGravity;
+                }
+                
+                // Restore original values
+                angle = originalAngle;
+                mass = originalMass;
+                friction = originalFriction;
+                gravity = originalGravity;
+            }
+            
+            // Apply the best found solution
+            angle = bestAngle;
+            mass = bestMass;
+            friction = bestFriction;
+            gravity = bestGravity;
+            
+            angleSlider.value = angle;
+            massSlider.value = mass;
+            frictionSlider.value = friction;
+            gravitySlider.value = gravity;
+            
+            updateUI();
+            playSound(slideSound);
+            showNotification("Auto-solve applied! Check if it's correct.");
+        }
 
-function updateTimerDisplay() {
-  const minutes = Math.floor(gameState.timeLeft / 60);
-  const seconds = gameState.timeLeft % 60;
-  timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  
-  // Change color when time is low
-  if (gameState.timeLeft < 30) {
-    timerEl.style.background = 'rgba(239, 68, 68, 0.3)';
-    timerEl.style.color = '#fecaca';
-  } else {
-    timerEl.style.background = 'rgba(30, 41, 59, 0.8)';
-    timerEl.style.color = '#cbd5e1';
-  }
-}
+        // Provide a hint to the player
+        function provideHint() {
+            const difference = currentForce - targetForce;
+            const absDifference = Math.abs(difference);
+            
+            forceDifference.textContent = `${absDifference.toFixed(1)} N`;
+            
+            if (absDifference < 5) {
+                hintText.textContent = "You're very close! Try making tiny adjustments to any parameter.";
+            } else if (difference > 0) {
+                hintText.textContent = "Your force is too high. Try decreasing the mass, angle, or gravity, or increase friction.";
+            } else {
+                hintText.textContent = "Your force is too low. Try increasing the mass, angle, or gravity, or decrease friction.";
+            }
+            
+            hintModal.classList.add('active');
+            playSound(clickSound);
+        }
 
-function timeUp() {
-  clearInterval(gameState.timerInterval);
-  showPopup(
-    '⏰ Time\'s Up!',
-    'Time ran out for this puzzle. Try to solve faster next time!'
-  );
-}
+        // Update game statistics
+        function updateStats() {
+            solvedCountEl.textContent = puzzlesSolved;
+            const accuracy = attempts > 0 ? Math.round((correctAttempts / attempts) * 100) : 0;
+            accuracyEl.textContent = `${accuracy}%`;
+        }
 
-// Popup functions
-function showPopup(icon, message) {
-  document.getElementById('popup-icon').textContent = icon;
-  document.getElementById('popup-message').innerHTML = message;
-  
-  // Set title based on icon
-  let title = '';
-  if (icon.includes('🎉')) title = 'Correct!';
-  else if (icon.includes('❌')) title = 'Incorrect';
-  else if (icon.includes('💡')) title = 'Hint';
-  else if (icon.includes('🏆')) title = 'Congratulations!';
-  else if (icon.includes('⏰')) title = 'Time\'s Up!';
-  
-  document.getElementById('popup-title').textContent = title;
-  document.getElementById('popup').style.display = 'flex';
-}
+        // Show notification message
+        function showNotification(message, type = "info") {
+            notification.textContent = message;
+            notification.className = "notification show";
+            
+            if (type === "success") {
+                notification.style.background = "rgba(76, 175, 80, 0.9)";
+            } else if (type === "error") {
+                notification.style.background = "rgba(244, 67, 54, 0.9)";
+            } else {
+                notification.style.background = "rgba(33, 150, 243, 0.9)";
+            }
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
 
-function closePopup() {
-  document.getElementById('popup').style.display = 'none';
-}
+        // Play sound if enabled
+        function playSound(soundElement) {
+            if (soundEnabled) {
+                soundElement.currentTime = 0;
+                soundElement.play().catch(e => console.log("Audio play failed:", e));
+            }
+        }
 
-// Prevent zoom
-document.addEventListener('gesturestart', (e) => e.preventDefault());
-document.addEventListener('touchmove', (e) => {
-  if (e.scale !== 1) e.preventDefault();
-}, { passive: false });
+        // Toggle sound on/off
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundIcon.className = soundEnabled ? "fas fa-volume-up sound-icon" : "fas fa-volume-mute sound-icon";
+            playSound(clickSound);
+        }
 
-// Initialize on load
-window.onload = init;
-</script>
+        // Initialize the game
+        function init() {
+            initCanvas();
+            newPuzzle();
+            
+            // Event listeners for sliders
+            angleSlider.addEventListener('input', () => {
+                angle = parseInt(angleSlider.value);
+                updateUI();
+                playSound(slideSound);
+            });
+            
+            massSlider.addEventListener('input', () => {
+                mass = parseInt(massSlider.value);
+                updateUI();
+                playSound(slideSound);
+            });
+            
+            frictionSlider.addEventListener('input', () => {
+                friction = parseFloat(frictionSlider.value);
+                updateUI();
+                playSound(slideSound);
+            });
+            
+            gravitySlider.addEventListener('input', () => {
+                gravity = parseFloat(gravitySlider.value);
+                updateUI();
+                playSound(slideSound);
+            });
+            
+            // Event listeners for buttons
+            checkBtn.addEventListener('click', () => {
+                checkSolution();
+                playSound(clickSound);
+            });
+            
+            newPuzzleBtn.addEventListener('click', () => {
+                newPuzzle();
+            });
+            
+            autoSolveBtn.addEventListener('click', () => {
+                autoSolve();
+                playSound(clickSound);
+            });
+            
+            instructionsBtn.addEventListener('click', () => {
+                instructionsModal.classList.add('active');
+                playSound(clickSound);
+            });
+            
+            hintButton.addEventListener('click', () => {
+                provideHint();
+            });
+            
+            // Close modals
+            closeInstructions.addEventListener('click', () => {
+                instructionsModal.classList.remove('active');
+                playSound(clickSound);
+            });
+            
+            closeHint.addEventListener('click', () => {
+                hintModal.classList.remove('active');
+                playSound(clickSound);
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === instructionsModal) {
+                    instructionsModal.classList.remove('active');
+                }
+                if (e.target === hintModal) {
+                    hintModal.classList.remove('active');
+                }
+            });
+            
+            // Sound toggle
+            soundToggle.addEventListener('click', toggleSound);
+            
+            // Update stats initially
+            updateStats();
+            
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification("Welcome to Inclined Plane Challenge! Adjust parameters to match the target force.", "info");
+            }, 1000);
+        }
+
+        // Start the game when page loads
+        window.onload = init;
+    </script>
 </body>
 </html>
