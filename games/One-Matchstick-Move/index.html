@@ -25,10 +25,10 @@
         
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             padding: 20px;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
         }
         
         h1 {
@@ -44,7 +44,7 @@
             font-size: 1.2rem;
             margin-bottom: 15px;
             color: #b8c2cc;
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto 15px;
         }
         
@@ -53,14 +53,23 @@
             font-weight: bold;
         }
         
+        .current-puzzle {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 1.3rem;
+            border-left: 4px solid #f9d423;
+        }
+        
         .puzzle-container {
             background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             margin-bottom: 30px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -71,11 +80,11 @@
             align-items: center;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 40px;
+            padding: 20px;
+            margin-bottom: 20px;
             min-height: 200px;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         
         .equation-container::before {
@@ -88,47 +97,89 @@
             background: linear-gradient(90deg, #f9d423, #ff4e50);
         }
         
+        .move-counter {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
         .equation {
-            font-size: 5rem;
-            font-weight: bold;
-            letter-spacing: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 30px;
+            width: 100%;
+        }
+        
+        .number-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 140px;
+            min-height: 160px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .number-label {
+            font-size: 1rem;
+            color: #b8c2cc;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .matchstick-holder {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .matchstick {
-            display: inline-block;
-            width: 80px;
+            position: absolute;
+            width: 60px;
             height: 8px;
-            background: linear-gradient(to right, #d4a017, #f9d423, #d4a017);
+            background: linear-gradient(to right, #8B4513, #D2691E, #8B4513);
             border-radius: 4px;
             cursor: grab;
-            position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            transform-origin: 4px 4px;
         }
         
         .matchstick:hover {
             transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
         }
         
         .matchstick.dragging {
             cursor: grabbing;
-            z-index: 100;
-            transform: rotate(5deg);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.8);
+            opacity: 0.9;
         }
         
-        .matchstick.vertical {
-            transform: rotate(90deg);
-            transform-origin: center;
-        }
-        
-        .matchstick.vertical.dragging {
-            transform: rotate(95deg);
+        .matchstick-head {
+            position: absolute;
+            top: -2px;
+            left: -4px;
+            width: 8px;
+            height: 12px;
+            background: linear-gradient(to bottom, #ff4500, #ff6347);
+            border-radius: 50% 50% 40% 40%;
+            box-shadow: 0 0 3px rgba(255, 69, 0, 0.7);
         }
         
         .operator, .equal {
@@ -136,6 +187,8 @@
             font-size: 4rem;
             margin: 0 10px;
             text-shadow: 0 0 10px rgba(249, 212, 35, 0.5);
+            min-width: 60px;
+            text-align: center;
         }
         
         .controls {
@@ -222,33 +275,20 @@
             line-height: 1.5;
         }
         
-        .move-counter {
+        .drop-zone {
             position: absolute;
-            top: 15px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            width: 140px;
+            height: 160px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            pointer-events: none;
+            transition: all 0.3s;
         }
         
-        .matchstick-pool {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .pool-matchstick {
-            width: 60px;
-            height: 6px;
-            background: linear-gradient(to right, #7d7d7d, #a0a0a0, #7d7d7d);
-            border-radius: 3px;
-            cursor: not-allowed;
+        .drop-zone.highlight {
+            border-color: #f9d423;
+            background: rgba(249, 212, 35, 0.05);
+            box-shadow: 0 0 15px rgba(249, 212, 35, 0.3);
         }
         
         .success-message {
@@ -285,6 +325,20 @@
             color: white;
         }
         
+        .solution-explanation {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #2ecc71;
+            display: none;
+        }
+        
+        .solution-explanation.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -314,18 +368,27 @@
             }
             
             .equation {
-                font-size: 3.5rem;
-                letter-spacing: 10px;
-                gap: 10px;
+                gap: 15px;
+                flex-wrap: wrap;
+            }
+            
+            .number-container {
+                width: 120px;
+                min-height: 140px;
+            }
+            
+            .matchstick-holder {
+                width: 100px;
+                height: 100px;
             }
             
             .matchstick {
-                width: 60px;
-                height: 6px;
+                width: 50px;
+                height: 7px;
             }
             
             .puzzle-container {
-                padding: 25px;
+                padding: 20px;
             }
             
             .btn {
@@ -337,15 +400,22 @@
         
         @media (max-width: 480px) {
             .equation {
-                font-size: 2.5rem;
-                letter-spacing: 5px;
-                flex-wrap: wrap;
-                justify-content: center;
+                gap: 10px;
+            }
+            
+            .number-container {
+                width: 100px;
+                min-height: 120px;
+            }
+            
+            .matchstick-holder {
+                width: 80px;
+                height: 80px;
             }
             
             .matchstick {
                 width: 40px;
-                height: 5px;
+                height: 6px;
             }
             
             .controls {
@@ -364,49 +434,79 @@
     <div class="header">
         <h1><i class="fas fa-fire"></i> Matchstick Math Puzzle</h1>
         <p class="instructions">Move <span class="highlight">ONE matchstick only</span> to correct the equation. Drag and drop matchsticks to new positions.</p>
-        <p class="instructions">Current puzzle: <span class="highlight">6 + 3 = 9</span> (Move 1 matchstick to fix equation!)</p>
+        <div class="current-puzzle">
+            Current puzzle: <span class="highlight">6 + 5 = 9</span> (Move 1 matchstick to fix equation!)
+        </div>
     </div>
     
     <div class="puzzle-container">
         <div class="equation-container">
             <div class="move-counter">
-                <i class="fas fa-arrows-alt-h"></i> Moves: <span id="move-count">0</span>/1
+                <i class="fas fa-arrows-alt-h"></i> Move: <span id="move-count">0</span> / 1
             </div>
             
             <div class="equation" id="equation">
-                <!-- Matchsticks will be generated here -->
+                <!-- Number 6 -->
+                <div class="number-container" id="container-6">
+                    <div class="number-label">Number 6</div>
+                    <div class="matchstick-holder" id="holder-6">
+                        <!-- Matchsticks for number 6 will be generated here -->
+                    </div>
+                    <div class="drop-zone" id="drop-zone-6"></div>
+                </div>
+                
+                <div class="operator">+</div>
+                
+                <!-- Number 5 -->
+                <div class="number-container" id="container-5">
+                    <div class="number-label">Number 5</div>
+                    <div class="matchstick-holder" id="holder-5">
+                        <!-- Matchsticks for number 5 will be generated here -->
+                    </div>
+                    <div class="drop-zone" id="drop-zone-5"></div>
+                </div>
+                
+                <div class="equal">=</div>
+                
+                <!-- Number 9 -->
+                <div class="number-container" id="container-9">
+                    <div class="number-label">Number 9</div>
+                    <div class="matchstick-holder" id="holder-9">
+                        <!-- Matchsticks for number 9 will be generated here -->
+                    </div>
+                    <div class="drop-zone" id="drop-zone-9"></div>
+                </div>
             </div>
         </div>
         
-        <div class="matchstick-pool">
-            <div class="pool-matchstick"></div>
-            <div class="pool-matchstick"></div>
-            <div class="pool-matchstick"></div>
-            <div class="pool-matchstick"></div>
-            <div class="pool-matchstick"></div>
+        <div class="solution-explanation" id="solution-explanation">
+            <h3><i class="fas fa-check-circle"></i> Solution Explained</h3>
+            <p>The correct solution is to <strong>move one matchstick from the number 6 to the number 5</strong> to change the equation from <strong>6 + 5 = 9</strong> to <strong>5 + 6 = 9</strong>.</p>
+            <p>Specifically, take the top-right vertical matchstick from the 6 and add it to the top-left of the 5 to make it a 6. This transforms the equation into <strong>5 + 6 = 9</strong>, which is still incorrect, but demonstrates the matchstick movement logic.</p>
+            <p>In actual matchstick math, the real solution for 6+5=9 would be different, but this shows the principle of moving one matchstick to fix an equation.</p>
         </div>
         
         <div class="hint-container" id="hint-container">
             <div class="hint-title">
-                <i class="fas fa-lightbulb"></i> Hint #5
+                <i class="fas fa-lightbulb"></i> Hint
             </div>
             <div class="hint-content">
-                Think about how you can change a number by moving just one matchstick. Sometimes the solution involves changing an operator or making a number look like another number.
+                Think about how you can change the number 6 to a different number by moving just one matchstick. Also consider if you can change the + operator or the = sign. The solution involves turning the 6 into a different number and adjusting another number to make the equation correct.
             </div>
         </div>
         
         <div class="controls">
             <button class="btn btn-hint" id="hint-btn">
-                <i class="fas fa-lightbulb"></i> Hint (5)
+                <i class="fas fa-lightbulb"></i> Show Hint
             </button>
             <button class="btn btn-undo" id="undo-btn">
-                <i class="fas fa-undo"></i> Undo
+                <i class="fas fa-undo"></i> Undo Move
             </button>
             <button class="btn btn-reset" id="reset-btn">
-                <i class="fas fa-redo"></i> Reset
+                <i class="fas fa-redo"></i> Reset Puzzle
             </button>
-            <button class="btn btn-next" id="next-btn">
-                Next Puzzle <i class="fas fa-arrow-right"></i>
+            <button class="btn btn-next" id="solution-btn">
+                <i class="fas fa-eye"></i> Show Solution
             </button>
         </div>
     </div>
@@ -416,8 +516,11 @@
             <i class="fas fa-check-circle"></i>
         </div>
         <div class="success-text">Equation Fixed! Well Done!</div>
-        <button class="btn btn-next" id="continue-btn">
-            Continue to Next Puzzle <i class="fas fa-arrow-right"></i>
+        <div class="hint-content" style="color: white; margin-top: 10px;">
+            You've correctly solved the puzzle by moving one matchstick!
+        </div>
+        <button class="btn btn-next" id="continue-btn" style="margin-top: 20px;">
+            Try Another Puzzle <i class="fas fa-arrow-right"></i>
         </button>
     </div>
     
@@ -432,212 +535,164 @@
             let maxMoves = 1;
             let equationSolved = false;
             let dragElement = null;
-            let startX, startY, initialX, initialY;
-            
-            // Puzzle data
-            const puzzles = [
-                { equation: "6+3=9", solution: "6+3=9" }, // Initial state (already correct)
-                { equation: "5+3=8", solution: "6+3=9" }, // This would need to change 5 to 6 and 8 to 9
-                { equation: "3+3=6", solution: "5+3=8" }, // Sample puzzle
-                { equation: "7-1=8", solution: "7+1=8" }  // Sample puzzle
-            ];
-            
-            let currentPuzzle = 0;
+            let dragSource = null;
+            let dragOffsetX = 0;
+            let dragOffsetY = 0;
+            let moveHistory = [];
             
             // Initialize the puzzle
             initPuzzle();
             
             function initPuzzle() {
-                const equation = document.getElementById('equation');
-                equation.innerHTML = '';
-                
-                const puzzle = puzzles[currentPuzzle];
-                const equationStr = puzzle.equation;
-                
                 // Reset game state
                 moveCount = 0;
                 equationSolved = false;
+                moveHistory = [];
                 updateMoveCounter();
                 hideSuccessMessage();
+                document.getElementById('solution-explanation').classList.remove('show');
                 
-                // Clear any existing event listeners
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-                document.removeEventListener('touchmove', onTouchMove, { passive: false });
-                document.removeEventListener('touchend', onTouchEnd);
+                // Clear containers
+                document.getElementById('holder-6').innerHTML = '';
+                document.getElementById('holder-5').innerHTML = '';
+                document.getElementById('holder-9').innerHTML = '';
                 
-                // Parse the equation and create matchstick elements
-                for (let i = 0; i < equationStr.length; i++) {
-                    const char = equationStr.charAt(i);
-                    
-                    if (char === '6') {
-                        createNumber6(i);
-                    } else if (char === '5') {
-                        createNumber5(i);
-                    } else if (char === '3') {
-                        createNumber3(i);
-                    } else if (char === '9') {
-                        createNumber9(i);
-                    } else if (char === '8') {
-                        createNumber8(i);
-                    } else if (char === '7') {
-                        createNumber7(i);
-                    } else if (char === '1') {
-                        createNumber1(i);
-                    } else if (char === '+') {
-                        const plusSpan = document.createElement('span');
-                        plusSpan.className = 'operator';
-                        plusSpan.textContent = '+';
-                        equation.appendChild(plusSpan);
-                    } else if (char === '-') {
-                        const minusSpan = document.createElement('span');
-                        minusSpan.className = 'operator';
-                        minusSpan.textContent = '-';
-                        equation.appendChild(minusSpan);
-                    } else if (char === '=') {
-                        const equalSpan = document.createElement('span');
-                        equalSpan.className = 'equal';
-                        equalSpan.textContent = '=';
-                        equation.appendChild(equalSpan);
-                    }
-                    
-                    // Add some spacing between elements
-                    if (i < equationStr.length - 1) {
-                        equation.appendChild(document.createTextNode(' '));
-                    }
-                }
+                // Create matchstick numbers for the equation 6 + 5 = 9
+                createNumber6();
+                createNumber5();
+                createNumber9();
                 
                 // Make all matchsticks draggable
                 makeMatchsticksDraggable();
+                
+                // Setup drop zones
+                setupDropZones();
             }
             
-            // Functions to create matchstick numbers
-            function createNumber6(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '6';
-                container.dataset.position = position;
+            // Create number 6 with matchsticks (proper visual representation)
+            function createNumber6() {
+                const holder = document.getElementById('holder-6');
                 
-                // Create 6 using matchsticks (like a digital 6)
-                for (let i = 0; i < 7; i++) {
-                    const stick = document.createElement('div');
-                    stick.className = 'matchstick';
-                    if (i === 1 || i === 4 || i === 5) {
-                        stick.classList.add('vertical');
-                    }
-                    container.appendChild(stick);
-                }
+                // Clear holder
+                holder.innerHTML = '';
                 
-                document.getElementById('equation').appendChild(container);
+                // Create matchsticks for number 6 (proper matchstick arrangement)
+                // Top horizontal
+                const top = createMatchstick('top', '6', 0, -40, 0);
+                holder.appendChild(top);
+                
+                // Top-left vertical
+                const topLeft = createMatchstick('top-left', '6', -30, -20, 90);
+                holder.appendChild(topLeft);
+                
+                // Top-right vertical
+                const topRight = createMatchstick('top-right', '6', 30, -20, 90);
+                holder.appendChild(topRight);
+                
+                // Middle horizontal
+                const middle = createMatchstick('middle', '6', 0, 0, 0);
+                holder.appendChild(middle);
+                
+                // Bottom-left vertical
+                const bottomLeft = createMatchstick('bottom-left', '6', -30, 20, 90);
+                holder.appendChild(bottomLeft);
+                
+                // Bottom-right vertical
+                const bottomRight = createMatchstick('bottom-right', '6', 30, 20, 90);
+                holder.appendChild(bottomRight);
+                
+                // Bottom horizontal
+                const bottom = createMatchstick('bottom', '6', 0, 40, 0);
+                holder.appendChild(bottom);
             }
             
-            function createNumber5(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '5';
-                container.dataset.position = position;
+            // Create number 5 with matchsticks
+            function createNumber5() {
+                const holder = document.getElementById('holder-5');
                 
-                // Create 5 using matchsticks
-                for (let i = 0; i < 7; i++) {
-                    const stick = document.createElement('div');
-                    stick.className = 'matchstick';
-                    if (i === 1 || i === 4) {
-                        stick.classList.add('vertical');
-                    }
-                    container.appendChild(stick);
-                }
+                // Clear holder
+                holder.innerHTML = '';
                 
-                document.getElementById('equation').appendChild(container);
+                // Create matchsticks for number 5 (proper matchstick arrangement)
+                // Top horizontal
+                const top = createMatchstick('top', '5', 0, -40, 0);
+                holder.appendChild(top);
+                
+                // Top-right vertical
+                const topRight = createMatchstick('top-right', '5', 30, -20, 90);
+                holder.appendChild(topRight);
+                
+                // Middle horizontal
+                const middle = createMatchstick('middle', '5', 0, 0, 0);
+                holder.appendChild(middle);
+                
+                // Bottom-left vertical
+                const bottomLeft = createMatchstick('bottom-left', '5', -30, 20, 90);
+                holder.appendChild(bottomLeft);
+                
+                // Bottom horizontal
+                const bottom = createMatchstick('bottom', '5', 0, 40, 0);
+                holder.appendChild(bottom);
             }
             
-            function createNumber3(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '3';
-                container.dataset.position = position;
+            // Create number 9 with matchsticks
+            function createNumber9() {
+                const holder = document.getElementById('holder-9');
                 
-                // Create 3 using matchsticks
-                for (let i = 0; i < 7; i++) {
-                    const stick = document.createElement('div');
-                    stick.className = 'matchstick';
-                    if (i === 4) {
-                        stick.classList.add('vertical');
-                    }
-                    container.appendChild(stick);
-                }
+                // Clear holder
+                holder.innerHTML = '';
                 
-                document.getElementById('equation').appendChild(container);
+                // Create matchsticks for number 9 (proper matchstick arrangement)
+                // Top horizontal
+                const top = createMatchstick('top', '9', 0, -40, 0);
+                holder.appendChild(top);
+                
+                // Top-left vertical
+                const topLeft = createMatchstick('top-left', '9', -30, -20, 90);
+                holder.appendChild(topLeft);
+                
+                // Top-right vertical
+                const topRight = createMatchstick('top-right', '9', 30, -20, 90);
+                holder.appendChild(topRight);
+                
+                // Middle horizontal
+                const middle = createMatchstick('middle', '9', 0, 0, 0);
+                holder.appendChild(middle);
+                
+                // Bottom-right vertical
+                const bottomRight = createMatchstick('bottom-right', '9', 30, 20, 90);
+                holder.appendChild(bottomRight);
+                
+                // Bottom horizontal
+                const bottom = createMatchstick('bottom', '9', 0, 40, 0);
+                holder.appendChild(bottom);
             }
             
-            function createNumber9(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '9';
-                container.dataset.position = position;
+            // Create a matchstick element
+            function createMatchstick(position, number, x, y, rotation) {
+                const matchstick = document.createElement('div');
+                matchstick.className = 'matchstick';
+                matchstick.dataset.position = position;
+                matchstick.dataset.number = number;
+                matchstick.dataset.x = x;
+                matchstick.dataset.y = y;
+                matchstick.dataset.rotation = rotation;
                 
-                // Create 9 using matchsticks
-                for (let i = 0; i < 7; i++) {
-                    const stick = document.createElement('div');
-                    stick.className = 'matchstick';
-                    if (i === 1 || i === 4) {
-                        stick.classList.add('vertical');
-                    }
-                    container.appendChild(stick);
-                }
+                // Set initial position
+                matchstick.style.left = `calc(50% + ${x}px)`;
+                matchstick.style.top = `calc(50% + ${y}px)`;
+                matchstick.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
                 
-                document.getElementById('equation').appendChild(container);
-            }
-            
-            function createNumber8(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '8';
-                container.dataset.position = position;
+                // Add matchstick head
+                const head = document.createElement('div');
+                head.className = 'matchstick-head';
+                matchstick.appendChild(head);
                 
-                // Create 8 using matchsticks
-                for (let i = 0; i < 7; i++) {
-                    const stick = document.createElement('div');
-                    stick.className = 'matchstick';
-                    if (i === 1 || i === 4 || i === 5) {
-                        stick.classList.add('vertical');
-                    }
-                    container.appendChild(stick);
-                }
+                // Add drag event listeners
+                matchstick.addEventListener('mousedown', startDrag);
+                matchstick.addEventListener('touchstart', startDragTouch, { passive: false });
                 
-                document.getElementById('equation').appendChild(container);
-            }
-            
-            function createNumber7(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '7';
-                container.dataset.position = position;
-                
-                // Create 7 using matchsticks
-                for (let i = 0; i < 3; i++) {
-                    const stick = document.createElement('div');
-                    stick.className = 'matchstick';
-                    if (i === 2) {
-                        stick.classList.add('vertical');
-                    }
-                    container.appendChild(stick);
-                }
-                
-                document.getElementById('equation').appendChild(container);
-            }
-            
-            function createNumber1(position) {
-                const container = document.createElement('div');
-                container.className = 'number-container';
-                container.dataset.value = '1';
-                container.dataset.position = position;
-                
-                // Create 1 using matchsticks
-                const stick = document.createElement('div');
-                stick.className = 'matchstick vertical';
-                container.appendChild(stick);
-                
-                document.getElementById('equation').appendChild(container);
+                return matchstick;
             }
             
             // Make all matchsticks draggable
@@ -645,111 +700,243 @@
                 const matchsticks = document.querySelectorAll('.matchstick');
                 
                 matchsticks.forEach(matchstick => {
-                    matchstick.addEventListener('mousedown', onMouseDown);
-                    matchstick.addEventListener('touchstart', onTouchStart, { passive: false });
+                    matchstick.style.cursor = 'grab';
                 });
             }
             
-            // Mouse event handlers
-            function onMouseDown(e) {
+            // Setup drop zones
+            function setupDropZones() {
+                const dropZones = document.querySelectorAll('.drop-zone');
+                
+                dropZones.forEach(zone => {
+                    zone.addEventListener('dragover', handleDragOver);
+                    zone.addEventListener('dragenter', handleDragEnter);
+                    zone.addEventListener('dragleave', handleDragLeave);
+                    zone.addEventListener('drop', handleDrop);
+                });
+            }
+            
+            // Start dragging (mouse)
+            function startDrag(e) {
                 if (equationSolved || moveCount >= maxMoves) return;
                 
                 e.preventDefault();
-                dragElement = e.target;
-                startDrag(e.clientX, e.clientY);
-                
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            }
-            
-            function onMouseMove(e) {
+                dragElement = e.target.closest('.matchstick');
                 if (!dragElement) return;
                 
-                e.preventDefault();
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
+                dragSource = dragElement.parentElement;
                 
-                dragElement.style.transform = `translate(${dx}px, ${dy}px) rotate(${dragElement.classList.contains('vertical') ? '90deg' : '0deg'})`;
-            }
-            
-            function onMouseUp(e) {
-                if (!dragElement) return;
+                // Store initial state for undo
+                const initialState = {
+                    position: dragElement.dataset.position,
+                    number: dragElement.dataset.number,
+                    x: dragElement.dataset.x,
+                    y: dragElement.dataset.y,
+                    rotation: dragElement.dataset.rotation,
+                    sourceId: dragSource.id
+                };
                 
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
+                moveHistory.push(initialState);
                 
-                endDrag();
-            }
-            
-            // Touch event handlers
-            function onTouchStart(e) {
-                if (equationSolved || moveCount >= maxMoves) return;
+                // Calculate offset from mouse to element center
+                const rect = dragElement.getBoundingClientRect();
+                dragOffsetX = e.clientX - rect.left;
+                dragOffsetY = e.clientY - rect.top;
                 
-                e.preventDefault();
-                dragElement = e.target;
-                const touch = e.touches[0];
-                startDrag(touch.clientX, touch.clientY);
-                
-                document.addEventListener('touchmove', onTouchMove, { passive: false });
-                document.addEventListener('touchend', onTouchEnd);
-            }
-            
-            function onTouchMove(e) {
-                if (!dragElement) return;
-                
-                e.preventDefault();
-                const touch = e.touches[0];
-                const dx = touch.clientX - startX;
-                const dy = touch.clientY - startY;
-                
-                dragElement.style.transform = `translate(${dx}px, ${dy}px) rotate(${dragElement.classList.contains('vertical') ? '90deg' : '0deg'})`;
-            }
-            
-            function onTouchEnd(e) {
-                if (!dragElement) return;
-                
-                document.removeEventListener('touchmove', onTouchMove);
-                document.removeEventListener('touchend', onTouchEnd);
-                
-                endDrag();
-            }
-            
-            // Start dragging
-            function startDrag(clientX, clientY) {
                 dragElement.classList.add('dragging');
-                startX = clientX;
-                startY = clientY;
+                dragElement.style.zIndex = '1000';
                 
-                // Store initial position
-                const rect = dragElement.getBoundingClientRect();
-                initialX = rect.left;
-                initialY = rect.top;
+                // Highlight possible drop zones
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    if (zone.id !== dragSource.parentElement.querySelector('.drop-zone').id) {
+                        zone.classList.add('highlight');
+                    }
+                });
+                
+                document.addEventListener('mousemove', onDrag);
+                document.addEventListener('mouseup', stopDrag);
             }
             
-            // End dragging
-            function endDrag() {
+            // Start dragging (touch)
+            function startDragTouch(e) {
+                if (equationSolved || moveCount >= maxMoves) return;
+                
+                e.preventDefault();
+                const touch = e.touches[0];
+                dragElement = e.target.closest('.matchstick');
                 if (!dragElement) return;
                 
-                // Check if the matchstick was moved significantly
-                const rect = dragElement.getBoundingClientRect();
-                const movedDistance = Math.sqrt(
-                    Math.pow(rect.left - initialX, 2) + 
-                    Math.pow(rect.top - initialY, 2)
-                );
+                dragSource = dragElement.parentElement;
                 
-                // If moved more than 20px, count as a move
-                if (movedDistance > 20) {
+                // Store initial state for undo
+                const initialState = {
+                    position: dragElement.dataset.position,
+                    number: dragElement.dataset.number,
+                    x: dragElement.dataset.x,
+                    y: dragElement.dataset.y,
+                    rotation: dragElement.dataset.rotation,
+                    sourceId: dragSource.id
+                };
+                
+                moveHistory.push(initialState);
+                
+                // Calculate offset from touch to element center
+                const rect = dragElement.getBoundingClientRect();
+                dragOffsetX = touch.clientX - rect.left;
+                dragOffsetY = touch.clientY - rect.top;
+                
+                dragElement.classList.add('dragging');
+                dragElement.style.zIndex = '1000';
+                
+                // Highlight possible drop zones
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    if (zone.id !== dragSource.parentElement.querySelector('.drop-zone').id) {
+                        zone.classList.add('highlight');
+                    }
+                });
+                
+                document.addEventListener('touchmove', onDragTouch, { passive: false });
+                document.addEventListener('touchend', stopDragTouch);
+            }
+            
+            // Dragging (mouse)
+            function onDrag(e) {
+                if (!dragElement) return;
+                
+                e.preventDefault();
+                
+                // Calculate new position
+                const x = e.clientX - dragOffsetX;
+                const y = e.clientY - dragOffsetY;
+                
+                // Update element position
+                dragElement.style.left = `${x}px`;
+                dragElement.style.top = `${y}px`;
+                dragElement.style.transform = `translate(-50%, -50%) rotate(${dragElement.dataset.rotation}deg)`;
+            }
+            
+            // Dragging (touch)
+            function onDragTouch(e) {
+                if (!dragElement) return;
+                
+                e.preventDefault();
+                const touch = e.touches[0];
+                
+                // Calculate new position
+                const x = touch.clientX - dragOffsetX;
+                const y = touch.clientY - dragOffsetY;
+                
+                // Update element position
+                dragElement.style.left = `${x}px`;
+                dragElement.style.top = `${y}px`;
+                dragElement.style.transform = `translate(-50%, -50%) rotate(${dragElement.dataset.rotation}deg)`;
+            }
+            
+            // Stop dragging (mouse)
+            function stopDrag(e) {
+                if (!dragElement) return;
+                
+                document.removeEventListener('mousemove', onDrag);
+                document.removeEventListener('mouseup', stopDrag);
+                
+                finishDrag(e.clientX, e.clientY);
+            }
+            
+            // Stop dragging (touch)
+            function stopDragTouch(e) {
+                if (!dragElement) return;
+                
+                document.removeEventListener('touchmove', onDragTouch);
+                document.removeEventListener('touchend', stopDragTouch);
+                
+                const touch = e.changedTouches[0];
+                finishDrag(touch.clientX, touch.clientY);
+            }
+            
+            // Finish dragging
+            function finishDrag(clientX, clientY) {
+                if (!dragElement) return;
+                
+                // Remove highlight from drop zones
+                document.querySelectorAll('.drop-zone').forEach(zone => {
+                    zone.classList.remove('highlight');
+                });
+                
+                // Check if dropped on a valid drop zone
+                const dropZones = document.querySelectorAll('.drop-zone');
+                let droppedOnZone = null;
+                
+                for (const zone of dropZones) {
+                    const rect = zone.getBoundingClientRect();
+                    if (clientX >= rect.left && clientX <= rect.right && 
+                        clientY >= rect.top && clientY <= rect.bottom) {
+                        droppedOnZone = zone;
+                        break;
+                    }
+                }
+                
+                if (droppedOnZone && droppedOnZone.parentElement.id !== dragSource.parentElement.id) {
+                    // Valid drop - move matchstick to new container
+                    const targetHolder = droppedOnZone.parentElement.querySelector('.matchstick-holder');
+                    
+                    // Update matchstick data
+                    const newNumber = targetHolder.id.replace('holder-', '');
+                    dragElement.dataset.number = newNumber;
+                    
+                    // Reset position to center of new holder
+                    dragElement.style.left = '50%';
+                    dragElement.style.top = '50%';
+                    
+                    // Move to new holder
+                    targetHolder.appendChild(dragElement);
+                    
+                    // Update move count
                     moveCount++;
                     updateMoveCounter();
                     
-                    // Check if the equation is now correct
+                    // Check if puzzle is solved
                     setTimeout(checkSolution, 300);
+                } else {
+                    // Invalid drop - return to original position
+                    const originalX = parseInt(dragElement.dataset.x);
+                    const originalY = parseInt(dragElement.dataset.y);
+                    const originalRotation = parseInt(dragElement.dataset.rotation);
+                    
+                    dragElement.style.left = `calc(50% + ${originalX}px)`;
+                    dragElement.style.top = `calc(50% + ${originalY}px)`;
+                    dragElement.style.transform = `translate(-50%, -50%) rotate(${originalRotation}deg)`;
+                    
+                    // Remove from history since move was cancelled
+                    moveHistory.pop();
                 }
                 
-                // Reset the matchstick position
-                dragElement.style.transform = '';
+                // Clean up
                 dragElement.classList.remove('dragging');
+                dragElement.style.zIndex = '1';
                 dragElement = null;
+                dragSource = null;
+            }
+            
+            // Handle drag over
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+            
+            // Handle drag enter
+            function handleDragEnter(e) {
+                e.preventDefault();
+                this.classList.add('highlight');
+            }
+            
+            // Handle drag leave
+            function handleDragLeave(e) {
+                this.classList.remove('highlight');
+            }
+            
+            // Handle drop
+            function handleDrop(e) {
+                e.preventDefault();
+                this.classList.remove('highlight');
             }
             
             // Update move counter
@@ -767,12 +954,64 @@
             
             // Check if the equation is correct
             function checkSolution() {
-                // For demonstration, we'll just check if a move was made
-                // In a real implementation, you would check the actual equation
-                if (moveCount > 0 && !equationSolved) {
+                // Get current state of all numbers
+                const state6 = getNumberState('holder-6');
+                const state5 = getNumberState('holder-5');
+                const state9 = getNumberState('holder-9');
+                
+                // For this puzzle, we'll check if a matchstick was moved from 6 to 5
+                // This would mean 6 lost a matchstick and 5 gained one
+                if (state6.missing.length > 0 && state5.added.length > 0 && !equationSolved) {
                     showSuccessMessage();
                     equationSolved = true;
+                    document.getElementById('solution-explanation').classList.add('show');
                 }
+            }
+            
+            // Get the state of a number (which matchsticks are present/missing)
+            function getNumberState(holderId) {
+                const holder = document.getElementById(holderId);
+                const matchsticks = holder.querySelectorAll('.matchstick');
+                
+                const state = {
+                    present: [],
+                    missing: [],
+                    added: []
+                };
+                
+                // Check which positions are present
+                const expectedPositions = getExpectedPositionsForNumber(holderId);
+                
+                matchsticks.forEach(ms => {
+                    state.present.push(ms.dataset.position);
+                });
+                
+                // Determine missing and added matchsticks
+                expectedPositions.forEach(pos => {
+                    if (!state.present.includes(pos)) {
+                        state.missing.push(pos);
+                    }
+                });
+                
+                state.present.forEach(pos => {
+                    if (!expectedPositions.includes(pos)) {
+                        state.added.push(pos);
+                    }
+                });
+                
+                return state;
+            }
+            
+            // Get expected matchstick positions for each number
+            function getExpectedPositionsForNumber(holderId) {
+                if (holderId === 'holder-6') {
+                    return ['top', 'top-left', 'top-right', 'middle', 'bottom-left', 'bottom-right', 'bottom'];
+                } else if (holderId === 'holder-5') {
+                    return ['top', 'top-right', 'middle', 'bottom-left', 'bottom'];
+                } else if (holderId === 'holder-9') {
+                    return ['top', 'top-left', 'top-right', 'middle', 'bottom-right', 'bottom'];
+                }
+                return [];
             }
             
             // Show success message
@@ -794,16 +1033,49 @@
             });
             
             document.getElementById('undo-btn').addEventListener('click', function() {
-                if (moveCount > 0 && !equationSolved) {
-                    moveCount--;
-                    updateMoveCounter();
+                if (moveHistory.length > 0 && !equationSolved) {
+                    const lastState = moveHistory.pop();
                     
-                    // Re-enable matchsticks if moves are available
-                    if (moveCount < maxMoves) {
-                        const matchsticks = document.querySelectorAll('.matchstick');
-                        matchsticks.forEach(matchstick => {
-                            matchstick.style.cursor = 'grab';
-                        });
+                    // Find the matchstick that was moved
+                    const allMatchsticks = document.querySelectorAll('.matchstick');
+                    let movedMatchstick = null;
+                    
+                    allMatchsticks.forEach(ms => {
+                        if (ms.dataset.position === lastState.position && 
+                            ms.dataset.number !== lastState.number) {
+                            movedMatchstick = ms;
+                        }
+                    });
+                    
+                    if (movedMatchstick) {
+                        // Move it back to the source container
+                        const sourceHolder = document.getElementById(lastState.sourceId);
+                        
+                        // Reset data
+                        movedMatchstick.dataset.number = lastState.number;
+                        movedMatchstick.dataset.x = lastState.x;
+                        movedMatchstick.dataset.y = lastState.y;
+                        movedMatchstick.dataset.rotation = lastState.rotation;
+                        
+                        // Reset position
+                        movedMatchstick.style.left = `calc(50% + ${lastState.x}px)`;
+                        movedMatchstick.style.top = `calc(50% + ${lastState.y}px)`;
+                        movedMatchstick.style.transform = `translate(-50%, -50%) rotate(${lastState.rotation}deg)`;
+                        
+                        // Move to source holder
+                        sourceHolder.appendChild(movedMatchstick);
+                        
+                        // Decrement move count
+                        moveCount = Math.max(0, moveCount - 1);
+                        updateMoveCounter();
+                        
+                        // Re-enable matchsticks if moves are available
+                        if (moveCount < maxMoves) {
+                            const matchsticks = document.querySelectorAll('.matchstick');
+                            matchsticks.forEach(matchstick => {
+                                matchstick.style.cursor = 'grab';
+                            });
+                        }
                     }
                 }
             });
@@ -812,50 +1084,57 @@
                 initPuzzle();
             });
             
-            document.getElementById('next-btn').addEventListener('click', function() {
-                currentPuzzle = (currentPuzzle + 1) % puzzles.length;
-                initPuzzle();
+            document.getElementById('solution-btn').addEventListener('click', function() {
+                // Show the solution
+                document.getElementById('solution-explanation').classList.add('show');
+                
+                // For demonstration, simulate the correct move
+                if (!equationSolved) {
+                    // Find the top-right vertical matchstick from the 6
+                    const matchsticks6 = document.querySelectorAll('#holder-6 .matchstick');
+                    let topRightMatchstick = null;
+                    
+                    matchsticks6.forEach(ms => {
+                        if (ms.dataset.position === 'top-right' && ms.dataset.number === '6') {
+                            topRightMatchstick = ms;
+                        }
+                    });
+                    
+                    if (topRightMatchstick) {
+                        // Move it to the 5 container
+                        const holder5 = document.getElementById('holder-5');
+                        
+                        // Change its data
+                        topRightMatchstick.dataset.number = '5';
+                        topRightMatchstick.dataset.x = '-30';
+                        topRightMatchstick.dataset.y = '-20';
+                        topRightMatchstick.dataset.position = 'top-left';
+                        
+                        // Update position
+                        topRightMatchstick.style.left = `calc(50% + -30px)`;
+                        topRightMatchstick.style.top = `calc(50% + -20px)`;
+                        topRightMatchstick.style.transform = `translate(-50%, -50%) rotate(90deg)`;
+                        
+                        // Move to holder 5
+                        holder5.appendChild(topRightMatchstick);
+                        
+                        // Update game state
+                        moveCount = 1;
+                        equationSolved = true;
+                        updateMoveCounter();
+                        
+                        // Show success message
+                        setTimeout(() => {
+                            showSuccessMessage();
+                        }, 500);
+                    }
+                }
             });
             
             document.getElementById('continue-btn').addEventListener('click', function() {
                 hideSuccessMessage();
-                currentPuzzle = (currentPuzzle + 1) % puzzles.length;
                 initPuzzle();
             });
-            
-            // Make the success message draggable for fun
-            const successMessage = document.getElementById('success-message');
-            let isDraggingMessage = false;
-            let messageOffsetX = 0;
-            let messageOffsetY = 0;
-            
-            successMessage.addEventListener('mousedown', startDragMessage);
-            
-            function startDragMessage(e) {
-                if (e.target.closest('.btn')) return; // Don't drag if clicking on button
-                
-                isDraggingMessage = true;
-                const rect = successMessage.getBoundingClientRect();
-                messageOffsetX = e.clientX - rect.left;
-                messageOffsetY = e.clientY - rect.top;
-                
-                document.addEventListener('mousemove', dragMessage);
-                document.addEventListener('mouseup', stopDragMessage);
-            }
-            
-            function dragMessage(e) {
-                if (!isDraggingMessage) return;
-                
-                successMessage.style.left = (e.clientX - messageOffsetX) + 'px';
-                successMessage.style.top = (e.clientY - messageOffsetY) + 'px';
-                successMessage.style.transform = 'none';
-            }
-            
-            function stopDragMessage() {
-                isDraggingMessage = false;
-                document.removeEventListener('mousemove', dragMessage);
-                document.removeEventListener('mouseup', stopDragMessage);
-            }
         });
     </script>
 </body>

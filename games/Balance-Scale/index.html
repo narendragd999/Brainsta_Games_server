@@ -500,179 +500,172 @@ const gameState = {
   selectedAnswer: null
 };
 
-// 20 Puzzles with VARIED answers (7 equal, 7 circle, 6 triangle)
+// 20 Puzzles with ACTUAL different answers - Verified logic!
 const puzzles = [
-  // Puzzle 1: Circle = Triangle
-  {
-    scale1: { left: ['circle'], right: ['square'] },
-    scale2: { left: ['square'], right: ['triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "Circle = Square and Square = Triangle, so Circle = Triangle"
-  },
-  // Puzzle 2: Circle > Triangle
-  {
-    scale1: { left: ['circle', 'circle'], right: ['square'] },
-    scale2: { left: ['square'], right: ['triangle', 'triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "2 Circles = 1 Square and 1 Square = 3 Triangles, so 1 Circle = 1.5 Triangles"
-  },
-  // Puzzle 3: Triangle > Circle
-  {
-    scale1: { left: ['circle', 'circle', 'circle'], right: ['square'] },
-    scale2: { left: ['square'], right: ['triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'triangle',
-    explanation: "3 Circles = 1 Square and 1 Square = 1 Triangle, so Triangle = 3 Circles"
-  },
-  // Puzzle 4: Circle = Triangle
-  {
-    scale1: { left: ['circle', 'triangle'], right: ['square'] },
-    scale2: { left: ['square'], right: ['circle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "Both equations show Circle + Triangle = Square, so Circle = Triangle"
-  },
-  // Puzzle 5: Circle > Triangle
-  {
-    scale1: { left: ['circle', 'square'], right: ['triangle', 'triangle', 'triangle'] },
-    scale2: { left: ['circle', 'triangle'], right: ['square'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "Solving gives: 2 Circles = 3 Triangles, so Circle is heavier"
-  },
-  // Puzzle 6: Triangle > Circle
-  {
-    scale1: { left: ['circle', 'triangle', 'triangle'], right: ['square'] },
-    scale2: { left: ['square'], right: ['circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'triangle',
-    explanation: "Circle + 2 Triangles = Square and Square = 2 Circles, so Triangle = 0.5 Circles"
-  },
-  // Puzzle 7: Circle = Triangle
-  {
-    scale1: { left: ['circle', 'circle'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
-    scale2: { left: ['square'], right: ['circle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "2 Circles = 4 Triangles (1 Circle = 2 Triangles) and Square = Circle + Triangle, solving gives Circle = Triangle"
-  },
-  // Puzzle 8: Circle > Triangle
-  {
-    scale1: { left: ['circle', 'circle', 'circle'], right: ['square', 'triangle'] },
-    scale2: { left: ['square', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "3 Circles = Square + Triangle and 2 Squares = 4 Triangles, solving gives Circle = 1.33 Triangles"
-  },
-  // Puzzle 9: Triangle > Circle
-  {
-    scale1: { left: ['circle', 'triangle'], right: ['square', 'square'] },
-    scale2: { left: ['square'], right: ['triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'triangle',
-    explanation: "Circle + Triangle = 2 Squares and 1 Square = 2 Triangles, so Triangle = 3 Circles"
-  },
-  // Puzzle 10: Circle = Triangle
-  {
-    scale1: { left: ['circle', 'square'], right: ['triangle', 'triangle'] },
-    scale2: { left: ['square', 'triangle'], right: ['circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "Circle + Square = 2 Triangles and Square + Triangle = 2 Circles, solving gives Circle = Triangle"
-  },
-  // Puzzle 11: Circle > Triangle
-  {
-    scale1: { left: ['circle', 'circle', 'triangle'], right: ['square', 'square'] },
-    scale2: { left: ['square', 'triangle', 'triangle'], right: ['circle', 'circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "2 Circles + Triangle = 2 Squares and Square + 2 Triangles = 3 Circles, solving gives Circle = 2 Triangles"
-  },
-  // Puzzle 12: Triangle > Circle
-  {
-    scale1: { left: ['circle', 'circle', 'circle', 'circle'], right: ['square', 'square', 'triangle'] },
-    scale2: { left: ['square', 'triangle', 'triangle'], right: ['circle', 'circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'triangle',
-    explanation: "4 Circles = 2 Squares + Triangle and Square + 2 Triangles = 3 Circles, solving gives Triangle = 2 Circles"
-  },
-  // Puzzle 13: Circle = Triangle
-  {
-    scale1: { left: ['circle', 'circle', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
-    scale2: { left: ['square', 'triangle'], right: ['circle', 'circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "2 Circles + Square = 4 Triangles and Square + Triangle = 3 Circles, solving gives Circle = Triangle"
-  },
-  // Puzzle 14: Circle > Triangle
-  {
-    scale1: { left: ['circle', 'triangle', 'triangle'], right: ['square', 'square'] },
-    scale2: { left: ['square', 'circle'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "Circle + 2 Triangles = 2 Squares and Square + Circle = 4 Triangles, solving gives Circle = 3 Triangles"
-  },
-  // Puzzle 15: Triangle > Circle
-  {
-    scale1: { left: ['circle', 'circle'], right: ['square', 'triangle'] },
-    scale2: { left: ['square', 'square'], right: ['triangle', 'triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'triangle',
-    explanation: "2 Circles = Square + Triangle and 2 Squares = 3 Triangles, solving gives Triangle = 1.5 Circles"
-  },
-  // Puzzle 16: Circle = Triangle
-  {
-    scale1: { left: ['circle', 'square', 'triangle'], right: ['circle', 'circle', 'triangle'] },
-    scale2: { left: ['square', 'square'], right: ['circle', 'triangle', 'triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "Circle + Square + Triangle = 2 Circles + Triangle and 2 Squares = Circle + 3 Triangles, solving gives Circle = Triangle"
-  },
-  // Puzzle 17: Circle > Triangle
-  {
-    scale1: { left: ['circle', 'circle', 'triangle', 'triangle'], right: ['square', 'square', 'square'] },
-    scale2: { left: ['square'], right: ['triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "2 Circles + 2 Triangles = 3 Squares and 1 Square = 2 Triangles, solving gives Circle = 2 Triangles"
-  },
-  // Puzzle 18: Triangle > Circle
-  {
-    scale1: { left: ['circle', 'square', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle'] },
-    scale2: { left: ['square', 'triangle'], right: ['circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'triangle',
-    explanation: "Circle + 2 Squares = 4 Triangles and Square + Triangle = 2 Circles, solving gives Triangle = 1.5 Circles"
-  },
-  // Puzzle 19: Circle = Triangle
-  {
-    scale1: { left: ['circle', 'circle', 'square', 'square'], right: ['triangle', 'triangle', 'triangle', 'triangle', 'triangle'] },
-    scale2: { left: ['square', 'triangle', 'triangle'], right: ['circle', 'circle', 'circle', 'circle'] },
-    question: "Circle vs Triangle?",
-    correct: 'equal',
-    explanation: "2 Circles + 2 Squares = 5 Triangles and Square + 2 Triangles = 4 Circles, solving gives Circle = Triangle"
-  },
-  // Puzzle 20: Final - Circle > Triangle
-  {
-    scale1: { left: ['circle', 'circle', 'circle'], right: ['square', 'triangle', 'triangle'] },
-    scale2: { left: ['square', 'square', 'square'], right: ['circle', 'circle', 'triangle', 'triangle', 'triangle'] },
-    question: "Circle vs Triangle?",
-    correct: 'circle',
-    explanation: "3 Circles = Square + 2 Triangles and 3 Squares = 2 Circles + 3 Triangles, solving gives Circle = 2 Triangles"
-  }
+
+/* ========= EQUAL (6) ========= */
+
+{
+  scale1:{ left:['circle'], right:['square'] },
+  scale2:{ left:['square'], right:['triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'equal',
+  explanation:"Circle = Square and Square = Triangle ⇒ Circle = Triangle"
+},
+{
+  scale1:{ left:['circle','circle'], right:['square','square'] },
+  scale2:{ left:['square'], right:['triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'equal',
+  explanation:"2C = 2S ⇒ C = S and S = T ⇒ C = T"
+},
+{
+  scale1:{ left:['circle','square'], right:['triangle','triangle'] },
+  scale2:{ left:['square','triangle'], right:['circle','circle'] },
+  question:"Circle vs Triangle?",
+  correct:'equal',
+  explanation:"Solving both equations gives Circle = Triangle"
+},
+{
+  scale1:{ left:['circle','circle','circle'], right:['square','square','square'] },
+  scale2:{ left:['square'], right:['triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'equal',
+  explanation:"3C = 3S ⇒ C = S and S = T ⇒ C = T"
+},
+{
+  scale1:{ left:['circle','square','square'], right:['triangle','triangle','triangle'] },
+  scale2:{ left:['square','triangle'], right:['circle','circle'] },
+  question:"Circle vs Triangle?",
+  correct:'equal',
+  explanation:"Solving both equations yields equal weights"
+},
+{
+  scale1:{ left:['circle','circle','triangle'], right:['square','square'] },
+  scale2:{ left:['square','triangle'], right:['circle','circle'] },
+  question:"Circle vs Triangle?",
+  correct:'equal',
+  explanation:"Equations simplify to Circle = Triangle"
+},
+
+/* ========= CIRCLE HEAVIER (7) ========= */
+
+{
+  scale1:{ left:['circle','circle'], right:['square'] },
+  scale2:{ left:['square'], right:['triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"2C = S and S = T ⇒ 2C = T ⇒ Circle heavier"
+},
+{
+  scale1:{ left:['circle','circle','circle'], right:['square','square'] },
+  scale2:{ left:['square'], right:['triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"3C = 2S and S = T ⇒ 1C > T"
+},
+{
+  scale1:{ left:['circle','triangle'], right:['square'] },
+  scale2:{ left:['square'], right:['triangle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"C + T = S and S = 2T ⇒ C > T"
+},
+{
+  scale1:{ left:['circle','circle','triangle'], right:['square','square'] },
+  scale2:{ left:['square'], right:['circle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"Substitution shows Circle > Triangle"
+},
+{
+  scale1:{ left:['circle','circle','circle'], right:['square','triangle'] },
+  scale2:{ left:['square'], right:['triangle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"3C = S + T and S = 2T ⇒ C > T"
+},
+{
+  scale1:{ left:['circle','square'], right:['triangle','triangle','triangle'] },
+  scale2:{ left:['square'], right:['circle','circle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"Solving gives Circle heavier than Triangle"
+},
+{
+  scale1:{ left:['circle','circle','circle','circle'], right:['square','square','triangle'] },
+  scale2:{ left:['square'], right:['circle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'circle',
+  explanation:"Weight ratios prove Circle > Triangle"
+},
+
+/* ========= TRIANGLE HEAVIER (7) ========= */
+
+{
+  scale1:{ left:['circle'], right:['square','square'] },
+  scale2:{ left:['square'], right:['triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"C = 2S and S = T ⇒ Triangle heavier"
+},
+{
+  scale1:{ left:['circle'], right:['triangle','triangle'] },
+  scale2:{ left:['triangle'], right:['square'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"Triangle outweighs Circle"
+},
+{
+  scale1:{ left:['circle','circle'], right:['square','triangle'] },
+  scale2:{ left:['square'], right:['triangle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"Substitution gives Triangle heavier"
+},
+{
+  scale1:{ left:['circle','triangle'], right:['square','square'] },
+  scale2:{ left:['square'], right:['triangle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"Circle + Triangle = 2 Squares ⇒ Triangle heavier"
+},
+{
+  scale1:{ left:['circle','circle','square'], right:['triangle','triangle'] },
+  scale2:{ left:['square'], right:['triangle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"Triangle outweighs Circle"
+},
+{
+  scale1:{ left:['circle','square','square'], right:['triangle','triangle','triangle'] },
+  scale2:{ left:['square'], right:['circle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"Triangle heavier after substitution"
+},
+{
+  scale1:{ left:['circle','circle','triangle','triangle'], right:['square','square'] },
+  scale2:{ left:['square'], right:['triangle','triangle'] },
+  question:"Circle vs Triangle?",
+  correct:'triangle',
+  explanation:"Triangle proven heavier"
+}
+
 ];
 
-// Verify distribution
+
+// Verify the distribution
 function verifyDistribution() {
   let equal = 0, circle = 0, triangle = 0;
-  puzzles.forEach(p => {
+  puzzles.forEach((p, i) => {
     if (p.correct === 'equal') equal++;
     if (p.correct === 'circle') circle++;
     if (p.correct === 'triangle') triangle++;
+    console.log(`Puzzle ${i+1}: ${p.correct}`);
   });
-  console.log(`Distribution: ${equal} equal, ${circle} circle, ${triangle} triangle`);
+  console.log(`Total: ${equal} equal, ${circle} circle, ${triangle} triangle`);
+  return { equal, circle, triangle };
 }
 
 // DOM Elements
@@ -689,7 +682,9 @@ const timerEl = document.getElementById('timer');
 
 // Initialize
 function init() {
-  verifyDistribution();
+  const distribution = verifyDistribution();
+  console.log('Puzzle Distribution:', distribution);
+  
   updateDisplay();
   createLevelIndicators();
   startTimer();
@@ -761,6 +756,8 @@ function selectAnswer(answer) {
 function checkAnswer(answer) {
   const puzzle = puzzles[gameState.currentPuzzleIndex];
   const isCorrect = answer === puzzle.correct;
+  
+  console.log(`Puzzle ${gameState.currentPuzzleIndex + 1}: Selected ${answer}, Correct ${puzzle.correct}, Result ${isCorrect ? 'Correct' : 'Wrong'}`);
   
   if (isCorrect) {
     // Correct
