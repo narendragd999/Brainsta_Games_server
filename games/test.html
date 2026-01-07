@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nine Men's Morris - AI Game</title>
+    <title>Nine Men's Morris</title>
     <style>
         * {
             margin: 0;
@@ -14,147 +14,143 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
         }
 
         #game-container {
             width: 100%;
             max-width: 500px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 15px;
+            height: 100vh;
+            height: 100dvh;
+            background: white;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 8px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
+            padding: 4px 0;
             border-bottom: 2px solid #e0e0e0;
+            flex-shrink: 0;
         }
 
         h1 {
-            color: #333;
-            font-size: 1.5rem;
+            color: #2c3e50;
+            font-size: 1.3rem;
             text-align: center;
             flex: 1;
+            font-weight: 700;
+            letter-spacing: -0.5px;
         }
 
-        .difficulty-controls {
-            display: flex;
-            gap: 8px;
-            padding: 10px;
-            background: #fff3e0;
-            border-radius: 10px;
-            margin: 5px 0;
-            justify-content: center;
+
+
+        .players-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin: 0;
+            flex-shrink: 0;
         }
 
-        .diff-btn {
-            padding: 8px 16px;
-            border: 2px solid transparent;
-            border-radius: 6px;
-            background: white;
-            color: #333;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-            min-width: 80px;
-        }
-
-        .diff-btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .diff-btn.active {
-            color: white;
-            border-color: #fff;
-        }
-
-        .diff-btn.easy.active {
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
-        }
-
-        .diff-btn.hard.active {
-            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
-        }
-
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            margin: 5px 0;
-        }
-
-        .player {
+        .player-card {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-weight: bold;
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 600;
             position: relative;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .player-card.active {
+            background: white;
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .player-card.ai {
+            background: #fef5e7;
+        }
+
+        .player-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .player-human .player-icon {
+            background: #3498db;
+        }
+
+        .player-ai .player-icon {
+            background: #e74c3c;
+        }
+
+        .player-details {
             flex: 1;
         }
 
-        .player.active {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
+        .player-name {
+            font-size: 0.9rem;
+            color: #2c3e50;
+            margin-bottom: 2px;
         }
 
-        .player.ai-player {
-            background: #f3e5f5;
+        .player-stats {
+            font-size: 0.75rem;
+            color: #7f8c8d;
         }
 
         .ai-badge {
             position: absolute;
             top: -8px;
             right: -8px;
-            background: #9c27b0;
+            background: #9b59b6;
             color: white;
             font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 3px 8px;
+            border-radius: 12px;
             font-weight: bold;
         }
 
-        .player-piece {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-        }
-
-        .player1 .player-piece { 
-            background: #2196f3;
-            border-color: #0d47a1;
-        }
-        .player2 .player-piece { 
-            background: #f44336;
-            border-color: #b71c1c;
-        }
-
         .ai-thinking {
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 0.75rem;
+            color: #95a5a6;
             display: none;
-            font-size: 0.8rem;
-            color: #666;
-            font-style: italic;
-            margin-left: 10px;
         }
 
         .ai-thinking.active {
@@ -167,42 +163,29 @@
             50% { opacity: 1; }
         }
 
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: #e8f5e9;
-            border-radius: 8px;
-            margin: 5px 0;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .phase-indicator {
+        .game-status {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 10px;
+            padding: 8px;
+            margin: 0;
             text-align: center;
-            padding: 10px;
-            background: linear-gradient(135deg, #bbdefb 0%, #90caf9 100%);
-            border-radius: 8px;
-            font-weight: bold;
-            color: #0d47a1;
-            margin: 5px 0;
-            border-left: 4px solid #2196f3;
+            font-weight: 600;
+            color: #1565c0;
+            border-left: 4px solid #3498db;
+            font-size: 0.85rem;
+            flex-shrink: 0;
         }
 
-        .game-board {
+        .board-container {
             position: relative;
             width: 100%;
             aspect-ratio: 1;
             background: #faf3e0;
             border-radius: 10px;
             border: 3px solid #8b4513;
-            touch-action: none;
             overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(139, 69, 19, 0.2);
+            flex-shrink: 0;
         }
 
         .board-svg {
@@ -215,6 +198,7 @@
             stroke: #5d4037;
             stroke-width: 3;
             fill: none;
+            stroke-linecap: round;
         }
 
         .point {
@@ -223,248 +207,313 @@
             pointer-events: auto;
         }
 
-        .point:hover {
-            r: 14;
+        .point:hover:not(.player1):not(.player2) {
+            r: 13;
+            fill: #a1887f;
         }
 
         .point.empty {
             fill: #795548;
+            stroke: #5d4037;
+            stroke-width: 2;
         }
 
         .point.player1 {
-            fill: #2196f3;
-            stroke: #0d47a1;
-            stroke-width: 3;
+            fill: #3498db;
+            stroke: #2980b9;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 2px 4px rgba(52, 152, 219, 0.3));
         }
 
         .point.player2 {
-            fill: #f44336;
-            stroke: #b71c1c;
-            stroke-width: 3;
+            fill: #e74c3c;
+            stroke: #c0392b;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 2px 4px rgba(231, 76, 60, 0.3));
         }
 
         .point.selected {
-            fill: #ffeb3b;
-            stroke: #f57f17;
-            stroke-width: 4;
-            filter: drop-shadow(0 0 8px #ff9800);
+            fill: #f1c40f;
+            stroke: #f39c12;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 10px #f1c40f);
+            animation: selected-pulse 1s infinite;
         }
 
         .point.hint {
-            fill: #4caf50;
-            stroke: #2e7d32;
-            stroke-width: 3;
+            fill: #2ecc71;
+            stroke: #27ae60;
+            stroke-width: 2.5;
             animation: hint-pulse 1.5s infinite;
             cursor: pointer;
         }
 
         .point.removable {
-            fill: #ff9800;
-            stroke: #ef6c00;
-            stroke-width: 3;
+            fill: #e67e22;
+            stroke: #d35400;
+            stroke-width: 2.5;
             animation: removable-pulse 1s infinite;
+            cursor: pointer;
         }
 
-        @keyframes pulse {
-            0% { r: 12; }
-            50% { r: 14; }
-            100% { r: 12; }
+        .point.mill {
+            stroke: #9b59b6;
+            stroke-width: 3;
+            animation: mill-pulse 2s infinite;
+        }
+
+        @keyframes selected-pulse {
+            0%, 100% { r: 13; }
+            50% { r: 15; }
         }
 
         @keyframes hint-pulse {
-            0% { opacity: 1; }
+            0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
-            100% { opacity: 1; }
         }
 
         @keyframes removable-pulse {
-            0% { fill: #ff9800; }
-            50% { fill: #ffb74d; }
-            100% { fill: #ff9800; }
+            0%, 100% { fill: #e67e22; }
+            50% { fill: #f39c12; }
+        }
+
+        @keyframes mill-pulse {
+            0%, 100% { filter: drop-shadow(0 0 5px #9b59b6); }
+            50% { filter: drop-shadow(0 0 15px #9b59b6); }
         }
 
         .controls {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            padding: 10px 0;
+            gap: 6px;
+            padding: 0;
+            flex-shrink: 0;
         }
 
-        button {
-            padding: 12px;
+        .btn {
+            padding: 10px 6px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
-            font-weight: bold;
-            font-size: 0.9rem;
+            font-weight: 600;
+            font-size: 0.75rem;
             cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+            white-space: nowrap;
         }
 
-        button:hover:not(:disabled) {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            opacity: 0.9;
+            box-shadow: 0 6px 12px rgba(52, 152, 219, 0.3);
         }
 
-        button:active:not(:disabled) {
+        .btn:active:not(:disabled) {
             transform: translateY(0);
         }
 
-        button:disabled {
+        .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none !important;
         }
 
-        button.secondary {
-            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+        .btn-secondary {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
         }
 
-        button.danger {
-            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
         }
 
-        button.warning {
-            background: linear-gradient(135deg, #ff9800 0%, #ef6c00 100%);
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
         }
 
-        .message {
+        .btn-purple {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+
+        .message-overlay {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 15px;
-            text-align: center;
-            z-index: 1000;
-            display: none;
-            max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            border: 3px solid #2196f3;
-        }
-
-        .message h3 {
-            margin-bottom: 10px;
-            color: #ffeb3b;
-            font-size: 1.2rem;
-        }
-
-        .message p {
-            margin: 10px 0;
-        }
-
-        #instructions {
-            background: white;
-            color: #333;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 25px;
-            border: 3px solid #667eea;
-        }
-
-        #instructions h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        #instructions h3 {
-            color: #764ba2;
-            margin: 15px 0 8px;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 5px;
-        }
-
-        #instructions ul {
-            padding-left: 20px;
-            margin-bottom: 15px;
-        }
-
-        #instructions li {
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #666;
-            cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .message-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: message-appear 0.3s ease-out;
+        }
+
+        @keyframes message-appear {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .message-title {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .message-text {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .message-btn {
+            padding: 12px 30px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .message-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
         }
 
         .sound-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
+            background: #f8f9fa;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            font-size: 1.2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            font-size: 1rem;
+            transition: all 0.2s;
+            flex-shrink: 0;
         }
 
-        .removal-hint {
-            text-align: center;
-            padding: 8px;
-            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-            color: white;
-            border-radius: 8px;
-            margin: 5px 0;
-            font-weight: bold;
-            animation: hint-pulse 1.5s infinite;
+        .sound-toggle:hover {
+            transform: scale(1.1);
         }
 
-        @media (max-width: 480px) {
+                    @media (max-width: 480px) {
             #game-container {
-                padding: 10px;
-                gap: 8px;
+                border-radius: 0;
+                max-width: 100%;
             }
             
             h1 {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
             }
             
-            .controls {
-                grid-template-columns: repeat(2, 1fr);
+            .btn {
+                padding: 8px 4px;
+                font-size: 0.7rem;
+                gap: 3px;
             }
             
-            button {
-                padding: 10px;
-                font-size: 0.85rem;
+            .player-card {
+                padding: 6px;
+                gap: 6px;
             }
-            
-            .diff-btn {
-                padding: 8px 12px;
+
+            .player-icon {
+                width: 24px;
+                height: 24px;
+                font-size: 0.75rem;
+            }
+
+            .player-name {
+                font-size: 0.8rem;
+            }
+
+            .player-stats {
+                font-size: 0.7rem;
+            }
+
+            .sound-toggle {
+                width: 32px;
+                height: 32px;
                 font-size: 0.9rem;
-                min-width: 70px;
             }
-            
-            .status-bar {
-                flex-direction: column;
+
+            .game-status {
+                font-size: 0.8rem;
+                padding: 6px;
+            }
+        }
+
+        @media (max-height: 700px) {
+            h1 {
+                font-size: 1.1rem;
+            }
+
+            .player-card {
+                padding: 6px;
+            }
+
+            .game-status {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+
+            .btn {
+                padding: 8px 4px;
+                font-size: 0.7rem;
+            }
+
+            .controls {
+                gap: 4px;
+            }
+        }
+
+        @media (min-width: 481px) {
+            #game-container {
+                border-radius: 20px;
+                height: auto;
+                max-height: 95vh;
+                padding: 15px;
+                gap: 10px;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            .board-container {
+                border-radius: 12px;
+            }
+
+            .controls {
                 gap: 8px;
-                align-items: stretch;
+                padding: 10px 0 0;
+            }
+
+            .btn {
+                padding: 12px 8px;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -473,588 +522,397 @@
     <div id="game-container">
         <div class="header">
             <h1>Nine Men's Morris</h1>
-            <div class="sound-toggle" id="soundToggle">
+            <div class="sound-toggle" id="soundToggle" title="Toggle sound">
                 🔊
             </div>
         </div>
         
-        <div class="difficulty-controls">
-            <button class="diff-btn easy active" onclick="setDifficulty('easy')">
-                Easy AI
-            </button>
-            <button class="diff-btn hard" onclick="setDifficulty('hard')">
-                Hard AI
-            </button>
-        </div>
+
         
-        <div class="game-info">
-            <div class="player player1 active" id="player1">
-                <div class="player-piece"></div>
-                <span>YOU</span>
-                <div id="p1Pieces">9</div>
+        <div class="players-info">
+            <div class="player-card player-human active" id="playerHuman">
+                <div class="player-icon">P</div>
+                <div class="player-details">
+                    <div class="player-name">Player</div>
+                    <div class="player-stats">Pieces: <span id="humanPieces">9</span></div>
+                </div>
             </div>
-            <div class="player player2 ai-player" id="player2">
-                <div class="player-piece"></div>
-                <span>AI</span>
-                <div id="p2Pieces">9</div>
-                <div class="ai-badge">🤖</div>
-                <div class="ai-thinking" id="aiThinking">Thinking...</div>
+            <div class="player-card player-ai" id="playerAI">
+                <div class="player-icon">AI</div>
+                <div class="player-details">
+                    <div class="player-name">AI</div>
+                    <div class="player-stats">Pieces: <span id="aiPieces">9</span></div>
+                    <div class="ai-badge">🤖</div>
+                    <div class="ai-thinking" id="aiThinking">Thinking...</div>
+                </div>
             </div>
         </div>
         
-        <div class="phase-indicator" id="phaseIndicator">
-            Place your pieces (Click empty circles)
+        <div class="game-status" id="gameStatus">
+            Place your pieces (9 remaining)
         </div>
         
-        <div id="removalHint" class="removal-hint" style="display: none;">
-            ✨ You formed a mill! Click on AI's piece to remove it.
-        </div>
-        
-        <div class="status-bar">
-            <div class="status-item">
-                <span>Placed:</span>
-                <strong id="placedCount">0</strong>
-            </div>
-            <div class="status-item">
-                <span>Turn:</span>
-                <strong id="turnCount">1</strong>
-            </div>
-            <div class="status-item">
-                <span>Phase:</span>
-                <strong id="phaseDisplay">Placement</strong>
-            </div>
-        </div>
-        
-        <div class="game-board" id="gameBoard">
-            <svg class="board-svg" viewBox="0 0 300 300">
-                <!-- Correct board lines for Nine Men's Morris -->
+        <div class="board-container">
+            <svg class="board-svg" viewBox="0 0 400 400">
+                <!-- Board lines -->
                 <!-- Outer square -->
-                <line class="line" x1="50" y1="50" x2="250" y2="50"/>
-                <line class="line" x1="50" y1="250" x2="250" y2="250"/>
-                <line class="line" x1="50" y1="50" x2="50" y2="250"/>
-                <line class="line" x1="250" y1="50" x2="250" y2="250"/>
+                <line class="line" x1="50" y1="50" x2="350" y2="50"/>
+                <line class="line" x1="50" y1="350" x2="350" y2="350"/>
+                <line class="line" x1="50" y1="50" x2="50" y2="350"/>
+                <line class="line" x1="350" y1="50" x2="350" y2="350"/>
                 
                 <!-- Middle square -->
-                <line class="line" x1="100" y1="100" x2="200" y2="100"/>
-                <line class="line" x1="100" y1="200" x2="200" y2="200"/>
-                <line class="line" x1="100" y1="100" x2="100" y2="200"/>
-                <line class="line" x1="200" y1="100" x2="200" y2="200"/>
+                <line class="line" x1="100" y1="100" x2="300" y2="100"/>
+                <line class="line" x1="100" y1="300" x2="300" y2="300"/>
+                <line class="line" x1="100" y1="100" x2="100" y2="300"/>
+                <line class="line" x1="300" y1="100" x2="300" y2="300"/>
                 
                 <!-- Inner square -->
-                <line class="line" x1="150" y1="150" x2="150" y2="150"/>
+                <line class="line" x1="150" y1="150" x2="250" y2="150"/>
+                <line class="line" x1="150" y1="250" x2="250" y2="250"/>
+                <line class="line" x1="150" y1="150" x2="150" y2="250"/>
+                <line class="line" x1="250" y1="150" x2="250" y2="250"/>
                 
-                <!-- Diagonal connections -->
-                <line class="line" x1="50" y1="50" x2="150" y2="150"/>
-                <line class="line" x1="250" y1="50" x2="150" y2="150"/>
-                <line class="line" x1="50" y1="250" x2="150" y2="150"/>
-                <line class="line" x1="250" y1="250" x2="150" y2="150"/>
-                
-                <!-- Points will be added here by JavaScript -->
+                <!-- Cross connections -->
+                <line class="line" x1="200" y1="50" x2="200" y2="150"/>
+                <line class="line" x1="200" y1="250" x2="200" y2="350"/>
+                <line class="line" x1="50" y1="200" x2="150" y2="200"/>
+                <line class="line" x1="250" y1="200" x2="350" y2="200"/>
             </svg>
         </div>
         
         <div class="controls">
-            <button onclick="showHint()" id="hintBtn">
+            <button class="btn btn-secondary" onclick="showHint()" id="hintBtn">
                 💡 Hint
             </button>
-            <button onclick="checkMills()" class="secondary">
-                🔍 Check Mills
+            <button class="btn btn-purple" onclick="checkMills()">
+                🔍 Mills
             </button>
-            <button onclick="undoMove()" class="warning" id="undoBtn">
+            <button class="btn btn-warning" onclick="undoMove()" id="undoBtn">
                 ↩️ Undo
             </button>
-            <button onclick="newGame()" class="danger">
+            <button class="btn btn-danger" onclick="newGame()">
                 🆕 New Game
             </button>
-            <button onclick="showInstructions()">
-                📖 How to Play
+            <button class="btn" onclick="showInstructions()">
+                📖 Rules
             </button>
-            <button onclick="toggleSound()" id="soundBtn">
+            <button class="btn" onclick="toggleSound()" id="soundBtn">
                 🔊 Sound On
             </button>
         </div>
     </div>
     
-    <div class="message" id="message">
-        <h3 id="messageTitle"></h3>
-        <p id="messageText"></p>
-        <button onclick="hideMessage()" style="margin-top: 15px; padding: 8px 20px;">OK</button>
-    </div>
-    
-    <div class="message" id="instructions">
-        <button class="close-btn" onclick="hideInstructions()">×</button>
-        <h2>How to Play Nine Men's Morris</h2>
-        
-        <h3>🎯 Objective</h3>
-        <p>Reduce the AI to 2 pieces or block it from making legal moves.</p>
-        
-        <h3>🎮 Game Phases</h3>
-        <ul>
-            <li><strong>Phase 1 - Placement:</strong> Place your 9 pieces on board intersections</li>
-            <li><strong>Phase 2 - Movement:</strong> Move your pieces to adjacent empty points</li>
-            <li><strong>Phase 3 - Flying:</strong> When you have 3 pieces left, you can move to ANY empty point</li>
-        </ul>
-        
-        <h3>⭐ Forming a Mill</h3>
-        <ul>
-            <li>A mill is 3 of your pieces in a straight line</li>
-            <li>When you form a mill, you can remove one AI piece</li>
-            <li>Cannot remove pieces from AI's mills unless no other options</li>
-            <li>Mills can be opened and closed repeatedly</li>
-        </ul>
-        
-        <h3>👆 How to Remove AI Pieces</h3>
-        <ul>
-            <li>When you form a mill, AI's pieces will glow orange</li>
-            <li>Click on an orange AI piece to remove it</li>
-            <li>Choose pieces NOT in mills when possible</li>
-        </ul>
-        
-        <h3>🎮 Controls</h3>
-        <ul>
-            <li><strong>Click empty circle:</strong> Place your piece</li>
-            <li><strong>Click your piece:</strong> Select it to move</li>
-            <li><strong>Click highlighted circle:</strong> Move selected piece</li>
-            <li><strong>Hint:</strong> Shows possible moves</li>
-            <li><strong>Undo:</strong> Take back your last move</li>
-        </ul>
-        
-        <h3>🤖 AI Difficulty</h3>
-        <ul>
-            <li><strong>Easy:</strong> AI makes basic moves</li>
-            <li><strong>Hard:</strong> AI actively blocks your mills and forms its own</li>
-        </ul>
-        
-        <button onclick="hideInstructions()" style="margin-top: 20px; width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-            Start Playing!
-        </button>
+    <div class="message-overlay" id="messageOverlay">
+        <div class="message-box">
+            <h2 class="message-title" id="messageTitle"></h2>
+            <p class="message-text" id="messageText"></p>
+            <button class="message-btn" onclick="hideMessage()">Continue</button>
+        </div>
     </div>
 
     <script>
-        // Game state
         const gameState = {
-            board: Array(24).fill(0), // 0 = empty, 1 = player (you), 2 = AI
-            currentPlayer: 1, // Player always starts
-            phase: 'placement', // 'placement', 'movement', 'removal', 'flying'
-            piecesToPlace: {1: 9, 2: 9}, // Pieces left to place
-            piecesOnBoard: {1: 0, 2: 0}, // Pieces currently on board
-            selectedPoint: -1, // Currently selected point
+            board: new Array(24).fill(0),
+            currentPlayer: 1,
+            phase: 'placement',
+            piecesToPlace: {1: 9, 2: 9},
+            piecesOnBoard: {1: 0, 2: 0},
+            selectedPoint: -1,
             gameOver: false,
             soundEnabled: true,
-            difficulty: 'easy', // 'easy', 'hard'
-            moveHistory: [], // For undo functionality
+            difficulty: 'hard',
+            moveHistory: [],
             turnCount: 1,
-            aiThinking: false
+            aiThinking: false,
+            recentMill: null,
+            lastMillPositions: []
         };
 
-        // Correct adjacency matrix for Nine Men's Morris
         const adjacentPoints = [
-            [1, 9],        // 0
-            [0, 2, 4],     // 1
-            [1, 14],       // 2
-            [4, 10],       // 3
-            [1, 3, 5, 7],  // 4
-            [4, 13],       // 5
-            [7, 11],       // 6
-            [4, 6, 8],     // 7
-            [7, 12],       // 8
-            [0, 10, 21],   // 9
-            [3, 9, 11, 18], // 10
-            [6, 10, 15],   // 11
-            [8, 13, 17],   // 12
-            [5, 12, 14, 20], // 13
-            [2, 13, 23],   // 14
-            [11, 16],      // 15
-            [15, 17, 19],  // 16
-            [12, 16],      // 17
-            [10, 19],      // 18
-            [16, 18, 20, 22], // 19
-            [13, 19, 23],  // 20
-            [9, 22],       // 21
-            [19, 21, 23],  // 22
-            [14, 20, 22]   // 23
+            [1, 9], [0, 2, 4], [1, 14], [4, 10], [1, 3, 5, 7], [4, 13],
+            [7, 11], [4, 6, 8], [7, 12], [0, 10, 21], [3, 9, 11, 18],
+            [6, 10, 15], [8, 13, 17], [5, 12, 14, 20], [2, 13, 23],
+            [11, 16], [15, 17, 19], [12, 16], [10, 19], [16, 18, 20, 22],
+            [13, 19, 23], [9, 22], [19, 21, 23], [14, 20, 22]
         ];
 
-        // Correct mill combinations for the standard board layout
         const millCombinations = [
-            // Horizontal mills
-            [0, 1, 2],    // Top outer
-            [3, 4, 5],    // Top middle
-            [6, 7, 8],    // Top inner
-            [9, 10, 11],  // Middle outer
-            [12, 13, 14], // Middle inner
-            [15, 16, 17], // Bottom outer
-            [18, 19, 20], // Bottom middle
-            [21, 22, 23], // Bottom inner
-            
-            // Vertical mills
-            [0, 9, 21],   // Left outer
-            [3, 10, 18],  // Left middle
-            [6, 11, 15],  // Left inner
-            [1, 4, 7],    // Center vertical
-            [16, 19, 22], // Center vertical inner
-            [8, 12, 17],  // Right inner
-            [5, 13, 20],  // Right middle
-            [2, 14, 23]   // Right outer
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11], [12, 13, 14],
+            [15, 16, 17], [18, 19, 20], [21, 22, 23], [0, 9, 21],
+            [3, 10, 18], [6, 11, 15], [1, 4, 7], [16, 19, 22],
+            [8, 12, 17], [5, 13, 20], [2, 14, 23]
         ];
 
-        // Correct point coordinates matching the standard board layout
-        const pointCoords = [
-            // Outer square corners and midpoints
-            [50, 50],   // 0 - top left
-            [150, 50],  // 1 - top center
-            [250, 50],  // 2 - top right
-            [100, 100], // 3 - upper left diagonal
-            [150, 100], // 4 - upper center
-            [200, 100], // 5 - upper right diagonal
-            [50, 150],  // 6 - left center
-            [150, 150], // 7 - center
-            [250, 150], // 8 - right center
-            [50, 200],  // 9 - lower left diagonal
-            [100, 200], // 10 - lower center left
-            [200, 200], // 11 - lower center right
-            [50, 250],  // 12 - bottom left
-            [150, 250], // 13 - bottom center
-            [250, 250], // 14 - bottom right
-            
-            // Inner square (actually additional points)
-            [100, 150], // 15 - middle left
-            [150, 150], // 16 - center (duplicate of 7, but different position in mills)
-            [200, 150], // 17 - middle right
-            [100, 100], // 18 - upper left (duplicate of 3, but different mill)
-            [150, 100], // 19 - upper center (duplicate of 4)
-            [200, 100], // 20 - upper right (duplicate of 5)
-            [100, 200], // 21 - lower left (duplicate of 10)
-            [150, 200], // 22 - lower center
-            [200, 200]  // 23 - lower right (duplicate of 11)
-        ];
-
-        // Initialize game
         function initGame() {
             createBoardPoints();
             updateUI();
-            showMessage('Welcome!', 'Place your pieces by clicking empty circles. You are BLUE, AI is RED.');
+            showMessage('Welcome to Nine Men\'s Morris!', 'Place your blue pieces on empty circles. Form a line of three to remove an AI piece.');
         }
 
-        // Create SVG points for the board
         function createBoardPoints() {
             const svg = document.querySelector('.board-svg');
+            svg.querySelectorAll('.point').forEach(p => p.remove());
             
-            // Clear existing points
-            document.querySelectorAll('.point').forEach(p => p.remove());
+            const coords = [
+                [50, 50], [200, 50], [350, 50], [100, 100], [200, 100], [300, 100],
+                [150, 150], [200, 150], [250, 150], [50, 200], [100, 200], [150, 200],
+                [250, 200], [300, 200], [350, 200], [150, 250], [200, 250], [250, 250],
+                [100, 300], [200, 300], [300, 300], [50, 350], [200, 350], [350, 350]
+            ];
             
-            // Create points with correct coordinates
-            for (let i = 0; i < 24; i++) {
-                let x, y;
-                
-                // Assign coordinates based on index
-                switch(i) {
-                    case 0: x = 50; y = 50; break;
-                    case 1: x = 150; y = 50; break;
-                    case 2: x = 250; y = 50; break;
-                    case 3: x = 100; y = 100; break;
-                    case 4: x = 150; y = 100; break;
-                    case 5: x = 200; y = 100; break;
-                    case 6: x = 50; y = 150; break;
-                    case 7: x = 150; y = 150; break;
-                    case 8: x = 250; y = 150; break;
-                    case 9: x = 50; y = 200; break;
-                    case 10: x = 100; y = 200; break;
-                    case 11: x = 200; y = 200; break;
-                    case 12: x = 50; y = 250; break;
-                    case 13: x = 150; y = 250; break;
-                    case 14: x = 250; y = 250; break;
-                    case 15: x = 100; y = 150; break;
-                    case 16: x = 150; y = 150; break; // Same as 7
-                    case 17: x = 200; y = 150; break;
-                    case 18: x = 100; y = 100; break; // Same as 3
-                    case 19: x = 150; y = 100; break; // Same as 4
-                    case 20: x = 200; y = 100; break; // Same as 5
-                    case 21: x = 100; y = 200; break; // Same as 10
-                    case 22: x = 150; y = 200; break;
-                    case 23: x = 200; y = 200; break; // Same as 11
-                }
-                
+            coords.forEach(([x, y], index) => {
                 const point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                 point.setAttribute('class', 'point empty');
                 point.setAttribute('cx', x);
                 point.setAttribute('cy', y);
-                point.setAttribute('r', '12');
-                point.setAttribute('data-index', i);
-                point.addEventListener('click', () => handlePointClick(i));
+                point.setAttribute('r', '14');
+                point.setAttribute('data-index', index);
+                point.addEventListener('click', () => handlePointClick(index));
                 svg.appendChild(point);
-            }
+            });
         }
 
-        // Set AI difficulty
-        function setDifficulty(difficulty) {
-            gameState.difficulty = difficulty;
-            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.diff-btn.${difficulty}`).classList.add('active');
-            newGame();
-        }
 
-        // Handle point click
+
         function handlePointClick(index) {
             if (gameState.gameOver || gameState.aiThinking || gameState.currentPlayer !== 1) return;
             
-            saveState(); // Save state for undo
-            
+            saveState();
             const player = gameState.currentPlayer;
             
             if (gameState.phase === 'removal') {
-                // Player needs to remove an AI piece
-                if (gameState.board[index] === 2) {
-                    if (canRemovePiece(index, player)) {
-                        removePiece(index);
-                        gameState.phase = gameState.piecesOnBoard[1] + gameState.piecesOnBoard[2] === 18 ? 
-                            (gameState.piecesOnBoard[1] <= 3 ? 'flying' : 'movement') : 'placement';
-                        switchPlayer();
-                        updateUI();
-                        
-                        // AI makes a move after removal
-                        if (!gameState.gameOver) {
-                            setTimeout(() => makeAIMove(), 500);
-                        }
-                    } else {
-                        showMessage('Cannot Remove', 'You cannot remove this piece. Try another AI piece.');
+                if (gameState.board[index] === 2 && canRemovePiece(index)) {
+                    removePiece(index);
+                    endRemovalPhase();
+                    if (!gameState.gameOver) {
+                        setTimeout(() => makeAIMove(), 500);
                     }
                 }
                 return;
             }
             
             if (gameState.phase === 'placement') {
-                // Placement phase
-                if (gameState.board[index] === 0 && gameState.piecesToPlace[player] > 0) {
+                if (gameState.board[index] === 0) {
                     placePiece(index, player);
-                    if (checkForMill(index, player)) {
-                        gameState.phase = 'removal';
-                        document.getElementById('removalHint').style.display = 'block';
-                        showRemovablePieces();
-                        showMessage('Mill Formed!', 'Click on an orange AI piece to remove it.');
-                    } else {
+                    if (!checkForMill(index, player)) {
+                        if (gameState.piecesToPlace[1] === 0 && gameState.piecesToPlace[2] === 0) {
+                            gameState.phase = getMovementPhase();
+                        }
                         switchPlayer();
                         updateUI();
                         setTimeout(() => makeAIMove(), 500);
                     }
                 }
             } else if (gameState.phase === 'movement' || gameState.phase === 'flying') {
-                // Movement phase
                 if (gameState.selectedPoint === -1) {
-                    // Select a piece to move
                     if (gameState.board[index] === player) {
                         gameState.selectedPoint = index;
                         highlightValidMoves(index);
                         updateUI();
                     }
                 } else {
-                    // Move to new position
                     if (gameState.board[index] === 0 && isValidMove(gameState.selectedPoint, index)) {
-                        movePiece(gameState.selectedPoint, index, player);
+                        const from = gameState.selectedPoint;
                         gameState.selectedPoint = -1;
+                        movePiece(from, index, player);
                         clearHighlights();
-                        
-                        if (checkForMill(index, player)) {
-                            gameState.phase = 'removal';
-                            document.getElementById('removalHint').style.display = 'block';
-                            showRemovablePieces();
-                            showMessage('Mill Formed!', 'Click on an orange AI piece to remove it.');
-                        } else {
+                        if (!checkForMill(index, player)) {
                             switchPlayer();
                             updateUI();
                             setTimeout(() => makeAIMove(), 500);
                         }
                     } else if (gameState.board[index] === player) {
-                        // Select different piece
                         gameState.selectedPoint = index;
                         highlightValidMoves(index);
+                        updateUI();
+                    } else {
+                        gameState.selectedPoint = -1;
+                        clearHighlights();
                         updateUI();
                     }
                 }
             }
         }
 
-        // Place a piece
         function placePiece(index, player) {
             gameState.board[index] = player;
             gameState.piecesToPlace[player]--;
             gameState.piecesOnBoard[player]++;
             updatePointVisual(index);
-            playSound('placeSound');
-            
-            // Check if all pieces placed
-            if (gameState.piecesToPlace[1] === 0 && gameState.piecesToPlace[2] === 0) {
-                gameState.phase = gameState.piecesOnBoard[1] <= 3 ? 'flying' : 'movement';
-            }
+            playSound('place');
         }
 
-        // Move a piece
         function movePiece(fromIndex, toIndex, player) {
             gameState.board[fromIndex] = 0;
             gameState.board[toIndex] = player;
             updatePointVisual(fromIndex);
             updatePointVisual(toIndex);
-            playSound('moveSound');
+            playSound('move');
         }
 
-        // Remove a piece
         function removePiece(index) {
             const player = gameState.board[index];
             gameState.board[index] = 0;
             gameState.piecesOnBoard[player]--;
             updatePointVisual(index);
-            playSound('removeSound');
+            playSound('remove');
             
-            document.getElementById('removalHint').style.display = 'none';
-            clearHighlights();
-            
-            // Check for game over
-            if (gameState.piecesOnBoard[2] < 3) {
-                gameState.gameOver = true;
-                showMessage('🎉 You Win!', 'You reduced the AI to 2 pieces!');
-            } else if (gameState.piecesOnBoard[1] < 3) {
-                gameState.gameOver = true;
-                showMessage('💀 AI Wins!', 'The AI reduced you to 2 pieces!');
+            if (gameState.piecesOnBoard[player] <= 3) {
+                gameState.phase = 'flying';
             }
+            
+            checkGameOver();
         }
 
-        // Check if move is valid
-        function isValidMove(fromIndex, toIndex) {
-            if (gameState.phase === 'flying') {
-                return true; // Can move anywhere
-            }
-            return adjacentPoints[fromIndex].includes(toIndex);
-        }
-
-        // Check for mill formation
         function checkForMill(index, player) {
-            for (const mill of millCombinations) {
-                if (mill.includes(index)) {
-                    let isMill = true;
-                    for (const pos of mill) {
-                        if (gameState.board[pos] !== player) {
-                            isMill = false;
-                            break;
-                        }
-                    }
-                    if (isMill) {
-                        console.log(`Player ${player} formed a mill:`, mill);
-                        return true;
+            const newMills = millCombinations.filter(mill => 
+                mill.includes(index) && mill.every(pos => gameState.board[pos] === player)
+            );
+            
+            if (newMills.length > 0) {
+                gameState.recentMill = newMills[0];
+                gameState.lastMillPositions = [...newMills[0]];
+                gameState.phase = 'removal';
+                playSound('mill');
+                
+                const opponent = player === 1 ? 2 : 1;
+                const removablePieces = getAllPieces(opponent).filter(p => canRemovePiece(p));
+                
+                if (removablePieces.length > 0) {
+                    highlightRemovablePieces(opponent);
+                    showMessage('Mill Formed!', player === 1 ? 'Select an AI piece to remove.' : 'AI formed a mill!');
+                } else {
+                    endRemovalPhase();
+                    if (player === 2 && !gameState.gameOver) {
+                        switchPlayer();
+                        updateUI();
                     }
                 }
+                
+                return true;
             }
             return false;
         }
 
-        // Check if piece can be removed
-        function canRemovePiece(index, removingPlayer) {
-            const pieceOwner = gameState.board[index];
-            if (pieceOwner !== 2) return false; // Can only remove AI pieces
-            
-            // Check if piece is in a mill
-            const inMill = isPieceInMill(index, pieceOwner);
-            
-            // Check if all AI pieces are in mills
-            const allAIInMills = getAllPiecesInMills(2);
-            
-            return !inMill || allAIInMills;
-        }
-
-        // Check if a specific piece is in a mill
-        function isPieceInMill(index, player) {
-            for (const mill of millCombinations) {
-                if (mill.includes(index)) {
-                    let isMill = true;
-                    for (const pos of mill) {
-                        if (gameState.board[pos] !== player) {
-                            isMill = false;
-                            break;
-                        }
-                    }
-                    if (isMill) return true;
-                }
-            }
-            return false;
-        }
-
-        // Check if all pieces of a player are in mills
-        function getAllPiecesInMills(player) {
-            const playerPieces = [];
-            for (let i = 0; i < 24; i++) {
-                if (gameState.board[i] === player) {
-                    playerPieces.push(i);
-                }
-            }
-            
-            // Check if every piece is in at least one mill
-            for (const piece of playerPieces) {
-                if (!isPieceInMill(piece, player)) {
-                    return false;
-                }
-            }
-            return playerPieces.length > 0;
-        }
-
-        // Show removable pieces
-        function showRemovablePieces() {
+        function highlightRemovablePieces(opponent) {
             clearHighlights();
-            const removable = [];
-            for (let i = 0; i < 24; i++) {
-                if (gameState.board[i] === 2 && canRemovePiece(i, 1)) {
-                    removable.push(i);
-                }
-            }
-            
+            const removable = getAllPieces(opponent).filter(p => canRemovePiece(p));
             removable.forEach(index => {
                 const point = document.querySelector(`.point[data-index="${index}"]`);
-                if (point) {
-                    point.classList.add('removable');
-                    point.style.pointerEvents = 'auto';
-                }
+                if (point) point.classList.add('removable');
             });
-            
-            if (removable.length === 0) {
-                showMessage('No Pieces to Remove', 'All AI pieces are protected in mills. Click any AI piece to remove.');
-            }
         }
 
-        // Switch player
+        function canRemovePiece(index) {
+            const player = gameState.board[index];
+            if (player === 0) return false;
+            
+            const opponent = player === 1 ? 2 : 1;
+            if (gameState.currentPlayer !== opponent) return false;
+            
+            const allPieces = getAllPieces(player);
+            const allInMills = allPieces.every(piece => isInMill(piece, player));
+            
+            if (allInMills) return true;
+            return !isInMill(index, player);
+        }
+
+        function isInMill(index, player) {
+            return millCombinations.some(mill =>
+                mill.includes(index) && mill.every(pos => gameState.board[pos] === player)
+            );
+        }
+
+        function getAllPieces(player) {
+            return gameState.board.reduce((acc, val, idx) => {
+                if (val === player) acc.push(idx);
+                return acc;
+            }, []);
+        }
+
+        function endRemovalPhase() {
+            gameState.phase = getMovementPhase();
+            gameState.recentMill = null;
+            clearHighlights();
+        }
+
+        function getMovementPhase() {
+            if (gameState.piecesToPlace[1] > 0 || gameState.piecesToPlace[2] > 0) {
+                return 'placement';
+            }
+            if (gameState.piecesOnBoard[1] <= 3 || gameState.piecesOnBoard[2] <= 3) {
+                return 'flying';
+            }
+            return 'movement';
+        }
+
+        function checkGameOver() {
+            const opponent = gameState.currentPlayer === 1 ? 2 : 1;
+            
+            if (gameState.piecesOnBoard[opponent] < 3 && gameState.piecesToPlace[opponent] === 0) {
+                gameState.gameOver = true;
+                const winner = gameState.currentPlayer === 1 ? 'You' : 'AI';
+                showMessage(`${winner} Win! 🎉`, `${opponent === 1 ? 'You were' : 'AI was'} reduced to 2 pieces!`);
+                return true;
+            }
+            
+            if (gameState.phase !== 'placement' && gameState.phase !== 'removal') {
+                if (!hasValidMoves(opponent)) {
+                    gameState.gameOver = true;
+                    const winner = gameState.currentPlayer === 1 ? 'You' : 'AI';
+                    showMessage(`${winner} Win! 🎉`, `${opponent === 1 ? 'You have' : 'AI has'} no valid moves!`);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        function hasValidMoves(player) {
+            const pieces = getAllPieces(player);
+            
+            if (pieces.length === 0) return false;
+            
+            if ((gameState.phase === 'flying' && player === 1 && gameState.piecesOnBoard[1] <= 3) ||
+                (gameState.phase === 'flying' && player === 2 && gameState.piecesOnBoard[2] <= 3)) {
+                return gameState.board.some(cell => cell === 0);
+            }
+            
+            return pieces.some(piece => 
+                adjacentPoints[piece].some(adj => gameState.board[adj] === 0)
+            );
+        }
+
         function switchPlayer() {
             gameState.currentPlayer = gameState.currentPlayer === 1 ? 2 : 1;
             gameState.turnCount++;
         }
 
-        // Highlight valid moves
         function highlightValidMoves(fromIndex) {
             clearHighlights();
             
             let validMoves;
-            if (gameState.phase === 'flying') {
-                validMoves = [];
-                for (let i = 0; i < 24; i++) {
-                    if (gameState.board[i] === 0) validMoves.push(i);
-                }
+            if (gameState.phase === 'flying' && gameState.piecesOnBoard[gameState.currentPlayer] <= 3) {
+                validMoves = gameState.board
+                    .map((val, idx) => val === 0 ? idx : -1)
+                    .filter(idx => idx !== -1);
             } else {
-                validMoves = adjacentPoints[fromIndex].filter(i => gameState.board[i] === 0);
+                validMoves = adjacentPoints[fromIndex].filter(idx => gameState.board[idx] === 0);
             }
             
             validMoves.forEach(index => {
                 const point = document.querySelector(`.point[data-index="${index}"]`);
-                if (point) {
-                    point.classList.add('hint');
-                    point.style.pointerEvents = 'auto';
-                }
+                if (point) point.classList.add('hint');
             });
         }
 
-        // Clear highlights
         function clearHighlights() {
             document.querySelectorAll('.point').forEach(point => {
-                point.classList.remove('hint', 'selected', 'removable');
+                point.classList.remove('hint', 'selected', 'mill', 'removable');
             });
         }
 
-        // Update point visual
         function updatePointVisual(index) {
             const point = document.querySelector(`.point[data-index="${index}"]`);
             if (!point) return;
@@ -1077,408 +935,401 @@
             }
         }
 
-        // Make AI move
-        function makeAIMove() {
-            if (gameState.gameOver || gameState.currentPlayer !== 2) return;
-            
-            gameState.aiThinking = true;
-            document.getElementById('aiThinking').classList.add('active');
-            
-            // AI thinking delay
-            setTimeout(() => {
-                if (gameState.phase === 'removal') {
-                    // AI needs to remove a player piece
-                    const removable = getRemovablePiecesForAI();
-                    if (removable.length > 0) {
-                        const bestRemoval = chooseBestRemoval(removable);
-                        removePiece(bestRemoval);
-                        gameState.phase = gameState.piecesOnBoard[1] + gameState.piecesOnBoard[2] === 18 ? 
-                            (gameState.piecesOnBoard[2] <= 3 ? 'flying' : 'movement') : 'placement';
-                        switchPlayer();
-                    }
-                } else if (gameState.phase === 'placement') {
-                    makeAIPlacement();
-                } else {
-                    makeAIMovement();
-                }
-                
-                gameState.aiThinking = false;
-                document.getElementById('aiThinking').classList.remove('active');
-                updateUI();
-            }, gameState.difficulty === 'hard' ? 1000 : 600);
-        }
-
-        // Get removable pieces for AI
-        function getRemovablePiecesForAI() {
-            const removable = [];
-            for (let i = 0; i < 24; i++) {
-                if (gameState.board[i] === 1) {
-                    // Check if piece is in a mill
-                    const inMill = isPieceInMill(i, 1);
-                    // Can always remove if all pieces in mills
-                    const allInMills = getAllPiecesInMills(1);
-                    if (!inMill || allInMills) {
-                        removable.push(i);
-                    }
-                }
-            }
-            return removable;
-        }
-
-        // Choose best piece for AI to remove
-        function chooseBestRemoval(removablePieces) {
-            if (gameState.difficulty === 'hard') {
-                // Try to break potential mills
-                for (const piece of removablePieces) {
-                    if (isPartOfPotentialMill(piece, 1)) {
-                        return piece;
-                    }
-                }
-            }
-            // Random choice or first available
-            return removablePieces[Math.floor(Math.random() * removablePieces.length)];
-        }
-
-        // Check if piece is part of potential mill
-        function isPartOfPotentialMill(index, player) {
-            for (const mill of millCombinations) {
-                if (mill.includes(index)) {
-                    let playerCount = 0;
-                    let emptyCount = 0;
-                    for (const pos of mill) {
-                        if (gameState.board[pos] === player) playerCount++;
-                        if (gameState.board[pos] === 0) emptyCount++;
-                    }
-                    return playerCount >= 1 && emptyCount >= 1;
-                }
-            }
-            return false;
-        }
-
-        // Make AI placement move
-        function makeAIPlacement() {
-            const emptyPoints = [];
-            for (let i = 0; i < 24; i++) {
-                if (gameState.board[i] === 0) emptyPoints.push(i);
-            }
-            
-            if (emptyPoints.length === 0) return;
-            
-            let bestMove = -1;
-            
-            if (gameState.difficulty === 'hard') {
-                // Strategy for hard AI
-                
-                // 1. Try to complete a mill
-                for (const mill of millCombinations) {
-                    let aiCount = 0;
-                    let empty = [];
-                    for (const pos of mill) {
-                        if (gameState.board[pos] === 2) aiCount++;
-                        if (gameState.board[pos] === 0) empty.push(pos);
-                    }
-                    if (aiCount === 2 && empty.length === 1) {
-                        bestMove = empty[0];
-                        break;
-                    }
-                }
-                
-                // 2. Try to block player's potential mill
-                if (bestMove === -1) {
-                    for (const mill of millCombinations) {
-                        let playerCount = 0;
-                        let empty = [];
-                        for (const pos of mill) {
-                            if (gameState.board[pos] === 1) playerCount++;
-                            if (gameState.board[pos] === 0) empty.push(pos);
-                        }
-                        if (playerCount === 2 && empty.length === 1) {
-                            bestMove = empty[0];
-                            break;
-                        }
-                    }
-                }
-                
-                // 3. Place near existing AI pieces for future mills
-                if (bestMove === -1) {
-                    const strategicPoints = [];
-                    for (const index of emptyPoints) {
-                        const adj = adjacentPoints[index];
-                        if (adj) {
-                            for (const adjIndex of adj) {
-                                if (gameState.board[adjIndex] === 2) {
-                                    strategicPoints.push(index);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (strategicPoints.length > 0) {
-                        bestMove = strategicPoints[Math.floor(Math.random() * strategicPoints.length)];
-                    }
-                }
-            }
-            
-            // 4. Random move (fallback for easy AI or no strategic move found)
-            if (bestMove === -1) {
-                bestMove = emptyPoints[Math.floor(Math.random() * emptyPoints.length)];
-            }
-            
-            placePiece(bestMove, 2);
-            
-            // Check if AI formed a mill
-            if (checkForMill(bestMove, 2)) {
-                gameState.phase = 'removal';
-                // AI will remove a player piece on next move
-            } else {
-                switchPlayer();
-            }
-        }
-
-        // Make AI movement move
-        function makeAIMovement() {
-            const aiPieces = [];
-            for (let i = 0; i < 24; i++) {
-                if (gameState.board[i] === 2) aiPieces.push(i);
-            }
-            
-            let fromIndex = -1;
-            let toIndex = -1;
-            
-            if (gameState.difficulty === 'hard') {
-                // Try to complete a mill
-                for (const piece of aiPieces) {
-                    let validMoves;
-                    if (gameState.phase === 'flying') {
-                        validMoves = [];
-                        for (let i = 0; i < 24; i++) {
-                            if (gameState.board[i] === 0) validMoves.push(i);
-                        }
-                    } else {
-                        validMoves = adjacentPoints[piece].filter(i => gameState.board[i] === 0);
-                    }
-                    
-                    for (const move of validMoves) {
-                        // Simulate move
-                        const temp = gameState.board[piece];
-                        gameState.board[piece] = 0;
-                        gameState.board[move] = 2;
-                        
-                        if (checkForMill(move, 2)) {
-                            fromIndex = piece;
-                            toIndex = move;
-                            // Undo simulation
-                            gameState.board[piece] = 2;
-                            gameState.board[move] = 0;
-                            break;
-                        }
-                        
-                        // Undo simulation
-                        gameState.board[piece] = 2;
-                        gameState.board[move] = 0;
-                    }
-                    if (fromIndex !== -1) break;
-                }
-                
-                // Try to block player's potential mill
-                if (fromIndex === -1) {
-                    for (const mill of millCombinations) {
-                        let playerCount = 0;
-                        let empty = [];
-                        for (const pos of mill) {
-                            if (gameState.board[pos] === 1) playerCount++;
-                            if (gameState.board[pos] === 0) empty.push(pos);
-                        }
-                        if (playerCount === 2 && empty.length === 1) {
-                            const blockPoint = empty[0];
-                            // Find an AI piece that can move to block
-                            for (const piece of aiPieces) {
-                                let validMoves;
-                                if (gameState.phase === 'flying') {
-                                    validMoves = [blockPoint];
-                                } else {
-                                    validMoves = adjacentPoints[piece].filter(i => i === blockPoint);
-                                }
-                                
-                                if (validMoves.length > 0) {
-                                    fromIndex = piece;
-                                    toIndex = blockPoint;
-                                    break;
-                                }
-                            }
-                            if (fromIndex !== -1) break;
-                        }
-                    }
-                }
-            }
-            
-            // Random valid move
-            if (fromIndex === -1) {
-                const movablePieces = [];
-                for (const piece of aiPieces) {
-                    if (gameState.phase === 'flying') {
-                        movablePieces.push(piece);
-                    } else {
-                        for (const adj of adjacentPoints[piece]) {
-                            if (gameState.board[adj] === 0) {
-                                movablePieces.push(piece);
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                if (movablePieces.length > 0) {
-                    fromIndex = movablePieces[Math.floor(Math.random() * movablePieces.length)];
-                    
-                    let possibleMoves = [];
-                    if (gameState.phase === 'flying') {
-                        for (let i = 0; i < 24; i++) {
-                            if (gameState.board[i] === 0) possibleMoves.push(i);
-                        }
-                    } else {
-                        possibleMoves = adjacentPoints[fromIndex].filter(i => gameState.board[i] === 0);
-                    }
-                    
-                    if (possibleMoves.length > 0) {
-                        toIndex = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-                    }
-                }
-            }
-            
-            if (fromIndex !== -1 && toIndex !== -1) {
-                movePiece(fromIndex, toIndex, 2);
-                
-                if (checkForMill(toIndex, 2)) {
-                    gameState.phase = 'removal';
-                } else {
-                    switchPlayer();
-                }
-            }
-        }
-
-        // Update UI
-        function updateUI() {
-            // Update player info
-            document.getElementById('player1').classList.toggle('active', gameState.currentPlayer === 1);
-            document.getElementById('player2').classList.toggle('active', gameState.currentPlayer === 2);
-            
-            // Update piece counts
-            document.getElementById('p1Pieces').textContent = gameState.piecesOnBoard[1];
-            document.getElementById('p2Pieces').textContent = gameState.piecesOnBoard[2];
-            
-            // Update status
-            document.getElementById('placedCount').textContent = (9 - gameState.piecesToPlace[1]) + '/' + (9 - gameState.piecesToPlace[2]);
-            document.getElementById('turnCount').textContent = gameState.turnCount;
-            document.getElementById('phaseDisplay').textContent = gameState.phase.charAt(0).toUpperCase() + gameState.phase.slice(1);
-            
-            // Update phase indicator
-            const phaseMessages = {
-                'placement': `Place your pieces (${gameState.piecesToPlace[1]} left)`,
-                'movement': 'Move your pieces to adjacent points',
-                'flying': 'FLYING MODE! You can move to any empty point',
-                'removal': 'Select an AI piece to remove'
-            };
-            document.getElementById('phaseIndicator').textContent = phaseMessages[gameState.phase] || 'Game Phase';
-            
-            // Update all points
-            for (let i = 0; i < 24; i++) {
-                updatePointVisual(i);
-            }
-            
-            // Update undo button
-            document.getElementById('undoBtn').disabled = gameState.moveHistory.length === 0 || gameState.aiThinking;
-        }
-
-        // Show hint
         function showHint() {
             if (gameState.gameOver || gameState.aiThinking || gameState.currentPlayer !== 1) return;
             
             clearHighlights();
             
-            if (gameState.phase === 'placement') {
-                // Show all empty points
-                for (let i = 0; i < 24; i++) {
-                    if (gameState.board[i] === 0) {
-                        const point = document.querySelector(`.point[data-index="${i}"]`);
-                        if (point) point.classList.add('hint');
-                    }
+            if (gameState.phase === 'removal') {
+                const removable = getAllPieces(2).filter(p => canRemovePiece(p));
+                if (removable.length > 0) {
+                    const best = chooseBestPieceToRemove(removable, 1);
+                    const point = document.querySelector(`.point[data-index="${best}"]`);
+                    if (point) point.classList.add('hint');
+                }
+            } else if (gameState.phase === 'placement') {
+                const bestMove = getBestPlacementMove(1);
+                if (bestMove !== -1) {
+                    const point = document.querySelector(`.point[data-index="${bestMove}"]`);
+                    if (point) point.classList.add('hint');
                 }
             } else if (gameState.phase === 'movement' || gameState.phase === 'flying') {
-                // Show movable pieces
-                for (let i = 0; i < 24; i++) {
-                    if (gameState.board[i] === 1) {
-                        const point = document.querySelector(`.point[data-index="${i}"]`);
-                        if (point) point.classList.add('hint');
-                    }
+                const bestMove = getBestMovementMove(1);
+                if (bestMove.from !== -1 && bestMove.to !== -1) {
+                    const pointFrom = document.querySelector(`.point[data-index="${bestMove.from}"]`);
+                    const pointTo = document.querySelector(`.point[data-index="${bestMove.to}"]`);
+                    if (pointFrom) pointFrom.classList.add('hint');
+                    if (pointTo) pointTo.classList.add('hint');
                 }
             }
             
             setTimeout(clearHighlights, 2000);
         }
 
-        // Check mills
+        function getBestPlacementMove(player) {
+            const emptyPoints = getAllPieces(0);
+            const opponent = player === 1 ? 2 : 1;
+            
+            for (const mill of millCombinations) {
+                const playerCount = mill.filter(pos => gameState.board[pos] === player).length;
+                const empty = mill.filter(pos => gameState.board[pos] === 0);
+                if (playerCount === 2 && empty.length === 1) {
+                    return empty[0];
+                }
+            }
+            
+            for (const mill of millCombinations) {
+                const opponentCount = mill.filter(pos => gameState.board[pos] === opponent).length;
+                const empty = mill.filter(pos => gameState.board[pos] === 0);
+                if (opponentCount === 2 && empty.length === 1) {
+                    return empty[0];
+                }
+            }
+            
+            const strategicPoints = emptyPoints.filter(index => 
+                adjacentPoints[index].some(adj => gameState.board[adj] === player)
+            );
+            
+            if (strategicPoints.length > 0) {
+                return strategicPoints[Math.floor(Math.random() * strategicPoints.length)];
+            }
+            
+            return emptyPoints.length > 0 ? emptyPoints[Math.floor(Math.random() * emptyPoints.length)] : -1;
+        }
+
+        function getBestMovementMove(player) {
+            const pieces = getAllPieces(player);
+            const opponent = player === 1 ? 2 : 1;
+            
+            for (const piece of pieces) {
+                const validMoves = getValidMovesForPiece(piece, player);
+                for (const move of validMoves) {
+                    gameState.board[piece] = 0;
+                    gameState.board[move] = player;
+                    
+                    const formsMill = millCombinations.some(mill =>
+                        mill.includes(move) && mill.every(pos => gameState.board[pos] === player)
+                    );
+                    
+                    gameState.board[piece] = player;
+                    gameState.board[move] = 0;
+                    
+                    if (formsMill) {
+                        return {from: piece, to: move};
+                    }
+                }
+            }
+            
+            for (const mill of millCombinations) {
+                const opponentCount = mill.filter(pos => gameState.board[pos] === opponent).length;
+                const empty = mill.filter(pos => gameState.board[pos] === 0);
+                if (opponentCount === 2 && empty.length === 1) {
+                    const blockPoint = empty[0];
+                    for (const piece of pieces) {
+                        const validMoves = getValidMovesForPiece(piece, player);
+                        if (validMoves.includes(blockPoint)) {
+                            return {from: piece, to: blockPoint};
+                        }
+                    }
+                }
+            }
+            
+            const movablePieces = pieces.filter(piece => getValidMovesForPiece(piece, player).length > 0);
+            if (movablePieces.length > 0) {
+                const piece = movablePieces[Math.floor(Math.random() * movablePieces.length)];
+                const validMoves = getValidMovesForPiece(piece, player);
+                const move = validMoves[Math.floor(Math.random() * validMoves.length)];
+                return {from: piece, to: move};
+            }
+            
+            return {from: -1, to: -1};
+        }
+
+        function getValidMovesForPiece(fromIndex, player) {
+            if (gameState.phase === 'flying' && gameState.piecesOnBoard[player] <= 3) {
+                return getAllPieces(0);
+            }
+            return adjacentPoints[fromIndex].filter(idx => gameState.board[idx] === 0);
+        }
+
+        function makeAIMove() {
+            if (gameState.gameOver || gameState.currentPlayer !== 2) return;
+            
+            gameState.aiThinking = true;
+            document.getElementById('aiThinking').classList.add('active');
+            updateUI();
+            
+            setTimeout(() => {
+                if (gameState.phase === 'removal') {
+                    const removable = getAllPieces(1).filter(p => canRemovePiece(p));
+                    if (removable.length > 0) {
+                        const pieceToRemove = chooseBestPieceToRemove(removable, 2);
+                        removePiece(pieceToRemove);
+                        endRemovalPhase();
+                        if (!gameState.gameOver) {
+                            switchPlayer();
+                            updateUI();
+                        }
+                    }
+                } else if (gameState.phase === 'placement') {
+                    const move = getExpertPlacementMove();
+                    if (move !== -1) {
+                        placePiece(move, 2);
+                        if (!checkForMill(move, 2)) {
+                            if (gameState.piecesToPlace[1] === 0 && gameState.piecesToPlace[2] === 0) {
+                                gameState.phase = getMovementPhase();
+                            }
+                            switchPlayer();
+                            updateUI();
+                        }
+                    }
+                } else {
+                    const move = getExpertMovementMove();
+                    if (move.from !== -1 && move.to !== -1) {
+                        movePiece(move.from, move.to, 2);
+                        if (!checkForMill(move.to, 2)) {
+                            switchPlayer();
+                            updateUI();
+                        }
+                    }
+                }
+                
+                gameState.aiThinking = false;
+                document.getElementById('aiThinking').classList.remove('active');
+                updateUI();
+            }, 1200);
+        }
+
+        function chooseBestPieceToRemove(removablePieces, forPlayer) {
+            
+            const opponent = forPlayer === 1 ? 2 : 1;
+            
+            for (const piece of removablePieces) {
+                let partOfPotentialMills = 0;
+                for (const mill of millCombinations) {
+                    if (mill.includes(piece)) {
+                        const opponentCount = mill.filter(pos => gameState.board[pos] === opponent).length;
+                        const emptyCount = mill.filter(pos => gameState.board[pos] === 0).length;
+                        if (opponentCount >= 1 && emptyCount >= 1) {
+                            partOfPotentialMills++;
+                        }
+                    }
+                }
+                if (partOfPotentialMills >= 2) {
+                    return piece;
+                }
+            }
+            
+            for (const piece of removablePieces) {
+                for (const mill of millCombinations) {
+                    if (mill.includes(piece)) {
+                        const opponentCount = mill.filter(pos => gameState.board[pos] === opponent).length;
+                        const emptyCount = mill.filter(pos => gameState.board[pos] === 0).length;
+                        if (opponentCount === 2 && emptyCount === 1) {
+                            return piece;
+                        }
+                    }
+                }
+            }
+            
+            return removablePieces[Math.floor(Math.random() * removablePieces.length)];
+        }
+
+        function getExpertPlacementMove() {
+            const emptyPoints = getAllPieces(0);
+            
+            for (const mill of millCombinations) {
+                const aiCount = mill.filter(pos => gameState.board[pos] === 2).length;
+                const empty = mill.filter(pos => gameState.board[pos] === 0);
+                if (aiCount === 2 && empty.length === 1) {
+                    return empty[0];
+                }
+            }
+            
+            for (const mill of millCombinations) {
+                const humanCount = mill.filter(pos => gameState.board[pos] === 1).length;
+                const empty = mill.filter(pos => gameState.board[pos] === 0);
+                if (humanCount === 2 && empty.length === 1) {
+                    return empty[0];
+                }
+            }
+            
+            for (const point of emptyPoints) {
+                let potentialMills = 0;
+                for (const mill of millCombinations) {
+                    if (mill.includes(point)) {
+                        const aiCount = mill.filter(pos => gameState.board[pos] === 2).length;
+                        const emptyCount = mill.filter(pos => gameState.board[pos] === 0).length;
+                        if (aiCount === 1 && emptyCount === 2) {
+                            potentialMills++;
+                        }
+                    }
+                }
+                if (potentialMills >= 2) {
+                    return point;
+                }
+            }
+            
+            const centerPoints = [4, 7, 10, 13, 16, 19];
+            const availableCenters = centerPoints.filter(p => emptyPoints.includes(p));
+            if (availableCenters.length > 0) {
+                return availableCenters[Math.floor(Math.random() * availableCenters.length)];
+            }
+            
+            return emptyPoints[Math.floor(Math.random() * emptyPoints.length)];
+        }
+
+
+
+        function getExpertMovementMove() {
+            const aiPieces = getAllPieces(2);
+            
+            for (const piece of aiPieces) {
+                const validMoves = getAIMoves(piece);
+                for (const move of validMoves) {
+                    gameState.board[piece] = 0;
+                    gameState.board[move] = 2;
+                    
+                    const formsMill = millCombinations.some(mill =>
+                        mill.includes(move) && mill.every(pos => gameState.board[pos] === 2)
+                    );
+                    
+                    gameState.board[piece] = 2;
+                    gameState.board[move] = 0;
+                    
+                    if (formsMill) {
+                        return {from: piece, to: move};
+                    }
+                }
+            }
+            
+            for (const mill of millCombinations) {
+                const humanCount = mill.filter(pos => gameState.board[pos] === 1).length;
+                const empty = mill.filter(pos => gameState.board[pos] === 0);
+                if (humanCount === 2 && empty.length === 1) {
+                    const blockPoint = empty[0];
+                    for (const piece of aiPieces) {
+                        const validMoves = getAIMoves(piece);
+                        if (validMoves.includes(blockPoint)) {
+                            return {from: piece, to: blockPoint};
+                        }
+                    }
+                }
+            }
+            
+            for (const piece of aiPieces) {
+                const validMoves = getAIMoves(piece);
+                for (const move of validMoves) {
+                    gameState.board[piece] = 0;
+                    gameState.board[move] = 2;
+                    
+                    let futureOpportunities = 0;
+                    for (const futureMill of millCombinations) {
+                        if (futureMill.includes(move)) {
+                            const aiCount = futureMill.filter(pos => gameState.board[pos] === 2).length;
+                            const emptyCount = futureMill.filter(pos => gameState.board[pos] === 0).length;
+                            if (aiCount === 2 && emptyCount === 1) {
+                                futureOpportunities++;
+                            }
+                        }
+                    }
+                    
+                    gameState.board[piece] = 2;
+                    gameState.board[move] = 0;
+                    
+                    if (futureOpportunities >= 2) {
+                        return {from: piece, to: move};
+                    }
+                }
+            }
+            
+            const strategicMoves = [];
+            for (const piece of aiPieces) {
+                const validMoves = getAIMoves(piece);
+                for (const move of validMoves) {
+                    gameState.board[piece] = 0;
+                    gameState.board[move] = 2;
+                    
+                    let opportunities = 0;
+                    for (const mill of millCombinations) {
+                        if (mill.includes(move)) {
+                            const aiCount = mill.filter(pos => gameState.board[pos] === 2).length;
+                            const emptyCount = mill.filter(pos => gameState.board[pos] === 0).length;
+                            if (aiCount === 2 && emptyCount === 1) opportunities++;
+                            if (aiCount === 1 && emptyCount === 2) opportunities += 0.5;
+                        }
+                    }
+                    
+                    gameState.board[piece] = 2;
+                    gameState.board[move] = 0;
+                    
+                    if (opportunities > 0) {
+                        strategicMoves.push({from: piece, to: move, score: opportunities});
+                    }
+                }
+            }
+            
+            if (strategicMoves.length > 0) {
+                strategicMoves.sort((a, b) => b.score - a.score);
+                return strategicMoves[0];
+            }
+            
+            const movablePieces = aiPieces.filter(piece => getAIMoves(piece).length > 0);
+            if (movablePieces.length > 0) {
+                const piece = movablePieces[Math.floor(Math.random() * movablePieces.length)];
+                const validMoves = getAIMoves(piece);
+                const move = validMoves[Math.floor(Math.random() * validMoves.length)];
+                return {from: piece, to: move};
+            }
+            
+            return {from: -1, to: -1};
+        }
+
+        function getAIMoves(fromIndex) {
+            if (gameState.piecesOnBoard[2] <= 3) {
+                return getAllPieces(0);
+            }
+            return adjacentPoints[fromIndex].filter(idx => gameState.board[idx] === 0);
+        }
+
+
+
         function checkMills() {
             clearHighlights();
             
-            let playerMills = 0;
+            let humanMills = 0;
             let aiMills = 0;
             
-            for (const mill of millCombinations) {
-                let playerMill = true;
-                let aiMill = true;
-                for (const pos of mill) {
-                    if (gameState.board[pos] !== 1) playerMill = false;
-                    if (gameState.board[pos] !== 2) aiMill = false;
+            millCombinations.forEach(mill => {
+                if (mill.every(pos => gameState.board[pos] === 1)) {
+                    humanMills++;
+                    mill.forEach(pos => {
+                        const point = document.querySelector(`.point[data-index="${pos}"]`);
+                        if (point) point.classList.add('mill');
+                    });
                 }
-                if (playerMill) playerMills++;
-                if (aiMill) aiMills++;
-            }
-            
-            const playerMillPositions = [];
-            for (const mill of millCombinations) {
-                let isPlayerMill = true;
-                for (const pos of mill) {
-                    if (gameState.board[pos] !== 1) {
-                        isPlayerMill = false;
-                        break;
-                    }
+                if (mill.every(pos => gameState.board[pos] === 2)) {
+                    aiMills++;
                 }
-                if (isPlayerMill) {
-                    playerMillPositions.push(...mill);
-                }
-            }
-            
-            playerMillPositions.forEach(index => {
-                const point = document.querySelector(`.point[data-index="${index}"]`);
-                if (point) point.classList.add('hint');
             });
             
-            let message = `You have ${playerMills} mill(s), AI has ${aiMills} mill(s)`;
-            if (playerMills > 0) {
-                message += '\nYour mills are highlighted in green.';
-            }
-            showMessage('Mill Status', message);
-            
+            showMessage('Mill Status', `You have ${humanMills} mill(s)\nAI has ${aiMills} mill(s)`);
             setTimeout(clearHighlights, 3000);
         }
 
-        // Undo last move
         function undoMove() {
             if (gameState.moveHistory.length === 0 || gameState.aiThinking || gameState.currentPlayer !== 1) return;
             
             const lastState = gameState.moveHistory.pop();
             Object.assign(gameState, lastState);
+            gameState.board = [...lastState.board];
+            gameState.piecesToPlace = {...lastState.piecesToPlace};
+            gameState.piecesOnBoard = {...lastState.piecesOnBoard};
             clearHighlights();
-            document.getElementById('removalHint').style.display = 'none';
             updateUI();
-            showMessage('Move Undone', 'Your last move has been undone.');
         }
 
-        // Save state for undo
         function saveState() {
-            if (gameState.currentPlayer !== 1) return; // Only save player moves
-            
             gameState.moveHistory.push({
                 board: [...gameState.board],
                 currentPlayer: gameState.currentPlayer,
@@ -1490,16 +1341,14 @@
                 gameOver: gameState.gameOver
             });
             
-            // Keep only last 10 moves
             if (gameState.moveHistory.length > 10) {
                 gameState.moveHistory.shift();
             }
         }
 
-        // New game
         function newGame() {
             Object.assign(gameState, {
-                board: Array(24).fill(0),
+                board: new Array(24).fill(0),
                 currentPlayer: 1,
                 phase: 'placement',
                 piecesToPlace: {1: 9, 2: 9},
@@ -1508,39 +1357,65 @@
                 gameOver: false,
                 moveHistory: [],
                 turnCount: 1,
-                aiThinking: false
+                aiThinking: false,
+                recentMill: null,
+                lastMillPositions: []
             });
             
             clearHighlights();
-            document.getElementById('removalHint').style.display = 'none';
-            updateUI();
             createBoardPoints();
-            showMessage('New Game Started', `Playing against ${gameState.difficulty.toUpperCase()} AI. You are BLUE.`);
+            updateUI();
         }
 
-        // Show message
+        function updateUI() {
+            document.getElementById('playerHuman').classList.toggle('active', gameState.currentPlayer === 1);
+            document.getElementById('playerAI').classList.toggle('active', gameState.currentPlayer === 2);
+            
+            document.getElementById('humanPieces').textContent = gameState.piecesOnBoard[1];
+            document.getElementById('aiPieces').textContent = gameState.piecesOnBoard[2];
+            
+            let statusText = '';
+            if (gameState.phase === 'placement') {
+                const remaining = gameState.piecesToPlace[gameState.currentPlayer];
+                statusText = gameState.currentPlayer === 1 ? 
+                    `Place your pieces (${gameState.piecesToPlace[1]} remaining)` :
+                    `AI placing pieces (${gameState.piecesToPlace[2]} remaining)`;
+            } else if (gameState.phase === 'movement') {
+                statusText = gameState.currentPlayer === 1 ?
+                    'Move your pieces to adjacent points' :
+                    'AI is moving...';
+            } else if (gameState.phase === 'flying') {
+                statusText = gameState.currentPlayer === 1 ?
+                    'FLYING MODE! You can move anywhere' :
+                    'AI in FLYING MODE';
+            } else if (gameState.phase === 'removal') {
+                statusText = gameState.currentPlayer === 1 ?
+                    'Select an AI piece to remove' :
+                    'AI selecting piece to remove';
+            }
+            document.getElementById('gameStatus').textContent = statusText;
+            
+            gameState.board.forEach((_, index) => updatePointVisual(index));
+            
+            document.getElementById('undoBtn').disabled = gameState.moveHistory.length === 0 || gameState.aiThinking || gameState.currentPlayer !== 1;
+            document.getElementById('hintBtn').disabled = gameState.aiThinking || gameState.currentPlayer !== 1 || gameState.gameOver;
+        }
+
         function showMessage(title, text) {
             document.getElementById('messageTitle').textContent = title;
             document.getElementById('messageText').textContent = text;
-            document.getElementById('message').style.display = 'block';
+            document.getElementById('messageOverlay').style.display = 'flex';
         }
 
-        // Hide message
         function hideMessage() {
-            document.getElementById('message').style.display = 'none';
+            document.getElementById('messageOverlay').style.display = 'none';
         }
 
-        // Show instructions
         function showInstructions() {
-            document.getElementById('instructions').style.display = 'block';
+            showMessage('How to Play', 
+                `🎯 OBJECTIVE\nReduce opponent to 2 pieces or block all moves\n\n🎮 PHASES\n1. Placement: Place 9 pieces\n2. Movement: Move to adjacent points\n3. Flying: With 3 pieces, move anywhere\n\n⭐ MILLS\n• 3 in a row = Mill\n• Forming a mill removes opponent piece\n• Can't remove from mill unless all in mills\n\n🤖 EXPERT AI\n• Advanced strategic planning\n• Mill formation & blocking\n• Smart piece removal`);
         }
 
-        // Hide instructions
-        function hideInstructions() {
-            document.getElementById('instructions').style.display = 'none';
-        }
-
-        // Toggle sound
         function toggleSound() {
             gameState.soundEnabled = !gameState.soundEnabled;
             const soundBtn = document.getElementById('soundBtn');
@@ -1555,64 +1430,63 @@
             }
         }
 
-        // Play sound
         function playSound(type) {
             if (!gameState.soundEnabled) return;
             
             try {
-                const audio = new Audio();
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
                 let frequency = 440;
+                let duration = 0.1;
                 
                 switch(type) {
-                    case 'placeSound':
-                        frequency = 523.25; // C5
+                    case 'place':
+                        frequency = 523.25;
                         break;
-                    case 'moveSound':
-                        frequency = 659.25; // E5
+                    case 'move':
+                        frequency = 659.25;
                         break;
-                    case 'millSound':
-                        frequency = 783.99; // G5
+                    case 'remove':
+                        frequency = 392.00;
+                        duration = 0.15;
                         break;
-                    case 'removeSound':
-                        frequency = 392.00; // G4
+                    case 'mill':
+                        frequency = 783.99;
+                        duration = 0.2;
                         break;
                 }
                 
-                const duration = 0.2;
-                const sampleRate = 44100;
-                const channels = 1;
-                const samples = Math.floor(duration * sampleRate);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
                 
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const buffer = audioContext.createBuffer(channels, samples, sampleRate);
-                const channelData = buffer.getChannelData(0);
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
                 
-                for (let i = 0; i < samples; i++) {
-                    channelData[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * Math.exp(-i / (sampleRate * duration));
-                }
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
                 
-                const source = audioContext.createBufferSource();
-                source.buffer = buffer;
-                source.connect(audioContext.destination);
-                source.start();
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
             } catch (e) {
-                // Fallback for browsers without Web Audio API
                 console.log('Audio not supported');
             }
         }
 
-        // Initialize when page loads
+        function isValidMove(fromIndex, toIndex) {
+            if (gameState.phase === 'flying' && gameState.piecesOnBoard[gameState.currentPlayer] <= 3) {
+                return gameState.board[toIndex] === 0;
+            }
+            return adjacentPoints[fromIndex].includes(toIndex) && gameState.board[toIndex] === 0;
+        }
+
         window.addEventListener('DOMContentLoaded', initGame);
-        
-        // Prevent scrolling on mobile
-        document.addEventListener('touchmove', function(e) {
-            if (e.target.closest('.game-board')) {
+        document.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.board-container')) {
                 e.preventDefault();
             }
         }, { passive: false });
-        
-        // Handle sound toggle click
-        document.getElementById('soundToggle').addEventListener('click', toggleSound);
     </script>
 </body>
 </html>
