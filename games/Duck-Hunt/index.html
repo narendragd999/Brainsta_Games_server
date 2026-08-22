@@ -1,961 +1,1248 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Mobile Duck Hunt</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            color: #333;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 500px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            padding: 20px;
-            width: 100%;
-            text-align: center;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transform: translateY(0);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .header:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 2rem;
-            font-weight: 800;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        p {
-            margin-bottom: 10px;
-            line-height: 1.5;
-            color: #34495e;
-            font-size: 1rem;
-        }
-        
-        .game-container {
-            position: relative;
-            width: 100%;
-            height: 50vh;
-            min-height: 300px;
-            overflow: hidden;
-            border-radius: 20px;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-            background: #1a2980;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .game-container:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        }
-        
-        #game-canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 20px;
-        }
-        
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            width: 100%;
-            padding: 0 5px;
-        }
-        
-        .btn {
-            padding: 14px 25px;
-            border-radius: 50px;
-            border: none;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            min-width: 140px;
-            flex: 1;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn:after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(-100%);
-            transition: transform 0.3s ease;
-        }
-        
-        .btn:hover:after {
-            transform: translateX(0);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(to right, #3498db, #2980b9);
-            color: white;
-        }
-        
-        .btn-primary:active {
-            transform: scale(0.95) translateY(2px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(to right, #6a11cb, #4e0ba5);
-            color: white;
-        }
-        
-        .btn-secondary:active {
-            transform: scale(0.95) translateY(2px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            gap: 15px;
-        }
-        
-        .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 18px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-            padding: 15px;
-            flex: 1;
-            text-align: center;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
-        }
-        
-        .stat-title {
-            font-size: 0.85rem;
-            color: #7f8c8d;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #2c3e50;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease;
-            padding: 20px;
-            backdrop-filter: blur(5px);
-        }
-        
-        .modal.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        
-        .modal-content {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            transform: scale(0.9);
-            opacity: 0;
-            transition: transform 0.4s ease, opacity 0.4s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .modal.active .modal-content {
-            transform: scale(1);
-            opacity: 1;
-        }
-        
-        .modal h2 {
-            color: #3498db;
-            margin-bottom: 20px;
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #6a11cb, #2575fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .modal p {
-            margin-bottom: 25px;
-            font-size: 1.05rem;
-            line-height: 1.6;
-        }
-        
-        .loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-            color: white;
-            transition: opacity 0.5s ease;
-            backdrop-filter: blur(10px);
-        }
-        
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: #3498db;
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 25px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Floating animation for ducks */
-        @keyframes float {
-            0% { transform: translateY(0) rotate(0); }
-            50% { transform: translateY(-10px) rotate(5deg); }
-            100% { transform: translateY(0) rotate(0); }
-        }
-        
-        /* Hit effect animation */
-        @keyframes hitEffect {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.7; }
-            100% { transform: scale(1); opacity: 0; }
-        }
-        
-        /* Score popup animation */
-        @keyframes scorePopup {
-            0% { transform: translateY(0) scale(0.5); opacity: 0; }
-            50% { transform: translateY(-30px) scale(1.2); opacity: 1; }
-            100% { transform: translateY(-60px) scale(1); opacity: 0; }
-        }
-        
-        /* Progress bar for time */
-        .progress-container {
-            width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(to right, #3498db, #6a11cb);
-            border-radius: 4px;
-            width: 100%;
-            transition: width 1s linear;
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 480px) {
-            .header {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 1.7rem;
-            }
-            
-            .btn {
-                min-width: 120px;
-                padding: 12px 20px;
-                font-size: 0.9rem;
-            }
-            
-            .stat-card {
-                padding: 12px;
-            }
-            
-            .stat-title {
-                font-size: 0.8rem;
-            }
-            
-            .stat-value {
-                font-size: 1.5rem;
-            }
-            
-            .game-container {
-                height: 45vh;
-                min-height: 250px;
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
-            
-            .modal h2 {
-                font-size: 1.6rem;
-            }
-        }
-        
-        /* Prevent text selection */
-        .no-select {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        
-        /* Custom cursor for crosshair */
-        .crosshair-cursor {
-            cursor: none;
-        }
-    </style>
-
-<script>
-/* Universal Web Audio Synthesizer */
-window.Sound = window.Sound || {
-  ctx: null,
-  muted: false,
-  init() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Duck Hunt Master Pro — Arcade Marsh Odyssey</title>
+  <style>
+    :root {
+      --bg: #060a12;
+      --panel-bg: rgba(15, 23, 42, 0.92);
+      --border-color: rgba(255, 255, 255, 0.12);
+      --accent: #22c55e;
+      --accent-glow: rgba(34, 197, 94, 0.45);
+      --cyan: #38bdf8;
+      --gold: #fbbf24;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
     }
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-  },
-  toggle() { this.muted = !this.muted; return !this.muted; },
-  play(type) {
-    if (this.muted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      switch(type) {
-        case 'tap': case 'click': case 'select':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-          gain.gain.setValueAtTime(0.12, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'jump': case 'flap': case 'bounce':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(220, now);
-          osc.frequency.exponentialRampToValueAtTime(650, now + 0.12);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now); osc.stop(now + 0.12); break;
-        case 'spring':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now);
-          osc.frequency.exponentialRampToValueAtTime(950, now + 0.2);
-          gain.gain.setValueAtTime(0.22, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'score': case 'point': case 'coin':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.08);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
-          osc.start(now); osc.stop(now + 0.18); break;
-        case 'match': case 'clear': case 'pop':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.setValueAtTime(554.37, now + 0.06); osc.frequency.setValueAtTime(659.25, now + 0.12);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
-          osc.start(now); osc.stop(now + 0.22); break;
-        case 'move': case 'slide': case 'step':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(320, now);
-          osc.frequency.exponentialRampToValueAtTime(420, now + 0.05);
-          gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'shoot': case 'laser':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now);
-          osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
-          gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-          osc.start(now); osc.stop(now + 0.1); break;
-        case 'hit': case 'crash': case 'gameover': case 'fail':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(260, now);
-          osc.frequency.exponentialRampToValueAtTime(70, now + 0.35);
-          gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
-          osc.start(now); osc.stop(now + 0.35); break;
-        case 'correct': case 'success':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, now);
-          osc.frequency.setValueAtTime(880.00, now + 0.1);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now); osc.stop(now + 0.25); break;
-        case 'error': case 'wrong':
-          osc.type = 'square'; osc.frequency.setValueAtTime(160, now);
-          osc.frequency.setValueAtTime(130, now + 0.08);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'win': case 'victory':
-          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'triangle';
-            o.frequency.setValueAtTime(freq, now + i * 0.09);
-            g.gain.setValueAtTime(0.18, now + i * 0.09);
-            g.gain.linearRampToValueAtTime(0.01, now + i * 0.09 + 0.22);
-            o.connect(g); g.connect(this.ctx.destination);
-            o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.22);
-          }); break;
-      }
-    } catch(e) {}
-  }
-};
-['click', 'touchstart', 'keydown'].forEach(evt => {
-  window.addEventListener(evt, () => { if (window.Sound) window.Sound.init(); }, { once: true });
-});
-</script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+    }
+
+    #game-layout {
+      width: 100%;
+      height: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: #0f172a;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Single-Tier Glass Header */
+    header {
+      padding: 10px 14px;
+      padding-top: env(safe-area-inset-top, 10px);
+      background: var(--panel-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .brand-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .stats-hub {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-chip {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-val {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: var(--gold);
+    }
+    .stat-val.cyan { color: var(--cyan); }
+    .stat-val.red { color: var(--danger); }
+
+    .header-btns {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(51, 65, 85, 0.7);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      font-size: 0.9rem;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    /* Canvas Stage Container */
+    #canvas-wrap {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Floating In-Game HUD (Ammo & Duck Meter) */
+    .hud-bottom-bar {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .ammo-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+
+    .ammo-icon {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+    }
+
+    .duck-progress-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(8px);
+      padding: 6px 10px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+    }
+
+    .duck-pip {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: rgba(71, 85, 105, 0.6);
+      border: 1px solid var(--border-color);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .duck-pip.hit {
+      background: #22c55e;
+      border-color: #4ade80;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
+      transform: scale(1.1);
+    }
+    .duck-pip.miss {
+      background: #ef4444;
+      border-color: #f87171;
+    }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 16px;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 350px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: modalSlide 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modalSlide {
+      from { transform: scale(0.85) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .modal-stats-grid {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .modal-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-label { font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
+    .stat-value-large { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 1.25rem; font-weight: 900; color: var(--gold); }
+
+    .btn-action {
+      height: 46px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      border: 1px solid #fdba74;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.98rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+      touch-action: manipulation;
+    }
+    .btn-action:active { transform: scale(0.96); }
+
+    /* Muzzle Flash Overlay */
+    #flashOverlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.05s ease;
+      z-index: 15;
+    }
+  </style>
 </head>
 <body>
-    <div class="container no-select">
-        <div class="header">
-            <h1>Duck Hunt</h1>
-            <p>Shoot the ducks before they fly away! Tap to aim and shoot.</p>
+  <div id="game-layout">
+    <!-- Compact Clean Header -->
+    <header>
+      <div class="brand-group">
+        <div class="brand-badge">🦆</div>
+        <span>Duck Hunt Pro</span>
+      </div>
+
+      <div class="stats-hub">
+        <div class="stat-chip" title="Score">
+          <span>⭐</span>
+          <span class="stat-val" id="scoreText">0</span>
         </div>
-        
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-title">SCORE</div>
-                <div class="stat-value" id="score">0</div>
+        <div class="stat-chip" title="Current Wave">
+          <span>🌊</span>
+          <span class="stat-val cyan" id="waveText">WAVE 1</span>
+        </div>
+      </div>
+
+      <div class="header-btns">
+        <button class="icon-btn" id="soundToggle" title="Toggle Sound">🔊</button>
+        <button class="icon-btn" id="pauseBtn" title="Pause Game">⏸️</button>
+        <button class="icon-btn" id="helpBtn" title="How to Play">❓</button>
+      </div>
+    </header>
+
+    <!-- Canvas Stage -->
+    <div id="canvas-wrap">
+      <canvas id="gameCanvas"></canvas>
+      <div id="flashOverlay"></div>
+
+      <!-- In-Game HUD: Ammo & Duck Hits -->
+      <div class="hud-bottom-bar">
+        <div class="ammo-card">
+          <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 800;">SHOTS:</span>
+          <span class="ammo-icon" id="ammoDisplay">💥💥💥</span>
+        </div>
+
+        <div class="duck-progress-card" id="duckPipsContainer">
+          <!-- 10 wave pips generated dynamically -->
+        </div>
+      </div>
+
+      <!-- Start Game Modal -->
+      <div class="modal-overlay open" id="startModal">
+        <div class="modal-card">
+          <div style="font-size: 3.5rem;">🦆🌾🐕</div>
+          <div class="modal-title">Duck Hunt Master Pro</div>
+          <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">
+            Aim and tap the flying ducks before they escape across the marsh horizon! 3 shotgun shells per round. Watch out for fast golden bonus birds!
+          </p>
+          <button class="btn-action" id="playNowBtn" style="margin-top: 6px;">
+            🎯 Start Hunt
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Over Modal -->
+      <div class="modal-overlay" id="gameOverModal">
+        <div class="modal-card">
+          <div style="font-size: 3rem;" id="gameOverIcon">🏆</div>
+          <div class="modal-title" id="gameOverTitle">Hunt Complete!</div>
+          <div class="modal-stats-grid">
+            <div class="modal-stat-item">
+              <span class="stat-label">FINAL SCORE</span>
+              <span class="stat-value-large" id="finalScoreText">0</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-title">TIME</div>
-                <div class="stat-value" id="time">60</div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="timeBar"></div>
-                </div>
+            <div class="modal-stat-item">
+              <span class="stat-label">ACCURACY</span>
+              <span class="stat-value-large" id="accuracyText" style="color: var(--cyan);">0%</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-title">DUCKS</div>
-                <div class="stat-value" id="ducks">0/10</div>
+            <div class="modal-stat-item">
+              <span class="stat-label">DUCKS BAGGED</span>
+              <span class="stat-value-large" id="ducksBaggedText" style="color: var(--accent);">0</span>
             </div>
-        </div>
-        
-        <div class="game-container">
-            <div id="game-canvas"></div>
-        </div>
-        
-        <div class="controls">
-            <button class="btn btn-primary" id="startBtn">Start Game</button>
-            <button class="btn btn-secondary" id="instructionsBtn">How to Play</button>
-        </div>
-    </div>
-
-    <div class="modal" id="instructionsModal">
-        <div class="modal-content">
-            <h2>How to Play</h2>
-            <p>Tap on the screen to aim and shoot the ducks. Each duck hit adds to your score.</p>
-            <p>The faster you hit them, the more points you get! Game lasts for 60 seconds.</p>
-            <button class="btn btn-primary" id="closeInstructions">Got it!</button>
-        </div>
-    </div>
-
-    <div class="modal" id="gameOverModal">
-        <div class="modal-content">
-            <h2>Game Over</h2>
-            <p>Your final score: <span id="finalScore">0</span></p>
-            <div class="controls" style="margin-top: 20px;">
-                <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+            <div class="modal-stat-item">
+              <span class="stat-label">WAVE REACHED</span>
+              <span class="stat-value-large" id="finalWaveText">1</span>
             </div>
+          </div>
+          <button class="btn-action" id="retryBtn">
+            🔄 Hunt Again
+          </button>
         </div>
+      </div>
+
+      <!-- Help / Instructions Modal -->
+      <div class="modal-overlay" id="helpModal">
+        <div class="modal-card">
+          <div class="modal-title">How to Play 🦆</div>
+          <div style="font-size: 0.82rem; line-height: 1.5; color: #cbd5e1; text-align: left; display: flex; flex-direction: column; gap: 8px;">
+            <p>🎯 <strong>Aim & Shoot:</strong> Tap directly on flying ducks or click with your mouse cursor.</p>
+            <p>💥 <strong>Limited Ammo:</strong> You have <code>3 Shots</code> per flight. Reload happens automatically each wave.</p>
+            <p>🦆 <strong>Duck Species:</strong>
+              <br>• 🟢 <strong>Green Mallard:</strong> Standard speed (100 PTS)
+              <br>• 🔴 <strong>Redhead Swift:</strong> High-speed zigzag (250 PTS)
+              <br>• 👑 <strong>Golden King:</strong> Ultra-fast bonus bird (500 PTS + 1 Shell)
+            </p>
+            <p>🐕 <strong>Hunting Dog:</strong> Collects your prize upon hits or chuckles if ducks fly away!</p>
+          </div>
+          <button class="btn-action" id="closeHelpBtn" style="margin-top: 4px;">Got It 👍</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="loader" id="loader">
-        <div class="spinner"></div>
-        <p>Loading game assets...</p>
-    </div>
+  <script>
+    /* ==========================================================================
+       SYNTHESIZED RETRO WEB AUDIO STUDIO
+       ========================================================================== */
+    class DuckHuntAudio {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Game elements
-            const scoreElement = document.getElementById('score');
-            const timeElement = document.getElementById('time');
-            const ducksElement = document.getElementById('ducks');
-            const timeBar = document.getElementById('timeBar');
-            const startBtn = document.getElementById('startBtn');
-            const instructionsBtn = document.getElementById('instructionsBtn');
-            const instructionsModal = document.getElementById('instructionsModal');
-            const closeInstructions = document.getElementById('closeInstructions');
-            const gameOverModal = document.getElementById('gameOverModal');
-            const finalScoreElement = document.getElementById('finalScore');
-            const playAgainBtn = document.getElementById('playAgainBtn');
-            const loader = document.getElementById('loader');
-            const gameContainer = document.querySelector('.game-container');
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
 
-            // Game state
-            let score = 0;
-            let timeLeft = 60;
-            let ducksHit = 0;
-            let totalDucks = 10;
-            let gameActive = false;
-            
-            // Calculate game dimensions based on container
-            const gameWidth = gameContainer.clientWidth;
-            const gameHeight = gameContainer.clientHeight;
-            
-            // Phaser game configuration
-            const config = {
-                type: Phaser.AUTO,
-                parent: 'game-canvas',
-                width: gameWidth,
-                height: gameHeight,
-                backgroundColor: '#87CEEB',
-                physics: {
-                    default: 'arcade',
-                    arcade: {
-                        gravity: { y: 0 },
-                        debug: false
-                    }
-                },
-                scene: {
-                    preload: preload,
-                    create: create,
-                    update: update
-                },
-                input: {
-                    activePointers: 3
-                }
-            };
-            
-            let game;
-            let crosshair;
-            let ducks;
-            let lastFired = 0;
-            let gameTimer;
-            let scoreTexts = [];
-            
-            // Preload assets
-            function preload() {
-                // Create duck sprite using graphics
-                const duckGraphics = this.add.graphics();
-                duckGraphics.fillStyle(0xff9800);
-                duckGraphics.fillEllipse(16, 16, 30, 20);
-                duckGraphics.fillStyle(0xffc107);
-                duckGraphics.fillEllipse(25, 8, 15, 12);
-                duckGraphics.fillStyle(0x000000);
-                duckGraphics.fillEllipse(30, 6, 4, 4);
-                duckGraphics.generateTexture('duck', 32, 32);
-                duckGraphics.destroy();
-                
-                // Create flying duck with wings
-                const duckFlyGraphics = this.add.graphics();
-                duckFlyGraphics.fillStyle(0xff9800);
-                duckFlyGraphics.fillEllipse(16, 16, 30, 20);
-                duckFlyGraphics.fillStyle(0xffc107);
-                duckFlyGraphics.fillEllipse(25, 8, 15, 12);
-                duckFlyGraphics.fillStyle(0x000000);
-                duckFlyGraphics.fillEllipse(30, 6, 4, 4);
-                
-                // Wing
-                duckFlyGraphics.fillStyle(0xff9800);
-                duckFlyGraphics.fillEllipse(5, 10, 15, 8);
-                duckFlyGraphics.generateTexture('duckFly', 32, 32);
-                duckFlyGraphics.destroy();
-                
-                // Create crosshair
-                const crosshairGraphics = this.add.graphics();
-                crosshairGraphics.lineStyle(3, 0x3498db);
-                crosshairGraphics.strokeCircle(16, 16, 15);
-                crosshairGraphics.lineStyle(3, 0x3498db);
-                crosshairGraphics.lineBetween(16, 0, 16, 10);
-                crosshairGraphics.lineBetween(16, 22, 16, 32);
-                crosshairGraphics.lineBetween(0, 16, 10, 16);
-                crosshairGraphics.lineBetween(22, 16, 32, 16);
-                crosshairGraphics.fillStyle(0x3498db);
-                crosshairGraphics.fillCircle(16, 16, 3);
-                crosshairGraphics.generateTexture('crosshair', 32, 32);
-                crosshairGraphics.destroy();
-                    
-                // Create hit effect
-                const hitGraphics = this.add.graphics();
-                hitGraphics.fillStyle(0xe74c3c);
-                hitGraphics.fillCircle(16, 16, 15);
-                hitGraphics.generateTexture('hit', 32, 32);
-                hitGraphics.destroy();
-                
-                // Create cloud texture
-                const cloudGraphics = this.add.graphics();
-                cloudGraphics.fillStyle(0xffffff, 0.8);
-                cloudGraphics.fillEllipse(0, 0, 40, 20);
-                cloudGraphics.fillEllipse(15, -10, 30, 25);
-                cloudGraphics.fillEllipse(35, 0, 35, 15);
-                cloudGraphics.generateTexture('cloud', 70, 30);
-                cloudGraphics.destroy();
-            }
-            
-            // Create game objects
-            function create() {
-                // Set up world bounds
-                this.physics.world.setBounds(0, 0, config.width, config.height);
-                
-                // Create sky background with gradient effect
-                const bg = this.add.graphics();
-                bg.fillGradientStyle(0x6a11cb, 0x6a11cb, 0x2575fc, 0x2575fc, 1);
-                bg.fillRect(0, 0, config.width, config.height);
-                
-                // Add some clouds for background
-                for (let i = 0; i < 5; i++) {
-                    const x = Phaser.Math.Between(0, config.width);
-                    const y = Phaser.Math.Between(0, config.height / 2);
-                    const cloudImg = this.add.image(x, y, 'cloud');
-                    cloudImg.setDepth(-1);
-                    cloudImg.setAlpha(0.6);
-                    
-                    // Animate clouds slowly
-                    this.tweens.add({
-                        targets: cloudImg,
-                        x: x + Phaser.Math.Between(-50, 50),
-                        duration: Phaser.Math.Between(5000, 10000),
-                        yoyo: true,
-                        repeat: -1,
-                        ease: 'Sine.easeInOut'
-                    });
-                }
-                
-                // Create crosshair
-                crosshair = this.add.sprite(0, 0, 'crosshair');
-                crosshair.setDepth(1000);
-                crosshair.setVisible(false);
-                
-                // Create ducks group
-                ducks = this.physics.add.group();
-                
-                // Input handling
-                this.input.on('pointermove', (pointer) => {
-                    if (gameActive) {
-                        crosshair.setVisible(true);
-                        crosshair.x = pointer.x;
-                        crosshair.y = pointer.y;
-                    }
-                });
-                
-                if(window.Sound) Sound.play('shoot'); this.input.on('pointerdown', (pointer) => {
-                    if (!gameActive) return;
-                    
-                    // Add shooting effect
-                    const shootEffect = this.add.graphics();
-                    shootEffect.lineStyle(4, 0xffffff, 0.8);
-                    shootEffect.strokeCircle(pointer.x, pointer.y, 10);
-                    this.tweens.add({
-                        targets: shootEffect,
-                        alpha: 0,
-                        scaleX: 2,
-                        scaleY: 2,
-                        duration: 200,
-                        onComplete: () => shootEffect.destroy()
-                    });
-                    
-                    // Check for duck hits
-                    let hit = false;
-                    ducks.getChildren().forEach(duck => {
-                        const distance = Phaser.Math.Distance.Between(
-                            pointer.x, pointer.y, 
-                            duck.x, duck.y
-                        );
-                        
-                        if (distance < 30 && !duck.hit) {
-                            // Duck hit!
-                            hit = true;
-                            duck.setTexture('hit');
-                            duck.hit = true;
-                            duck.body.stop();
-                            
-                            // Increase score based on speed
-                            const points = Math.floor(10 + Math.abs(duck.body.velocity.x) / 2);
-                            score += points;
-                            scoreElement.textContent = score;
-                            
-                            // Show score popup
-                            const scorePopup = this.add.text(duck.x, duck.y, `+${points}`, {
-                                fontSize: '20px',
-                                fontWeight: 'bold',
-                                color: '#FFD700',
-                                stroke: '#000',
-                                strokeThickness: 3
-                            });
-                            scorePopup.setOrigin(0.5);
-                            
-                            this.tweens.add({
-                                targets: scorePopup,
-                                y: duck.y - 60,
-                                alpha: 0,
-                                duration: 1000,
-                                ease: 'Power2',
-                                onComplete: () => scorePopup.destroy()
-                            });
-                            
-                            ducksHit++;
-                            ducksElement.textContent = `${ducksHit}/${totalDucks}`;
-                            
-                            // Remove duck after a short delay
-                            this.time.delayedCall(300, () => {
-                                if (duck.active) {
-                                    duck.destroy();
-                                    spawnDuck.call(this);
-                                }
-                            });
-                        }
-                    });
-                    
-                    // Fire rate limiting
-                    if (this.time.now > lastFired) {
-                        lastFired = this.time.now + 200;
-                    }
-                });
-                
-                // Hide crosshair when pointer leaves game area
-                this.input.on('pointerout', () => {
-                    crosshair.setVisible(false);
-                });
-                
-                // Initially hide the game scene
-                this.scene.setVisible(false);
-                
-                // Hide loader when game is ready
-                loader.style.display = 'none';
-            }
-            
-            // Spawn a new duck
-            function spawnDuck() {
-                if (ducks.getLength() >= 3 || !gameActive) return;
-                
-                const x = Phaser.Math.Between(0, 1) ? -30 : config.width + 30;
-                const y = Phaser.Math.Between(50, config.height - 50);
-                
-                const duck = ducks.create(x, y, 'duck');
-                duck.hit = false;
-                
-                // Set random velocity
-                const vx = Phaser.Math.Between(150, 250) * (x > config.width/2 ? -1 : 1);
-                const vy = Phaser.Math.Between(-80, 80);
-                
-                duck.setVelocity(vx, vy);
-                duck.setAngularVelocity(Phaser.Math.Between(-20, 20));
-                duck.setCollideWorldBounds(true);
-                duck.setBounce(1, 1);
-                
-                // Animate wing flapping
-                this.time.addEvent({
-                    delay: 200,
-                    callback: () => {
-                        if (duck.active && !duck.hit) {
-                            duck.setTexture(duck.texture.key === 'duck' ? 'duckFly' : 'duck');
-                        }
-                    },
-                    loop: true
-                });
-                
-                // Remove duck when it goes off screen
-                duck.checkWorldBounds = true;
-                duck.outOfBoundsKill = true;
-            }
-            
-            // Update game state
-            function update() {
-                if (!gameActive) return;
-                
-                // Randomly change direction of ducks
-                ducks.getChildren().forEach(duck => {
-                    if (!duck.hit && Phaser.Math.Between(0, 100) > 98) {
-                        duck.setVelocityY(Phaser.Math.Between(-80, 80));
-                    }
-                });
-            }
-            
-            // Start the game
-            function startGame() {
-                if (gameActive) return;
-                
-                // Reset game state
-                score = 0;
-                timeLeft = 60;
-                ducksHit = 0;
-                scoreElement.textContent = score;
-                timeElement.textContent = timeLeft;
-                ducksElement.textContent = `${ducksHit}/${totalDucks}`;
-                timeBar.style.width = '100%';
-                gameActive = true;
-                
-                // Clear any existing ducks
-                ducks.clear(true, true);
-                
-                // Show the game scene
-                game.scene.scenes[0].scene.setVisible(true);
-                
-                // Spawn initial ducks
-                for (let i = 0; i < 3; i++) {
-                    spawnDuck.call(game.scene.scenes[0]);
-                }
-                
-                // Start game timer
-                clearInterval(gameTimer);
-                gameTimer = setInterval(() => {
-                    timeLeft--;
-                    timeElement.textContent = timeLeft;
-                    timeBar.style.width = `${(timeLeft / 60) * 100}%`;
-                    
-                    if (timeLeft <= 0 || ducksHit >= totalDucks) {
-                        endGame();
-                    }
-                }, 1000);
-            }
-            
-            // End the game
-            function endGame() {
-                gameActive = false;
-                clearInterval(gameTimer);
-                
-                // Show game over modal
-                finalScoreElement.textContent = score;
-                setTimeout(() => {
-                    gameOverModal.classList.add('active');
-                }, 1000);
-            }
-            
-            // Initialize the game
-            game = new Phaser.Game(config);
-            
-            // Event listeners
-            startBtn.addEventListener('click', startGame);
-            
-            instructionsBtn.addEventListener('click', () => {
-                instructionsModal.classList.add('active');
-            });
-            
-            closeInstructions.addEventListener('click', () => {
-                instructionsModal.classList.remove('active');
-            });
-            
-            playAgainBtn.addEventListener('click', () => {
-                gameOverModal.classList.remove('active');
-                startGame();
-            });
-            
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                const newWidth = gameContainer.clientWidth;
-                const newHeight = gameContainer.clientHeight;
-                
-                game.scale.resize(newWidth, newHeight);
-                game.config.width = newWidth;
-                game.config.height = newHeight;
-                
-                game.scene.scenes[0].physics.world.setBounds(0, 0, newWidth, newHeight);
-            });
-            
-            // Hide loader after a short time (simulating asset loading)
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                }, 500);
-            }, 1500);
+      playGunshot() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+
+        // Bass Impact
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, t);
+        osc.frequency.exponentialRampToValueAtTime(25, t + 0.18);
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.18);
+
+        // Muzzle Crack Noise
+        const bufferSize = this.ctx.sampleRate * 0.12;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.2));
+        }
+        const noise = this.ctx.createBufferSource();
+        const noiseGain = this.ctx.createGain();
+        noise.buffer = buffer;
+        noiseGain.gain.setValueAtTime(0.35, t);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        noise.connect(noiseGain);
+        noiseGain.connect(this.ctx.destination);
+        noise.start(t);
+      }
+
+      playQuack() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(320, t);
+        osc.frequency.linearRampToValueAtTime(240, t + 0.08);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.12);
+      }
+
+      playDuckHit() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(540, t);
+        osc.frequency.exponentialRampToValueAtTime(120, t + 0.22);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      }
+
+      playDogBark() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [0, 0.12].forEach((offset) => {
+          const t = this.ctx.currentTime + offset;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(400, t);
+          osc.frequency.exponentialRampToValueAtTime(180, t + 0.09);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.09);
         });
-    </script>
+      }
 
-<script data-sound-bound="true">
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button, .btn, [role="button"]').forEach(btn => {
-    btn.addEventListener('click', () => { if(window.Sound) Sound.play('tap'); });
-  });
-});
-</script>
+      playVictoryFanfare() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, i) => {
+          const t = this.ctx.currentTime + i * 0.09;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.18, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.16);
+        });
+      }
 
+      playDogChuckle() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [320, 260, 320, 260].forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.09;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.1, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.07);
+        });
+      }
+    }
 
-<script>
-/* Universal Modern In-Game Modal Polyfill */
-window.showGameModal = function(title, msg, btnText = 'Continue', onConfirm = null) {
-  let modal = document.getElementById('brainsta-universal-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'brainsta-universal-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;font-family:\'Segoe UI\',system-ui,-apple-system,sans-serif;';
-    modal.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:24px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.25);animation:bumPop 0.25s ease-out;"><h3 id="bum-title" style="margin:0 0 10px;font-size:20px;font-weight:800;color:#1e1b4b;"></h3><p id="bum-msg" style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.5;"></p><button id="bum-btn" style="width:100%;padding:12px 18px;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;background:linear-gradient(135deg,#3498db,#2563eb);color:#ffffff;box-shadow:0 4px 14px rgba(52,152,219,0.35);transition:transform 0.1s;"></button></div><style>@keyframes bumPop{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}#bum-btn:active{transform:scale(0.97)}</style>';
-    document.body.appendChild(modal);
-  }
-  document.getElementById('bum-title').textContent = title || 'Notice';
-  document.getElementById('bum-msg').innerHTML = msg || '';
-  const btn = document.getElementById('bum-btn');
-  btn.textContent = btnText;
-  modal.style.display = 'flex';
-  btn.onclick = () => {
-    modal.style.display = 'none';
-    if (window.Sound) Sound.play('tap');
-    if (onConfirm) onConfirm();
-  };
-};
-window.alert = function(msg) {
-  window.showGameModal('Game Notification', msg, 'OK');
-};
-</script>
+    const audio = new DuckHuntAudio();
 
+    /* ==========================================================================
+       DUCK HUNT MASTER PRO ENGINE (HTML5 CANVAS)
+       ========================================================================== */
+    class DuckHuntGame {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.flash = document.getElementById('flashOverlay');
+
+        this.score = 0;
+        this.wave = 1;
+        this.maxWaves = 10;
+        this.totalShotsFired = 0;
+        this.totalDucksHit = 0;
+        this.ammo = 3;
+        this.maxAmmo = 3;
+
+        this.isPlaying = false;
+        this.isPaused = false;
+        this.isGameOver = false;
+
+        this.ducks = [];
+        this.particles = [];
+        this.floatingTexts = [];
+        this.wavePips = [];
+
+        // Dog companion state
+        this.dog = {
+          x: 0,
+          y: 0,
+          w: 60,
+          h: 56,
+          state: 'idle', // 'sniff', 'jump', 'hold_duck', 'laugh', 'hidden'
+          timer: 0,
+          targetY: 0
+        };
+
+        this.crosshair = { x: -100, y: -100, visible: false };
+
+        this.clouds = [
+          { x: 30, y: 50, speed: 0.15, scale: 1.1 },
+          { x: 220, y: 90, speed: 0.22, scale: 0.8 },
+          { x: 380, y: 40, speed: 0.12, scale: 1.3 }
+        ];
+
+        this.initCanvas();
+        this.initPips();
+        this.bindEvents();
+        this.lastTime = performance.now();
+        this.animate(this.lastTime);
+      }
+
+      initCanvas() {
+        const resize = () => {
+          const rect = this.canvas.parentElement.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          this.width = rect.width;
+          this.height = rect.height;
+          this.canvas.width = rect.width * dpr;
+          this.canvas.height = rect.height * dpr;
+          this.ctx.scale(dpr, dpr);
+        };
+        window.addEventListener('resize', resize);
+        resize();
+      }
+
+      initPips() {
+        const container = document.getElementById('duckPipsContainer');
+        container.innerHTML = '';
+        this.wavePips = [];
+        for (let i = 0; i < 10; i++) {
+          const pip = document.createElement('div');
+          pip.className = 'duck-pip';
+          container.appendChild(pip);
+          this.wavePips.push(pip);
+        }
+      }
+
+      bindEvents() {
+        const triggerShoot = (clientX, clientY) => {
+          if (!this.isPlaying || this.isPaused || this.isGameOver) return;
+          const rect = this.canvas.getBoundingClientRect();
+          const x = clientX - rect.left;
+          const y = clientY - rect.top;
+          this.crosshair.x = x;
+          this.crosshair.y = y;
+          this.shoot(x, y);
+        };
+
+        this.canvas.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          triggerShoot(e.clientX, e.clientY);
+        });
+
+        this.canvas.addEventListener('pointermove', (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          this.crosshair.x = e.clientX - rect.left;
+          this.crosshair.y = e.clientY - rect.top;
+          this.crosshair.visible = true;
+        });
+
+        this.canvas.addEventListener('pointerleave', () => {
+          this.crosshair.visible = false;
+        });
+
+        document.getElementById('playNowBtn').onclick = () => this.startGame();
+        document.getElementById('retryBtn').onclick = () => this.startGame();
+        document.getElementById('soundToggle').onclick = () => {
+          audio.enabled = !audio.enabled;
+          document.getElementById('soundToggle').textContent = audio.enabled ? '🔊' : '🔇';
+        };
+        document.getElementById('pauseBtn').onclick = () => this.togglePause();
+        document.getElementById('helpBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
+        document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+      }
+
+      startGame() {
+        document.getElementById('startModal').classList.remove('open');
+        document.getElementById('gameOverModal').classList.remove('open');
+        this.score = 0;
+        this.wave = 1;
+        this.totalShotsFired = 0;
+        this.totalDucksHit = 0;
+        this.isPlaying = true;
+        this.isGameOver = false;
+        this.isPaused = false;
+
+        this.initPips();
+        this.startWaveIntro();
+        this.updateUI();
+      }
+
+      togglePause() {
+        if (!this.isPlaying || this.isGameOver) return;
+        this.isPaused = !this.isPaused;
+        document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
+      }
+
+      startWaveIntro() {
+        this.ammo = this.maxAmmo;
+        this.ducks = [];
+        this.updateUI();
+
+        // Dog intro animation
+        this.dog.x = this.width * 0.2;
+        this.dog.y = this.height * 0.72;
+        this.dog.state = 'sniff';
+        this.dog.timer = 1.2;
+        audio.playDogBark();
+      }
+
+      spawnDucksForWave() {
+        const duckCount = (this.wave >= 4 && Math.random() > 0.3) ? 2 : 1;
+        const baseSpeed = 2.4 + (this.wave * 0.45);
+
+        for (let i = 0; i < duckCount; i++) {
+          const randType = Math.random();
+          let type = 'green';
+          let pts = 100;
+          let speedMult = 1.0;
+
+          if (randType < 0.15) {
+            type = 'gold'; // bonus fast
+            pts = 500;
+            speedMult = 1.55;
+          } else if (randType < 0.45) {
+            type = 'red'; // fast erratic
+            pts = 250;
+            speedMult = 1.28;
+          }
+
+          const startLeft = Math.random() > 0.5;
+          this.ducks.push({
+            x: startLeft ? -30 : this.width + 30,
+            y: this.height * 0.55 + (Math.random() * 40),
+            w: 48,
+            h: 40,
+            vx: (startLeft ? 1 : -1) * baseSpeed * speedMult,
+            vy: -(Math.random() * 1.8 + 2.0),
+            type,
+            pts,
+            alive: true,
+            flapping: 0,
+            wingUp: true,
+            quackTimer: Math.random() * 1.5,
+            escaped: false,
+            fallVy: 0
+          });
+        }
+      }
+
+      shoot(x, y) {
+        if (this.ammo <= 0) return;
+
+        this.ammo--;
+        this.totalShotsFired++;
+        audio.playGunshot();
+
+        // Muzzle Flash
+        this.flash.style.opacity = '1';
+        setTimeout(() => this.flash.style.opacity = '0', 50);
+
+        // Shell Ejection Particle
+        this.particles.push({
+          x: this.width * 0.5 + (Math.random() - 0.5) * 40,
+          y: this.height - 30,
+          vx: (Math.random() - 0.5) * 3,
+          vy: -(Math.random() * 4 + 3),
+          size: 6,
+          color: '#fbbf24',
+          alpha: 1,
+          life: 0.6
+        });
+
+        // Hit Detection against flying ducks
+        let hitAny = false;
+        this.ducks.forEach(d => {
+          if (!d.alive || d.escaped) return;
+
+          const hitRadius = d.w * 0.65;
+          const dist = Math.hypot(x - d.x, y - d.y);
+
+          if (dist < hitRadius) {
+            d.alive = false;
+            d.fallVy = 1.5;
+            hitAny = true;
+            this.totalDucksHit++;
+            this.score += d.pts;
+
+            if (d.type === 'gold') {
+              this.ammo = Math.min(this.maxAmmo, this.ammo + 1); // bonus shell
+            }
+
+            audio.playDuckHit();
+            this.addFloatingText(`+${d.pts} ${d.type.toUpperCase()}!`, d.x, d.y - 10, d.type === 'gold' ? '#fbbf24' : '#22c55e');
+
+            // Feathers burst
+            for (let i = 0; i < 8; i++) {
+              this.particles.push({
+                x: d.x,
+                y: d.y,
+                vx: (Math.random() - 0.5) * 5,
+                vy: (Math.random() - 0.5) * 5,
+                size: 4 + Math.random() * 4,
+                color: d.type === 'gold' ? '#fbbf24' : d.type === 'red' ? '#ef4444' : '#22c55e',
+                alpha: 1,
+                life: 0.8
+              });
+            }
+          }
+        });
+
+        this.updateUI();
+
+        // If all ammo used and ducks remain alive, trigger escape
+        if (this.ammo === 0 && !hitAny) {
+          this.ducks.forEach(d => {
+            if (d.alive) {
+              d.vy = -6; // fly away fast
+              d.escaped = true;
+            }
+          });
+        }
+      }
+
+      update(dt) {
+        if (!this.isPlaying || this.isPaused || this.isGameOver) return;
+
+        // Clouds movement
+        this.clouds.forEach(c => {
+          c.x += c.speed;
+          if (c.x > this.width + 60) c.x = -60;
+        });
+
+        // Dog intro animation update
+        if (this.dog.state === 'sniff') {
+          this.dog.timer -= dt;
+          if (this.dog.timer <= 0) {
+            this.dog.state = 'jump';
+            this.dog.timer = 0.6;
+          }
+        } else if (this.dog.state === 'jump') {
+          this.dog.timer -= dt;
+          this.dog.y += 1.8;
+          if (this.dog.timer <= 0) {
+            this.dog.state = 'hidden';
+            this.spawnDucksForWave();
+          }
+        } else if (this.dog.state === 'hold_duck' || this.dog.state === 'laugh') {
+          this.dog.timer -= dt;
+          if (this.dog.timer <= 0) {
+            this.dog.state = 'hidden';
+            this.advanceWave();
+          }
+        }
+
+        // Update Ducks
+        let allDucksDone = (this.ducks.length > 0);
+
+        this.ducks.forEach(d => {
+          if (d.alive) {
+            d.quackTimer -= dt;
+            if (d.quackTimer <= 0) {
+              audio.playQuack();
+              d.quackTimer = 1.5 + Math.random() * 2;
+            }
+
+            d.flapping += dt * 12;
+            d.wingUp = Math.sin(d.flapping) > 0;
+
+            d.x += d.vx;
+            d.y += d.vy;
+
+            // Bounce off side marsh edges unless escaping
+            if (!d.escaped) {
+              if (d.x < 20 || d.x > this.width - 20) d.vx *= -1;
+              if (d.y < 40) d.vy = Math.abs(d.vy) * 0.8;
+              if (d.y > this.height * 0.68) d.vy = -Math.abs(d.vy);
+            }
+
+            // Escaped off the top
+            if (d.y < -50) {
+              d.escaped = true;
+            } else {
+              allDucksDone = false;
+            }
+          } else {
+            // Duck falling down after being shot
+            d.fallVy += 0.35;
+            d.y += d.fallVy;
+
+            if (d.y < this.height * 0.76) {
+              allDucksDone = false;
+            }
+          }
+        });
+
+        // If wave turn is finished
+        if (allDucksDone && this.dog.state === 'hidden') {
+          const hitCount = this.ducks.filter(d => !d.alive).length;
+          const pipIdx = this.wave - 1;
+
+          if (hitCount > 0) {
+            if (this.wavePips[pipIdx]) this.wavePips[pipIdx].className = 'duck-pip hit';
+            this.dog.state = 'hold_duck';
+            this.dog.timer = 1.4;
+            this.dog.x = this.width * 0.5 - 30;
+            this.dog.y = this.height * 0.68;
+            audio.playVictoryFanfare();
+          } else {
+            if (this.wavePips[pipIdx]) this.wavePips[pipIdx].className = 'duck-pip miss';
+            this.dog.state = 'laugh';
+            this.dog.timer = 1.4;
+            this.dog.x = this.width * 0.5 - 30;
+            this.dog.y = this.height * 0.68;
+            audio.playDogChuckle();
+          }
+        }
+
+        // Particles & Floating texts
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const pt = this.particles[i];
+          pt.x += pt.vx;
+          pt.y += pt.vy;
+          pt.alpha -= dt / pt.life;
+          if (pt.alpha <= 0) this.particles.splice(i, 1);
+        }
+
+        for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+          const ft = this.floatingTexts[i];
+          ft.y += ft.vy;
+          ft.alpha -= dt / ft.life;
+          if (ft.alpha <= 0) this.floatingTexts.splice(i, 1);
+        }
+      }
+
+      advanceWave() {
+        if (this.wave >= this.maxWaves) {
+          this.triggerGameOver(true);
+        } else {
+          this.wave++;
+          this.startWaveIntro();
+        }
+      }
+
+      triggerGameOver(victory = false) {
+        this.isGameOver = true;
+        this.isPlaying = false;
+
+        const accuracy = this.totalShotsFired > 0
+          ? Math.round((this.totalDucksHit / this.totalShotsFired) * 100)
+          : 0;
+
+        document.getElementById('finalScoreText').textContent = this.score;
+        document.getElementById('accuracyText').textContent = `${accuracy}%`;
+        document.getElementById('ducksBaggedText').textContent = `${this.totalDucksHit}`;
+        document.getElementById('finalWaveText').textContent = `${this.wave}/${this.maxWaves}`;
+
+        document.getElementById('gameOverTitle').textContent = victory ? '🎉 Master Marksman!' : 'Hunt Complete!';
+        document.getElementById('gameOverIcon').textContent = victory ? '👑' : '🦆';
+
+        document.getElementById('gameOverModal').classList.add('open');
+      }
+
+      addFloatingText(text, x, y, color = '#fbbf24') {
+        this.floatingTexts.push({
+          text, x, y,
+          vy: -1.2,
+          alpha: 1,
+          color,
+          life: 0.85
+        });
+      }
+
+      updateUI() {
+        document.getElementById('scoreText').textContent = this.score;
+        document.getElementById('waveText').textContent = `WAVE ${this.wave}`;
+
+        let ammoStr = '';
+        for (let i = 0; i < this.ammo; i++) ammoStr += '💥';
+        for (let i = this.ammo; i < this.maxAmmo; i++) ammoStr += '🔘';
+        document.getElementById('ammoDisplay').textContent = ammoStr || 'EMPTY';
+      }
+
+      render() {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Sky Dynamic Gradient based on wave
+        const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.75);
+        if (this.wave <= 3) {
+          skyGrad.addColorStop(0, '#38bdf8'); // Morning bright blue
+          skyGrad.addColorStop(1, '#bae6fd');
+        } else if (this.wave <= 7) {
+          skyGrad.addColorStop(0, '#f97316'); // Dusk orange
+          skyGrad.addColorStop(1, '#fed7aa');
+        } else {
+          skyGrad.addColorStop(0, '#0f172a'); // Night starry twilight
+          skyGrad.addColorStop(1, '#475569');
+        }
+        ctx.fillStyle = skyGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        // Clouds
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        this.clouds.forEach(c => {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, 22 * c.scale, 0, Math.PI * 2);
+          ctx.arc(c.x + 20 * c.scale, c.y - 8 * c.scale, 18 * c.scale, 0, Math.PI * 2);
+          ctx.arc(c.x + 38 * c.scale, c.y, 20 * c.scale, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // Distant Mountain/Tree Silhouettes
+        ctx.fillStyle = '#1e3a5f';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.72);
+        ctx.lineTo(w * 0.3, h * 0.65);
+        ctx.lineTo(w * 0.7, h * 0.70);
+        ctx.lineTo(w, h * 0.64);
+        ctx.lineTo(w, h * 0.75);
+        ctx.lineTo(0, h * 0.75);
+        ctx.fill();
+
+        // Render Flying Ducks
+        this.ducks.forEach(d => {
+          ctx.save();
+          ctx.translate(d.x, d.y);
+
+          if (d.vx < 0 && d.alive) ctx.scale(-1, 1);
+          if (!d.alive) ctx.rotate(Math.PI * 0.75); // tumbled fall
+
+          // Duck Colors
+          const bodyColor = d.type === 'gold' ? '#f59e0b' : d.type === 'red' ? '#dc2626' : '#15803d';
+          const headColor = d.type === 'gold' ? '#fbbf24' : d.type === 'red' ? '#b91c1c' : '#166534';
+          const beakColor = '#ea580c';
+
+          // Body
+          ctx.fillStyle = bodyColor;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 20, 13, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Wing (Flapping)
+          ctx.fillStyle = d.type === 'gold' ? '#d97706' : '#475569';
+          ctx.beginPath();
+          if (d.wingUp) {
+            ctx.ellipse(-2, -10, 12, 6, -Math.PI / 4, 0, Math.PI * 2);
+          } else {
+            ctx.ellipse(-2, 6, 12, 6, Math.PI / 4, 0, Math.PI * 2);
+          }
+          ctx.fill();
+
+          // Neck & Head
+          ctx.fillStyle = headColor;
+          ctx.beginPath();
+          ctx.arc(14, -6, 9, 0, Math.PI * 2);
+          ctx.fill();
+
+          // White neck ring for standard mallard
+          if (d.type === 'green') {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(9, -2, 4, 0, Math.PI);
+            ctx.stroke();
+          }
+
+          // Eye
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(16, -8, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#000';
+          ctx.beginPath();
+          ctx.arc(17, -8, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Beak
+          ctx.fillStyle = beakColor;
+          ctx.beginPath();
+          ctx.moveTo(22, -8);
+          ctx.lineTo(30, -5);
+          ctx.lineTo(22, -3);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        });
+
+        // Dog Companion Render
+        if (this.dog.state !== 'hidden') {
+          ctx.save();
+          ctx.translate(this.dog.x, this.dog.y);
+
+          // Dog Body (Golden Retriever brown)
+          ctx.fillStyle = '#b45309';
+          ctx.beginPath();
+          ctx.roundRect(-20, -15, 42, 34, 10);
+          ctx.fill();
+
+          // Head & Floppy Ears
+          ctx.fillStyle = '#92400e';
+          ctx.beginPath();
+          ctx.arc(2, -18, 14, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Ears
+          ctx.fillStyle = '#78350f';
+          ctx.beginPath();
+          ctx.ellipse(-10, -18, 5, 12, Math.PI / 8, 0, Math.PI * 2);
+          ctx.ellipse(14, -18, 5, 12, -Math.PI / 8, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Snout & Nose
+          ctx.fillStyle = '#d97706';
+          ctx.beginPath();
+          ctx.ellipse(2, -13, 8, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#000';
+          ctx.beginPath();
+          ctx.arc(2, -16, 3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Eyes
+          ctx.fillStyle = '#000';
+          ctx.beginPath();
+          ctx.arc(-3, -20, 2, 0, Math.PI * 2);
+          ctx.arc(7, -20, 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Duck in mouth if successful hit
+          if (this.dog.state === 'hold_duck') {
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.ellipse(18, -10, 10, 6, -Math.PI / 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(26, -12, 6, 4);
+          }
+
+          // Laughing giggle emoji bubble if missed
+          if (this.dog.state === 'laugh') {
+            ctx.fillStyle = '#fff';
+            ctx.font = '22px sans-serif';
+            ctx.fillText('😂', 18, -32);
+          }
+
+          ctx.restore();
+        }
+
+        // Marsh Reeds & Foreground Grass
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.rect(0, h * 0.74, w, h * 0.26);
+        ctx.fill();
+
+        // Tall Grass Blades
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 3;
+        for (let x = 8; x < w; x += 14) {
+          ctx.beginPath();
+          ctx.moveTo(x, h * 0.77);
+          ctx.quadraticCurveTo(x + 6, h * 0.71, x + (x % 4 === 0 ? 10 : -4), h * 0.69);
+          ctx.stroke();
+        }
+
+        // Particles
+        this.particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.alpha);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Floating Texts
+        this.floatingTexts.forEach(ft => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, ft.alpha);
+          ctx.fillStyle = ft.color;
+          ctx.font = '900 13px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.shadowColor = '#000';
+          ctx.shadowBlur = 6;
+          ctx.fillText(ft.text, ft.x, ft.y);
+          ctx.restore();
+        });
+
+        // Neon Glow Crosshair Cursor
+        if (this.crosshair.visible && !this.isGameOver) {
+          ctx.save();
+          ctx.translate(this.crosshair.x, this.crosshair.y);
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 2;
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 8;
+
+          ctx.beginPath();
+          ctx.arc(0, 0, 14, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.moveTo(-20, 0); ctx.lineTo(-6, 0);
+          ctx.moveTo(6, 0);   ctx.lineTo(20, 0);
+          ctx.moveTo(0, -20); ctx.lineTo(0, -6);
+          ctx.moveTo(0, 6);   ctx.lineTo(0, 20);
+          ctx.stroke();
+
+          ctx.fillStyle = '#ef4444';
+          ctx.beginPath();
+          ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
+
+      animate(now) {
+        const dt = Math.min((now - this.lastTime) / 1000, 0.05);
+        this.lastTime = now;
+
+        this.update(dt);
+        this.render();
+
+        requestAnimationFrame(t => this.animate(t));
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new DuckHuntGame();
+    });
+  </script>
 </body>
 </html>
