@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Chem Balancer Pro — 50+ Molecular Reactions Lab</title>
+  <title>Chem Balancer Pro — 100+ Molecular Reactions Lab</title>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
@@ -59,7 +59,7 @@
       border-bottom: 1px solid var(--surface-border);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       z-index: 40;
       flex-shrink: 0;
     }
@@ -211,7 +211,7 @@
     /* Visual Reaction Flask Canvas */
     .lab-canvas-card {
       width: 100%;
-      height: 110px;
+      height: 105px;
       background: var(--surface-card);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
@@ -526,7 +526,7 @@
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
       width: 100%;
-      max-width: 480px;
+      max-width: 500px;
       max-height: 85vh;
       max-height: 85dvh;
       overflow-y: auto;
@@ -543,6 +543,19 @@
       align-items: center;
     }
 
+    .search-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--surface-border);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .search-input:focus { border-color: var(--accent); }
+
     .close-btn {
       background: transparent;
       border: none;
@@ -556,7 +569,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      margin-top: 10px;
+      margin-top: 6px;
     }
 
     .reaction-item-btn {
@@ -597,7 +610,8 @@
       </div>
 
       <div class="controls-top">
-        <button id="reactionListBtn" title="Select Reaction List">📑 50+ List</button>
+        <button id="reactionListBtn" title="Browse 100+ Reactions">📑 100+ List</button>
+        <button class="btn-icon" id="randomBtn" title="Random Reaction">🎲</button>
         <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
         <button class="btn-icon primary" id="helpBtn" title="How to Play & Theory">❓</button>
       </div>
@@ -611,7 +625,7 @@
       </div>
       <div class="stat-pill" title="Current Reaction Index">
         <span>🔬</span>
-        <span class="stat-val cyan" id="puzzleCountText">1/50</span>
+        <span class="stat-val cyan" id="puzzleCountText">1/100</span>
       </div>
       <div class="stat-pill" title="Streak">
         <span>🔥</span>
@@ -621,13 +635,14 @@
 
     <!-- Category Filter Tabs -->
     <div class="category-scroll-bar" id="categoryTabs">
-      <div class="cat-tab active" data-cat="all">All (50+)</div>
+      <div class="cat-tab active" data-cat="all">All (100+)</div>
       <div class="cat-tab" data-cat="Synthesis">Synthesis</div>
       <div class="cat-tab" data-cat="Decomposition">Decomposition</div>
       <div class="cat-tab" data-cat="Combustion">Combustion</div>
       <div class="cat-tab" data-cat="Single Displacement">Single Disp.</div>
       <div class="cat-tab" data-cat="Double Displacement">Double Disp.</div>
       <div class="cat-tab" data-cat="Redox">Redox & Special</div>
+      <div class="cat-tab" data-cat="Organic">Organic</div>
     </div>
   </header>
 
@@ -677,13 +692,14 @@
 
   <canvas id="confettiCanvas"></canvas>
 
-  <!-- 50+ Reaction Explorer Modal -->
+  <!-- 100+ Reaction Explorer Modal -->
   <div class="modal-overlay" id="listModal">
     <div class="modal-card">
       <div class="modal-title">
-        <span>Select Reaction (50+) 📑</span>
+        <span>100+ Chemistry Reactions 📑</span>
         <button class="close-btn" id="closeListBtn">&times;</button>
       </div>
+      <input type="text" class="search-input" id="searchReactionsInput" placeholder="🔍 Search by formula, element or reaction type...">
       <div class="reaction-list-grid" id="reactionListGrid">
         <!-- Dynamically generated list -->
       </div>
@@ -806,450 +822,139 @@
     const audio = new ChemAudioEngine();
 
     /* ==========================================================================
-       MASSIVE 50+ CHEMICAL REACTION DATABASE
+       MEGA 100+ CHEMICAL REACTION DATABASE
        ========================================================================== */
     const REACTIONS_DB = [
-      // --- SYNTHESIS REACTIONS ---
-      {
-        type: "Synthesis",
-        reactants: ["H₂", "O₂"],
-        products: ["H₂O"],
-        coefficients: [2, 1, 2],
-        hint: "Hydrogen gas and oxygen combine to form water. Balance oxygen first!"
-      },
-      {
-        type: "Synthesis",
-        reactants: ["N₂", "H₂"],
-        products: ["NH₃"],
-        coefficients: [1, 3, 2],
-        hint: "Haber Process: Nitrogen gas reacts with hydrogen to synthesize ammonia."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["Fe", "O₂"],
-        products: ["Fe₂O₃"],
-        coefficients: [4, 3, 2],
-        hint: "Iron oxidation creates reddish Iron(III) Oxide rust."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["Al", "O₂"],
-        products: ["Al₂O₃"],
-        coefficients: [4, 3, 2],
-        hint: "Aluminum reacts with atmospheric oxygen to form aluminum oxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["Na", "Cl₂"],
-        products: ["NaCl"],
-        coefficients: [2, 1, 2],
-        hint: "Sodium metal reacts vigorously with toxic chlorine gas to produce table salt."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["Mg", "O₂"],
-        products: ["MgO"],
-        coefficients: [2, 1, 2],
-        hint: "Magnesium ribbon burns with a blinding white light into magnesium oxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["P₄", "O₂"],
-        products: ["P₂O₅"],
-        coefficients: [1, 5, 2],
-        hint: "White phosphorus combines with excess oxygen to form phosphorus pentoxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["CO", "O₂"],
-        products: ["CO₂"],
-        coefficients: [2, 1, 2],
-        hint: "Carbon monoxide burns in oxygen to produce carbon dioxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["SO₂", "O₂"],
-        products: ["SO₃"],
-        coefficients: [2, 1, 2],
-        hint: "Contact Process: Catalytic oxidation of sulfur dioxide to sulfur trioxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["CaO", "H₂O"],
-        products: ["Ca(OH)₂"],
-        coefficients: [1, 1, 1],
-        hint: "Slaking of quicklime: Calcium oxide with water produces calcium hydroxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["SO₃", "H₂O"],
-        products: ["H₂SO₄"],
-        coefficients: [1, 1, 1],
-        hint: "Sulfur trioxide absorbs into water to form concentrated sulfuric acid."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["Na₂O", "H₂O"],
-        products: ["NaOH"],
-        coefficients: [1, 1, 2],
-        hint: "Sodium oxide dissolves in water to form sodium hydroxide."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["H₂", "Cl₂"],
-        products: ["HCl"],
-        coefficients: [1, 1, 2],
-        hint: "Direct synthesis of hydrogen chloride gas from pure elemental gases."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["NH₃", "HCl"],
-        products: ["NH₄Cl"],
-        coefficients: [1, 1, 1],
-        hint: "Ammonia gas reacts with hydrogen chloride to produce white ammonium chloride smoke."
-      },
-      {
-        type: "Synthesis",
-        reactants: ["Fe", "S"],
-        products: ["FeS"],
-        coefficients: [1, 1, 1],
-        hint: "Iron filings heated with sulfur powder form black iron(II) sulfide."
-      },
+      // === SYNTHESIS / COMBINATION (22 Reactions) ===
+      { type: "Synthesis", reactants: ["H₂", "O₂"], products: ["H₂O"], coefficients: [2, 1, 2], hint: "Hydrogen and oxygen combine into water." },
+      { type: "Synthesis", reactants: ["N₂", "H₂"], products: ["NH₃"], coefficients: [1, 3, 2], hint: "Haber Process: Nitrogen reacts with hydrogen to make ammonia." },
+      { type: "Synthesis", reactants: ["Fe", "O₂"], products: ["Fe₂O₃"], coefficients: [4, 3, 2], hint: "Iron oxidation creates red Iron(III) Oxide rust." },
+      { type: "Synthesis", reactants: ["Al", "O₂"], products: ["Al₂O₃"], coefficients: [4, 3, 2], hint: "Aluminum reacts with oxygen forming aluminum oxide." },
+      { type: "Synthesis", reactants: ["Na", "Cl₂"], products: ["NaCl"], coefficients: [2, 1, 2], hint: "Sodium metal reacts with chlorine gas to form table salt." },
+      { type: "Synthesis", reactants: ["Mg", "O₂"], products: ["MgO"], coefficients: [2, 1, 2], hint: "Magnesium burns with brilliant white light into magnesium oxide." },
+      { type: "Synthesis", reactants: ["P₄", "O₂"], products: ["P₂O₅"], coefficients: [1, 5, 2], hint: "White phosphorus burns to form phosphorus pentoxide." },
+      { type: "Synthesis", reactants: ["CO", "O₂"], products: ["CO₂"], coefficients: [2, 1, 2], hint: "Carbon monoxide oxidizes to carbon dioxide." },
+      { type: "Synthesis", reactants: ["SO₂", "O₂"], products: ["SO₃"], coefficients: [2, 1, 2], hint: "Contact process: Sulfur dioxide oxidizes to sulfur trioxide." },
+      { type: "Synthesis", reactants: ["CaO", "H₂O"], products: ["Ca(OH)₂"], coefficients: [1, 1, 1], hint: "Slaking quicklime with water yields calcium hydroxide." },
+      { type: "Synthesis", reactants: ["SO₃", "H₂O"], products: ["H₂SO₄"], coefficients: [1, 1, 1], hint: "Sulfur trioxide hydration yields sulfuric acid." },
+      { type: "Synthesis", reactants: ["Na₂O", "H₂O"], products: ["NaOH"], coefficients: [1, 1, 2], hint: "Sodium oxide dissolves to form sodium hydroxide." },
+      { type: "Synthesis", reactants: ["H₂", "Cl₂"], products: ["HCl"], coefficients: [1, 1, 2], hint: "Direct synthesis of hydrogen chloride gas." },
+      { type: "Synthesis", reactants: ["NH₃", "HCl"], products: ["NH₄Cl"], coefficients: [1, 1, 1], hint: "Ammonia and HCl gas form white ammonium chloride smoke." },
+      { type: "Synthesis", reactants: ["Fe", "S"], products: ["FeS"], coefficients: [1, 1, 1], hint: "Iron filings heated with sulfur form iron(II) sulfide." },
+      { type: "Synthesis", reactants: ["Cu", "O₂"], products: ["CuO"], coefficients: [2, 1, 2], hint: "Copper heated in air forms black copper(II) oxide." },
+      { type: "Synthesis", reactants: ["Ca", "O₂"], products: ["CaO"], coefficients: [2, 1, 2], hint: "Calcium metal combines with oxygen into quicklime." },
+      { type: "Synthesis", reactants: ["K", "Cl₂"], products: ["KCl"], coefficients: [2, 1, 2], hint: "Potassium reacts with chlorine to form potassium chloride." },
+      { type: "Synthesis", reactants: ["Li", "N₂"], products: ["Li₃N"], coefficients: [6, 1, 2], hint: "Lithium is the only alkali metal reacting directly with nitrogen gas." },
+      { type: "Synthesis", reactants: ["C", "O₂"], products: ["CO₂"], coefficients: [1, 1, 1], hint: "Pure carbon combustion into carbon dioxide." },
+      { type: "Synthesis", reactants: ["BaO", "H₂O"], products: ["Ba(OH)₂"], coefficients: [1, 1, 1], hint: "Barium oxide reacts with water to form barium hydroxide." },
+      { type: "Synthesis", reactants: ["B", "F₂"], products: ["BF₃"], coefficients: [2, 3, 2], hint: "Boron reacts with fluorine gas to produce boron trifluoride." },
 
-      // --- DECOMPOSITION REACTIONS ---
-      {
-        type: "Decomposition",
-        reactants: ["H₂O₂"],
-        products: ["H₂O", "O₂"],
-        coefficients: [2, 2, 1],
-        hint: "Hydrogen peroxide decomposes into water and oxygen gas."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["KClO₃"],
-        products: ["KCl", "O₂"],
-        coefficients: [2, 2, 3],
-        hint: "Potassium chlorate decomposes upon heating into potassium chloride and oxygen."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["CaCO₃"],
-        products: ["CaO", "CO₂"],
-        coefficients: [1, 1, 1],
-        hint: "Limestone (calcium carbonate) calcination in industrial kilns."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["Ag₂O"],
-        products: ["Ag", "O₂"],
-        coefficients: [2, 4, 1],
-        hint: "Thermal decomposition of silver oxide into shiny silver metal and oxygen."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["NaN₃"],
-        products: ["Na", "N₂"],
-        coefficients: [2, 2, 3],
-        hint: "Automotive Airbag: Sodium azide explodes rapidly into nitrogen gas to inflate bags."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["HgO"],
-        products: ["Hg", "O₂"],
-        coefficients: [2, 2, 1],
-        hint: "Priestley's classic experiment: Red mercury(II) oxide decomposes to liquid mercury."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["NaHCO₃"],
-        products: ["Na₂CO₃", "H₂O", "CO₂"],
-        coefficients: [2, 1, 1, 1],
-        hint: "Baking soda decomposition upon heating in ovens, releasing CO₂ gas bubbles."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["CuCO₃"],
-        products: ["CuO", "CO₂"],
-        coefficients: [1, 1, 1],
-        hint: "Green copper(II) carbonate decomposes upon heating into black copper(II) oxide."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["Fe(OH)₃"],
-        products: ["Fe₂O₃", "H₂O"],
-        coefficients: [2, 1, 3],
-        hint: "Iron(III) hydroxide dehydrates when heated to yield rust (iron oxide)."
-      },
-      {
-        type: "Decomposition",
-        reactants: ["NH₄NO₃"],
-        products: ["N₂O", "H₂O"],
-        coefficients: [1, 1, 2],
-        hint: "Gentle heating of ammonium nitrate releases nitrous oxide (laughing gas)."
-      },
+      // === DECOMPOSITION (18 Reactions) ===
+      { type: "Decomposition", reactants: ["H₂O₂"], products: ["H₂O", "O₂"], coefficients: [2, 2, 1], hint: "Hydrogen peroxide decomposes into water and oxygen." },
+      { type: "Decomposition", reactants: ["KClO₃"], products: ["KCl", "O₂"], coefficients: [2, 2, 3], hint: "Potassium chlorate decomposes upon heating into oxygen gas." },
+      { type: "Decomposition", reactants: ["CaCO₃"], products: ["CaO", "CO₂"], coefficients: [1, 1, 1], hint: "Limestone calcination yields quicklime and CO₂." },
+      { type: "Decomposition", reactants: ["Ag₂O"], products: ["Ag", "O₂"], coefficients: [2, 4, 1], hint: "Silver oxide decomposes upon heating to pure silver metal." },
+      { type: "Decomposition", reactants: ["NaN₃"], products: ["Na", "N₂"], coefficients: [2, 2, 3], hint: "Car airbag deployment: Sodium azide rapidly releases nitrogen." },
+      { type: "Decomposition", reactants: ["HgO"], products: ["Hg", "O₂"], coefficients: [2, 2, 1], hint: "Mercury(II) oxide decomposes to liquid mercury." },
+      { type: "Decomposition", reactants: ["NaHCO₃"], products: ["Na₂CO₃", "H₂O", "CO₂"], coefficients: [2, 1, 1, 1], hint: "Baking soda decomposition upon baking." },
+      { type: "Decomposition", reactants: ["CuCO₃"], products: ["CuO", "CO₂"], coefficients: [1, 1, 1], hint: "Green copper carbonate decomposes to black copper oxide." },
+      { type: "Decomposition", reactants: ["Fe(OH)₃"], products: ["Fe₂O₃", "H₂O"], coefficients: [2, 1, 3], hint: "Iron(III) hydroxide dehydrates when heated." },
+      { type: "Decomposition", reactants: ["NH₄NO₃"], products: ["N₂O", "H₂O"], coefficients: [1, 1, 2], hint: "Ammonium nitrate decomposes into laughing gas (N₂O)." },
+      { type: "Decomposition", reactants: ["Pb(NO₃)₂"], products: ["PbO", "NO₂", "O₂"], coefficients: [2, 2, 4, 1], hint: "Lead nitrate decomposes releasing brown NO₂ fumes." },
+      { type: "Decomposition", reactants: ["Al(OH)₃"], products: ["Al₂O₃", "H₂O"], coefficients: [2, 1, 3], hint: "Aluminum hydroxide calcination yields pure alumina." },
+      { type: "Decomposition", reactants: ["H₂CO₃"], products: ["H₂O", "CO₂"], coefficients: [1, 1, 1], hint: "Carbonic acid effervesces into water and CO₂ in soda." },
+      { type: "Decomposition", reactants: ["H₂SO₃"], products: ["H₂O", "SO₂"], coefficients: [1, 1, 1], hint: "Sulfurous acid decomposes into water and sulfur dioxide." },
+      { type: "Decomposition", reactants: ["KNO₃"], products: ["KNO₂", "O₂"], coefficients: [2, 2, 1], hint: "Potassium nitrate decomposes to potassium nitrite and oxygen." },
+      { type: "Decomposition", reactants: ["MgCO₃"], products: ["MgO", "CO₂"], coefficients: [1, 1, 1], hint: "Magnesium carbonate decomposes into magnesia." },
+      { type: "Decomposition", reactants: ["AgCl"], products: ["Ag", "Cl₂"], coefficients: [2, 2, 1], hint: "Photochemical decomposition of silver chloride in sunlight." },
+      { type: "Decomposition", reactants: ["NI₃"], products: ["N₂", "I₂"], coefficients: [2, 1, 3], hint: "Nitrogen triiodide touch-sensitive explosive decomposition." },
 
-      // --- COMBUSTION REACTIONS ---
-      {
-        type: "Combustion",
-        reactants: ["CH₄", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [1, 2, 1, 2],
-        hint: "Natural gas (methane) combustion yields carbon dioxide and water vapor."
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₃H₈", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [1, 5, 3, 4],
-        hint: "Propane gas used in outdoor grills combusts completely in oxygen."
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₂H₅OH", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [1, 3, 2, 3],
-        hint: "Biofuel ethanol combustion produces clean exhaust of CO₂ and water vapor."
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₄H₁₀", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [2, 13, 8, 10],
-        hint: "Butane lighter fuel combustion. Balance carbons and hydrogens first!"
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₂H₂", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [2, 5, 4, 2],
-        hint: "Oxy-acetylene torch gas reaches over 3,000°C for metal welding."
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₆H₁₂O₆", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [1, 6, 6, 6],
-        hint: "Cellular Respiration: Glucose sugar oxidizes into metabolic energy."
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₂H₆", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [2, 7, 4, 6],
-        hint: "Ethane gas combustion: Notice the 7 oxygen molecules required!"
-      },
-      {
-        type: "Combustion",
-        reactants: ["CH₃OH", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [2, 3, 2, 4],
-        hint: "Racing fuel methanol burns with an almost invisible pale blue flame."
-      },
+      // === COMBUSTION (16 Reactions) ===
+      { type: "Combustion", reactants: ["CH₄", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 2, 1, 2], hint: "Methane natural gas combustion." },
+      { type: "Combustion", reactants: ["C₃H₈", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 5, 3, 4], hint: "Propane grill fuel combustion." },
+      { type: "Combustion", reactants: ["C₂H₅OH", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 3, 2, 3], hint: "Biofuel ethanol combustion." },
+      { type: "Combustion", reactants: ["C₄H₁₀", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 13, 8, 10], hint: "Butane lighter fuel combustion." },
+      { type: "Combustion", reactants: ["C₂H₂", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 5, 4, 2], hint: "Acetylene welding torch combustion." },
+      { type: "Combustion", reactants: ["C₆H₁₂O₆", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 6, 6, 6], hint: "Cellular respiration of glucose." },
+      { type: "Combustion", reactants: ["C₂H₆", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 7, 4, 6], hint: "Ethane gas combustion." },
+      { type: "Combustion", reactants: ["CH₃OH", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 3, 2, 4], hint: "Methanol racing fuel combustion." },
+      { type: "Combustion", reactants: ["C₅H₁₂", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 8, 5, 6], hint: "Pentane hydrocarbon combustion." },
+      { type: "Combustion", reactants: ["C₆H₆", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 15, 12, 6], hint: "Benzene ring aromatic combustion." },
+      { type: "Combustion", reactants: ["C₈H₁₈", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 25, 16, 18], hint: "Octane standard gasoline combustion." },
+      { type: "Combustion", reactants: ["C₁₂H₂₂O₁₁", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 12, 12, 11], hint: "Sucrose table sugar complete combustion." },
+      { type: "Combustion", reactants: ["C₃H₆", "O₂"], products: ["CO₂", "H₂O"], coefficients: [2, 9, 6, 6], hint: "Propylene alkene combustion." },
+      { type: "Combustion", reactants: ["C₂H₄", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 3, 2, 2], hint: "Ethylene gas combustion." },
+      { type: "Combustion", reactants: ["CS₂", "O₂"], products: ["CO₂", "SO₂"], coefficients: [1, 3, 1, 2], hint: "Carbon disulfide combustion produces sulfur dioxide." },
+      { type: "Combustion", reactants: ["H₂S", "O₂"], products: ["SO₂", "H₂O"], coefficients: [2, 3, 2, 2], hint: "Hydrogen sulfide foul gas combustion." },
 
-      // --- SINGLE DISPLACEMENT REACTIONS ---
-      {
-        type: "Single Displacement",
-        reactants: ["Zn", "HCl"],
-        products: ["ZnCl₂", "H₂"],
-        coefficients: [1, 2, 1, 1],
-        hint: "Zinc metal reacts with hydrochloric acid, generating hydrogen gas bubbles."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Cu", "AgNO₃"],
-        products: ["Cu(NO₃)₂", "Ag"],
-        coefficients: [1, 2, 1, 2],
-        hint: "Copper wire displaces silver from silver nitrate, forming beautiful silver crystals."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Al", "HCl"],
-        products: ["AlCl₃", "H₂"],
-        coefficients: [2, 6, 2, 3],
-        hint: "Aluminum reacts vigorously with acid to produce aluminum chloride and hydrogen."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Na", "H₂O"],
-        products: ["NaOH", "H₂"],
-        coefficients: [2, 2, 2, 1],
-        hint: "Sodium metal skitters across water with sparks, creating sodium hydroxide."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["K", "H₂O"],
-        products: ["KOH", "H₂"],
-        coefficients: [2, 2, 2, 1],
-        hint: "Potassium reacts explosively with cold water yielding potassium hydroxide."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Fe", "CuSO₄"],
-        products: ["FeSO₄", "Cu"],
-        coefficients: [1, 1, 1, 1],
-        hint: "An iron nail placed in blue copper sulfate gets coated with reddish copper."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Zn", "H₂SO₄"],
-        products: ["ZnSO₄", "H₂"],
-        coefficients: [1, 1, 1, 1],
-        hint: "Zinc reacts with dilute sulfuric acid to generate hydrogen gas."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Mg", "HCl"],
-        products: ["MgCl₂", "H₂"],
-        coefficients: [1, 2, 1, 1],
-        hint: "Magnesium ribbon reacts rapidly in hydrochloric acid test tubes."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Cl₂", "NaBr"],
-        products: ["NaCl", "Br₂"],
-        coefficients: [1, 2, 2, 1],
-        hint: "Chlorine gas displaces bromine from sodium bromide solution."
-      },
+      // === SINGLE DISPLACEMENT (16 Reactions) ===
+      { type: "Single Displacement", reactants: ["Zn", "HCl"], products: ["ZnCl₂", "H₂"], coefficients: [1, 2, 1, 1], hint: "Zinc metal reacts with hydrochloric acid." },
+      { type: "Single Displacement", reactants: ["Cu", "AgNO₃"], products: ["Cu(NO₃)₂", "Ag"], coefficients: [1, 2, 1, 2], hint: "Copper displaces silver forming silver crystals." },
+      { type: "Single Displacement", reactants: ["Al", "HCl"], products: ["AlCl₃", "H₂"], coefficients: [2, 6, 2, 3], hint: "Aluminum reacts with acid to yield hydrogen gas." },
+      { type: "Single Displacement", reactants: ["Na", "H₂O"], products: ["NaOH", "H₂"], coefficients: [2, 2, 2, 1], hint: "Sodium metal reacts vigorously with water." },
+      { type: "Single Displacement", reactants: ["K", "H₂O"], products: ["KOH", "H₂"], coefficients: [2, 2, 2, 1], hint: "Potassium reacts explosively with cold water." },
+      { type: "Single Displacement", reactants: ["Fe", "CuSO₄"], products: ["FeSO₄", "Cu"], coefficients: [1, 1, 1, 1], hint: "Iron nail displaces copper from copper sulfate." },
+      { type: "Single Displacement", reactants: ["Zn", "H₂SO₄"], products: ["ZnSO₄", "H₂"], coefficients: [1, 1, 1, 1], hint: "Zinc reacts with dilute sulfuric acid." },
+      { type: "Single Displacement", reactants: ["Mg", "HCl"], products: ["MgCl₂", "H₂"], coefficients: [1, 2, 1, 1], hint: "Magnesium ribbon reacts rapidly in acid." },
+      { type: "Single Displacement", reactants: ["Cl₂", "NaBr"], products: ["NaCl", "Br₂"], coefficients: [1, 2, 2, 1], hint: "Chlorine gas displaces bromine from sodium bromide." },
+      { type: "Single Displacement", reactants: ["Br₂", "KI"], products: ["KBr", "I₂"], coefficients: [1, 2, 2, 1], hint: "Bromine displaces iodine from potassium iodide." },
+      { type: "Single Displacement", reactants: ["Fe", "HCl"], products: ["FeCl₂", "H₂"], coefficients: [1, 2, 1, 1], hint: "Iron reacts with acid forming iron(II) chloride." },
+      { type: "Single Displacement", reactants: ["Al", "CuSO₄"], products: ["Al₂(SO₄)₃", "Cu"], coefficients: [2, 3, 1, 3], hint: "Aluminum displaces copper from copper sulfate." },
+      { type: "Single Displacement", reactants: ["Ca", "H₂O"], products: ["Ca(OH)₂", "H₂"], coefficients: [1, 2, 1, 1], hint: "Calcium metal reacts with water releasing hydrogen." },
+      { type: "Single Displacement", reactants: ["Mg", "FeSO₄"], products: ["MgSO₄", "Fe"], coefficients: [1, 1, 1, 1], hint: "Magnesium displaces iron from iron sulfate." },
+      { type: "Single Displacement", reactants: ["F₂", "NaCl"], products: ["NaF", "Cl₂"], coefficients: [1, 2, 2, 1], hint: "Fluorine vigorously displaces chlorine from table salt." },
+      { type: "Single Displacement", reactants: ["Pb", "AgNO₃"], products: ["Pb(NO₃)₂", "Ag"], coefficients: [1, 2, 1, 2], hint: "Lead displaces silver from silver nitrate." },
 
-      // --- DOUBLE DISPLACEMENT & NEUTRALIZATION ---
-      {
-        type: "Double Displacement",
-        reactants: ["H₂SO₄", "NaOH"],
-        products: ["Na₂SO₄", "H₂O"],
-        coefficients: [1, 2, 1, 2],
-        hint: "Sulfuric acid neutralizes sodium hydroxide to yield sodium sulfate salt and water."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["HCl", "NaOH"],
-        products: ["NaCl", "H₂O"],
-        coefficients: [1, 1, 1, 1],
-        hint: "Classic acid-base neutralization producing sodium chloride solution."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["BaCl₂", "Na₂SO₄"],
-        products: ["BaSO₄", "NaCl"],
-        coefficients: [1, 1, 1, 2],
-        hint: "Precipitation reaction forming a bright white insoluble barium sulfate solid."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["AgNO₃", "NaCl"],
-        products: ["AgCl", "NaNO₃"],
-        coefficients: [1, 1, 1, 1],
-        hint: "Silver nitrate and table salt form a white curd precipitate of silver chloride."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["Pb(NO₃)₂", "KI"],
-        products: ["PbI₂", "KNO₃"],
-        coefficients: [1, 2, 1, 2],
-        hint: "'Golden Rain' reaction forming bright canary-yellow lead(II) iodide crystals."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["CaCl₂", "Na₂CO₃"],
-        products: ["CaCO₃", "NaCl"],
-        coefficients: [1, 1, 1, 2],
-        hint: "Precipitation of insoluble chalk (calcium carbonate) from soluble salts."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["HCl", "CaCO₃"],
-        products: ["CaCl₂", "CO₂", "H₂O"],
-        coefficients: [2, 1, 1, 1, 1],
-        hint: "Acid rain reaction on marble/limestone statues, releasing carbon dioxide."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["FeCl₃", "NaOH"],
-        products: ["Fe(OH)₃", "NaCl"],
-        coefficients: [1, 3, 1, 3],
-        hint: "Iron(III) chloride precipitates rusty brown iron(III) hydroxide."
-      },
-      {
-        type: "Double Displacement",
-        reactants: ["CuSO₄", "NaOH"],
-        products: ["Cu(OH)₂", "Na₂SO₄"],
-        coefficients: [1, 2, 1, 1],
-        hint: "Copper(II) sulfate reacts with base to form a sky-blue copper hydroxide gel."
-      },
+      // === DOUBLE DISPLACEMENT & PRECIPITATION (16 Reactions) ===
+      { type: "Double Displacement", reactants: ["H₂SO₄", "NaOH"], products: ["Na₂SO₄", "H₂O"], coefficients: [1, 2, 1, 2], hint: "Sulfuric acid neutralizes sodium hydroxide." },
+      { type: "Double Displacement", reactants: ["HCl", "NaOH"], products: ["NaCl", "H₂O"], coefficients: [1, 1, 1, 1], hint: "Classic acid-base neutralization." },
+      { type: "Double Displacement", reactants: ["BaCl₂", "Na₂SO₄"], products: ["BaSO₄", "NaCl"], coefficients: [1, 1, 1, 2], hint: "Precipitation of insoluble white barium sulfate." },
+      { type: "Double Displacement", reactants: ["AgNO₃", "NaCl"], products: ["AgCl", "NaNO₃"], coefficients: [1, 1, 1, 1], hint: "Precipitation of white silver chloride curd." },
+      { type: "Double Displacement", reactants: ["Pb(NO₃)₂", "KI"], products: ["PbI₂", "KNO₃"], coefficients: [1, 2, 1, 2], hint: "'Golden Rain' bright yellow lead iodide precipitate." },
+      { type: "Double Displacement", reactants: ["CaCl₂", "Na₂CO₃"], products: ["CaCO₃", "NaCl"], coefficients: [1, 1, 1, 2], hint: "Chalk (calcium carbonate) precipitation." },
+      { type: "Double Displacement", reactants: ["HCl", "CaCO₃"], products: ["CaCl₂", "CO₂", "H₂O"], coefficients: [2, 1, 1, 1, 1], hint: "Acid rain reaction on limestone/marble." },
+      { type: "Double Displacement", reactants: ["FeCl₃", "NaOH"], products: ["Fe(OH)₃", "NaCl"], coefficients: [1, 3, 1, 3], hint: "Iron(III) chloride precipitates rusty brown hydroxide." },
+      { type: "Double Displacement", reactants: ["CuSO₄", "NaOH"], products: ["Cu(OH)₂", "Na₂SO₄"], coefficients: [1, 2, 1, 1], hint: "Copper sulfate forms blue copper hydroxide precipitate." },
+      { type: "Double Displacement", reactants: ["Na₂CO₃", "HCl"], products: ["NaCl", "CO₂", "H₂O"], coefficients: [1, 2, 2, 1, 1], hint: "Washing soda neutralizes hydrochloric acid." },
+      { type: "Double Displacement", reactants: ["Al₂(SO₄)₃", "Ca(OH)₂"], products: ["Al(OH)₃", "CaSO₄"], coefficients: [1, 3, 2, 3], hint: "Water purification flocculation reaction." },
+      { type: "Double Displacement", reactants: ["AgNO₃", "KBr"], products: ["AgBr", "KNO₃"], coefficients: [1, 1, 1, 1], hint: "Photographic film yellow silver bromide precipitate." },
+      { type: "Double Displacement", reactants: ["CuSO₄", "BaCl₂"], products: ["BaSO₄", "CuCl₂"], coefficients: [1, 1, 1, 1], hint: "Precipitation of barium sulfate in copper solution." },
+      { type: "Double Displacement", reactants: ["KOH", "HNO₃"], products: ["KNO₃", "H₂O"], coefficients: [1, 1, 1, 1], hint: "Neutralization forming potassium nitrate fertilizer." },
+      { type: "Double Displacement", reactants: ["NH₄Cl", "Ca(OH)₂"], products: ["NH₃", "CaCl₂", "H₂O"], coefficients: [2, 1, 2, 1, 2], hint: "Laboratory ammonia preparation from ammonium salt." },
+      { type: "Double Displacement", reactants: ["ZnSO₄", "NaOH"], products: ["Zn(OH)₂", "Na₂SO₄"], coefficients: [1, 2, 1, 1], hint: "Precipitation of gelatinous zinc hydroxide." },
 
-      // --- REDOX & SPECIAL INDUSTRIAL REACTIONS ---
-      {
-        type: "Redox",
-        reactants: ["Fe₂O₃", "CO"],
-        products: ["Fe", "CO₂"],
-        coefficients: [1, 3, 2, 3],
-        hint: "Blast Furnace: Carbon monoxide reduces molten iron ore into pure liquid iron."
-      },
-      {
-        type: "Redox",
-        reactants: ["Al", "Fe₂O₃"],
-        products: ["Al₂O₃", "Fe"],
-        coefficients: [2, 1, 1, 2],
-        hint: "Thermite Reaction: Highly exothermic reaction used for welding railroad tracks."
-      },
-      {
-        type: "Redox",
-        reactants: ["NH₃", "O₂"],
-        products: ["NO", "H₂O"],
-        coefficients: [4, 5, 4, 6],
-        hint: "Ostwald Process: Catalytic oxidation of ammonia to nitric oxide."
-      },
-      {
-        type: "Redox",
-        reactants: ["NO₂", "H₂O"],
-        products: ["HNO₃", "NO"],
-        coefficients: [3, 1, 2, 1],
-        hint: "Nitrogen dioxide gas dissolves in water to form concentrated nitric acid."
-      },
-      {
-        type: "Redox",
-        reactants: ["Cu", "HNO₃"],
-        products: ["Cu(NO₃)₂", "NO₂", "H₂O"],
-        coefficients: [1, 4, 1, 2, 2],
-        hint: "Copper metal reacts with nitric acid producing dense brown nitrogen dioxide gas."
-      },
-      {
-        type: "Redox",
-        reactants: ["CaC₂", "H₂O"],
-        products: ["C₂H₂", "Ca(OH)₂"],
-        coefficients: [1, 2, 1, 1],
-        hint: "Miner's Carbide Lamp: Calcium carbide reacts with water drips to yield acetylene."
-      },
-      {
-        type: "Redox",
-        reactants: ["KMnO₄", "HCl"],
-        products: ["KCl", "MnCl₂", "Cl₂", "H₂O"],
-        coefficients: [2, 16, 2, 2, 5, 8],
-        hint: "Master Redox: Potassium permanganate strongly oxidizes hydrochloric acid."
-      }
+      // === REDOX & INDUSTRIAL METALLURGY (12 Reactions) ===
+      { type: "Redox", reactants: ["Fe₂O₃", "CO"], products: ["Fe", "CO₂"], coefficients: [1, 3, 2, 3], hint: "Blast Furnace: Carbon monoxide reduces molten iron ore." },
+      { type: "Redox", reactants: ["Al", "Fe₂O₃"], products: ["Al₂O₃", "Fe"], coefficients: [2, 1, 1, 2], hint: "Thermite reaction used for railroad welding." },
+      { type: "Redox", reactants: ["NH₃", "O₂"], products: ["NO", "H₂O"], coefficients: [4, 5, 4, 6], hint: "Ostwald Process: Catalytic oxidation of ammonia." },
+      { type: "Redox", reactants: ["NO₂", "H₂O"], products: ["HNO₃", "NO"], coefficients: [3, 1, 2, 1], hint: "Nitrogen dioxide disproportionation in water." },
+      { type: "Redox", reactants: ["Cu", "HNO₃"], products: ["Cu(NO₃)₂", "NO₂", "H₂O"], coefficients: [1, 4, 1, 2, 2], hint: "Copper reacts with concentrated nitric acid." },
+      { type: "Redox", reactants: ["CaC₂", "H₂O"], products: ["C₂H₂", "Ca(OH)₂"], coefficients: [1, 2, 1, 1], hint: "Carbide miner's lamp acetylene generation." },
+      { type: "Redox", reactants: ["KMnO₄", "HCl"], products: ["KCl", "MnCl₂", "Cl₂", "H₂O"], coefficients: [2, 16, 2, 2, 5, 8], hint: "Potassium permanganate oxidation of HCl." },
+      { type: "Redox", reactants: ["CuO", "H₂"], products: ["Cu", "H₂O"], coefficients: [1, 1, 1, 1], hint: "Hydrogen reduces black copper oxide into red copper." },
+      { type: "Redox", reactants: ["PbO", "C"], products: ["Pb", "CO"], coefficients: [1, 1, 1, 1], hint: "Carbon smelting reduction of lead(II) oxide." },
+      { type: "Redox", reactants: ["SiO₂", "C"], products: ["Si", "CO"], coefficients: [1, 2, 1, 2], hint: "Industrial silicon reduction in electric arc furnace." },
+      { type: "Redox", reactants: ["TiCl₄", "Mg"], products: ["Ti", "MgCl₂"], coefficients: [1, 2, 1, 2], hint: "Kroll Process: Titanium metal extraction from magnesium." },
+      { type: "Redox", reactants: ["Na₂O₂", "H₂O"], products: ["NaOH", "H₂O₂"], coefficients: [1, 2, 2, 1], hint: "Sodium peroxide reaction with cold water." },
+
+      // === ORGANIC & SPECIALTY (8 Reactions) ===
+      { type: "Organic", reactants: ["CH₃COOH", "NaOH"], products: ["CH₃COONa", "H₂O"], coefficients: [1, 1, 1, 1], hint: "Vinegar (acetic acid) neutralizes sodium hydroxide." },
+      { type: "Organic", reactants: ["CH₃COOH", "C₂H₅OH"], products: ["CH₃COOC₂H₅", "H₂O"], coefficients: [1, 1, 1, 1], hint: "Fischer Esterification forming fruity ethyl acetate." },
+      { type: "Organic", reactants: ["C₂H₄", "H₂"], products: ["C₂H₆"], coefficients: [1, 1, 1], hint: "Catalytic hydrogenation of ethylene to ethane." },
+      { type: "Organic", reactants: ["C₂H₂", "H₂"], products: ["C₂H₆"], coefficients: [1, 2, 1], hint: "Full hydrogenation of acetylene to ethane." },
+      { type: "Organic", reactants: ["CH₄", "Cl₂"], products: ["CH₃Cl", "HCl"], coefficients: [1, 1, 1, 1], hint: "Free radical chlorination of methane in UV light." },
+      { type: "Organic", reactants: ["C₆H₆", "HNO₃"], products: ["C₆H₅NO₂", "H₂O"], coefficients: [1, 1, 1, 1], hint: "Electrophilic aromatic nitration of benzene." },
+      { type: "Organic", reactants: ["C₂H₅OH"], products: ["C₂H₄", "H₂O"], coefficients: [1, 1, 1], hint: "Acid-catalyzed dehydration of ethanol to ethylene." },
+      { type: "Organic", reactants: ["CH₃COCH₃", "O₂"], products: ["CO₂", "H₂O"], coefficients: [1, 4, 3, 3], hint: "Acetone solvent combustion." }
     ];
 
     const ELEMENT_COLORS = {
-      H: '#38bdf8',
-      C: '#94a3b8',
-      O: '#ef4444',
-      N: '#3b82f6',
-      Fe: '#f59e0b',
-      Al: '#cbd5e1',
-      Na: '#a855f7',
-      Cl: '#10b981',
-      S: '#eab308',
-      Cu: '#d97706',
-      Zn: '#64748b',
-      Ag: '#e2e8f0',
-      K: '#ec4899',
-      Ca: '#f97316',
-      Ba: '#06b6d4',
-      P: '#f43f5e',
-      Pb: '#a1a1aa',
-      I: '#d946ef',
-      Mn: '#c084fc',
-      Br: '#fb923c',
-      Hg: '#94a3b8'
+      H: '#38bdf8', C: '#94a3b8', O: '#ef4444', N: '#3b82f6', Fe: '#f59e0b',
+      Al: '#cbd5e1', Na: '#a855f7', Cl: '#10b981', S: '#eab308', Cu: '#d97706',
+      Zn: '#64748b', Ag: '#e2e8f0', K: '#ec4899', Ca: '#f97316', Ba: '#06b6d4',
+      P: '#f43f5e', Pb: '#a1a1aa', I: '#d946ef', Mn: '#c084fc', Br: '#fb923c',
+      Hg: '#94a3b8', Li: '#f43f5e', B: '#34d399', F: '#a3e635', Si: '#38bdf8',
+      Mg: '#fbbf24', Ti: '#93c5fd'
     };
 
     function parseFormula(formula) {
@@ -1355,6 +1060,13 @@
         document.getElementById('resetBtn').onclick = () => this.resetCoefficients();
         document.getElementById('nextBtn').onclick = () => this.nextPuzzle();
 
+        document.getElementById('randomBtn').onclick = () => {
+          const randIdx = Math.floor(Math.random() * this.filteredList.length);
+          this.loadPuzzle(randIdx);
+          audio.playBubble();
+          this.showToast('🎲 Random Reaction Selected!');
+        };
+
         const soundBtn = document.getElementById('soundToggle');
         soundBtn.onclick = () => {
           audio.enabled = !audio.enabled;
@@ -1380,34 +1092,54 @@
         document.getElementById('reactionListBtn').onclick = () => this.openReactionList();
         document.getElementById('closeListBtn').onclick = () => document.getElementById('listModal').classList.remove('open');
 
+        const searchInput = document.getElementById('searchReactionsInput');
+        searchInput.oninput = () => {
+          const q = searchInput.value.toLowerCase().trim();
+          this.renderReactionListModal(q);
+        };
+
         document.getElementById('helpBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
         document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
         document.getElementById('gotItBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
       }
 
       openReactionList() {
+        document.getElementById('searchReactionsInput').value = '';
+        this.renderReactionListModal('');
+        document.getElementById('listModal').classList.add('open');
+      }
+
+      renderReactionListModal(query = '') {
         const grid = document.getElementById('reactionListGrid');
         grid.innerHTML = '';
 
-        this.filteredList.forEach((r, idx) => {
+        const listToRender = query
+          ? this.filteredList.filter(r => (r.reactants.join(' ') + ' ' + r.products.join(' ') + ' ' + r.type + ' ' + r.hint).toLowerCase().includes(query))
+          : this.filteredList;
+
+        if (listToRender.length === 0) {
+          grid.innerHTML = '<div style="color:var(--text-muted); padding:16px; text-align:center;">No chemical reactions found matching your search.</div>';
+          return;
+        }
+
+        listToRender.forEach((r, idx) => {
           const btn = document.createElement('div');
           btn.className = 'reaction-item-btn';
           const equationStr = `${r.reactants.join(' + ')} ➔ ${r.products.join(' + ')}`;
           btn.innerHTML = `
             <div>
-              <span style="font-weight:800; color:var(--accent);">${idx + 1}.</span>
+              <span style="font-weight:800; color:var(--accent); margin-right:4px;">${idx + 1}.</span>
               <span>${equationStr}</span>
             </div>
             <span style="font-size:0.7rem; color:var(--text-muted); padding:2px 6px; background:rgba(255,255,255,0.08); border-radius:6px;">${r.type}</span>
           `;
           btn.onclick = () => {
-            this.loadPuzzle(idx);
+            const origIdx = this.filteredList.indexOf(r);
+            this.loadPuzzle(origIdx !== -1 ? origIdx : 0);
             document.getElementById('listModal').classList.remove('open');
           };
           grid.appendChild(btn);
         });
-
-        document.getElementById('listModal').classList.add('open');
       }
 
       showToast(msg) {
@@ -1499,7 +1231,7 @@
         incBtn.className = 'stepper-btn';
         incBtn.textContent = '+';
         incBtn.onclick = () => {
-          if (this.userCoefficients[termIndex] < 16) {
+          if (this.userCoefficients[termIndex] < 25) {
             this.userCoefficients[termIndex]++;
             numSpan.textContent = this.userCoefficients[termIndex];
             audio.playStep();
