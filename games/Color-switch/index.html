@@ -15,7 +15,6 @@
       --c-magenta: #f43f5e;
       --c-purple: #a855f7;
       --gold: #fbbf24;
-      --gold-glow: rgba(251, 191, 36, 0.5);
       --emerald: #10b981;
       --danger: #ef4444;
       --text: #f8fafc;
@@ -188,13 +187,13 @@
       bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.8);
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid var(--surface-border);
       padding: 6px 16px;
       border-radius: 20px;
       font-size: 0.8rem;
       font-weight: 700;
-      color: var(--text-muted);
+      color: var(--text);
       pointer-events: none;
       animation: pulseHint 1.8s infinite ease-in-out;
       z-index: 10;
@@ -202,7 +201,7 @@
     }
 
     @keyframes pulseHint {
-      0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(0.96); }
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(0.96); }
       50% { opacity: 1; transform: translateX(-50%) scale(1.03); }
     }
 
@@ -323,7 +322,7 @@
         </div>
         <div class="stat-pill" title="Remaining Lives">
           <span>❤️ Lives</span>
-          <span class="stat-val emerald" id="livesText">❤️❤️❤️</span>
+          <span class="stat-val emerald" id="livesText">❤️❤️❤️❤️❤️</span>
         </div>
       </div>
     </header>
@@ -339,7 +338,7 @@
           <div style="font-size: 3rem;">🔄✨</div>
           <div class="modal-title">Color Switch Odyssey</div>
           <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">
-            Tap to bounce your ball through matching colored spinning obstacles. Pass through matching colors to score and collect glowing stars!
+            Tap to bounce your ball upwards through matching colored spinning obstacles. Pass through matching colors to score and collect glowing stars!
           </p>
           <div class="palette-row">
             <div class="palette-dot" style="background: var(--c-yellow); color: var(--c-yellow);"></div>
@@ -374,8 +373,9 @@
         <div class="modal-card">
           <div class="modal-title">How to Play 🔄</div>
           <div style="font-size: 0.85rem; line-height: 1.5; color: #cbd5e1; text-align: left; display: flex; flex-direction: column; gap: 8px;">
-            <p>👆 <strong>Tap anywhere on the screen</strong> (or press <code>Space</code> / <code>↑</code>) to make the ball hop upwards.</p>
-            <p>🎨 <strong>Color Match Rule:</strong> You can only pass through segments matching your ball's current color! Touching other colors costs 1 life.</p>
+            <p>👆 <strong>Tap anywhere on the screen</strong> (or press <code>Space</code> / <code>↑</code>) to make the ball hop gently.</p>
+            <p>🎨 <strong>Color Match Rule:</strong> You can only pass through segments matching your ball's current color!</p>
+            <p>🛡️ <strong>5 Lives & Generous Shield:</strong> You have 5 lives with a 2.5-second shield on hit so you can recover easily.</p>
             <p>🔮 <strong>Color Switcher Orbs:</strong> Passing through a multi-color switcher orb transforms your ball into a new color!</p>
             <p>⭐ <strong>Stars:</strong> Collect golden stars inside obstacles to boost your score.</p>
           </div>
@@ -413,9 +413,9 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(320, t);
-        osc.frequency.exponentialRampToValueAtTime(740, t + 0.08);
-        gain.gain.setValueAtTime(0.18, t);
+        osc.frequency.setValueAtTime(340, t);
+        osc.frequency.exponentialRampToValueAtTime(680, t + 0.08);
+        gain.gain.setValueAtTime(0.14, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
@@ -452,7 +452,7 @@
           const gain = this.ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(f, t);
-          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.setValueAtTime(0.18, t);
           gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
@@ -469,21 +469,21 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, t);
-        osc.frequency.exponentialRampToValueAtTime(50, t + 0.25);
-        gain.gain.setValueAtTime(0.25, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.frequency.setValueAtTime(200, t);
+        osc.frequency.exponentialRampToValueAtTime(50, t + 0.22);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.25);
+        osc.stop(t + 0.22);
       }
     }
 
     const audio = new ColorSwitchAudio();
 
     /* ==========================================================================
-       COLOR SWITCH PRO GAME ENGINE
+       COLOR SWITCH PRO GAME ENGINE (BALANCED & ACCESSIBLE)
        ========================================================================== */
     const GAME_COLORS = ['#facc15', '#f43f5e', '#a855f7', '#38bdf8']; // Yellow, Magenta, Purple, Cyan
 
@@ -494,7 +494,7 @@
 
         this.score = 0;
         this.starsCollected = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.highScore = parseInt(localStorage.getItem('color_switch_highscore') || '0', 10);
 
         this.isPlaying = false;
@@ -530,7 +530,6 @@
       }
 
       bindEvents() {
-        // Tap / Click to jump anywhere on the screen
         const handleJumpInput = (e) => {
           if (e.target.closest('button') || e.target.closest('.modal-overlay')) return;
           if (e.type === 'touchstart') e.preventDefault();
@@ -563,10 +562,10 @@
         this.ball = {
           x: this.width * 0.5,
           y: this.height * 0.72,
-          r: 10,
+          r: 9,
           vy: 0,
-          gravity: 0.38,
-          jumpPower: 7.6,
+          gravity: 0.22,      // Gentle, floaty, easy to control
+          jumpPower: 5.6,     // Smooth rhythmic hop
           colorIdx: Math.floor(Math.random() * 4),
           invulnerableTime: 0,
           trail: []
@@ -578,10 +577,10 @@
         this.stars = [];
         this.particles = [];
         this.floatingTexts = [];
-        this.highestObstacleY = this.ball.y - 180;
+        this.highestObstacleY = this.ball.y - 200;
 
-        // Generate initial batch of varied obstacles
-        for (let i = 0; i < 6; i++) {
+        // Generate initial batch of spacious obstacles
+        for (let i = 0; i < 5; i++) {
           this.spawnNextObstacle();
         }
 
@@ -592,19 +591,21 @@
         const obsY = this.highestObstacleY;
         const types = ['circle', 'square', 'cross', 'concentric'];
         const type = types[Math.floor(Math.random() * types.length)];
-        const speed = (0.015 + Math.random() * 0.012) * (Math.random() > 0.5 ? 1 : -1);
+        
+        // Gentle, leisurely rotation speeds
+        const speed = (0.007 + Math.random() * 0.005) * (Math.random() > 0.5 ? 1 : -1);
 
         this.obstacles.push({
           type,
           x: this.width * 0.5,
           y: obsY,
-          size: Math.min(this.width * 0.32, 100),
+          size: Math.min(this.width * 0.38, 125), // Wider openings
           angle: Math.random() * Math.PI * 2,
           speed,
           passed: false
         });
 
-        // Spawn Star in the center of the obstacle
+        // Spawn Star in center of obstacle
         this.stars.push({
           x: this.width * 0.5,
           y: obsY,
@@ -612,16 +613,16 @@
           collected: false
         });
 
-        // Spawn Color Switcher Orb above the obstacle
+        // Spawn Color Switcher Orb above obstacle with comfortable spacing
         this.switchers.push({
           x: this.width * 0.5,
-          y: obsY - 140,
+          y: obsY - 170,
           r: 12,
           rotation: 0,
           collected: false
         });
 
-        this.highestObstacleY -= 280;
+        this.highestObstacleY -= 340; // Spacious 340px vertical gaps
       }
 
       startGame() {
@@ -630,7 +631,7 @@
         this.isGameOver = false;
         this.score = 0;
         this.starsCollected = 0;
-        this.lives = 3;
+        this.lives = 5;
         this.initGame();
         this.jump();
       }
@@ -651,13 +652,12 @@
         this.ball.vy = -this.ball.jumpPower;
         audio.playJump();
 
-        // Spawn jump ring particles
         for (let i = 0; i < 4; i++) {
           this.particles.push({
             x: this.ball.x,
             y: this.ball.y + this.ball.r,
-            vx: (Math.random() - 0.5) * 3,
-            vy: Math.random() * 2 + 1,
+            vx: (Math.random() - 0.5) * 2.5,
+            vy: Math.random() * 2 + 0.5,
             size: 3 + Math.random() * 3,
             color: GAME_COLORS[this.ball.colorIdx],
             alpha: 1,
@@ -671,23 +671,24 @@
 
         const b = this.ball;
 
-        // Ball Physics
+        // Ball Physics with soft terminal velocity
         b.vy += b.gravity;
+        if (b.vy > 7) b.vy = 7;
         b.y += b.vy;
 
         if (b.invulnerableTime > 0) b.invulnerableTime -= dt;
 
         // Trail
         b.trail.push({ x: b.x, y: b.y, alpha: 0.6 });
-        if (b.trail.length > 6) b.trail.shift();
+        if (b.trail.length > 5) b.trail.shift();
 
-        // Camera tracking (follows ball upwards)
+        // Smooth camera tracking
         const targetCamY = (this.height * 0.65) - b.y;
         if (targetCamY > this.cameraY) {
-          this.cameraY += (targetCamY - this.cameraY) * 0.15;
+          this.cameraY += (targetCamY - this.cameraY) * 0.12;
         }
 
-        // Spawn new obstacles as camera scrolls
+        // Spawn new obstacles as camera ascends
         const topVisibleY = -this.cameraY;
         if (this.highestObstacleY > topVisibleY - 500) {
           this.spawnNextObstacle();
@@ -697,15 +698,15 @@
         this.obstacles.forEach(obs => {
           obs.angle += obs.speed;
 
-          // Check if ball passed obstacle to award points
-          if (!obs.passed && b.y < obs.y - obs.size * 0.6) {
+          // Award points once ball clears top of obstacle
+          if (!obs.passed && b.y < obs.y - obs.size * 0.55) {
             obs.passed = true;
             this.score += 10;
-            this.addFloatingText('+10', obs.x, obs.y - 30, '#38bdf8');
+            this.addFloatingText('+10', obs.x, obs.y - 35, '#38bdf8');
             this.updateUI();
           }
 
-          // Check Obstacle Color Collisions
+          // Check Color Collisions with generous margin
           if (b.invulnerableTime <= 0) {
             this.checkObstacleCollision(obs);
           }
@@ -715,12 +716,12 @@
         this.stars.forEach(s => {
           if (s.collected) return;
           const dist = Math.hypot(b.x - s.x, b.y - s.y);
-          if (dist < b.r + s.r) {
+          if (dist < b.r + s.r + 6) {
             s.collected = true;
             this.starsCollected++;
             this.score += 25;
             this.createExplosion(s.x, s.y, '#fbbf24', 12);
-            this.addFloatingText('+25 STAR ⭐', s.x, s.y - 15, '#fbbf24');
+            this.addFloatingText('+25 ⭐', s.x, s.y - 15, '#fbbf24');
             audio.playStar();
             this.updateUI();
           }
@@ -729,27 +730,27 @@
         // Update Color Switchers
         this.switchers.forEach(sw => {
           if (sw.collected) return;
-          sw.rotation += dt * 4;
+          sw.rotation += dt * 3.5;
           const dist = Math.hypot(b.x - sw.x, b.y - sw.y);
-          if (dist < b.r + sw.r) {
+          if (dist < b.r + sw.r + 6) {
             sw.collected = true;
             let nextColor = Math.floor(Math.random() * 4);
             if (nextColor === b.colorIdx) nextColor = (nextColor + 1) % 4;
             b.colorIdx = nextColor;
 
-            this.createExplosion(sw.x, sw.y, GAME_COLORS[b.colorIdx], 16);
+            this.createExplosion(sw.x, sw.y, GAME_COLORS[b.colorIdx], 14);
             this.addFloatingText('COLOR SWITCH! 🎨', sw.x, sw.y - 18, GAME_COLORS[b.colorIdx]);
             audio.playSwitchColor();
           }
         });
 
-        // Bottom Screen Fall Loss
+        // Bottom Screen Safety Cushion: gentle bounce instead of instant death on slight slip
         const screenBottomY = this.height - this.cameraY;
-        if (b.y > screenBottomY + 40) {
+        if (b.y > screenBottomY + 20) {
           this.loseLife();
           if (this.lives > 0) {
-            b.y = screenBottomY - 140;
-            b.vy = -b.jumpPower * 0.9;
+            b.y = screenBottomY - 120;
+            b.vy = -b.jumpPower * 0.95;
           }
         }
 
@@ -762,24 +763,30 @@
 
         if (obs.type === 'circle') {
           const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
-          const innerR = obs.size - 12;
-          const outerR = obs.size + 12;
+          const innerR = obs.size - 6;
+          const outerR = obs.size + 6;
 
           if (dist >= innerR && dist <= outerR) {
             let angle = Math.atan2(b.y - obs.y, b.x - obs.x) - obs.angle;
             angle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-            const quadrant = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
+            
+            // Angular tolerance buffer
+            const quadrantF = (angle / (Math.PI * 2)) * 4;
+            const quadrant = Math.floor(quadrantF) % 4;
+            const quadFrac = quadrantF - Math.floor(quadrantF);
 
-            if (quadrant !== b.colorIdx) {
-              this.loseLife();
+            // If near edge of quadrant, give player benefit of the doubt
+            if (quadFrac > 0.08 && quadFrac < 0.92) {
+              if (quadrant !== b.colorIdx) {
+                this.loseLife();
+              }
             }
           }
         } else if (obs.type === 'concentric') {
-          // Double Concentric Rings
-          [obs.size * 0.7, obs.size].forEach((rad, idx) => {
+          [obs.size * 0.72, obs.size].forEach((rad, idx) => {
             const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
-            if (dist >= rad - 10 && dist <= rad + 10) {
-              const ringAngle = obs.angle * (idx === 0 ? -1.3 : 1);
+            if (dist >= rad - 5 && dist <= rad + 5) {
+              const ringAngle = obs.angle * (idx === 0 ? -1 : 1);
               let angle = Math.atan2(b.y - obs.y, b.x - obs.x) - ringAngle;
               angle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
               const quadrant = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
@@ -791,7 +798,7 @@
           });
         } else if (obs.type === 'square' || obs.type === 'cross') {
           const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
-          if (dist < obs.size * 1.1 && dist > obs.size * 0.5) {
+          if (dist < obs.size * 1.05 && dist > obs.size * 0.6) {
             let angle = Math.atan2(b.y - obs.y, b.x - obs.x) - obs.angle;
             angle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
             const quadrant = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
@@ -805,15 +812,16 @@
 
       loseLife() {
         this.lives--;
-        this.ball.invulnerableTime = 1.6;
-        this.createExplosion(this.ball.x, this.ball.y, GAME_COLORS[this.ball.colorIdx], 20);
+        this.ball.invulnerableTime = 2.4; // 2.4s recovery shield
+        this.ball.vy = -this.ball.jumpPower * 0.6; // Gentle bounce up
+        this.createExplosion(this.ball.x, this.ball.y, GAME_COLORS[this.ball.colorIdx], 16);
         audio.playHit();
         this.updateUI();
 
         if (this.lives <= 0) {
           this.triggerGameOver();
         } else {
-          this.addFloatingText('💔 -1 LIFE', this.ball.x, this.ball.y - 20, '#ef4444');
+          this.addFloatingText('🛡️ SHIELD ACTIVE! 💔 -1', this.ball.x, this.ball.y - 20, '#ef4444');
         }
       }
 
@@ -832,12 +840,12 @@
       createExplosion(x, y, color, count = 12) {
         for (let i = 0; i < count; i++) {
           const angle = Math.random() * Math.PI * 2;
-          const speed = 2 + Math.random() * 5;
+          const speed = 1.5 + Math.random() * 4;
           this.particles.push({
             x, y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            size: 3 + Math.random() * 4,
+            size: 3 + Math.random() * 3,
             color,
             alpha: 1,
             life: 0.5
@@ -848,10 +856,10 @@
       addFloatingText(text, x, y, color = '#fbbf24') {
         this.floatingTexts.push({
           text, x, y,
-          vy: -1.6,
+          vy: -1.5,
           alpha: 1,
           color,
-          life: 0.8
+          life: 0.9
         });
       }
 
@@ -958,7 +966,7 @@
           ctx.restore();
         });
 
-        // Ball with invulnerability blink
+        // Ball with invulnerability shield glow & blink
         if (b.invulnerableTime <= 0 || Math.floor(performance.now() / 80) % 2 === 0) {
           ctx.save();
           ctx.translate(b.x, b.y);
@@ -971,10 +979,22 @@
           ctx.fill();
 
           // Shiny Glint
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
           ctx.beginPath();
           ctx.arc(-b.r * 0.3, -b.r * 0.3, b.r * 0.35, 0, Math.PI * 2);
           ctx.fill();
+
+          // Shield halo if invulnerable
+          if (b.invulnerableTime > 0) {
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(0, 0, b.r + 6, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+
           ctx.restore();
         }
 
@@ -1010,7 +1030,7 @@
         ctx.translate(obs.x, obs.y);
 
         if (obs.type === 'circle') {
-          ctx.lineWidth = 14;
+          ctx.lineWidth = 12;
           for (let i = 0; i < 4; i++) {
             ctx.beginPath();
             ctx.strokeStyle = GAME_COLORS[i];
@@ -1020,9 +1040,9 @@
             ctx.stroke();
           }
         } else if (obs.type === 'concentric') {
-          [obs.size * 0.7, obs.size].forEach((rad, idx) => {
-            ctx.lineWidth = 12;
-            const ringAngle = obs.angle * (idx === 0 ? -1.3 : 1);
+          [obs.size * 0.72, obs.size].forEach((rad, idx) => {
+            ctx.lineWidth = 11;
+            const ringAngle = obs.angle * (idx === 0 ? -1 : 1);
             for (let i = 0; i < 4; i++) {
               ctx.beginPath();
               ctx.strokeStyle = GAME_COLORS[i];
@@ -1034,7 +1054,7 @@
           });
         } else if (obs.type === 'square') {
           ctx.rotate(obs.angle);
-          ctx.lineWidth = 14;
+          ctx.lineWidth = 12;
           const s = obs.size * 0.85;
 
           const points = [
@@ -1053,7 +1073,7 @@
           }
         } else if (obs.type === 'cross') {
           ctx.rotate(obs.angle);
-          ctx.lineWidth = 14;
+          ctx.lineWidth = 12;
           ctx.lineCap = 'round';
           const len = obs.size * 0.95;
 
