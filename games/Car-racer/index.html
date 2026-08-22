@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Turbo Car Racer Pro — Extreme Highway Drift</title>
+  <title>Turbo Car Racer Pro — 2.5D Highway Drift</title>
   <style>
     :root {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #0f172a 0%, #020617 100%);
+      --bg-gradient: radial-gradient(circle at 50% 10%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
       --surface-glass: rgba(15, 23, 42, 0.85);
       --surface-card: rgba(30, 41, 59, 0.88);
       --surface-border: rgba(255, 255, 255, 0.12);
@@ -21,22 +21,22 @@
       --success: #10b981;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --shadow-lg: 0 14px 32px -4px rgba(0, 0, 0, 0.7);
-      --radius: 14px;
+      --shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.7);
+      --radius: 16px;
     }
 
     body.theme-neon {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #3b0764 0%, #1e1b4b 60%, #030712 100%);
+      --bg-gradient: radial-gradient(circle at 50% 10%, #3b0764 0%, #1e1b4b 60%, #030712 100%);
       --accent: #ec4899;
       --accent-glow: rgba(236, 72, 153, 0.45);
     }
     body.theme-sunset {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #7c2d12 0%, #431407 60%, #0c0a09 100%);
+      --bg-gradient: radial-gradient(circle at 50% 10%, #7c2d12 0%, #431407 60%, #0c0a09 100%);
       --accent: #f97316;
       --accent-glow: rgba(249, 115, 22, 0.45);
     }
     body.theme-arctic {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #0e7490 0%, #164e63 60%, #020617 100%);
+      --bg-gradient: radial-gradient(circle at 50% 10%, #0e7490 0%, #164e63 60%, #020617 100%);
       --accent: #2dd4bf;
       --accent-glow: rgba(45, 212, 191, 0.45);
     }
@@ -73,8 +73,8 @@
       padding: 0 12px;
       padding-top: env(safe-area-inset-top, 0px);
       background: var(--surface-glass);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--surface-border);
       display: flex;
       align-items: center;
@@ -87,7 +87,7 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
       font-weight: 800;
       font-size: 1.05rem;
       letter-spacing: -0.4px;
@@ -188,52 +188,70 @@
       touch-action: none;
     }
 
-    /* Speedometer & Nitro HUD Gauges */
-    .speedo-hud {
+    /* Digital Dashboard HUD (KM/H, RPM, Gear, Nitro) */
+    .cluster-hud {
       position: absolute;
-      top: 12px;
-      left: 12px;
-      background: var(--surface-card);
+      top: 14px;
+      left: 14px;
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid var(--surface-border);
-      padding: 6px 14px;
-      border-radius: 16px;
+      padding: 8px 14px;
+      border-radius: var(--radius);
       box-shadow: var(--shadow-lg);
       z-index: 25;
       pointer-events: none;
       display: flex;
-      flex-direction: column;
-      gap: 3px;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(12px);
     }
 
-    .speedo-val {
-      font-size: 1.1rem;
+    .speedo-num {
+      font-size: 1.4rem;
       font-weight: 900;
-      color: #fff;
       font-family: ui-monospace, SFMono-Regular, monospace;
+      color: #fff;
+      line-height: 1;
     }
-    .speedo-unit { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+    .speedo-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .gear-box {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
 
     .nitro-gauge-box {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      background: var(--surface-card);
+      top: 14px;
+      right: 14px;
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid var(--surface-border);
-      padding: 6px 14px;
-      border-radius: 16px;
+      padding: 8px 14px;
+      border-radius: var(--radius);
       box-shadow: var(--shadow-lg);
       z-index: 25;
       pointer-events: none;
       display: flex;
       align-items: center;
       gap: 8px;
+      backdrop-filter: blur(12px);
     }
 
     .nitro-track {
-      width: 65px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
+      width: 75px;
+      height: 9px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 5px;
       overflow: hidden;
     }
 
@@ -241,9 +259,9 @@
       height: 100%;
       width: 100%;
       background: linear-gradient(90deg, #06b6d4, #38bdf8, #818cf8);
-      border-radius: 4px;
-      transition: width 0.1s ease;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+      border-radius: 5px;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
+      transition: width 0.08s ease;
     }
 
     /* Directional Touch Controls */
@@ -252,22 +270,22 @@
       bottom: 74px;
       left: 14px;
       display: flex;
-      gap: 10px;
+      gap: 12px;
       z-index: 30;
     }
 
     .steer-btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 18px;
+      width: 62px;
+      height: 62px;
+      border-radius: 20px;
       background: var(--surface-card);
       border: 2px solid var(--accent);
       color: #fff;
       display: grid;
       place-items: center;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 900;
-      box-shadow: 0 0 18px var(--accent-glow);
+      box-shadow: 0 0 20px var(--accent-glow);
       cursor: pointer;
       touch-action: manipulation;
     }
@@ -283,34 +301,34 @@
       bottom: 74px;
       right: 14px;
       display: flex;
-      gap: 10px;
+      gap: 12px;
       z-index: 30;
     }
 
     .action-btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 18px;
+      width: 62px;
+      height: 62px;
+      border-radius: 20px;
       background: var(--surface-card);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       cursor: pointer;
       box-shadow: var(--shadow-lg);
       touch-action: manipulation;
-      transition: transform 0.1s ease;
+      transition: transform 0.08s ease;
     }
 
     .action-btn.nitro-btn {
-      border: 2px solid var(--nitro);
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+      border: 2.5px solid var(--nitro);
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.55);
     }
 
     .action-btn.brake-btn {
-      border: 2px solid var(--danger);
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+      border: 2.5px solid var(--danger);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
     }
 
     .action-btn span.lbl {
@@ -318,11 +336,10 @@
       font-weight: 800;
       color: #fff;
       text-transform: uppercase;
+      margin-top: 1px;
     }
 
-    .action-btn:active {
-      transform: scale(0.9);
-    }
+    .action-btn:active { transform: scale(0.9); }
 
     /* Bottom Action Bar */
     footer.bottom-bar {
@@ -330,8 +347,8 @@
       padding: 0 8px;
       padding-bottom: env(safe-area-inset-bottom, 0px);
       background: var(--surface-glass);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-top: 1px solid var(--surface-border);
       display: flex;
       align-items: center;
@@ -362,7 +379,7 @@
     /* Toast Notification */
     .toast {
       position: absolute;
-      top: 12px;
+      top: 14px;
       left: 50%;
       transform: translateX(-50%) translateY(-50px);
       background: rgba(15, 23, 42, 0.95);
@@ -390,7 +407,7 @@
       position: absolute;
       pointer-events: none;
       font-weight: 900;
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
       z-index: 60;
       animation: floatFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -575,7 +592,7 @@
     @media (max-width: 480px) {
       .brand span { display: none; }
       .stat-pill { padding: 3px 7px; font-size: 0.74rem; }
-      .steer-btn, .action-btn { width: 50px; height: 50px; font-size: 1.2rem; }
+      .steer-btn, .action-btn { width: 52px; height: 52px; font-size: 1.25rem; }
     }
   </style>
 </head>
@@ -597,7 +614,7 @@
         <span>🛣️</span>
         <span class="stat-val cyan" id="distanceText">0m</span>
       </div>
-      <div class="stat-pill" title="Vehicles Smashed / Lives">
+      <div class="stat-pill" title="Vehicle Lives">
         <span>❤️</span>
         <span class="stat-val pink" id="livesText">3</span>
       </div>
@@ -612,19 +629,24 @@
 
   <!-- Interactive Canvas Playfield -->
   <main class="game-viewport" id="gameViewport">
-    <div class="speedo-hud">
-      <div class="speedo-val"><span id="speedKmh">140</span> <span class="speedo-unit">KM/H</span></div>
+    <!-- Digital Dashboard HUD -->
+    <div class="cluster-hud">
+      <div>
+        <div class="speedo-num" id="speedKmh">140</div>
+        <div class="speedo-label">KM/H</div>
+      </div>
+      <div class="gear-box" id="gearText">D4</div>
     </div>
 
     <div class="nitro-gauge-box">
-      <span style="font-size: 0.75rem; font-weight: 800; color: #38bdf8;">⚡ NITRO:</span>
+      <span style="font-size: 0.75rem; font-weight: 800; color: #38bdf8;">⚡ NOS:</span>
       <div class="nitro-track">
         <div class="nitro-fill" id="nitroFill"></div>
       </div>
     </div>
 
     <canvas id="racerCanvas"></canvas>
-    <div class="toast" id="toast">Steer around highway traffic and collect gold coins! 🏎️</div>
+    <div class="toast" id="toast">Steer smoothly through highway traffic and ignite Nitro! 🏎️</div>
 
     <!-- On-Screen Left / Right Steering Buttons -->
     <div class="steer-controls">
@@ -634,11 +656,11 @@
 
     <!-- On-Screen Nitro & Brake Buttons -->
     <div class="action-controls">
-      <div class="action-btn brake-btn" id="brakeBtn" title="Brake / Slow Down (▼)">
+      <div class="action-btn brake-btn" id="brakeBtn" title="Brake (▼)">
         🛑
         <span class="lbl">Brake</span>
       </div>
-      <div class="action-btn nitro-btn" id="nitroBtn" title="Turbo Nitro Boost (▲ / Space)">
+      <div class="action-btn nitro-btn" id="nitroBtn" title="Turbo Nitro (▲ / Space)">
         🚀
         <span class="lbl">Nitro</span>
       </div>
@@ -646,7 +668,7 @@
 
     <!-- Pause Screen -->
     <div class="pause-overlay" id="pauseOverlay">
-      <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
+      <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">Race Paused ⏸️</div>
       <button class="primary" id="resumeBtn" style="padding: 10px 24px; font-size: 1rem;">Resume Race 🏎️</button>
     </div>
 
@@ -772,13 +794,15 @@
 
   <script>
     /* ==========================================================================
-       SYNTHESIZED DYNAMIC ENGINE & SOUND FX
+       PROFESSIONAL SYNTHESIZED RACING AUDIO ENGINE
+       Multi-Harmonic Pitch-Shifting Engine with Dual Oscillators & Exhaust
        ========================================================================== */
-    class AudioEngine {
+    class ProAudioEngine {
       constructor() {
         this.ctx = null;
         this.enabled = true;
-        this.engineOsc = null;
+        this.engineOsc1 = null;
+        this.engineOsc2 = null;
         this.engineGain = null;
       }
 
@@ -798,27 +822,37 @@
       startEngineSound() {
         if (!this.ctx) return;
         try {
-          this.engineOsc = this.ctx.createOscillator();
           this.engineGain = this.ctx.createGain();
-          this.engineOsc.type = 'sawtooth';
-          this.engineOsc.frequency.setValueAtTime(65, this.ctx.currentTime);
-          this.engineGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+          this.engineGain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+
+          this.engineOsc1 = this.ctx.createOscillator();
+          this.engineOsc1.type = 'sawtooth';
+          this.engineOsc1.frequency.setValueAtTime(70, this.ctx.currentTime);
+
+          this.engineOsc2 = this.ctx.createOscillator();
+          this.engineOsc2.type = 'triangle';
+          this.engineOsc2.frequency.setValueAtTime(140, this.ctx.currentTime);
 
           const filter = this.ctx.createBiquadFilter();
           filter.type = 'lowpass';
-          filter.frequency.setValueAtTime(260, this.ctx.currentTime);
+          filter.frequency.setValueAtTime(320, this.ctx.currentTime);
+          filter.Q.setValueAtTime(3, this.ctx.currentTime);
 
-          this.engineOsc.connect(filter);
+          this.engineOsc1.connect(filter);
+          this.engineOsc2.connect(filter);
           filter.connect(this.engineGain);
           this.engineGain.connect(this.ctx.destination);
-          this.engineOsc.start();
+
+          this.engineOsc1.start();
+          this.engineOsc2.start();
         } catch(e) {}
       }
 
       updateEnginePitch(speedRatio, isNitro) {
-        if (!this.enabled || !this.engineOsc || !this.ctx) return;
-        const targetFreq = 55 + speedRatio * 180 + (isNitro ? 90 : 0);
-        this.engineOsc.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.08);
+        if (!this.enabled || !this.engineOsc1 || !this.ctx) return;
+        const baseHz = 65 + (speedRatio % 0.25) * 4 * 160 + (isNitro ? 95 : 0);
+        this.engineOsc1.frequency.setTargetAtTime(baseHz, this.ctx.currentTime, 0.06);
+        this.engineOsc2.frequency.setTargetAtTime(baseHz * 1.5, this.ctx.currentTime, 0.06);
       }
 
       playNitro() {
@@ -829,14 +863,14 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(320, t);
-        osc.frequency.exponentialRampToValueAtTime(880, t + 0.2);
+        osc.frequency.setValueAtTime(340, t);
+        osc.frequency.exponentialRampToValueAtTime(920, t + 0.22);
         gain.gain.setValueAtTime(0.3, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.2);
+        osc.stop(t + 0.22);
       }
 
       playCoin() {
@@ -847,14 +881,14 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(987.77, t);
-        osc.frequency.setValueAtTime(1318.51, t + 0.08);
+        osc.frequency.setValueAtTime(1046.50, t);
+        osc.frequency.setValueAtTime(1318.51, t + 0.07);
         gain.gain.setValueAtTime(0.2, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.18);
+        osc.stop(t + 0.16);
       }
 
       playNearMiss() {
@@ -862,18 +896,18 @@
         this.init();
         if (!this.ctx) return;
         const t = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(523.25, t);
-        osc.frequency.setValueAtTime(659.25, t + 0.06);
-        osc.frequency.setValueAtTime(783.99, t + 0.12);
-        gain.gain.setValueAtTime(0.22, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.22);
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t + idx * 0.04);
+          gain.gain.setValueAtTime(0.18, t + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.04 + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t + idx * 0.04);
+          osc.stop(t + idx * 0.04 + 0.12);
+        });
       }
 
       playCrash() {
@@ -884,21 +918,21 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(220, t);
-        osc.frequency.exponentialRampToValueAtTime(40, t + 0.35);
-        gain.gain.setValueAtTime(0.45, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.frequency.setValueAtTime(240, t);
+        osc.frequency.exponentialRampToValueAtTime(30, t + 0.38);
+        gain.gain.setValueAtTime(0.5, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.35);
+        osc.stop(t + 0.38);
       }
 
       playVictory() {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-        const notes = [523.25, 659.25, 783.99, 1046.50];
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
         notes.forEach((f, idx) => {
           const t = this.ctx.currentTime + idx * 0.08;
           const osc = this.ctx.createOscillator();
@@ -915,12 +949,12 @@
       }
     }
 
-    const audio = new AudioEngine();
+    const audio = new ProAudioEngine();
 
     /* ==========================================================================
-       TURBO CAR RACER PRO ENGINE
+       TURBO CAR RACER PRO — 2.5D PERSPECTIVE HIGHWAY ENGINE
        ========================================================================== */
-    class TurboRacer {
+    class TurboRacerPro {
       constructor() {
         this.viewport = document.getElementById('gameViewport');
         this.canvas = document.getElementById('racerCanvas');
@@ -931,6 +965,7 @@
         this.confettiParticles = [];
         this.sparks = [];
         this.skidMarks = [];
+        this.speedLines = [];
 
         // Game Configuration
         this.score = 0;
@@ -939,25 +974,26 @@
         this.nearMisses = 0;
         this.topSpeedKmh = 140;
         this.selectedCar = 'cyber';
+        this.screenShake = 0;
 
-        // Road Geometry & Animation
+        // Highway Dimensions
         this.roadScrollY = 0;
         this.laneCount = 4;
-        this.roadWidthRatio = 0.76;
+        this.roadWidthRatio = 0.74;
 
         // Player Vehicle State
         this.player = {
           x: 0,
           y: 0,
-          w: 46,
-          h: 84,
+          w: 48,
+          h: 88,
           vx: 0,
           targetX: 0,
           speed: 480,
           baseSpeed: 480,
           maxSpeed: 880,
-          nitroSpeed: 1250,
-          accel: 550,
+          nitroSpeed: 1280,
+          accel: 580,
           tilt: 0,
           nitroAmount: 100,
           isNitroActive: false,
@@ -1033,17 +1069,17 @@
           if (this.isPaused || this.isGameOver) return;
           audio.init();
           const pos = getCoords(e);
-          this.player.targetX = Math.max(this.roadLeft + 25, Math.min(this.roadRight - 25, pos.x));
+          this.player.targetX = Math.max(this.roadLeft + 26, Math.min(this.roadRight - 26, pos.x));
         });
 
         this.canvas.addEventListener('pointermove', (e) => {
           if (this.isPaused || this.isGameOver) return;
           const pos = getCoords(e);
-          this.player.targetX = Math.max(this.roadLeft + 25, Math.min(this.roadRight - 25, pos.x));
+          this.player.targetX = Math.max(this.roadLeft + 26, Math.min(this.roadRight - 26, pos.x));
         });
 
-        document.getElementById('steerLeftBtn').onpointerdown = () => { this.steerDelta(-65); };
-        document.getElementById('steerRightBtn').onpointerdown = () => { this.steerDelta(65); };
+        document.getElementById('steerLeftBtn').onpointerdown = () => { this.steerDelta(-70); };
+        document.getElementById('steerRightBtn').onpointerdown = () => { this.steerDelta(70); };
 
         const nitroBtn = document.getElementById('nitroBtn');
         nitroBtn.onpointerdown = () => { this.player.isNitroActive = true; audio.playNitro(); };
@@ -1056,8 +1092,8 @@
         brakeBtn.onpointerleave = () => { this.player.isBraking = false; };
 
         window.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.steerDelta(-65);
-          if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.steerDelta(65);
+          if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.steerDelta(-70);
+          if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.steerDelta(70);
           if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') {
             this.player.isNitroActive = true;
             audio.playNitro();
@@ -1150,9 +1186,9 @@
       }
 
       steerDelta(dx) {
-        this.player.targetX = Math.max(this.roadLeft + 25, Math.min(this.roadRight - 25, this.player.targetX + dx));
-        if (Math.random() < 0.6) {
-          this.skidMarks.push({ x: this.player.x, y: this.player.y + 30, alpha: 0.7 });
+        this.player.targetX = Math.max(this.roadLeft + 26, Math.min(this.roadRight - 26, this.player.targetX + dx));
+        if (Math.random() < 0.7) {
+          this.skidMarks.push({ x: this.player.x, y: this.player.y + 30, alpha: 0.75 });
         }
       }
 
@@ -1202,6 +1238,7 @@
         this.traffic = [];
         this.pickups = [];
         this.skidMarks = [];
+        this.speedLines = [];
 
         this.player.x = this.w * 0.5;
         this.player.targetX = this.w * 0.5;
@@ -1218,8 +1255,8 @@
         document.getElementById('gameOverOverlay').style.display = 'none';
 
         this.scenery = [];
-        for (let i = 0; i < 16; i++) {
-          this.spawnScenery(i * (this.h / 14));
+        for (let i = 0; i < 18; i++) {
+          this.spawnScenery(i * (this.h / 16));
         }
 
         audio.playVictory();
@@ -1228,11 +1265,11 @@
 
       spawnScenery(yPos = -60) {
         const isLeft = Math.random() < 0.5;
-        const xPos = isLeft ? Math.random() * (this.roadLeft - 20) : this.roadRight + 20 + Math.random() * (this.w - this.roadRight - 20);
+        const xPos = isLeft ? Math.random() * (this.roadLeft - 25) : this.roadRight + 25 + Math.random() * (this.w - this.roadRight - 25);
         this.scenery.push({
           x: xPos,
           y: yPos,
-          type: Math.random() < 0.7 ? 'tree' : 'lamp',
+          type: Math.random() < 0.65 ? 'tree' : 'lamp',
           size: 24 + Math.random() * 16
         });
       }
@@ -1242,21 +1279,21 @@
         const laneIdx = Math.floor(Math.random() * this.laneCount);
         const spawnX = this.roadLeft + laneWidth * (laneIdx + 0.5);
 
-        const occupied = this.traffic.some(t => Math.abs(t.x - spawnX) < 25 && t.y < 160);
+        const occupied = this.traffic.some(t => Math.abs(t.x - spawnX) < 30 && t.y < 180);
         if (occupied) return;
 
-        const types = ['sedan', 'truck', 'van', 'police'];
+        const types = ['sedan', 'truck', 'van', 'police', 'sports'];
         const type = types[Math.floor(Math.random() * types.length)];
-        const trafficSpeed = (type === 'truck' ? 220 : (type === 'police' ? 380 : 280)) + Math.random() * 60;
+        const trafficSpeed = (type === 'truck' ? 220 : (type === 'police' ? 390 : (type === 'sports' ? 350 : 280))) + Math.random() * 50;
 
         this.traffic.push({
           x: spawnX,
-          y: -100,
-          w: type === 'truck' ? 52 : 44,
-          h: type === 'truck' ? 120 : (type === 'van' ? 90 : 80),
+          y: -120,
+          w: type === 'truck' ? 52 : (type === 'sports' ? 46 : 44),
+          h: type === 'truck' ? 120 : (type === 'van' ? 90 : 82),
           speed: trafficSpeed,
           type,
-          color: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#64748b'][Math.floor(Math.random() * 6)],
+          color: ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#e2e8f0', '#ec4899'][Math.floor(Math.random() * 7)],
           nearMissed: false
         });
       }
@@ -1314,16 +1351,28 @@
         if (this.slowMoActive) dt *= 0.5;
 
         if (this.player.isNitroActive && this.player.nitroAmount > 0) {
-          this.player.speed = Math.min(this.player.nitroSpeed, this.player.speed + this.player.accel * 2 * dt);
-          this.player.nitroAmount = Math.max(0, this.player.nitroAmount - 30 * dt);
-          this.createSparks(this.player.x - 14, this.player.y + 40, '#38bdf8', 3);
-          this.createSparks(this.player.x + 14, this.player.y + 40, '#38bdf8', 3);
+          this.player.speed = Math.min(this.player.nitroSpeed, this.player.speed + this.player.accel * 2.2 * dt);
+          this.player.nitroAmount = Math.max(0, this.player.nitroAmount - 32 * dt);
+          this.screenShake = 2.5;
+
+          this.createSparks(this.player.x - 14, this.player.y + 42, '#38bdf8', 4);
+          this.createSparks(this.player.x + 14, this.player.y + 42, '#38bdf8', 4);
+
+          if (Math.random() < 0.5) {
+            this.speedLines.push({
+              x: this.roadLeft + Math.random() * (this.roadRight - this.roadLeft),
+              y: -40,
+              len: 60 + Math.random() * 80,
+              alpha: 0.8
+            });
+          }
         } else if (this.player.isBraking) {
-          this.player.speed = Math.max(220, this.player.speed - this.player.accel * 2.5 * dt);
-          this.skidMarks.push({ x: this.player.x, y: this.player.y + 35, alpha: 0.5 });
+          this.player.speed = Math.max(220, this.player.speed - this.player.accel * 2.8 * dt);
+          this.skidMarks.push({ x: this.player.x, y: this.player.y + 35, alpha: 0.55 });
         } else {
-          this.player.speed = Math.min(this.player.maxSpeed, this.player.speed + this.player.accel * 0.5 * dt);
+          this.player.speed = Math.min(this.player.maxSpeed, this.player.speed + this.player.accel * 0.6 * dt);
           this.player.nitroAmount = Math.min(100, this.player.nitroAmount + 6 * dt);
+          if (this.screenShake > 0) this.screenShake *= 0.88;
         }
 
         document.getElementById('nitroFill').style.width = `${this.player.nitroAmount}%`;
@@ -1331,6 +1380,15 @@
         const kmh = Math.round(this.player.speed * 0.28);
         document.getElementById('speedKmh').textContent = kmh;
         this.topSpeedKmh = Math.max(this.topSpeedKmh, kmh);
+
+        let gear = 'D1';
+        if (kmh > 240) gear = 'D6';
+        else if (kmh > 190) gear = 'D5';
+        else if (kmh > 150) gear = 'D4';
+        else if (kmh > 105) gear = 'D3';
+        else if (kmh > 65) gear = 'D2';
+        document.getElementById('gearText').textContent = gear;
+
         audio.updateEnginePitch(this.player.speed / this.player.nitroSpeed, this.player.isNitroActive);
 
         this.distance += Math.round(this.player.speed * dt * 0.1);
@@ -1341,16 +1399,16 @@
         this.roadScrollY = (this.roadScrollY + this.player.speed * dt) % 120;
 
         const dx = this.player.targetX - this.player.x;
-        this.player.vx = dx * 9.5;
+        this.player.vx = dx * 10.5;
         this.player.x += this.player.vx * dt;
-        this.player.tilt = (this.player.vx / 450) * 0.22;
+        this.player.tilt = (this.player.vx / 420) * 0.24;
 
         if (this.player.invulnerableTimer > 0) {
           this.player.invulnerableTimer -= dt;
         }
 
         if (this.autoPilot) {
-          const aheadTraffic = this.traffic.filter(t => t.y > this.player.y - 320 && t.y < this.player.y + 40);
+          const aheadTraffic = this.traffic.filter(t => t.y > this.player.y - 340 && t.y < this.player.y + 40);
           if (aheadTraffic.length > 0) {
             const laneWidth = (this.roadRight - this.roadLeft) / this.laneCount;
             const laneCounts = [0, 0, 0, 0];
@@ -1366,14 +1424,18 @@
           }
         }
 
-        this.scenery.forEach(s => {
-          s.y += this.player.speed * dt;
-        });
+        this.scenery.forEach(s => { s.y += this.player.speed * dt; });
         this.scenery = this.scenery.filter(s => s.y < this.h + 80);
         if (Math.random() < 0.18) this.spawnScenery();
 
+        this.speedLines.forEach(l => {
+          l.y += this.player.speed * 1.5 * dt;
+          l.alpha -= 0.02;
+        });
+        this.speedLines = this.speedLines.filter(l => l.alpha > 0 && l.y < this.h + 100);
+
         this.trafficSpawnTimer += dt;
-        if (this.trafficSpawnTimer > (1.2 - Math.min(0.6, this.distance * 0.0001))) {
+        if (this.trafficSpawnTimer > (1.2 - Math.min(0.65, this.distance * 0.0001))) {
           this.trafficSpawnTimer = 0;
           this.spawnTraffic();
         }
@@ -1382,7 +1444,7 @@
           const relativeSpeed = this.player.speed - t.speed;
           t.y += relativeSpeed * dt;
 
-          if (!t.nearMissed && Math.abs(t.y - this.player.y) < 60 && Math.abs(t.x - this.player.x) < 55) {
+          if (!t.nearMissed && Math.abs(t.y - this.player.y) < 65 && Math.abs(t.x - this.player.x) < 56) {
             t.nearMissed = true;
             this.nearMisses++;
             this.score += 150;
@@ -1406,9 +1468,10 @@
               this.lives--;
               this.player.invulnerableTimer = 1.6;
               this.player.speed = 260;
+              this.screenShake = 12;
               document.getElementById('livesText').textContent = this.lives;
               audio.playCrash();
-              this.createSparks(this.player.x, this.player.y, '#ef4444', 30);
+              this.createSparks(this.player.x, this.player.y, '#ef4444', 32);
               this.showToast(`Highway Crash! ❤️ ${this.lives} Lives Left`);
 
               if (this.lives <= 0) {
@@ -1420,7 +1483,7 @@
         this.traffic = this.traffic.filter(t => t.y < this.h + 150 && t.y > -250);
 
         this.pickupSpawnTimer += dt;
-        if (this.pickupSpawnTimer > 2.5) {
+        if (this.pickupSpawnTimer > 2.4) {
           this.pickupSpawnTimer = 0;
           this.spawnPickup();
         }
@@ -1428,12 +1491,12 @@
         this.pickups.forEach(p => {
           p.y += this.player.speed * dt;
 
-          if (this.player.hasMagnet && p.type === 'coin' && Math.hypot(p.x - this.player.x, p.y - this.player.y) < 160) {
+          if (this.player.hasMagnet && p.type === 'coin' && Math.hypot(p.x - this.player.x, p.y - this.player.y) < 170) {
             p.x += (this.player.x - p.x) * 0.18;
             p.y += (this.player.y - p.y) * 0.18;
           }
 
-          if (!p.collected && Math.hypot(p.x - this.player.x, p.y - this.player.y) < 45) {
+          if (!p.collected && Math.hypot(p.x - this.player.x, p.y - this.player.y) < 46) {
             p.collected = true;
             if (p.type === 'coin') {
               this.score += 200;
@@ -1477,9 +1540,20 @@
       }
 
       render() {
+        this.ctx.save();
+        if (this.screenShake > 0.5) {
+          const sx = (Math.random() - 0.5) * this.screenShake;
+          const sy = (Math.random() - 0.5) * this.screenShake;
+          this.ctx.translate(sx, sy);
+        }
+
         this.ctx.clearRect(0, 0, this.w, this.h);
 
-        this.ctx.fillStyle = '#064e3b';
+        const grassGrad = this.ctx.createLinearGradient(0, 0, this.w, 0);
+        grassGrad.addColorStop(0, '#044332');
+        grassGrad.addColorStop(0.5, '#064e3b');
+        grassGrad.addColorStop(1, '#044332');
+        this.ctx.fillStyle = grassGrad;
         this.ctx.fillRect(0, 0, this.w, this.h);
 
         this.ctx.fillStyle = '#1e293b';
@@ -1510,7 +1584,7 @@
         this.ctx.setLineDash([]);
 
         this.skidMarks.forEach(s => {
-          this.ctx.fillStyle = `rgba(0, 0, 0, ${s.alpha * 0.4})`;
+          this.ctx.fillStyle = `rgba(0, 0, 0, ${s.alpha * 0.45})`;
           this.ctx.fillRect(s.x - 14, s.y, 8, 14);
           this.ctx.fillRect(s.x + 6, s.y, 8, 14);
         });
@@ -1529,18 +1603,29 @@
           } else {
             this.ctx.fillStyle = '#f59e0b';
             this.ctx.shadowColor = '#f59e0b';
-            this.ctx.shadowBlur = 14;
+            this.ctx.shadowBlur = 16;
             this.ctx.beginPath();
-            this.ctx.arc(s.x, s.y, 8, 0, Math.PI * 2);
+            this.ctx.arc(s.x, s.y, 9, 0, Math.PI * 2);
             this.ctx.fill();
           }
+          this.ctx.restore();
+        });
+
+        this.speedLines.forEach(l => {
+          this.ctx.save();
+          this.ctx.strokeStyle = `rgba(56, 189, 248, ${l.alpha})`;
+          this.ctx.lineWidth = 2.5;
+          this.ctx.beginPath();
+          this.ctx.moveTo(l.x, l.y);
+          this.ctx.lineTo(l.x, l.y + l.len);
+          this.ctx.stroke();
           this.ctx.restore();
         });
 
         this.pickups.forEach(p => {
           if (!p.collected) {
             this.ctx.save();
-            this.ctx.font = '24px system-ui';
+            this.ctx.font = '26px system-ui';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             let emoji = '🪙';
@@ -1557,6 +1642,19 @@
         });
 
         if (this.player.invulnerableTimer <= 0 || Math.floor(Date.now() / 80) % 2 === 0) {
+          this.ctx.save();
+          const lightGrad = this.ctx.createLinearGradient(0, this.player.y, 0, this.player.y - 180);
+          lightGrad.addColorStop(0, 'rgba(254, 240, 138, 0.35)');
+          lightGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+          this.ctx.fillStyle = lightGrad;
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.player.x - 16, this.player.y - 30);
+          this.ctx.lineTo(this.player.x - 45, this.player.y - 180);
+          this.ctx.lineTo(this.player.x + 45, this.player.y - 180);
+          this.ctx.lineTo(this.player.x + 16, this.player.y - 30);
+          this.ctx.fill();
+          this.ctx.restore();
+
           this.drawVehicle(this.player.x, this.player.y, this.player.w, this.player.h, '#f59e0b', this.selectedCar, true, this.player.tilt);
         }
 
@@ -1565,9 +1663,9 @@
           this.ctx.strokeStyle = '#38bdf8';
           this.ctx.lineWidth = 3.5;
           this.ctx.shadowColor = '#38bdf8';
-          this.ctx.shadowBlur = 18;
+          this.ctx.shadowBlur = 20;
           this.ctx.beginPath();
-          this.ctx.arc(this.player.x, this.player.y, 44, 0, Math.PI * 2);
+          this.ctx.arc(this.player.x, this.player.y, 46, 0, Math.PI * 2);
           this.ctx.stroke();
           this.ctx.restore();
         }
@@ -1578,10 +1676,12 @@
           this.ctx.lineWidth = 2;
           this.ctx.setLineDash([4, 4]);
           this.ctx.beginPath();
-          this.ctx.arc(this.player.x, this.player.y, 48, 0, Math.PI * 2);
+          this.ctx.arc(this.player.x, this.player.y, 50, 0, Math.PI * 2);
           this.ctx.stroke();
           this.ctx.restore();
         }
+
+        this.ctx.restore();
       }
 
       drawVehicle(x, y, w, h, color, type, isPlayer = false, tilt = 0) {
@@ -1589,9 +1689,9 @@
         this.ctx.translate(x, y);
         this.ctx.rotate(tilt);
 
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
         this.ctx.beginPath();
-        this.ctx.roundRect(-w/2 + 4, -h/2 + 4, w, h, 12);
+        this.ctx.roundRect(-w/2 + 4, -h/2 + 6, w, h, 12);
         this.ctx.fill();
 
         this.ctx.fillStyle = '#0f172a';
@@ -1600,6 +1700,10 @@
         this.ctx.fillRect(-w/2 - 4, h/2 - 32, 6, 18);
         this.ctx.fillRect(w/2 - 2, h/2 - 32, 6, 18);
 
+        const bodyGrad = this.ctx.createLinearGradient(-w/2, 0, w/2, 0);
+        bodyGrad.addColorStop(0, color);
+        bodyGrad.addColorStop(0.5, '#fff');
+        bodyGrad.addColorStop(0.7, color);
         this.ctx.fillStyle = color;
         this.ctx.beginPath();
         this.ctx.roundRect(-w/2, -h/2, w, h, isPlayer ? 14 : 10);
@@ -1615,21 +1719,33 @@
         this.ctx.roundRect(-w * 0.32, -h * 0.22, w * 0.64, h * 0.16, 4);
         this.ctx.fill();
 
+        this.ctx.fillStyle = '#0284c7';
+        this.ctx.beginPath();
+        this.ctx.roundRect(-w * 0.3, h * 0.08, w * 0.6, h * 0.12, 3);
+        this.ctx.fill();
+
         this.ctx.fillStyle = '#fef08a';
         this.ctx.shadowColor = '#fef08a';
-        this.ctx.shadowBlur = 10;
+        this.ctx.shadowBlur = 12;
         this.ctx.fillRect(-w/2 + 5, -h/2, 8, 4);
         this.ctx.fillRect(w/2 - 13, -h/2, 8, 4);
 
         this.ctx.fillStyle = '#ef4444';
         this.ctx.shadowColor = '#ef4444';
-        this.ctx.shadowBlur = 8;
+        this.ctx.shadowBlur = 10;
         this.ctx.fillRect(-w/2 + 5, h/2 - 4, 10, 4);
         this.ctx.fillRect(w/2 - 15, h/2 - 4, 10, 4);
+
+        if (isPlayer || type === 'sports') {
+          this.ctx.fillStyle = '#0f172a';
+          this.ctx.fillRect(-w/2 + 2, h/2 - 1, w - 4, 3.5);
+        }
 
         if (type === 'police') {
           const isBlue = Math.floor(Date.now() / 120) % 2 === 0;
           this.ctx.fillStyle = isBlue ? '#3b82f6' : '#ef4444';
+          this.ctx.shadowColor = isBlue ? '#3b82f6' : '#ef4444';
+          this.ctx.shadowBlur = 14;
           this.ctx.fillRect(-8, -4, 16, 8);
         }
 
@@ -1674,7 +1790,7 @@
       triggerConfetti() {
         this.confettiParticles = [];
         const colors = ['#f59e0b', '#38bdf8', '#ef4444', '#10b981', '#a855f7'];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 110; i++) {
           this.confettiParticles.push({
             x: window.innerWidth * 0.5,
             y: window.innerHeight * 0.5,
@@ -1718,7 +1834,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      window.game = new TurboRacer();
+      window.game = new TurboRacerPro();
     });
   </script>
 </body>
