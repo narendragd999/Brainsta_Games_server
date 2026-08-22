@@ -626,7 +626,7 @@
       </div>
       <div style="font-size: 0.88rem; line-height: 1.5; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">
         <p>🎯 <strong>Objective:</strong> Move the entire stack of numbered boxes from the <em>Left Pillar</em> to the <em>Right Pillar</em>.</p>
-        <p>📦 <strong>Movement:</strong> Tap a pillar to pick up its top box, then tap another pillar to place it down (or drag & drop!).</p>
+        <p>📦 <strong>Touch & Drag:</strong> Touch any pillar to grab its top box, drag across the screen, and release over the destination pillar (or tap to select & tap to move!).</p>
         <p>⚠️ <strong>Golden Rule:</strong> You can only move one box at a time, and a <em>larger box</em> can <strong>never</strong> be placed on top of a smaller box.</p>
         <p>⚡ <strong>Auto-Solve & Hint:</strong> Tap <em>Next Move Hint</em> for the optimal step, or <em>Auto Solve</em> to watch the recursive step-by-step solver in action!</p>
       </div>
@@ -753,7 +753,7 @@
     const audio = new AudioEngine();
 
     /* ==========================================================================
-       BOX STACKER ENGINE (HANOI, COLOR SORT & TOWER BALANCE)
+       BOX STACKER ENGINE WITH SMOOTH MOBILE TOUCH & DRAG/DROP
        ========================================================================== */
     class BoxStackerGame {
       constructor() {
@@ -766,7 +766,7 @@
         this.confettiParticles = [];
 
         // Game Configuration
-        this.mode = 'hanoi'; // 'hanoi', 'sort', 'crane'
+        this.mode = 'hanoi';
         this.diskCount = 3;
         this.pillarsCount = 3;
 
@@ -776,6 +776,10 @@
         this.draggedDisk = null;
         this.dragSourcePillar = null;
         this.dragPos = { x: 0, y: 0 };
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.isDragging = false;
+        this.hoverPillarIdx = null;
 
         // Undo & Solve Tracking
         this.moves = 0;
@@ -809,7 +813,6 @@
       }
 
       initUI() {
-        // Mode selector
         document.querySelectorAll('.mode-picker-grid .choice-btn').forEach(btn => {
           btn.onclick = () => {
             document.querySelectorAll('.mode-picker-grid .choice-btn').forEach(b => b.classList.remove('selected'));
@@ -818,7 +821,6 @@
           };
         });
 
-        // Disk selector
         document.querySelectorAll('.diff-picker-grid .choice-btn').forEach(btn => {
           btn.onclick = () => {
             document.querySelectorAll('.diff-picker-grid .choice-btn').forEach(b => b.classList.remove('selected'));
@@ -827,7 +829,6 @@
           };
         });
 
-        // Theme selector
         document.querySelectorAll('.theme-picker-row .choice-btn').forEach(btn => {
           btn.onclick = () => {
             document.querySelectorAll('.theme-picker-row .choice-btn').forEach(b => b.classList.remove('selected'));
@@ -844,71 +845,96 @@
 
         const getCoords = (e) => {
           const rect = this.canvas.getBoundingClientRect();
-          const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : (e.changedTouches ? e.changedTouches[0].clientX : 0));
-          const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : (e.changedTouches ? e.changedTouches[0].clientY : 0));
+          let clientX = e.clientX;
+          let clientY = e.clientY;
+
+          if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else if (e.changedTouches && e.changedTouches.length > 0) {
+            clientX = e.changedTouches[0].clientX;
+            clientY = e.changedTouches[0].clientY;
+          }
+
           return {
             x: (clientX - rect.left) * (this.w / rect.width),
             y: (clientY - rect.top) * (this.h / rect.height)
           };
         };
 
-        const getPillarUnderPoint = (x, y) => {
+        const getPillarUnderPoint = (x) => {
           const slotW = this.w / this.pillarsCount;
           const idx = Math.floor(x / slotW);
           return Math.max(0, Math.min(this.pillarsCount - 1, idx));
         };
 
-        // Pointer Handling (Both Tap to Move & Drag/Drop Supported)
+        // Unified Pointer/Touch Start
         const handleStart = (e) => {
           if (this.isPaused || this.isGameOver || this.isAutoSolving) return;
           audio.init();
           const pos = getCoords(e);
-          const pIdx = getPillarUnderPoint(pos.x, pos.y);
+          const pIdx = getPillarUnderPoint(pos.x);
+
+          this.dragStartX = pos.x;
+          this.dragStartY = pos.y;
+          this.dragPos = { x: pos.x, y: pos.y };
 
           if (this.selectedPillarIdx === null) {
-            // Pick up from pillar if it has boxes
+            // First touch: Pick up from pillar if it has boxes
             if (this.pillars[pIdx].length > 0) {
               this.selectedPillarIdx = pIdx;
-              const disk = this.pillars[pIdx][this.pillars[pIdx].length - 1];
-              this.draggedDisk = disk;
               this.dragSourcePillar = pIdx;
-              this.dragPos = { x: pos.x, y: pos.y };
+              this.draggedDisk = this.pillars[pIdx][this.pillars[pIdx].length - 1];
+              this.isDragging = true;
+              this.hoverPillarIdx = pIdx;
               audio.playPick();
             }
           } else {
-            // Already holding a disk -> Drop onto pillar
-            this.attemptMove(this.selectedPillarIdx, pIdx);
+            // Already holding a disk via tap selection -> drop on clicked pillar
+            const srcPillar = this.selectedPillarIdx;
             this.selectedPillarIdx = null;
             this.draggedDisk = null;
+            this.isDragging = false;
+            this.hoverPillarIdx = null;
+            this.attemptMove(srcPillar, pIdx);
           }
         };
 
+        // Unified Pointer/Touch Move
         const handleMove = (e) => {
-          if (!this.draggedDisk) return;
+          if (!this.isDragging || !this.draggedDisk) return;
           const pos = getCoords(e);
-          this.dragPos = { x: pos.x, y: pos.y };
+          // Offset position slightly upward so finger doesn't obscure the box
+          this.dragPos = { x: pos.x, y: pos.y - 35 };
+          this.hoverPillarIdx = getPillarUnderPoint(pos.x);
         };
 
+        // Unified Pointer/Touch End
         const handleEnd = (e) => {
-          if (!this.draggedDisk) return;
+          if (!this.isDragging || !this.draggedDisk) return;
           const pos = getCoords(e);
-          const targetPillar = getPillarUnderPoint(pos.x, pos.y);
+          const targetPillar = getPillarUnderPoint(pos.x);
+          const dragDist = Math.hypot(pos.x - this.dragStartX, pos.y - this.dragStartY);
 
-          // If dragged to a different pillar, drop it there
-          if (targetPillar !== this.dragSourcePillar) {
-            this.attemptMove(this.dragSourcePillar, targetPillar);
+          if (dragDist > 14) {
+            // Significant drag occurred -> Drop onto target pillar
+            const src = this.dragSourcePillar;
             this.selectedPillarIdx = null;
             this.draggedDisk = null;
+            this.isDragging = false;
+            this.hoverPillarIdx = null;
+            this.attemptMove(src, targetPillar);
+          } else {
+            // Minor tap -> Keep disk selected for tap-to-move
+            this.isDragging = false;
           }
         };
 
+        // Use pointer events exclusively (prevents double trigger collision on mobile)
         this.canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); handleStart(e); });
-        this.canvas.addEventListener('pointermove', (e) => { e.preventDefault(); handleMove(e); });
-        this.canvas.addEventListener('pointerup', (e) => { e.preventDefault(); handleEnd(e); });
-
-        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, { passive: false });
-        this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, { passive: false });
-        this.canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(e); }, { passive: false });
+        window.addEventListener('pointermove', (e) => { handleMove(e); });
+        window.addEventListener('pointerup', (e) => { handleEnd(e); });
+        window.addEventListener('pointercancel', (e) => { handleEnd(e); });
 
         // HUD Controls
         document.getElementById('autoSolveBtn').onclick = () => this.triggerAutoSolve();
@@ -1056,7 +1082,6 @@
       triggerAutoSolve() {
         if (this.isAutoSolving || this.isGameOver) return;
 
-        // Reset to initial state for clean solve demonstration
         this.pillars = [[], [], []];
         for (let i = this.diskCount; i >= 1; i--) {
           this.pillars[0].push(i);
@@ -1068,7 +1093,6 @@
         this.isAutoSolving = true;
         this.autoSolveQueue = [];
 
-        // Generate full recursive move steps
         const solveHanoi = (n, from, to, aux) => {
           if (n === 1) {
             this.autoSolveQueue.push({ from, to });
@@ -1101,7 +1125,6 @@
       giveNextMoveHint() {
         if (this.isGameOver || this.isAutoSolving) return;
 
-        // Helper to solve state from scratch
         const queue = [];
         const solve = (n, from, to, aux) => {
           if (n === 1) { queue.push({ from, to }); return; }
@@ -1126,18 +1149,18 @@
         this.isAutoSolving = false;
         this.selectedPillarIdx = null;
         this.draggedDisk = null;
+        this.isDragging = false;
+        this.hoverPillarIdx = null;
         this.moves = 0;
         this.elapsedSeconds = 0;
         this.history = [];
 
-        // Optimal moves formula for Hanoi: 2^n - 1
         this.optimalMoves = Math.pow(2, this.diskCount) - 1;
         document.getElementById('optimalMovesText').textContent = this.optimalMoves;
         document.getElementById('movesText').textContent = '0';
         document.getElementById('timerText').textContent = '00:00';
         document.getElementById('diskCountBadge').textContent = `${this.diskCount} Boxes`;
 
-        // Initialize Pillar 0 with sorted disks (largest at bottom)
         this.pillars = [[], [], []];
         for (let i = this.diskCount; i >= 1; i--) {
           this.pillars[0].push(i);
@@ -1203,8 +1226,22 @@
         for (let p = 0; p < this.pillarsCount; p++) {
           const pegX = p * slotW + slotW * 0.5;
           const isSelected = (this.selectedPillarIdx === p);
+          const isHovered = (this.hoverPillarIdx === p && this.draggedDisk && this.dragSourcePillar !== p);
 
           this.ctx.save();
+          // Drop Zone Glow when dragging over pillar
+          if (isHovered) {
+            const targetStack = this.pillars[p];
+            const isValid = (targetStack.length === 0 || this.draggedDisk < targetStack[targetStack.length - 1]);
+            this.ctx.fillStyle = isValid ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+            this.ctx.strokeStyle = isValid ? '#10b981' : '#ef4444';
+            this.ctx.lineWidth = 2.5;
+            this.ctx.setLineDash([5, 4]);
+            this.roundRect(this.ctx, p * slotW + 8, baseY - pillarH - 24, slotW - 16, pillarH + 30, 14);
+            this.ctx.fill();
+            this.ctx.stroke();
+          }
+
           // Peg Post
           const pegGrad = this.ctx.createLinearGradient(pegX - 6, 0, pegX + 6, 0);
           pegGrad.addColorStop(0, isSelected ? '#a855f7' : '#64748b');
@@ -1215,21 +1252,12 @@
           this.roundRect(this.ctx, pegX - 6, baseY - pillarH, 12, pillarH, 6);
           this.ctx.fill();
 
-          // Pillar Label (Pillar 1 / 2 / 3)
+          // Pillar Label
           this.ctx.fillStyle = isSelected ? 'var(--accent)' : 'var(--text-muted)';
           this.ctx.font = 'bold 12px system-ui, sans-serif';
           this.ctx.textAlign = 'center';
           const labels = ['Pillar A (Start)', 'Pillar B (Aux)', 'Pillar C (Target)'];
           this.ctx.fillText(labels[p], pegX, baseY + 36);
-
-          // Highlight glow if holding disk over pillar
-          if (isSelected) {
-            this.ctx.strokeStyle = 'var(--accent)';
-            this.ctx.lineWidth = 2;
-            this.ctx.setLineDash([4, 4]);
-            this.roundRect(this.ctx, p * slotW + 8, baseY - pillarH - 20, slotW - 16, pillarH + 24, 12);
-            this.ctx.stroke();
-          }
 
           this.ctx.restore();
 
@@ -1238,8 +1266,18 @@
           for (let d = 0; d < stack.length; d++) {
             const diskSize = stack[d];
 
-            // If this disk is currently being dragged, don't draw it on the peg
-            if (this.draggedDisk === diskSize && this.dragSourcePillar === p) continue;
+            // If this disk is currently being dragged or selected, handle visual lifting
+            if (this.draggedDisk === diskSize && this.dragSourcePillar === p) {
+              if (!this.isDragging) {
+                // Floats elevated above pillar when tapped
+                const diskFrac = (diskSize - 1) / Math.max(1, this.diskCount - 1);
+                const dW = minBoxW + diskFrac * (maxBoxW - minBoxW);
+                const dX = pegX - dW * 0.5;
+                const dY = baseY - pillarH - 30;
+                this.drawBox(this.ctx, dX, dY, dW, boxH, diskSize, true);
+              }
+              continue;
+            }
 
             const diskFrac = (diskSize - 1) / Math.max(1, this.diskCount - 1);
             const dW = minBoxW + diskFrac * (maxBoxW - minBoxW);
@@ -1250,8 +1288,8 @@
           }
         }
 
-        // 4. Draw Floating / Dragged Disk with Drop Shadow
-        if (this.draggedDisk) {
+        // 4. Draw Floating / Dragged Disk directly under finger/cursor
+        if (this.draggedDisk && this.isDragging) {
           const diskSize = this.draggedDisk;
           const diskFrac = (diskSize - 1) / Math.max(1, this.diskCount - 1);
           const dW = minBoxW + diskFrac * (maxBoxW - minBoxW);
@@ -1259,9 +1297,9 @@
           const dY = this.dragPos.y - boxH * 0.5;
 
           this.ctx.save();
-          this.ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-          this.ctx.shadowBlur = 20;
-          this.ctx.shadowOffsetY = 10;
+          this.ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+          this.ctx.shadowBlur = 24;
+          this.ctx.shadowOffsetY = 12;
           this.drawBox(this.ctx, dX, dY, dW, boxH, diskSize, true);
           this.ctx.restore();
         }
