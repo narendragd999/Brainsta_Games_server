@@ -1,0 +1,2062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Basketball Pro — Time Attack & Aim Master</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+      --surface-glass: rgba(15, 23, 42, 0.82);
+      --surface-card: rgba(30, 41, 59, 0.88);
+      --surface-border: rgba(255, 255, 255, 0.12);
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --accent-glow: rgba(249, 115, 22, 0.45);
+      --cyan: #38bdf8;
+      --success: #10b981;
+      --purple: #8b5cf6;
+      --gold: #fbbf24;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --shadow-lg: 0 12px 28px -5px rgba(0, 0, 0, 0.65);
+      --radius: 14px;
+    }
+
+    body.theme-sunset {
+      --bg-gradient: radial-gradient(circle at 50% 30%, #431407 0%, #1c0a00 60%, #0a0300 100%);
+      --accent: #fb923c;
+      --accent-glow: rgba(251, 146, 60, 0.45);
+    }
+    body.theme-neon {
+      --bg-gradient: radial-gradient(circle at 50% 30%, #3b0764 0%, #120324 60%, #06010c 100%);
+      --accent: #ec4899;
+      --accent-glow: rgba(236, 72, 153, 0.45);
+    }
+    body.theme-street {
+      --bg-gradient: radial-gradient(circle at 50% 30%, #134e4a 0%, #042f2e 60%, #021a19 100%);
+      --accent: #2dd4bf;
+      --accent-glow: rgba(45, 212, 191, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      height: 52px;
+      padding: 0 12px;
+      padding-top: env(safe-area-inset-top, 0px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #f97316, #ef4444);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .stats-hub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--surface-border);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .stat-val {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--accent);
+      font-size: 0.92rem;
+    }
+
+    .stat-val.score {
+      color: var(--gold);
+    }
+
+    .controls-top {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    button {
+      background: rgba(51, 65, 85, 0.7);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      padding: 6px 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      touch-action: manipulation;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-color: #fb923c;
+      box-shadow: 0 0 14px var(--accent-glow);
+      color: #fff;
+    }
+
+    button.accent-btn {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      border-color: #f472b6;
+      box-shadow: 0 0 12px rgba(236, 72, 153, 0.4);
+    }
+
+    button.btn-icon {
+      padding: 6px 9px;
+      font-size: 1rem;
+      min-width: 34px;
+      height: 34px;
+    }
+
+    .game-viewport {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .streak-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-lg);
+      z-index: 25;
+      pointer-events: none;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .streak-badge.fire {
+      border-color: #f97316;
+      box-shadow: 0 0 18px rgba(249, 115, 22, 0.6);
+      transform: scale(1.08);
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(15, 23, 42, 0.9));
+    }
+
+    .wind-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: var(--shadow-lg);
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    .powerups-floating {
+      position: absolute;
+      left: 10px;
+      bottom: 74px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 30;
+    }
+
+    .powerup-fab {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      display: grid;
+      place-items: center;
+      font-size: 1.15rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      cursor: pointer;
+    }
+
+    .powerup-fab:active {
+      transform: scale(0.92);
+    }
+
+    .powerup-count {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      width: 17px;
+      height: 17px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 1px solid #fff;
+    }
+
+    .powerup-fab.active-glow {
+      border-color: var(--gold);
+      box-shadow: 0 0 16px var(--gold);
+      animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
+    }
+
+    .player-controls {
+      position: absolute;
+      bottom: 74px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 30;
+    }
+
+    .shoot-fab {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border: 2px solid #fdba74;
+      font-size: 1.4rem;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .arrow-fab {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--surface-card);
+      font-size: 1.1rem;
+      display: grid;
+      place-items: center;
+    }
+
+    /* Live Force & Power HUD */
+    .power-meter-badge {
+      position: absolute;
+      bottom: 145px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1.5px solid var(--accent);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #fff;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+      z-index: 35;
+      pointer-events: none;
+    }
+
+    .power-bar-track {
+      width: 70px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .power-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981, #fbbf24, #ef4444);
+      border-radius: 4px;
+      transition: width 0.05s ease;
+    }
+
+    .aim-guide-hint {
+      position: absolute;
+      bottom: 135px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      pointer-events: none;
+      white-space: nowrap;
+      transition: opacity 0.3s ease;
+      z-index: 20;
+    }
+
+    footer.bottom-bar {
+      height: 50px;
+      padding: 0 8px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 40;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    footer.bottom-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hud-btn {
+      padding: 6px 11px;
+      border-radius: 18px;
+      font-size: 0.76rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      height: 34px;
+    }
+
+    .score-float {
+      position: absolute;
+      pointer-events: none;
+      font-weight: 900;
+      font-size: 1.3rem;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+      z-index: 60;
+      animation: floatFade 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes floatFade {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+      20% { opacity: 1; transform: translate(-50%, -70%) scale(1.2); }
+      100% { opacity: 0; transform: translate(-50%, -130%) scale(1); }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 14px;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      max-height: 85dvh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px 6px;
+    }
+
+    .section-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin: 12px 0 6px 0;
+    }
+
+    .mode-picker-row, .theme-picker-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .choice-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 6px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--surface-border);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .choice-btn .sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .choice-btn.selected {
+      border-color: var(--accent);
+      background: rgba(249, 115, 22, 0.2);
+    }
+
+    .pause-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 70;
+      gap: 14px;
+    }
+
+    .pause-overlay.show {
+      display: flex;
+    }
+
+    .gameover-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .gameover-card {
+      background: #1e293b;
+      border: 2px solid var(--accent);
+      padding: 26px 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 35px var(--accent-glow);
+      max-width: 380px;
+      width: 100%;
+    }
+
+    .gameover-title {
+      font-size: 2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), #fbbf24, #ef4444);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .gameover-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .stat-box-v {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-box-l {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 85;
+    }
+
+    .toast {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 90;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 480px) {
+      .brand span { display: none; }
+      .stat-pill { padding: 3px 7px; font-size: 0.74rem; }
+      .powerup-fab { width: 40px; height: 40px; font-size: 1rem; }
+      .shoot-fab { width: 46px; height: 46px; font-size: 1.2rem; }
+      .arrow-fab { width: 36px; height: 36px; }
+      .player-controls, .powerups-floating { bottom: 62px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Score Hub -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🏀</div>
+      <span>Basketball Pro</span>
+    </div>
+
+    <div class="stats-hub">
+      <div class="stat-pill" title="Current Score">
+        <span>🏀</span>
+        <span class="stat-val score" id="scoreText">0</span>
+      </div>
+      <div class="stat-pill" title="Time Remaining">
+        <span>⏱️</span>
+        <span class="stat-val" id="timerText">60</span>s
+      </div>
+      <div class="stat-pill" title="Best High Score">
+        <span>🏆</span>
+        <span class="stat-val" id="highScoreText">0</span>
+      </div>
+    </div>
+
+    <div class="controls-top">
+      <button class="btn-icon" id="pauseBtn" title="Pause / Resume">⏸️</button>
+      <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
+      <button class="primary" id="settingsBtn">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Interactive Basketball Court Viewport -->
+  <main class="game-viewport" id="gameViewport">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Floating Combo Streak Badge -->
+    <div class="streak-badge" id="streakBadge">
+      <span id="streakIcon">🔥</span>
+      <span>Streak: <span id="streakCount">0</span>x</span>
+    </div>
+
+    <!-- Floating Wind Indicator -->
+    <div class="wind-badge" id="windBadge" style="display: none;">
+      <span>💨</span>
+      <span id="windText">0.0 m/s</span>
+    </div>
+
+    <!-- Live Dynamic Force Meter HUD -->
+    <div class="power-meter-badge" id="powerMeterBadge">
+      <span>⚡ Force: <span id="powerPercentText">0%</span></span>
+      <div class="power-bar-track">
+        <div class="power-bar-fill" id="powerBarFill"></div>
+      </div>
+    </div>
+
+    <!-- Aiming Guidance Text -->
+    <div class="aim-guide-hint" id="aimGuideHint">Pull down to charge & aim arc 🎯</div>
+
+    <!-- Power-Ups Floating Quick Action Bar -->
+    <div class="powerups-floating">
+      <div class="powerup-fab" id="hintFab" title="Trajectory Aim Hint">
+        💡
+        <div class="powerup-count" id="hintCount">3</div>
+      </div>
+      <div class="powerup-fab" id="freezeFab" title="Freeze Timer (+8s)">
+        ❄️
+        <div class="powerup-count" id="freezeCount">2</div>
+      </div>
+      <div class="powerup-fab" id="wideRimFab" title="Wide Rim (12s)">
+        🎯
+        <div class="powerup-count" id="wideCount">2</div>
+      </div>
+      <div class="powerup-fab" id="autoShotFab" title="Auto Swish Shot">
+        ⚡
+        <div class="powerup-count" id="autoCount">2</div>
+      </div>
+    </div>
+
+    <!-- Baseline Repositioning & Accessible Quick Shoot Button -->
+    <div class="player-controls">
+      <button class="arrow-fab" id="moveLeftBtn" title="Move Left">◀</button>
+      <button class="shoot-fab" id="quickShootBtn" title="Tap for Instant Swish">🏀</button>
+      <button class="arrow-fab" id="moveRightBtn" title="Move Right">▶</button>
+    </div>
+
+    <!-- Toast Alerts -->
+    <div class="toast" id="toast">Ready!</div>
+
+    <!-- Pause Screen -->
+    <div class="pause-overlay" id="pauseOverlay">
+      <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
+      <button class="primary" id="resumeBtn" style="padding: 10px 24px; font-size: 1rem;">Resume Game</button>
+    </div>
+
+    <!-- Game Over / Victory Modal -->
+    <div class="gameover-overlay" id="gameOverOverlay">
+      <div class="gameover-card">
+        <div class="gameover-title">Time's Up! 🏀</div>
+        <div style="font-size: 1.8rem; color: #fbbf24; margin: 4px 0;" id="starRating">⭐⭐⭐</div>
+        <p id="gameFeedbackText" style="color: var(--text-muted); font-size: 0.85rem;">Incredible shooting streak!</p>
+        
+        <div class="gameover-stats">
+          <div>
+            <div class="stat-box-v" id="finalScoreText">0</div>
+            <div class="stat-box-l">Total Score</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalSwishesText">0</div>
+            <div class="stat-box-l">Clean Swishes</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalAccuracyText">0%</div>
+            <div class="stat-box-l">Accuracy</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalMaxStreakText">0</div>
+            <div class="stat-box-l">Max Streak</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button class="primary" id="playAgainBtn" style="padding: 10px 20px; font-size: 0.95rem;">Play Again</button>
+          <button id="modalSettingsBtn" style="padding: 10px 16px;">Settings</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom HUD Bar -->
+  <footer class="bottom-bar">
+    <button class="hud-btn accent-btn" id="autoSolveBtn">⚡ Auto Solve</button>
+    <button class="hud-btn" id="hintBtn">💡 Aim Hint</button>
+    <button class="hud-btn" id="wideRimBtn">🎯 Big Hoop</button>
+    <button class="hud-btn" id="freezeTimeBtn">❄️ Freeze</button>
+    <button class="hud-btn" id="resetBtn">🔄 Restart</button>
+    <button class="hud-btn" id="howToPlayBtn">❓ Help</button>
+  </footer>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Game Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>Game Configuration</span>
+        <button class="close-btn" id="closeSettingsBtn">&times;</button>
+      </div>
+
+      <div class="section-title">Game Mode</div>
+      <div class="mode-picker-row">
+        <div class="choice-btn selected" data-mode="timeattack">
+          <span>⏱️ Time Attack</span>
+          <span class="sub">60s Countdown + Score Rush</span>
+        </div>
+        <div class="choice-btn" data-mode="streak">
+          <span>🔥 Streak Master</span>
+          <span class="sub">1 Miss Ends Run</span>
+        </div>
+      </div>
+
+      <div class="section-title">Court Theme</div>
+      <div class="theme-picker-row">
+        <div class="choice-btn selected" data-theme="default">
+          <span>🌌 Midnight Arena</span>
+          <span class="sub">Pro Indoor Stadium</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-sunset">
+          <span>🌅 Sunset Beach</span>
+          <span class="sub">Ocean Streetball</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-neon">
+          <span>🔮 Cyber Synth</span>
+          <span class="sub">Future Neon Court</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-street">
+          <span>🏙️ Urban Asphalt</span>
+          <span class="sub">Downtown Rucker Park</span>
+        </div>
+      </div>
+
+      <div class="section-title">Court Obstacles & Wind</div>
+      <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+        <button id="toggleWindBtn" style="flex: 1;">💨 Wind: <span id="windState">Off</span></button>
+        <button id="toggleMovingHoopBtn" style="flex: 1;">↔️ Moving Hoop: <span id="movingHoopState">Off</span></button>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+        <button class="primary" id="applySettingsBtn" style="padding: 9px 22px;">Apply & Play 🏀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to Play Instructions Modal -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>How to Aim & Shoot 🏀</span>
+        <button class="close-btn" id="closeHelpBtn">&times;</button>
+      </div>
+      <div style="font-size: 0.88rem; line-height: 1.5; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">
+        <p>🎯 <strong>Slingshot Aim (Pull Down):</strong> Touch the ball or court, drag <em>downwards</em> to stretch the elastic slingshot band. Watch the full green arc trajectory and the live force percentage bar, then release to shoot!</p>
+        <p>⚡ <strong>Flick Shoot:</strong> You can also swipe quickly <em>upwards</em> towards the basket.</p>
+        <p>🔥 <strong>Clean Swish Bonus:</strong> Score cleanly through the net without touching the rim for +3 points and streak multipliers!</p>
+        <p>💡 <strong>Aim Hint & Auto Swish:</strong> Tap <em>Aim Hint</em> to see the exact trajectory path, or <em>Auto Solve</em> for an instant swish.</p>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+        <button class="primary" id="gotItBtn" style="padding: 8px 20px;">Got It!</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       REALISTIC BASKETBALL WEB AUDIO SYNTHESIZER
+       ========================================================================== */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playBounce() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(160, t);
+        osc.frequency.exponentialRampToValueAtTime(50, t + 0.08);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.08);
+      }
+
+      playRimClang() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(820, t);
+        osc.frequency.exponentialRampToValueAtTime(340, t + 0.12);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.12);
+      }
+
+      playBackboard() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(220, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.1);
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.1);
+      }
+
+      playSwish() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const bufferSize = this.ctx.sampleRate * 0.15;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1;
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1400, t);
+        filter.frequency.exponentialRampToValueAtTime(400, t + 0.15);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(t);
+      }
+
+      playCheer() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const chords = [523.25, 659.25, 783.99, 1046.50];
+        chords.forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.06;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.35);
+        });
+      }
+
+      playBuzzer() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, t);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.6);
+      }
+
+      playPowerup() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, t);
+        osc.frequency.exponentialRampToValueAtTime(1100, t + 0.14);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.14);
+      }
+    }
+
+    const audio = new AudioEngine();
+
+    /* ==========================================================================
+       PHYSICS & GAMEPLAY ENGINE WITH FULL FORCE SLINGSHOT AIMING
+       ========================================================================== */
+    class BasketballGame {
+      constructor() {
+        this.viewport = document.getElementById('gameViewport');
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.confettiCanvas = document.getElementById('confettiCanvas');
+        this.confettiCtx = this.confettiCanvas.getContext('2d');
+        this.confettiParticles = [];
+        this.sparks = [];
+
+        // Game Configuration
+        this.mode = 'timeattack';
+        this.timeRemaining = 60;
+        this.score = 0;
+        this.swishes = 0;
+        this.shotsTaken = 0;
+        this.shotsMade = 0;
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.highScore = parseInt(localStorage.getItem('bk_pro_highscore') || '0');
+
+        // Power-Up Inventory
+        this.powerups = { hint: 3, freeze: 2, wide: 2, auto: 2 };
+        this.activeWideRim = false;
+        this.activeWideRimTimer = null;
+        this.showHintTrajectory = false;
+
+        // Wind & Dynamic Court Obstacles
+        this.windEnabled = false;
+        this.windSpeed = 0;
+        this.movingHoopEnabled = false;
+        this.hoopMoveSpeed = 70;
+        this.hoopMoveDir = 1;
+
+        // Court Dimensions & Layout
+        this.w = 0;
+        this.h = 0;
+        this.gravity = 1180;
+
+        // Player / Spawn Baseline Position
+        this.playerX = 0;
+        this.playerY = 0;
+
+        // Basketball State
+        this.ballRadius = 19;
+        this.ball = {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          rotation: 0,
+          rotSpeed: 0,
+          inAir: false,
+          scored: false,
+          touchedRim: false,
+          touchedBackboard: false,
+          alpha: 1
+        };
+
+        // Hoop & Net Dimensions
+        this.hoop = {
+          x: 0,
+          y: 0,
+          width: 98,
+          originalWidth: 98,
+          height: 10,
+          backboardX: 0,
+          backboardY: 0,
+          backboardW: 10,
+          backboardH: 100,
+          netDrop: 45,
+          netSway: 0
+        };
+
+        // Precision Drag & Slingshot State
+        this.isDragging = false;
+        this.dragStartX = 0;
+        this.dragStartY = 0;
+        this.dragCurrentX = 0;
+        this.dragCurrentY = 0;
+
+        // Dynamic Pull Displacement of Ball
+        this.ballVisualOffsetX = 0;
+        this.ballVisualOffsetY = 0;
+
+        // Calculated Aim Velocity & Force
+        this.aimVx = 0;
+        this.aimVy = 0;
+        this.aimPower = 0;
+        this.forcePercent = 0;
+
+        this.timerInterval = null;
+        this.isPaused = false;
+        this.isGameOver = false;
+
+        this.initUI();
+        this.bindEvents();
+        this.resize();
+        this.resetGame();
+        this.animate();
+      }
+
+      initUI() {
+        document.getElementById('highScoreText').textContent = this.highScore;
+
+        document.querySelectorAll('.mode-picker-row .choice-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.mode-picker-row .choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            this.mode = btn.dataset.mode;
+          };
+        });
+
+        document.querySelectorAll('.theme-picker-row .choice-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.theme-picker-row .choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const theme = btn.dataset.theme;
+            document.body.className = (theme === 'default' ? '' : theme);
+          };
+        });
+
+        const windBtn = document.getElementById('toggleWindBtn');
+        const windState = document.getElementById('windState');
+        windBtn.onclick = () => {
+          this.windEnabled = !this.windEnabled;
+          windState.textContent = this.windEnabled ? 'On' : 'Off';
+          windBtn.style.borderColor = this.windEnabled ? 'var(--accent)' : 'var(--surface-border)';
+          document.getElementById('windBadge').style.display = this.windEnabled ? 'flex' : 'none';
+        };
+
+        const hoopMoveBtn = document.getElementById('toggleMovingHoopBtn');
+        const hoopMoveState = document.getElementById('movingHoopState');
+        hoopMoveBtn.onclick = () => {
+          this.movingHoopEnabled = !this.movingHoopEnabled;
+          hoopMoveState.textContent = this.movingHoopEnabled ? 'On' : 'Off';
+          hoopMoveBtn.style.borderColor = this.movingHoopEnabled ? 'var(--accent)' : 'var(--surface-border)';
+        };
+      }
+
+      bindEvents() {
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 150));
+
+        const getCoords = (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : (e.changedTouches ? e.changedTouches[0].clientX : 0));
+          const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : (e.changedTouches ? e.changedTouches[0].clientY : 0));
+          return {
+            x: (clientX - rect.left) * (this.w / rect.width),
+            y: (clientY - rect.top) * (this.h / rect.height)
+          };
+        };
+
+        const handleStart = (e) => {
+          if (this.isGameOver || this.isPaused || this.ball.inAir) return;
+          audio.init();
+          const pos = getCoords(e);
+
+          if (pos.y > this.h * 0.42) {
+            this.isDragging = true;
+            this.dragStartX = pos.x;
+            this.dragStartY = pos.y;
+            this.dragCurrentX = pos.x;
+            this.dragCurrentY = pos.y;
+            this.computeAimVectors();
+            document.getElementById('powerMeterBadge').style.display = 'flex';
+          }
+        };
+
+        const handleMove = (e) => {
+          if (!this.isDragging) return;
+          const pos = getCoords(e);
+          this.dragCurrentX = pos.x;
+          this.dragCurrentY = pos.y;
+          this.computeAimVectors();
+        };
+
+        const handleEnd = (e) => {
+          if (!this.isDragging) return;
+          this.isDragging = false;
+          document.getElementById('powerMeterBadge').style.display = 'none';
+
+          const dx = this.dragCurrentX - this.dragStartX;
+          const dy = this.dragCurrentY - this.dragStartY;
+          const dragDist = Math.hypot(dx, dy);
+
+          // Reset visual elasticity offset
+          this.ballVisualOffsetX = 0;
+          this.ballVisualOffsetY = 0;
+
+          if (dragDist > 12 && this.aimPower > 0) {
+            this.shootBall(this.aimVx, this.aimVy);
+            this.showHintTrajectory = false;
+          }
+        };
+
+        this.canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); handleStart(e); });
+        this.canvas.addEventListener('pointermove', (e) => { e.preventDefault(); handleMove(e); });
+        this.canvas.addEventListener('pointerup', (e) => { e.preventDefault(); handleEnd(e); });
+        this.canvas.addEventListener('pointercancel', handleEnd);
+
+        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, { passive: false });
+        this.canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(e); }, { passive: false });
+
+        document.getElementById('moveLeftBtn').onclick = () => this.shiftPlayerPosition(-45);
+        document.getElementById('moveRightBtn').onclick = () => this.shiftPlayerPosition(45);
+        document.getElementById('quickShootBtn').onclick = () => this.executeAutoShot(0.01);
+
+        document.getElementById('hintFab').onclick = () => this.triggerHint();
+        document.getElementById('hintBtn').onclick = () => this.triggerHint();
+
+        document.getElementById('freezeFab').onclick = () => this.triggerFreezeTime();
+        document.getElementById('freezeTimeBtn').onclick = () => this.triggerFreezeTime();
+
+        document.getElementById('wideRimFab').onclick = () => this.triggerWideRim();
+        document.getElementById('wideRimBtn').onclick = () => this.triggerWideRim();
+
+        document.getElementById('autoShotFab').onclick = () => this.executeAutoShot(0.01);
+        document.getElementById('autoSolveBtn').onclick = () => this.executeAutoShot(0.01);
+
+        document.getElementById('resetBtn').onclick = () => this.resetGame();
+
+        document.getElementById('pauseBtn').onclick = () => this.togglePause();
+        document.getElementById('resumeBtn').onclick = () => this.togglePause();
+
+        const soundBtn = document.getElementById('soundToggle');
+        soundBtn.onclick = () => {
+          audio.enabled = !audio.enabled;
+          soundBtn.textContent = audio.enabled ? '🔊' : '🔇';
+          this.showToast(audio.enabled ? 'Audio Unmuted' : 'Audio Muted');
+        };
+
+        document.getElementById('settingsBtn').onclick = () => this.openSettings();
+        document.getElementById('closeSettingsBtn').onclick = () => this.closeSettings();
+        document.getElementById('modalSettingsBtn').onclick = () => {
+          document.getElementById('gameOverOverlay').style.display = 'none';
+          this.openSettings();
+        };
+        document.getElementById('applySettingsBtn').onclick = () => {
+          this.closeSettings();
+          this.resetGame();
+        };
+
+        document.getElementById('howToPlayBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
+        document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+        document.getElementById('gotItBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+
+        document.getElementById('playAgainBtn').onclick = () => {
+          document.getElementById('gameOverOverlay').style.display = 'none';
+          this.resetGame();
+        };
+      }
+
+      /* Compute Launch Velocity with Full Dynamic Slingshot Force Scaling */
+      computeAimVectors() {
+        const dx = this.dragCurrentX - this.dragStartX;
+        const dy = this.dragCurrentY - this.dragStartY;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < 6) {
+          this.aimPower = 0;
+          this.forcePercent = 0;
+          this.ballVisualOffsetX = 0;
+          this.ballVisualOffsetY = 0;
+          return;
+        }
+
+        let vx, vy;
+
+        if (dy > 0) {
+          // SLINGSHOT MODE (Pull Downwards -> Shoot Upwards with Full Basketball Force)
+          // Baseline power starts at 900 px/s (enough to reach basket smoothly on light pull)
+          // Scales dynamically up to 1850 px/s on deep pull
+          const basePower = 900;
+          const power = Math.min(1880, basePower + dist * 7.8);
+          
+          // Invert delta so pulling down-left shoots up-right
+          let pullAngle = Math.atan2(-dy, -dx);
+          
+          // Clamp angle so it stays comfortably in an upward shooting arc
+          if (pullAngle > -0.22) pullAngle = -0.22;
+          if (pullAngle < -Math.PI + 0.22) pullAngle = -Math.PI + 0.22;
+
+          vx = Math.cos(pullAngle) * power;
+          vy = Math.sin(pullAngle) * power;
+          this.aimPower = power;
+
+          // Elastic visual displacement of ball towards finger (tactile rubber band effect)
+          this.ballVisualOffsetX = Math.max(-28, Math.min(28, dx * 0.22));
+          this.ballVisualOffsetY = Math.max(-10, Math.min(30, dy * 0.22));
+        } else {
+          // FLICK / SWIPE MODE (Swipe Upwards -> Shoot Upwards)
+          const basePower = 920;
+          const power = Math.min(1880, basePower + dist * 8.2);
+          let flickAngle = Math.atan2(dy, dx);
+
+          if (flickAngle > -0.22) flickAngle = -0.22;
+          if (flickAngle < -Math.PI + 0.22) flickAngle = -Math.PI + 0.22;
+
+          vx = Math.cos(flickAngle) * power;
+          vy = Math.sin(flickAngle) * power;
+          this.aimPower = power;
+
+          this.ballVisualOffsetX = 0;
+          this.ballVisualOffsetY = 0;
+        }
+
+        this.aimVx = vx;
+        this.aimVy = vy;
+
+        // Force Percent Meter update
+        this.forcePercent = Math.min(100, Math.round(((this.aimPower - 850) / 1000) * 100));
+        document.getElementById('powerPercentText').textContent = `${Math.max(10, this.forcePercent)}%`;
+        document.getElementById('powerBarFill').style.width = `${Math.max(10, this.forcePercent)}%`;
+      }
+
+      openSettings() {
+        if (!this.isPaused && !this.isGameOver) this.togglePause(true);
+        document.getElementById('settingsModal').classList.add('open');
+      }
+
+      closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
+        if (this.isPaused && !this.isGameOver) this.togglePause(false);
+      }
+
+      togglePause(forced) {
+        if (this.isGameOver) return;
+        this.isPaused = (forced !== undefined) ? forced : !this.isPaused;
+        document.getElementById('pauseOverlay').classList.toggle('show', this.isPaused);
+        document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
+      }
+
+      showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => toast.classList.remove('show'), 1500);
+      }
+
+      showFloatingText(text, x, y, color = '#fbbf24') {
+        const div = document.createElement('div');
+        div.className = 'score-float';
+        div.textContent = text;
+        div.style.left = `${(x / this.w) * 100}%`;
+        div.style.top = `${(y / this.h) * 100}%`;
+        div.style.color = color;
+        this.viewport.appendChild(div);
+        setTimeout(() => div.remove(), 1000);
+      }
+
+      triggerHint() {
+        if (this.powerups.hint <= 0) {
+          this.showToast('No more Aim Hints!');
+          return;
+        }
+        this.powerups.hint--;
+        document.getElementById('hintCount').textContent = this.powerups.hint;
+        this.showHintTrajectory = true;
+        audio.playPowerup();
+        this.showToast('Trajectory Guide Active! 💡');
+      }
+
+      triggerFreezeTime() {
+        if (this.powerups.freeze <= 0) {
+          this.showToast('No more Time Freezes!');
+          return;
+        }
+        this.powerups.freeze--;
+        document.getElementById('freezeCount').textContent = this.powerups.freeze;
+        this.timeRemaining += 8;
+        document.getElementById('timerText').textContent = this.timeRemaining;
+        audio.playPowerup();
+        this.showToast('Timer Frozen (+8s)! ❄️');
+      }
+
+      triggerWideRim() {
+        if (this.powerups.wide <= 0) {
+          this.showToast('No more Big Hoops!');
+          return;
+        }
+        this.powerups.wide--;
+        document.getElementById('wideCount').textContent = this.powerups.wide;
+        this.hoop.width = this.hoop.originalWidth * 1.45;
+        this.activeWideRim = true;
+        document.getElementById('wideRimFab').classList.add('active-glow');
+        audio.playPowerup();
+        this.showToast('Super Wide Rim Active (12s)! 🎯');
+
+        clearTimeout(this.activeWideRimTimer);
+        this.activeWideRimTimer = setTimeout(() => {
+          this.hoop.width = this.hoop.originalWidth;
+          this.activeWideRim = false;
+          document.getElementById('wideRimFab').classList.remove('active-glow');
+        }, 12000);
+      }
+
+      executeAutoShot(variance = 0.01) {
+        if (this.ball.inAir || this.isGameOver) return;
+        if (variance < 0.02) {
+          if (this.powerups.auto <= 0) {
+            this.showToast('No more Auto Swish shots!');
+            return;
+          }
+          this.powerups.auto--;
+          document.getElementById('autoCount').textContent = this.powerups.auto;
+        }
+
+        const targetX = this.hoop.x + (Math.random() - 0.5) * (this.hoop.width * variance);
+        const targetY = this.hoop.y + 4;
+        const t = 1.08;
+
+        const windAccel = this.windEnabled ? this.windSpeed : 0;
+        const vx = ((targetX - this.ball.x) - 0.5 * windAccel * t * t) / t;
+        const vy = ((targetY - this.ball.y) - 0.5 * this.gravity * t * t) / t;
+
+        audio.playPowerup();
+        this.showToast('Perfect Auto Swish Fired! ⚡');
+        this.shootBall(vx, vy);
+      }
+
+      shiftPlayerPosition(delta) {
+        if (this.ball.inAir) return;
+        const minX = this.w * 0.18;
+        const maxX = this.w * 0.82;
+        this.playerX = Math.max(minX, Math.min(maxX, this.playerX + delta));
+        this.ball.x = this.playerX;
+        audio.playBounce();
+      }
+
+      shootBall(vx, vy) {
+        if (this.ball.inAir) return;
+        this.shotsTaken++;
+        this.ball.inAir = true;
+        this.ball.vx = vx;
+        this.ball.vy = vy;
+        this.ball.rotSpeed = vx * 0.015;
+        this.ball.scored = false;
+        this.ball.touchedRim = false;
+        this.ball.touchedBackboard = false;
+        this.ballVisualOffsetX = 0;
+        this.ballVisualOffsetY = 0;
+        audio.playBounce();
+      }
+
+      resetBall() {
+        this.ball.inAir = false;
+        this.ball.x = this.playerX;
+        this.ball.y = this.playerY;
+        this.ball.vx = 0;
+        this.ball.vy = 0;
+        this.ball.rotation = 0;
+        this.ball.rotSpeed = 0;
+        this.ball.alpha = 1;
+        this.ball.scored = false;
+        this.ball.touchedRim = false;
+        this.ball.touchedBackboard = false;
+        this.ballVisualOffsetX = 0;
+        this.ballVisualOffsetY = 0;
+
+        if (this.windEnabled) {
+          this.windSpeed = (Math.random() - 0.5) * 220;
+          document.getElementById('windText').textContent = `${(this.windSpeed / 50).toFixed(1)} m/s`;
+        }
+      }
+
+      resetGame() {
+        this.score = 0;
+        this.swishes = 0;
+        this.shotsTaken = 0;
+        this.shotsMade = 0;
+        this.streak = 0;
+        this.maxStreak = 0;
+        this.timeRemaining = (this.mode === 'timeattack' ? 60 : 999);
+        this.isGameOver = false;
+        this.isPaused = false;
+        this.showHintTrajectory = false;
+
+        this.powerups = { hint: 3, freeze: 2, wide: 2, auto: 2 };
+        document.getElementById('hintCount').textContent = 3;
+        document.getElementById('freezeCount').textContent = 2;
+        document.getElementById('wideCount').textContent = 2;
+        document.getElementById('autoCount').textContent = 2;
+
+        this.updateStats();
+        this.resetBall();
+        this.startTimer();
+        audio.playCheer();
+      }
+
+      startTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+          if (!this.isPaused && !this.isGameOver) {
+            if (this.mode === 'timeattack') {
+              this.timeRemaining--;
+              document.getElementById('timerText').textContent = this.timeRemaining;
+              if (this.timeRemaining <= 0) {
+                this.gameOver();
+              }
+            }
+          }
+        }, 1000);
+      }
+
+      updateStats() {
+        document.getElementById('scoreText').textContent = this.score;
+        document.getElementById('timerText').textContent = this.timeRemaining;
+        document.getElementById('streakCount').textContent = this.streak;
+        
+        const badge = document.getElementById('streakBadge');
+        badge.classList.toggle('fire', this.streak >= 2);
+        document.getElementById('streakIcon').textContent = this.streak >= 3 ? '🔥' : '🏀';
+      }
+
+      gameOver() {
+        this.isGameOver = true;
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        audio.playBuzzer();
+
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('bk_pro_highscore', this.highScore);
+          document.getElementById('highScoreText').textContent = this.highScore;
+          this.triggerConfetti();
+        }
+
+        const accuracy = this.shotsTaken > 0 ? Math.round((this.shotsMade / this.shotsTaken) * 100) : 0;
+        document.getElementById('finalScoreText').textContent = this.score;
+        document.getElementById('finalSwishesText').textContent = this.swishes;
+        document.getElementById('finalAccuracyText').textContent = `${accuracy}%`;
+        document.getElementById('finalMaxStreakText').textContent = this.maxStreak;
+
+        let stars = '⭐';
+        if (this.score >= 50) stars = '⭐⭐⭐';
+        else if (this.score >= 25) stars = '⭐⭐';
+        document.getElementById('starRating').textContent = stars;
+
+        setTimeout(() => {
+          document.getElementById('gameOverOverlay').style.display = 'flex';
+        }, 500);
+      }
+
+      resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.viewport.getBoundingClientRect();
+
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+
+        this.confettiCanvas.width = window.innerWidth * dpr;
+        this.confettiCanvas.height = window.innerHeight * dpr;
+        this.confettiCtx.scale(dpr, dpr);
+
+        this.w = rect.width;
+        this.h = rect.height;
+
+        this.playerX = this.w * 0.5;
+        this.playerY = this.h - 90;
+
+        // Position Backboard & Hoop
+        this.hoop.x = this.w * 0.5;
+        this.hoop.y = Math.max(110, this.h * 0.22);
+        this.hoop.originalWidth = Math.min(105, this.w * 0.28);
+        this.hoop.width = this.activeWideRim ? this.hoop.originalWidth * 1.45 : this.hoop.originalWidth;
+        
+        this.hoop.backboardW = 8;
+        this.hoop.backboardH = Math.max(80, this.h * 0.16);
+        this.hoop.backboardX = this.hoop.x + this.hoop.width * 0.5 + 4;
+        this.hoop.backboardY = this.hoop.y - this.hoop.backboardH * 0.65;
+
+        if (!this.ball.inAir) {
+          this.ball.x = this.playerX;
+          this.ball.y = this.playerY;
+        }
+      }
+
+      /* Game Loop & Physics Update */
+      animate() {
+        this.update();
+        this.render();
+        this.renderSparks();
+        this.renderConfetti();
+        requestAnimationFrame(() => this.animate());
+      }
+
+      update() {
+        if (this.isPaused) return;
+
+        const dt = 1 / 60;
+
+        // Moving Hoop Animation
+        if (this.movingHoopEnabled) {
+          this.hoop.x += this.hoopMoveSpeed * this.hoopMoveDir * dt;
+          if (this.hoop.x > this.w * 0.72) this.hoopMoveDir = -1;
+          if (this.hoop.x < this.w * 0.28) this.hoopMoveDir = 1;
+
+          this.hoop.backboardX = this.hoop.x + this.hoop.width * 0.5 + 4;
+        }
+
+        // Net deformation relaxation
+        this.hoop.netSway *= 0.92;
+
+        if (this.ball.inAir) {
+          // Physics integration
+          if (this.windEnabled) {
+            this.ball.vx += this.windSpeed * dt;
+          }
+          this.ball.vy += this.gravity * dt;
+          this.ball.x += this.ball.vx * dt;
+          this.ball.y += this.ball.vy * dt;
+          this.ball.rotation += this.ball.rotSpeed;
+
+          // Backboard Collision
+          const bbLeft = this.hoop.backboardX;
+          const bbRight = this.hoop.backboardX + this.hoop.backboardW;
+          const bbTop = this.hoop.backboardY;
+          const bbBottom = this.hoop.backboardY + this.hoop.backboardH;
+
+          if (this.ball.x + this.ballRadius > bbLeft && this.ball.x - this.ballRadius < bbRight &&
+              this.ball.y > bbTop && this.ball.y < bbBottom) {
+            this.ball.vx = -Math.abs(this.ball.vx) * 0.68;
+            this.ball.x = bbLeft - this.ballRadius;
+            this.ball.touchedBackboard = true;
+            audio.playBackboard();
+            this.createSparks(this.ball.x, this.ball.y, '#38bdf8');
+          }
+
+          // Rim Collisions
+          const rimRadius = 4.5;
+          const leftRimX = this.hoop.x - this.hoop.width * 0.5;
+          const rightRimX = this.hoop.x + this.hoop.width * 0.5;
+          const rimY = this.hoop.y;
+
+          [ { x: leftRimX, y: rimY }, { x: rightRimX, y: rimY } ].forEach(rim => {
+            const dist = Math.hypot(this.ball.x - rim.x, this.ball.y - rim.y);
+            if (dist < this.ballRadius + rimRadius) {
+              const nx = (this.ball.x - rim.x) / dist;
+              const ny = (this.ball.y - rim.y) / dist;
+              const dot = this.ball.vx * nx + this.ball.vy * ny;
+
+              if (dot < 0) {
+                this.ball.vx = (this.ball.vx - 1.7 * dot * nx) * 0.65;
+                this.ball.vy = (this.ball.vy - 1.7 * dot * ny) * 0.65;
+                this.ball.x = rim.x + nx * (this.ballRadius + rimRadius);
+                this.ball.y = rim.y + ny * (this.ballRadius + rimRadius);
+                this.ball.touchedRim = true;
+                audio.playRimClang();
+                this.createSparks(rim.x, rim.y, '#f97316');
+              }
+            }
+          });
+
+          // Hoop Scoring Check
+          const inHoopXRange = (this.ball.x > leftRimX + 4 && this.ball.x < rightRimX - 4);
+          const prevY = this.ball.y - this.ball.vy * dt;
+
+          if (!this.ball.scored && inHoopXRange && prevY <= rimY && this.ball.y >= rimY && this.ball.vy > 0) {
+            this.ball.scored = true;
+            this.shotsMade++;
+            this.hoop.netSway = Math.min(25, this.ball.vy * 0.03);
+
+            let points = 2;
+            let label = '+2 PTS';
+            let color = '#38bdf8';
+
+            const isSwish = (!this.ball.touchedRim && !this.ball.touchedBackboard);
+            if (isSwish) {
+              this.swishes++;
+              points = 3;
+              label = 'SWISH! +3 🔥';
+              color = '#f97316';
+              this.createSparks(this.hoop.x, this.hoop.y + 10, '#fbbf24', 28);
+            } else if (this.ball.touchedBackboard) {
+              label = 'BANK SHOT! +2 🎯';
+              color = '#818cf8';
+            }
+
+            this.streak++;
+            if (this.streak > this.maxStreak) this.maxStreak = this.streak;
+            if (this.streak >= 3) {
+              points += this.streak;
+              label += ` (${this.streak}x STREAK!)`;
+            }
+
+            this.score += points;
+            if (this.mode === 'timeattack') {
+              this.timeRemaining += 2;
+            }
+
+            audio.playSwish();
+            this.showFloatingText(label, this.hoop.x, this.hoop.y - 15, color);
+            this.updateStats();
+          }
+
+          // Out of Bounds / Floor Hit
+          if (this.ball.y > this.h + 40 || this.ball.x < -60 || this.ball.x > this.w + 60) {
+            if (!this.ball.scored) {
+              if (this.streak > 0) {
+                this.showToast('Streak Reset! ❌');
+              }
+              this.streak = 0;
+              this.updateStats();
+
+              if (this.mode === 'streak') {
+                this.gameOver();
+                return;
+              }
+            }
+            this.resetBall();
+          }
+        }
+      }
+
+      /* Canvas Rendering with Full Flight Arc Simulation */
+      render() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+
+        // 1. Procedural Court Floor Lines & Horizon
+        this.ctx.save();
+        const courtFloorY = this.h * 0.62;
+        const courtGrad = this.ctx.createLinearGradient(0, courtFloorY, 0, this.h);
+        courtGrad.addColorStop(0, 'rgba(15, 23, 42, 0.4)');
+        courtGrad.addColorStop(1, 'rgba(15, 23, 42, 0.9)');
+        this.ctx.fillStyle = courtGrad;
+        this.ctx.fillRect(0, courtFloorY, this.w, this.h - courtFloorY);
+
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.arc(this.w * 0.5, this.h * 0.52, this.w * 0.44, 0, Math.PI);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.w * 0.28, this.h);
+        this.ctx.lineTo(this.w * 0.36, courtFloorY + 20);
+        this.ctx.lineTo(this.w * 0.64, courtFloorY + 20);
+        this.ctx.lineTo(this.w * 0.72, this.h);
+        this.ctx.stroke();
+        this.ctx.restore();
+
+        // 2. Trajectory Aiming Guide & Slingshot Elastic Line
+        if ((this.isDragging && this.aimPower > 0) || this.showHintTrajectory) {
+          let simVx = this.aimVx;
+          let simVy = this.aimVy;
+          let originX = this.ball.x + this.ballVisualOffsetX;
+          let originY = this.ball.y + this.ballVisualOffsetY;
+
+          if (this.showHintTrajectory && !this.isDragging) {
+            const t = 1.08;
+            const windAccel = this.windEnabled ? this.windSpeed : 0;
+            simVx = ((this.hoop.x - this.ball.x) - 0.5 * windAccel * t * t) / t;
+            simVy = ((this.hoop.y + 4 - this.ball.y) - 0.5 * this.gravity * t * t) / t;
+            originX = this.ball.x;
+            originY = this.ball.y;
+          }
+
+          // Draw Elastic Slingshot Line from origin ball to finger
+          if (this.isDragging) {
+            this.ctx.save();
+            this.ctx.strokeStyle = 'rgba(249, 115, 22, 0.8)';
+            this.ctx.lineWidth = 3.5;
+            this.ctx.setLineDash([5, 4]);
+            this.ctx.beginPath();
+            this.ctx.moveTo(originX, originY);
+            this.ctx.lineTo(this.dragCurrentX, this.dragCurrentY);
+            this.ctx.stroke();
+
+            // Finger Touch Indicator Circle
+            this.ctx.fillStyle = 'rgba(251, 191, 36, 0.7)';
+            this.ctx.beginPath();
+            this.ctx.arc(this.dragCurrentX, this.dragCurrentY, 12, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.restore();
+          }
+
+          // Exact Physics Parabolic Trajectory (Simulate 44 steps so the full arc reaches the basket)
+          this.ctx.save();
+          let simX = originX;
+          let simY = originY;
+          let simT = 0.032;
+
+          const points = [];
+          let isEnteringHoop = false;
+
+          for (let step = 0; step < 44; step++) {
+            simX += simVx * simT;
+            simY += simVy * simT;
+            simVy += this.gravity * simT;
+            if (this.windEnabled) simVx += this.windSpeed * simT;
+
+            // Check if trajectory point intersects the hoop scoring zone
+            const leftRimX = this.hoop.x - this.hoop.width * 0.5;
+            const rightRimX = this.hoop.x + this.hoop.width * 0.5;
+            if (simX > leftRimX + 6 && simX < rightRimX - 6 && Math.abs(simY - this.hoop.y) < 18 && simVy > 0) {
+              isEnteringHoop = true;
+            }
+
+            points.push({ x: simX, y: simY, vy: simVy });
+          }
+
+          // Draw full trajectory curve with size-gradient glowing dots
+          for (let i = 0; i < points.length; i++) {
+            const pt = points[i];
+            const frac = 1 - (i / points.length) * 0.6;
+            const radius = Math.max(2.5, 6 * (1 - i / points.length));
+
+            let dotColor;
+            if (isEnteringHoop) {
+              dotColor = `rgba(16, 185, 129, ${frac * 0.95})`; // Green for perfect swish alignment
+            } else if (this.showHintTrajectory) {
+              dotColor = `rgba(56, 189, 248, ${frac * 0.9})`;
+            } else {
+              dotColor = `rgba(251, 191, 36, ${frac * 0.9})`;
+            }
+
+            this.ctx.fillStyle = dotColor;
+            this.ctx.beginPath();
+            this.ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+            this.ctx.fill();
+          }
+
+          // Landing Crosshair / Swish Target Indicator
+          if (points.length > 0) {
+            const apexIndex = points.reduce((minIdx, p, idx, arr) => p.y < arr[minIdx].y ? idx : minIdx, 0);
+            const apexPt = points[apexIndex];
+
+            // Apex indicator dot
+            this.ctx.fillStyle = '#fff';
+            this.ctx.beginPath();
+            this.ctx.arc(apexPt.x, apexPt.y, 3.5, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Landing Ring on Rim if aligned
+            if (isEnteringHoop) {
+              this.ctx.strokeStyle = '#10b981';
+              this.ctx.lineWidth = 3;
+              this.ctx.beginPath();
+              this.ctx.arc(this.hoop.x, this.hoop.y, 22, 0, Math.PI * 2);
+              this.ctx.stroke();
+            }
+          }
+
+          this.ctx.restore();
+        }
+
+        // 3. Backboard & Mounting Post
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(100, 116, 139, 0.6)';
+        this.ctx.lineWidth = 6;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.hoop.backboardX + this.hoop.backboardW, this.hoop.backboardY + this.hoop.backboardH * 0.5);
+        this.ctx.lineTo(this.w * 0.95, this.h * 0.55);
+        this.ctx.stroke();
+
+        // Glass Backboard
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        this.ctx.lineWidth = 2.5;
+        this.ctx.fillRect(this.hoop.backboardX, this.hoop.backboardY, this.hoop.backboardW, this.hoop.backboardH);
+        this.ctx.strokeRect(this.hoop.backboardX, this.hoop.backboardY, this.hoop.backboardW, this.hoop.backboardH);
+
+        // Inner Red Target Box on Backboard
+        this.ctx.strokeStyle = '#ef4444';
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeRect(this.hoop.backboardX, this.hoop.y - 25, this.hoop.backboardW, 30);
+        this.ctx.restore();
+
+        // 4. Net & Rim
+        this.ctx.save();
+        const leftRimX = this.hoop.x - this.hoop.width * 0.5;
+        const rightRimX = this.hoop.x + this.hoop.width * 0.5;
+        const rimY = this.hoop.y;
+
+        const netDepth = this.hoop.netDrop + Math.abs(this.hoop.netSway);
+        this.ctx.strokeStyle = 'rgba(248, 250, 252, 0.85)';
+        this.ctx.lineWidth = 1.5;
+
+        for (let str = 0; str <= 6; str++) {
+          const u = str / 6;
+          const topX = leftRimX + u * this.hoop.width;
+          const botX = leftRimX + this.hoop.width * 0.2 + u * (this.hoop.width * 0.6) + this.hoop.netSway * (1 - u);
+          this.ctx.beginPath();
+          this.ctx.moveTo(topX, rimY);
+          this.ctx.quadraticCurveTo((topX + botX) / 2, rimY + netDepth * 0.5, botX, rimY + netDepth);
+          this.ctx.stroke();
+        }
+
+        for (let loop = 1; loop <= 3; loop++) {
+          const frac = loop / 4;
+          const lx = leftRimX + frac * (this.hoop.width * 0.2);
+          const rx = rightRimX - frac * (this.hoop.width * 0.2);
+          const ly = rimY + frac * netDepth;
+          this.ctx.beginPath();
+          this.ctx.moveTo(lx, ly);
+          this.ctx.lineTo(rx, ly);
+          this.ctx.stroke();
+        }
+
+        // Metal Rim Ring
+        this.ctx.strokeStyle = '#f97316';
+        this.ctx.lineWidth = 4.5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(leftRimX, rimY);
+        this.ctx.lineTo(rightRimX, rimY);
+        this.ctx.stroke();
+
+        this.ctx.fillStyle = '#ea580c';
+        this.ctx.beginPath();
+        this.ctx.arc(leftRimX, rimY, 4.5, 0, Math.PI * 2);
+        this.ctx.arc(rightRimX, rimY, 4.5, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+
+        // 5. Basketball (Rendered at origin + elastic drag displacement)
+        this.ctx.save();
+        const drawBallX = this.ball.x + this.ballVisualOffsetX;
+        const drawBallY = this.ball.y + this.ballVisualOffsetY;
+        this.ctx.translate(drawBallX, drawBallY);
+        this.ctx.rotate(this.ball.rotation);
+
+        if (this.streak >= 2 && this.ball.inAir) {
+          this.ctx.save();
+          this.ctx.shadowColor = '#f97316';
+          this.ctx.shadowBlur = 24;
+          this.ctx.fillStyle = 'rgba(249, 115, 22, 0.4)';
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, this.ballRadius * 1.3, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+
+        // Ball Shading
+        const ballGrad = this.ctx.createRadialGradient(
+          -this.ballRadius * 0.35, -this.ballRadius * 0.35, 2,
+          0, 0, this.ballRadius
+        );
+        ballGrad.addColorStop(0, '#fb923c');
+        ballGrad.addColorStop(0.65, '#ea580c');
+        ballGrad.addColorStop(1, '#9a3412');
+        this.ctx.fillStyle = ballGrad;
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, this.ballRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        // Ball Seams
+        this.ctx.strokeStyle = '#1e0c03';
+        this.ctx.lineWidth = 1.6;
+        this.ctx.beginPath();
+        this.ctx.moveTo(-this.ballRadius, 0);
+        this.ctx.lineTo(this.ballRadius, 0);
+        this.ctx.moveTo(0, -this.ballRadius);
+        this.ctx.lineTo(0, this.ballRadius);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, this.ballRadius * 0.72, 0.3, Math.PI - 0.3);
+        this.ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, this.ballRadius * 0.72, Math.PI + 0.3, -0.3);
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
+
+      /* Particle Systems */
+      createSparks(x, y, color = '#f97316', count = 14) {
+        for (let i = 0; i < count; i++) {
+          this.sparks.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 260,
+            vy: (Math.random() - 0.7) * 240,
+            color,
+            alpha: 1,
+            size: Math.random() * 3.5 + 1.5
+          });
+        }
+      }
+
+      renderSparks() {
+        for (let i = this.sparks.length - 1; i >= 0; i--) {
+          const s = this.sparks[i];
+          s.x += s.vx * 0.016;
+          s.y += s.vy * 0.016;
+          s.vy += 420 * 0.016;
+          s.alpha -= 0.024;
+
+          if (s.alpha <= 0) {
+            this.sparks.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = s.alpha;
+          this.ctx.fillStyle = s.color;
+          this.ctx.beginPath();
+          this.ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+      }
+
+      triggerConfetti() {
+        this.confettiParticles = [];
+        const colors = ['#f97316', '#fbbf24', '#38bdf8', '#8b5cf6', '#10b981'];
+        for (let i = 0; i < 120; i++) {
+          this.confettiParticles.push({
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.5,
+            vx: (Math.random() - 0.5) * 24,
+            vy: (Math.random() - 0.7) * 22,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            alpha: 1
+          });
+        }
+      }
+
+      renderConfetti() {
+        if (this.confettiParticles.length === 0) return;
+        this.confettiCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        for (let i = this.confettiParticles.length - 1; i >= 0; i--) {
+          const p = this.confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.45;
+          p.rotation += p.rotSpeed;
+          p.alpha -= 0.008;
+
+          if (p.alpha <= 0 || p.y > window.innerHeight) {
+            this.confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          this.confettiCtx.save();
+          this.confettiCtx.globalAlpha = p.alpha;
+          this.confettiCtx.translate(p.x, p.y);
+          this.confettiCtx.rotate((p.rotation * Math.PI) / 180);
+          this.confettiCtx.fillStyle = p.color;
+          this.confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          this.confettiCtx.restore();
+        }
+      }
+    }
+
+    // Launch on DOM Ready
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new BasketballGame();
+    });
+  </script>
+</body>
+</html>
