@@ -2,13 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Master Jigsaw Puzzle Pro - Complete Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Master Jigsaw Puzzle Pro - Mobile & Desktop</title>
   <style>
     :root {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #1e293b, #0f172a 70%, #020617);
-      --board-felt: rgba(15, 23, 42, 0.7);
-      --surface-glass: rgba(30, 41, 59, 0.85);
+      --bg-main: #090d16;
+      --bg-gradient: radial-gradient(circle at 50% 25%, #1e293b 0%, #0f172a 60%, #020617 100%);
+      --board-bg: rgba(15, 23, 42, 0.75);
+      --tray-bg: rgba(15, 23, 42, 0.45);
+      --surface-glass: rgba(30, 41, 59, 0.9);
       --surface-border: rgba(255, 255, 255, 0.12);
       --accent: #38bdf8;
       --accent-hover: #0ea5e9;
@@ -18,29 +20,31 @@
       --danger: #ef4444;
       --text: #f8fafc;
       --text-muted: #94a3b8;
-      --panel-bg: rgba(15, 23, 42, 0.9);
-      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
-      --radius: 14px;
+      --panel-bg: rgba(15, 23, 42, 0.95);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+      --radius: 12px;
     }
 
-    /* Themes */
     body.theme-wood {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #3e2723, #1b0000 80%, #0f0000);
-      --board-felt: rgba(43, 27, 23, 0.85);
+      --bg-gradient: radial-gradient(circle at 50% 25%, #3e2723 0%, #1b0000 70%, #0a0000 100%);
+      --board-bg: rgba(43, 27, 23, 0.85);
+      --tray-bg: rgba(27, 0, 0, 0.5);
       --accent: #f59e0b;
       --accent-glow: rgba(245, 158, 11, 0.4);
     }
     body.theme-felt {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #064e3b, #022c22 80%, #011812);
-      --board-felt: rgba(6, 78, 59, 0.8);
+      --bg-gradient: radial-gradient(circle at 50% 25%, #064e3b 0%, #022c22 70%, #01140e 100%);
+      --board-bg: rgba(6, 78, 59, 0.85);
+      --tray-bg: rgba(2, 44, 34, 0.5);
       --accent: #34d399;
       --accent-glow: rgba(52, 211, 153, 0.4);
     }
     body.theme-cyber {
-      --bg-gradient: radial-gradient(circle at 50% 20%, #2e1065, #0f051d 80%, #05010a);
-      --board-felt: rgba(30, 10, 60, 0.8);
-      --accent: #e879f9;
-      --accent-glow: rgba(232, 121, 249, 0.4);
+      --bg-gradient: radial-gradient(circle at 50% 25%, #3b0764 0%, #130325 70%, #07000e 100%);
+      --board-bg: rgba(40, 10, 70, 0.85);
+      --tray-bg: rgba(19, 3, 37, 0.5);
+      --accent: #f472b6;
+      --accent-glow: rgba(244, 114, 182, 0.4);
     }
 
     * {
@@ -49,62 +53,68 @@
       padding: 0;
       user-select: none;
       -webkit-user-select: none;
+      -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: var(--bg-gradient);
-      color: var(--text);
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
       overflow: hidden;
-      transition: background 0.3s ease;
+      position: fixed; /* Prevents mobile rubber-banding / bounce */
     }
 
-    /* Header Bar */
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Header (Fixed Height) */
     header {
+      height: 48px;
       background: var(--surface-glass);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--surface-border);
-      padding: 6px 14px;
+      padding: 0 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      z-index: 30;
+      gap: 6px;
+      z-index: 40;
       flex-shrink: 0;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-weight: 700;
-      font-size: 1.1rem;
-      letter-spacing: -0.5px;
+      font-size: 1rem;
+      letter-spacing: -0.4px;
     }
 
     .brand-icon {
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       background: linear-gradient(135deg, var(--accent), #818cf8);
-      border-radius: 8px;
+      border-radius: 7px;
       display: grid;
       place-items: center;
-      box-shadow: 0 0 12px var(--accent-glow);
-      font-size: 14px;
+      font-size: 13px;
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     .stats-bar {
       display: flex;
       align-items: center;
-      gap: 12px;
-      background: rgba(15, 23, 42, 0.6);
-      padding: 4px 12px;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.65);
+      padding: 3px 10px;
       border-radius: 20px;
       border: 1px solid var(--surface-border);
     }
@@ -112,108 +122,91 @@
     .stat-item {
       display: flex;
       align-items: center;
-      gap: 5px;
-      font-size: 0.82rem;
+      gap: 4px;
+      font-size: 0.78rem;
       font-weight: 600;
     }
 
     .stat-label {
       color: var(--text-muted);
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
     }
 
     .stat-val {
       color: var(--accent);
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.92rem;
-      min-width: 36px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.88rem;
     }
 
     .controls-top {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     button, label.btn-file {
-      background: rgba(51, 65, 85, 0.7);
+      background: rgba(51, 65, 85, 0.75);
       color: var(--text);
       border: 1px solid var(--surface-border);
-      padding: 6px 11px;
+      padding: 5px 9px;
       border-radius: 8px;
       cursor: pointer;
-      font-weight: 500;
-      font-size: 0.82rem;
+      font-weight: 600;
+      font-size: 0.78rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 5px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    button:hover, label.btn-file:hover {
-      background: rgba(71, 85, 105, 0.9);
-      border-color: var(--accent);
-      transform: translateY(-1px);
+      gap: 4px;
+      touch-action: manipulation;
+      transition: background 0.15s ease, transform 0.1s ease;
     }
 
     button:active, label.btn-file:active {
-      transform: translateY(1px);
+      transform: scale(0.96);
     }
 
     button.primary {
       background: linear-gradient(135deg, #0284c7, #2563eb);
       border-color: var(--accent);
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-
-    button.primary:hover {
-      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     button.accent-btn {
-      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      background: linear-gradient(135deg, #7c3aed, #db2777);
       border-color: #f472b6;
-      box-shadow: 0 0 10px rgba(236, 72, 153, 0.35);
+      box-shadow: 0 0 10px rgba(219, 39, 119, 0.35);
     }
 
     button.active-toggle {
       background: var(--accent);
       color: #0f172a;
       font-weight: 700;
-      border-color: #fff;
     }
 
     button.btn-icon {
-      padding: 6px 9px;
-      font-size: 1rem;
+      padding: 5px 8px;
+      font-size: 0.95rem;
+      min-width: 32px;
+      height: 32px;
     }
 
-    /* Main Game Area */
-    .game-container {
+    /* Main Puzzle Playfield (Takes up all space between header & bottom toolbar) */
+    .game-viewport {
       flex: 1;
-      display: flex;
-      flex-direction: column;
+      width: 100%;
       position: relative;
       overflow: hidden;
-      touch-action: none;
-    }
-
-    .canvas-wrapper {
-      flex: 1;
-      position: relative;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
+      align-items: stretch;
+      justify-content: stretch;
+      touch-action: none; /* Crucial for preventing browser gestures */
     }
 
     #puzzleCanvas {
-      display: block;
       width: 100%;
       height: 100%;
+      display: block;
       touch-action: none;
       cursor: grab;
     }
@@ -222,75 +215,51 @@
       cursor: grabbing;
     }
 
-    /* Bottom Floating Action Hub */
-    .hud-toolbar {
-      position: absolute;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--panel-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--surface-border);
-      padding: 6px 12px;
-      border-radius: 32px;
+    /* Non-Overlapping Bottom HUD Toolbar (Fixed Height) */
+    footer.bottom-bar {
+      height: 48px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--surface-border);
+      padding: 0 8px;
       display: flex;
       align-items: center;
       gap: 6px;
-      box-shadow: var(--shadow-lg);
-      z-index: 20;
-      max-width: 96vw;
+      z-index: 40;
+      flex-shrink: 0;
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
-    .hud-toolbar::-webkit-scrollbar {
+    footer.bottom-bar::-webkit-scrollbar {
       display: none;
     }
 
     .hud-btn {
       padding: 6px 10px;
-      border-radius: 20px;
-      font-size: 0.78rem;
+      border-radius: 18px;
+      font-size: 0.75rem;
       white-space: nowrap;
       flex-shrink: 0;
+      height: 32px;
     }
 
-    /* Floating Rotating Pad for Mobile */
-    .mobile-rotate-pad {
-      position: absolute;
-      right: 14px;
-      bottom: 74px;
-      background: var(--panel-bg);
-      border: 1px solid var(--surface-border);
-      border-radius: 50px;
-      padding: 6px;
-      display: none;
-      flex-direction: column;
-      gap: 6px;
-      box-shadow: var(--shadow-lg);
-      z-index: 20;
-    }
-
-    .mobile-rotate-pad.show {
-      display: flex;
-    }
-
-    /* Mini Reference Picture Floater */
+    /* Floating Draggable Mini Preview */
     .hint-modal {
       position: absolute;
-      top: 14px;
-      right: 14px;
-      width: 170px;
-      height: 125px;
+      top: 8px;
+      right: 8px;
+      width: 140px;
+      height: 105px;
       background: var(--panel-bg);
       border: 2px solid var(--accent);
       border-radius: 10px;
       overflow: hidden;
       box-shadow: var(--shadow-lg);
-      z-index: 25;
+      z-index: 35;
       display: none;
       flex-direction: column;
-      transition: all 0.3s ease;
     }
 
     .hint-modal.visible {
@@ -301,20 +270,49 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      pointer-events: none;
     }
 
     .hint-modal-header {
       position: absolute;
       top: 3px;
       right: 4px;
-      background: rgba(0,0,0,0.7);
-      padding: 2px 7px;
+      background: rgba(0,0,0,0.75);
+      padding: 2px 6px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 10px;
       cursor: pointer;
+      color: #fff;
     }
 
-    /* Modals & Overlays */
+    /* Mobile Floating Rotate Wheel */
+    .mobile-rotate-controls {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 35;
+    }
+
+    .mobile-rotate-controls.show {
+      display: flex;
+    }
+
+    .rot-fab {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--panel-bg);
+      border: 2px solid var(--accent);
+      font-size: 1.2rem;
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Modal Overlays */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -327,8 +325,8 @@
       z-index: 100;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease;
-      padding: 14px;
+      transition: opacity 0.2s ease;
+      padding: 12px;
     }
 
     .modal-overlay.open {
@@ -341,23 +339,18 @@
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
       width: 100%;
-      max-width: 540px;
-      max-height: 90vh;
+      max-width: 500px;
+      max-height: 85vh;
+      max-height: 85dvh;
       overflow-y: auto;
-      padding: 22px;
+      padding: 18px;
       box-shadow: var(--shadow-lg);
-      transform: scale(0.95);
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .modal-overlay.open .modal-card {
-      transform: scale(1);
     }
 
     .modal-title {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -366,63 +359,59 @@
     .close-btn {
       background: transparent;
       border: none;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       cursor: pointer;
       color: var(--text-muted);
-      padding: 4px 8px;
-    }
-
-    .close-btn:hover {
-      color: var(--text);
+      padding: 4px 6px;
     }
 
     .section-title {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.7px;
+      letter-spacing: 0.6px;
       color: var(--text-muted);
-      margin: 14px 0 8px 0;
+      margin: 12px 0 6px 0;
     }
 
     .grid-options {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-      gap: 7px;
-      margin-bottom: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .grid-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 8px 3px;
+      padding: 8px 2px;
       background: rgba(15, 23, 42, 0.6);
       border-radius: 8px;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       border: 1px solid var(--surface-border);
     }
 
     .grid-btn .pcs {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       color: var(--accent);
     }
 
     .grid-btn .dim {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: var(--text-muted);
     }
 
     .grid-btn.selected {
       border-color: var(--accent);
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.18);
     }
 
     .image-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     @media (min-width: 480px) {
@@ -438,7 +427,6 @@
       border: 2px solid transparent;
       cursor: pointer;
       position: relative;
-      transition: all 0.2s;
     }
 
     .image-thumb canvas, .image-thumb img {
@@ -450,21 +438,20 @@
 
     .image-thumb.selected {
       border-color: var(--accent);
-      transform: scale(1.03);
       box-shadow: 0 0 10px var(--accent-glow);
     }
 
     .theme-picker-row {
       display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
+      gap: 6px;
+      margin-bottom: 12px;
     }
 
     .theme-btn {
       flex: 1;
-      padding: 8px 4px;
+      padding: 7px 2px;
       border-radius: 8px;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
     }
 
     .theme-btn.selected {
@@ -476,15 +463,15 @@
     .pause-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 75;
-      gap: 16px;
+      z-index: 70;
+      gap: 14px;
     }
 
     .pause-overlay.show {
@@ -495,7 +482,7 @@
     .win-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(15, 23, 42, 0.88);
+      background: rgba(15, 23, 42, 0.92);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       display: none;
@@ -504,65 +491,58 @@
       justify-content: center;
       z-index: 80;
       text-align: center;
-      padding: 20px;
-      animation: fadeIn 0.4s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      padding: 16px;
     }
 
     .win-card {
       background: #1e293b;
       border: 2px solid var(--accent);
-      padding: 30px 24px;
-      border-radius: 20px;
-      box-shadow: 0 0 35px var(--accent-glow);
-      max-width: 420px;
+      padding: 24px 18px;
+      border-radius: 18px;
+      box-shadow: 0 0 30px var(--accent-glow);
+      max-width: 380px;
       width: 100%;
     }
 
     .win-title {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 800;
       background: linear-gradient(135deg, var(--accent), #818cf8, #f472b6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .win-stars {
-      font-size: 2.2rem;
+      font-size: 2rem;
       color: #fbbf24;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     .win-stats {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 16px;
       background: rgba(15, 23, 42, 0.6);
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px;
+      border-radius: 10px;
     }
 
     .win-stat-v {
-      font-size: 1.25rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--accent);
     }
 
     .win-stat-l {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--text-muted);
       text-transform: uppercase;
     }
 
-    /* Confetti Canvas */
     #confettiCanvas {
-      position: absolute;
+      position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 85;
@@ -571,21 +551,22 @@
     /* Toast Notification */
     .toast {
       position: absolute;
-      top: 18px;
+      top: 10px;
       left: 50%;
-      transform: translateX(-50%) translateY(-40px);
+      transform: translateX(-50%) translateY(-50px);
       background: rgba(15, 23, 42, 0.95);
       border: 1px solid var(--accent);
       color: var(--text);
-      padding: 8px 18px;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 600;
       box-shadow: var(--shadow-lg);
       opacity: 0;
       pointer-events: none;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      z-index: 95;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 90;
+      white-space: nowrap;
     }
 
     .toast.show {
@@ -593,36 +574,17 @@
       opacity: 1;
     }
 
-    /* Responsive */
-    @media (max-width: 650px) {
-      header {
-        padding: 6px 8px;
-      }
-      .brand span {
-        display: none;
-      }
-      .stat-label {
-        display: none;
-      }
-      .stats-bar {
-        gap: 8px;
-        padding: 3px 8px;
-      }
-      .hud-toolbar {
-        bottom: 8px;
-        padding: 4px 8px;
-        gap: 4px;
-      }
-      .hud-btn {
-        font-size: 0.72rem;
-        padding: 5px 8px;
-      }
+    @media (max-width: 480px) {
+      .brand span { display: none; }
+      .stat-label { display: none; }
+      .stats-bar { gap: 6px; padding: 2px 6px; }
+      .controls-top button { padding: 4px 6px; font-size: 0.75rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navigation & Statistics -->
+  <!-- Top Header Navigation -->
   <header>
     <div class="brand">
       <div class="brand-icon">🧩</div>
@@ -630,98 +592,95 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-item" title="Elapsed Time">
+      <div class="stat-item" title="Time">
         <span class="stat-label">Time</span>
         <span class="stat-val" id="timeDisplay">00:00</span>
       </div>
-      <div class="stat-item" title="Total Moves">
+      <div class="stat-item" title="Moves">
         <span class="stat-label">Moves</span>
         <span class="stat-val" id="moveDisplay">0</span>
       </div>
-      <div class="stat-item" title="Placed Pieces">
+      <div class="stat-item" title="Placed">
         <span class="stat-label">Placed</span>
         <span class="stat-val" id="placedDisplay">0/12</span>
       </div>
     </div>
 
     <div class="controls-top">
-      <button class="btn-icon" id="undoBtn" title="Undo Move (Ctrl+Z)">↩️</button>
+      <button class="btn-icon" id="undoBtn" title="Undo Move">↩️</button>
       <button class="btn-icon" id="pauseBtn" title="Pause / Resume">⏸️</button>
       <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
-      <button class="btn-icon" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
-      <button id="newGameBtn" class="primary">⚙️ New</button>
+      <button class="primary" id="newGameBtn">⚙️ New</button>
     </div>
   </header>
 
-  <!-- Game Canvas Layout -->
-  <div class="game-container">
-    <div class="canvas-wrapper" id="canvasWrapper">
-      <canvas id="puzzleCanvas"></canvas>
+  <!-- Middle Game Area (Strictly between Header and Footer) -->
+  <main class="game-viewport" id="gameViewport">
+    <canvas id="puzzleCanvas"></canvas>
 
-      <!-- Floating mini picture reference -->
-      <div class="hint-modal" id="hintModal">
-        <div class="hint-modal-header" id="closeHintBtn">✕</div>
-        <img id="hintImg" src="" alt="Reference Image">
-      </div>
+    <!-- Mini picture floater -->
+    <div class="hint-modal" id="hintModal">
+      <div class="hint-modal-header" id="closeHintBtn">✕</div>
+      <img id="hintImg" src="" alt="Reference Image">
+    </div>
 
-      <!-- Toast Alerts -->
-      <div class="toast" id="toast">Ready</div>
+    <!-- Floating Rotate Buttons on Mobile -->
+    <div class="mobile-rotate-controls" id="mobRotateControls">
+      <button class="rot-fab" id="mobRotLeftBtn" title="Rotate Left">↺</button>
+      <button class="rot-fab" id="mobRotRightBtn" title="Rotate Right">↻</button>
+    </div>
 
-      <!-- Mobile Rotation Floating Buttons -->
-      <div class="mobile-rotate-pad" id="mobileRotatePad">
-        <button class="btn-icon" id="mobRotLeftBtn" title="Rotate Left 90°">↺</button>
-        <button class="btn-icon" id="mobRotRightBtn" title="Rotate Right 90°">↻</button>
-      </div>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Ready</div>
 
-      <!-- Pause Screen -->
-      <div class="pause-overlay" id="pauseOverlay">
-        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
-        <button class="primary" id="resumeBtn" style="padding: 12px 28px; font-size: 1.1rem;">Resume Puzzle</button>
-      </div>
+    <!-- Pause Screen -->
+    <div class="pause-overlay" id="pauseOverlay">
+      <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
+      <button class="primary" id="resumeBtn" style="padding: 10px 24px; font-size: 1rem;">Resume Puzzle</button>
+    </div>
 
-      <!-- Win Celebration Overlay -->
-      <div class="win-overlay" id="winOverlay">
-        <div class="win-card">
-          <div class="win-title">Puzzle Complete! 🎉</div>
-          <div class="win-stars" id="winStars">⭐⭐⭐</div>
-          <div class="win-stats">
-            <div>
-              <div class="win-stat-v" id="finalTime">01:45</div>
-              <div class="win-stat-l">Total Time</div>
-            </div>
-            <div>
-              <div class="win-stat-v" id="finalMoves">48</div>
-              <div class="win-stat-l">Moves</div>
-            </div>
-            <div>
-              <div class="win-stat-v" id="finalPieces">16</div>
-              <div class="win-stat-l">Pieces</div>
-            </div>
-            <div>
-              <div class="win-stat-v" id="finalAccuracy">96%</div>
-              <div class="win-stat-l">Accuracy</div>
-            </div>
+    <!-- Win Screen -->
+    <div class="win-overlay" id="winOverlay">
+      <div class="win-card">
+        <div class="win-title">Puzzle Complete! 🎉</div>
+        <div class="win-stars" id="winStars">⭐⭐⭐</div>
+        <div class="win-stats">
+          <div>
+            <div class="win-stat-v" id="finalTime">01:45</div>
+            <div class="win-stat-l">Total Time</div>
           </div>
-          <div style="display: flex; gap: 10px; justify-content: center;">
-            <button class="primary" id="playAgainBtn" style="padding: 10px 22px;">Next Puzzle</button>
-            <button id="replayBtn" style="padding: 10px 18px;">Replay</button>
+          <div>
+            <div class="win-stat-v" id="finalMoves">48</div>
+            <div class="win-stat-l">Moves</div>
           </div>
+          <div>
+            <div class="win-stat-v" id="finalPieces">12</div>
+            <div class="win-stat-l">Pieces</div>
+          </div>
+          <div>
+            <div class="win-stat-v" id="finalAccuracy">96%</div>
+            <div class="win-stat-l">Accuracy</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button class="primary" id="playAgainBtn" style="padding: 9px 18px;">Next Puzzle</button>
+          <button id="replayBtn" style="padding: 9px 15px;">Replay</button>
         </div>
       </div>
     </div>
+  </main>
 
-    <!-- Complete Bottom Control HUD -->
-    <div class="hud-toolbar">
-      <button class="hud-btn accent-btn" id="autoSolveBtn" title="Watch Animated Auto Solution">⚡ Auto Solve</button>
-      <button class="hud-btn" id="hintOneBtn" title="Snap 1 Correct Piece">💡 Hint</button>
-      <button class="hud-btn" id="checkBoardBtn" title="Check Current Alignment">✅ Check Answer</button>
-      <button class="hud-btn" id="hintGhostBtn" title="Toggle Board Ghost Outline">👻 Ghost</button>
-      <button class="hud-btn" id="previewPicBtn" title="Toggle Reference Picture">🖼️ Picture</button>
-      <button class="hud-btn" id="edgeOnlyBtn" title="Show Only Edge Pieces">🔲 Edges</button>
-      <button class="hud-btn" id="scatterBtn" title="Neatly Arrange Loose Pieces">🧹 Arrange</button>
-      <button class="hud-btn" id="rotateToggleBtn" title="Toggle 90° Piece Rotation Challenge">🔄 Rotate: <span id="rotState">Off</span></button>
-    </div>
-  </div>
+  <!-- Non-Overlapping Bottom HUD Toolbar -->
+  <footer class="bottom-bar">
+    <button class="hud-btn accent-btn" id="autoSolveBtn">⚡ Auto Solve</button>
+    <button class="hud-btn" id="hintOneBtn">💡 Hint</button>
+    <button class="hud-btn" id="checkBoardBtn">✅ Check</button>
+    <button class="hud-btn" id="hintGhostBtn">👻 Ghost</button>
+    <button class="hud-btn" id="previewPicBtn">🖼️ Picture</button>
+    <button class="hud-btn" id="edgeOnlyBtn">🔲 Edges</button>
+    <button class="hud-btn" id="scatterBtn">🧹 Arrange</button>
+    <button class="hud-btn" id="rotateToggleBtn">🔄 Rotate: <span id="rotState">Off</span></button>
+  </footer>
 
   <canvas id="confettiCanvas"></canvas>
 
@@ -733,7 +692,7 @@
         <button class="close-btn" id="closeSettingsBtn">&times;</button>
       </div>
 
-      <div class="section-title">Difficulty Grid (Pieces)</div>
+      <div class="section-title">Difficulty (Piece Count)</div>
       <div class="grid-options" id="gridPicker">
         <div class="grid-btn" data-cols="2" data-rows="2"><span class="pcs">4</span><span class="dim">2×2 (Tiny)</span></div>
         <div class="grid-btn" data-cols="3" data-rows="2"><span class="pcs">6</span><span class="dim">3×2 (Easy)</span></div>
@@ -741,39 +700,36 @@
         <div class="grid-btn" data-cols="5" data-rows="4"><span class="pcs">20</span><span class="dim">5×4 (Medium)</span></div>
         <div class="grid-btn" data-cols="6" data-rows="5"><span class="pcs">30</span><span class="dim">6×5 (Hard)</span></div>
         <div class="grid-btn" data-cols="8" data-rows="6"><span class="pcs">48</span><span class="dim">8×6 (Expert)</span></div>
-        <div class="grid-btn" data-cols="10" data-rows="7"><span class="pcs">70</span><span class="dim">10×7 (Master)</span></div>
       </div>
 
       <div class="section-title">Table Surface Theme</div>
       <div class="theme-picker-row">
-        <button class="theme-btn selected" data-theme="default">🌌 Midnight Dark</button>
-        <button class="theme-btn" data-theme="theme-wood">🪵 Studio Wood</button>
-        <button class="theme-btn" data-theme="theme-felt">🎲 Green Felt</button>
-        <button class="theme-btn" data-theme="theme-cyber">🔮 Cyber Glow</button>
+        <button class="theme-btn selected" data-theme="default">🌌 Midnight</button>
+        <button class="theme-btn" data-theme="theme-wood">🪵 Wood</button>
+        <button class="theme-btn" data-theme="theme-felt">🎲 Felt</button>
+        <button class="theme-btn" data-theme="theme-cyber">🔮 Cyber</button>
       </div>
 
       <div class="section-title">Select Picture</div>
-      <div class="image-grid" id="imagePicker">
-        <!-- Preset Artworks populated dynamically -->
-      </div>
+      <div class="image-grid" id="imagePicker"></div>
 
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+      <div style="display: flex; gap: 8px; margin-top: 8px;">
         <label class="btn-file" style="flex: 1; justify-content: center;">
-          📁 Upload Image File
+          📁 Upload Image
           <input type="file" id="fileUpload" accept="image/*" style="display: none;">
         </label>
         <button id="randomArtBtn" style="flex: 1;">🎨 Random Art</button>
       </div>
 
-      <div style="margin-top: 22px; display: flex; justify-content: flex-end; gap: 10px;">
-        <button id="startNewGameBtn" class="primary" style="padding: 10px 24px; font-size: 1rem;">Start Puzzle 🧩</button>
+      <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 8px;">
+        <button id="startNewGameBtn" class="primary" style="padding: 9px 20px; font-size: 0.95rem;">Start Puzzle 🧩</button>
       </div>
     </div>
   </div>
 
   <script>
     /* ==========================================================================
-       SYNTHESIZED WEB AUDIO ENGINE (Zero external dependencies)
+       SYNTHESIZED WEB AUDIO ENGINE (iOS / Android Touch Compatible)
        ========================================================================== */
     class AudioEngine {
       constructor() {
@@ -797,18 +753,14 @@
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(480, t);
         osc.frequency.exponentialRampToValueAtTime(140, t + 0.08);
-
         gain.gain.setValueAtTime(0.35, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
@@ -819,7 +771,7 @@
         osc2.type = 'sine';
         osc2.frequency.setValueAtTime(1300, t);
         osc2.frequency.exponentialRampToValueAtTime(320, t + 0.03);
-        gain2.gain.setValueAtTime(0.28, t);
+        gain2.gain.setValueAtTime(0.25, t);
         gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
         osc2.connect(gain2);
         gain2.connect(this.ctx.destination);
@@ -831,40 +783,32 @@
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = 'sine';
         osc.frequency.setValueAtTime(240, t);
-        osc.frequency.exponentialRampToValueAtTime(380, t + 0.06);
-
+        osc.frequency.exponentialRampToValueAtTime(380, t + 0.05);
         gain.gain.setValueAtTime(0.18, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.06);
+        osc.stop(t + 0.05);
       }
 
       playRotate() {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-
         const t = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = 'sine';
         osc.frequency.setValueAtTime(500, t);
-        osc.frequency.exponentialRampToValueAtTime(760, t + 0.05);
-
+        osc.frequency.exponentialRampToValueAtTime(750, t + 0.05);
         gain.gain.setValueAtTime(0.15, t);
         gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
@@ -875,15 +819,33 @@
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-
-        const notes = [587.33, 880, 1174.66]; // D5, A5, D6
-        notes.forEach((freq, idx) => {
+        [587.33, 880, 1174.66].forEach((freq, idx) => {
           const t = this.ctx.currentTime + idx * 0.07;
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.setValueAtTime(0.18, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.15);
+        });
+      }
+
+      playCheck(isAllGood) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = isAllGood ? [523.25, 659.25, 783.99] : [330, 270];
+        notes.forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.08;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = isAllGood ? 'triangle' : 'sawtooth';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.18, t);
           gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
@@ -892,45 +854,22 @@
         });
       }
 
-      playCheck(isAllGood) {
-        if (!this.enabled) return;
-        this.init();
-        if (!this.ctx) return;
-
-        const notes = isAllGood ? [523.25, 659.25, 783.99] : [330, 270];
-        notes.forEach((freq, idx) => {
-          const t = this.ctx.currentTime + idx * 0.08;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = isAllGood ? 'triangle' : 'sawtooth';
-          osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.2, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + 0.2);
-        });
-      }
-
       playShuffle() {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-
-        const notes = [300, 420, 560, 680];
-        notes.forEach((freq, idx) => {
+        [300, 420, 560, 680].forEach((freq, idx) => {
           const t = this.ctx.currentTime + idx * 0.04;
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.15, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+          gain.gain.setValueAtTime(0.12, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
           osc.start(t);
-          osc.stop(t + 0.06);
+          osc.stop(t + 0.05);
         });
       }
 
@@ -938,29 +877,25 @@
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-
         const chords = [
           { freq: 440, time: 0 },
-          { freq: 554.37, time: 0.12 },
-          { freq: 659.25, time: 0.24 },
-          { freq: 880, time: 0.38 },
-          { freq: 1108.73, time: 0.55 },
-          { freq: 1318.51, time: 0.72 }
+          { freq: 554.37, time: 0.1 },
+          { freq: 659.25, time: 0.2 },
+          { freq: 880, time: 0.32 },
+          { freq: 1108.73, time: 0.46 }
         ];
-
         chords.forEach(({ freq, time }) => {
           const t = this.ctx.currentTime + time;
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
-
           osc.type = 'triangle';
           osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.25, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+          gain.gain.setValueAtTime(0.22, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
           osc.start(t);
-          osc.stop(t + 0.45);
+          osc.stop(t + 0.4);
         });
       }
     }
@@ -968,7 +903,7 @@
     const audio = new AudioEngine();
 
     /* ==========================================================================
-       PROCEDURAL ARTWORK & PRESET GENERATOR
+       PROCEDURAL ARTWORK GENERATOR
        ========================================================================== */
     function createArtwork(type) {
       const c = document.createElement('canvas');
@@ -1085,13 +1020,13 @@
           { x: w * 0.7, y: h * 0.6, r: 280, color: 'rgba(56, 189, 248, 0.25)' },
           { x: w * 0.5, y: h * 0.3, r: 200, color: 'rgba(168, 85, 247, 0.28)' },
         ];
-        clouds.forEach(c => {
-          const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-          g.addColorStop(0, c.color);
+        clouds.forEach(cl => {
+          const g = ctx.createRadialGradient(cl.x, cl.y, 0, cl.x, cl.y, cl.r);
+          g.addColorStop(0, cl.color);
           g.addColorStop(1, 'transparent');
           ctx.fillStyle = g;
           ctx.beginPath();
-          ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+          ctx.arc(cl.x, cl.y, cl.r, 0, Math.PI * 2);
           ctx.fill();
         });
 
@@ -1160,7 +1095,7 @@
     ];
 
     /* ==========================================================================
-       JIGSAW PIECE CLASS & SHAPE GENERATOR
+       JIGSAW PIECE CLASS (High Precision Bézier Pathing & Touch Boundaries)
        ========================================================================== */
     class JigsawPiece {
       constructor(c, r, width, height, shapeDef) {
@@ -1168,26 +1103,24 @@
         this.r = r;
         this.w = width;
         this.h = height;
-        this.shape = shapeDef; // { top: 0|1|-1, right: 0|1|-1, bottom: 0|1|-1, left: 0|1|-1 }
+        this.shape = shapeDef;
         
         this.targetX = 0;
         this.targetY = 0;
         this.x = 0;
         this.y = 0;
-        this.rotation = 0; // 0, 90, 180, 270
+        this.rotation = 0;
         this.isLocked = false;
         this.isHovered = false;
         this.isHighlighted = false;
         this.isEdge = (shapeDef.top === 0 || shapeDef.right === 0 || shapeDef.bottom === 0 || shapeDef.left === 0);
         this.visible = true;
 
-        // Animation interpolation
         this.animating = false;
         this.animStartX = 0;
         this.animStartY = 0;
         this.animTargetX = 0;
         this.animTargetY = 0;
-        this.animProgress = 0;
 
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
@@ -1202,7 +1135,7 @@
         ctx.beginPath();
         ctx.moveTo(ox, oy);
 
-        // Top
+        // Top Edge
         if (this.shape.top === 0) {
           ctx.lineTo(ox + w, oy);
         } else {
@@ -1215,7 +1148,7 @@
           ctx.lineTo(ox + w, oy);
         }
 
-        // Right
+        // Right Edge
         if (this.shape.right === 0) {
           ctx.lineTo(ox + w, oy + h);
         } else {
@@ -1228,7 +1161,7 @@
           ctx.lineTo(ox + w, oy + h);
         }
 
-        // Bottom
+        // Bottom Edge
         if (this.shape.bottom === 0) {
           ctx.lineTo(ox, oy + h);
         } else {
@@ -1241,7 +1174,7 @@
           ctx.lineTo(ox, oy + h);
         }
 
-        // Left
+        // Left Edge
         if (this.shape.left === 0) {
           ctx.lineTo(ox, oy);
         } else {
@@ -1251,15 +1184,15 @@
           ctx.lineTo(ox, oy + h * 0.65);
           ctx.bezierCurveTo(ox - cp * 0.2, oy + h * 0.65, ox - cp, midY + tabSize * 0.7, ox - cp, midY);
           ctx.bezierCurveTo(ox - cp, midY - tabSize * 0.7, ox - cp * 0.2, oy + h * 0.35, ox, oy + h * 0.35);
-          ctx.lineTo(ox, oy + h);
+          ctx.lineTo(ox, oy);
         }
 
         ctx.closePath();
       }
 
       bake(sourceImage, sourceW, sourceH) {
-        const fullW = this.w + this.pad * 2;
-        const fullH = this.h + this.pad * 2;
+        const fullW = Math.ceil(this.w + this.pad * 2);
+        const fullH = Math.ceil(this.h + this.pad * 2);
         this.canvas.width = fullW;
         this.canvas.height = fullH;
 
@@ -1279,7 +1212,7 @@
 
         this.ctx.drawImage(sourceImage, sx, sy, sWidth, sHeight, 0, 0, fullW, fullH);
 
-        // 3D tactile bevel
+        // Tactile bevel
         this.ctx.lineWidth = 2.5;
         this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
         this.drawPath(this.ctx, this.pad, this.pad);
@@ -1293,11 +1226,23 @@
         this.ctx.restore();
       }
 
+      // Robust Touch Hit Testing
       isPointInside(px, py, testCtx) {
         if (!this.visible) return false;
+        
+        // Fast bounding box check with touch tolerance padding
+        const touchMargin = 12;
+        const minX = this.x - touchMargin;
+        const maxX = this.x + this.w + touchMargin;
+        const minY = this.y - touchMargin;
+        const maxY = this.y + this.h + touchMargin;
+        
+        if (px < minX || px > maxX || py < minY || py > maxY) {
+          return false;
+        }
+
         const dx = px - (this.x + this.w / 2);
         const dy = py - (this.y + this.h / 2);
-
         const rad = -((this.rotation * Math.PI) / 180);
         const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
         const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
@@ -1306,6 +1251,7 @@
         const localY = ry + this.h / 2;
 
         testCtx.save();
+        testCtx.beginPath();
         this.drawPath(testCtx, 0, 0);
         const inside = testCtx.isPointInPath(localX, localY);
         testCtx.restore();
@@ -1315,12 +1261,14 @@
     }
 
     /* ==========================================================================
-       COMPLETE JIGSAW GAME CONTROLLER
+       RESPONSIVE JIGSAW GAME CONTROLLER (Pointer & Touch Safe)
        ========================================================================== */
     class JigsawGame {
       constructor() {
+        this.viewport = document.getElementById('gameViewport');
         this.canvas = document.getElementById('puzzleCanvas');
         this.ctx = this.canvas.getContext('2d');
+        
         this.offscreenCanvas = document.createElement('canvas');
         this.offCtx = this.offscreenCanvas.getContext('2d');
 
@@ -1328,7 +1276,7 @@
         this.confettiCtx = this.confettiCanvas.getContext('2d');
         this.confettiParticles = [];
 
-        // Game Configuration
+        // Game Settings
         this.cols = 4;
         this.rows = 3;
         this.totalPieces = 12;
@@ -1342,13 +1290,15 @@
         // Undo History
         this.undoStack = [];
 
-        // Board & Layout
+        // Board & Tray Boundaries
         this.boardX = 0;
         this.boardY = 0;
         this.boardW = 0;
         this.boardH = 0;
         this.pieceW = 0;
         this.pieceH = 0;
+        this.trayY = 0;
+        this.trayH = 0;
 
         // Pieces & Interaction
         this.pieces = [];
@@ -1356,6 +1306,7 @@
         this.selectedPiece = null;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
+        this.activePointerId = null;
 
         // Gameplay Metrics
         this.startTime = null;
@@ -1422,34 +1373,158 @@
         }
       }
 
+      /* Unified Touch & Pointer Handling */
       bindEvents() {
         window.addEventListener('resize', () => this.resize());
+        window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 150));
+
+        // Keyboard Shortcut for Undo
         window.addEventListener('keydown', (e) => {
           if (e.ctrlKey && e.key === 'z') {
             this.undoLastMove();
           }
         });
 
-        // Pointer Events
-        this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
-        this.canvas.addEventListener('pointermove', (e) => this.onPointerMove(e));
-        this.canvas.addEventListener('pointerup', (e) => this.onPointerUp(e));
-        this.canvas.addEventListener('pointercancel', (e) => this.onPointerUp(e));
+        // PRIMARY TOUCH & MOUSE EVENTS (With touch-action protection)
+        const getCanvasCoords = (clientX, clientY) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const scaleX = this.viewW / rect.width;
+          const scaleY = this.viewH / rect.height;
+          return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+          };
+        };
 
-        // Right-Click Rotation
+        const handleStart = (clientX, clientY, pointerId) => {
+          if (this.isGameOver || this.isPaused || this.autoSolving) return;
+          audio.init();
+
+          const { x, y } = getCanvasCoords(clientX, clientY);
+          const piece = this.getPieceAt(x, y);
+
+          if (piece) {
+            this.activePointerId = pointerId;
+            this.draggedPiece = piece;
+            this.selectedPiece = piece;
+            this.dragOffsetX = x - piece.x;
+            this.dragOffsetY = y - piece.y;
+
+            this.pushUndoState();
+
+            // Bring to top of render queue
+            const idx = this.pieces.indexOf(piece);
+            this.pieces.splice(idx, 1);
+            this.pieces.push(piece);
+
+            audio.playPick();
+          }
+        };
+
+        const handleMove = (clientX, clientY) => {
+          if (this.isPaused) return;
+          const { x, y } = getCanvasCoords(clientX, clientY);
+
+          if (this.draggedPiece) {
+            // Keep piece inside visible canvas bounds
+            const newX = x - this.dragOffsetX;
+            const newY = y - this.dragOffsetY;
+            this.draggedPiece.x = Math.max(-this.pieceW * 0.3, Math.min(this.viewW - this.pieceW * 0.7, newX));
+            this.draggedPiece.y = Math.max(0, Math.min(this.viewH - this.pieceH * 0.8, newY));
+          } else {
+            const hovered = this.getPieceAt(x, y);
+            this.pieces.forEach(p => p.isHovered = (p === hovered));
+          }
+        };
+
+        const handleEnd = () => {
+          if (this.draggedPiece) {
+            const p = this.draggedPiece;
+            this.moves++;
+            this.updateStats();
+
+            // Snap distance threshold (generous on mobile for easy snapping)
+            const snapThreshold = Math.max(28, Math.min(p.w, p.h) * 0.42);
+            const dist = Math.hypot(p.x - p.targetX, p.y - p.targetY);
+            const isCorrectRotation = (p.rotation === 0);
+
+            if (dist < snapThreshold && isCorrectRotation) {
+              p.x = p.targetX;
+              p.y = p.targetY;
+              p.isLocked = true;
+              p.rotation = 0;
+              this.lockedCount++;
+              audio.playSnap();
+              this.showToast('Piece Snapped! ✨');
+
+              // Move locked piece to bottom layer
+              const idx = this.pieces.indexOf(p);
+              this.pieces.splice(idx, 1);
+              this.pieces.unshift(p);
+
+              this.updateStats();
+              this.checkWinCondition();
+            }
+
+            this.draggedPiece = null;
+            this.activePointerId = null;
+          }
+        };
+
+        // Pointer Events Listeners
+        this.canvas.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          this.canvas.setPointerCapture(e.pointerId);
+          handleStart(e.clientX, e.clientY, e.pointerId);
+        }, { passive: false });
+
+        this.canvas.addEventListener('pointermove', (e) => {
+          e.preventDefault();
+          handleMove(e.clientX, e.clientY);
+        }, { passive: false });
+
+        this.canvas.addEventListener('pointerup', (e) => {
+          e.preventDefault();
+          try { this.canvas.releasePointerCapture(e.pointerId); } catch(err) {}
+          handleEnd();
+        }, { passive: false });
+
+        this.canvas.addEventListener('pointercancel', handleEnd);
+
+        // Fallback Native Touch Events for Older Mobile Browsers
+        this.canvas.addEventListener('touchstart', (e) => {
+          if (e.touches && e.touches.length > 0) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleStart(touch.clientX, touch.clientY, touch.identifier);
+          }
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchmove', (e) => {
+          if (e.touches && e.touches.length > 0) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            handleMove(touch.clientX, touch.clientY);
+          }
+        }, { passive: false });
+
+        this.canvas.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          handleEnd();
+        }, { passive: false });
+
+        // Right-Click on Desktop to Rotate
         this.canvas.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           if (!this.rotationEnabled || this.isPaused || this.autoSolving) return;
-          const rect = this.canvas.getBoundingClientRect();
-          const px = (e.clientX - rect.left) * (this.canvas.width / (rect.width * (window.devicePixelRatio || 1)));
-          const py = (e.clientY - rect.top) * (this.canvas.height / (rect.height * (window.devicePixelRatio || 1)));
-          const piece = this.getPieceAt(px, py);
+          const { x, y } = getCanvasCoords(e.clientX, e.clientY);
+          const piece = this.getPieceAt(x, y);
           if (piece && !piece.isLocked) {
             this.rotatePiece(piece, 90);
           }
         });
 
-        // Top Navigation Controls
+        // Top Bar Controls
         document.getElementById('newGameBtn').onclick = () => this.openSettings();
         document.getElementById('closeSettingsBtn').onclick = () => this.closeSettings();
         document.getElementById('startNewGameBtn').onclick = () => {
@@ -1467,21 +1542,10 @@
         soundBtn.onclick = () => {
           audio.enabled = !audio.enabled;
           soundBtn.textContent = audio.enabled ? '🔊' : '🔇';
-          this.showToast(audio.enabled ? 'Audio Unmuted' : 'Audio Muted');
+          this.showToast(audio.enabled ? 'Sound On' : 'Sound Muted');
         };
 
-        const fsBtn = document.getElementById('fullscreenBtn');
-        fsBtn.onclick = () => {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => {});
-            fsBtn.textContent = '🗗';
-          } else {
-            document.exitFullscreen().catch(() => {});
-            fsBtn.textContent = '⛶';
-          }
-        };
-
-        // Complete HUD Functions
+        // Complete Bottom HUD Actions
         document.getElementById('autoSolveBtn').onclick = () => this.startAutoSolve();
         document.getElementById('hintOneBtn').onclick = () => this.provideHint();
         document.getElementById('checkBoardBtn').onclick = () => this.checkBoardAlignment();
@@ -1513,17 +1577,17 @@
               p.visible = !this.showEdgeOnly || p.isEdge;
             }
           });
-          this.showToast(this.showEdgeOnly ? 'Edges Only Mode' : 'All Pieces Mode');
+          this.showToast(this.showEdgeOnly ? 'Showing Edges' : 'Showing All');
         };
 
         const rotBtn = document.getElementById('rotateToggleBtn');
         const rotState = document.getElementById('rotState');
-        const mobPad = document.getElementById('mobileRotatePad');
+        const mobRot = document.getElementById('mobRotateControls');
         rotBtn.onclick = () => {
           this.rotationEnabled = !this.rotationEnabled;
           rotState.textContent = this.rotationEnabled ? 'On' : 'Off';
           rotBtn.classList.toggle('active-toggle', this.rotationEnabled);
-          mobPad.classList.toggle('show', this.rotationEnabled);
+          mobRot.classList.toggle('show', this.rotationEnabled);
 
           if (this.rotationEnabled) {
             this.pieces.forEach(p => {
@@ -1537,32 +1601,32 @@
               if (!p.isLocked) p.rotation = 0;
             });
           }
-          this.showToast(this.rotationEnabled ? 'Rotation Active (Tap/Rotate)' : 'Rotation Off');
+          this.showToast(this.rotationEnabled ? 'Piece Rotation On' : 'Rotation Off');
         };
 
-        // Mobile Rotation Buttons
+        // Mobile Quick Rotation Buttons
         document.getElementById('mobRotLeftBtn').onclick = () => {
           if (this.selectedPiece && !this.selectedPiece.isLocked) {
             this.rotatePiece(this.selectedPiece, -90);
           } else {
-            this.showToast('Select a piece first');
+            this.showToast('Tap a piece first');
           }
         };
         document.getElementById('mobRotRightBtn').onclick = () => {
           if (this.selectedPiece && !this.selectedPiece.isLocked) {
             this.rotatePiece(this.selectedPiece, 90);
           } else {
-            this.showToast('Select a piece first');
+            this.showToast('Tap a piece first');
           }
         };
 
         document.getElementById('scatterBtn').onclick = () => {
           this.arrangePiecesNeatly();
           audio.playShuffle();
-          this.showToast('Pieces Organized');
+          this.showToast('Pieces Rearranged');
         };
 
-        // File Upload & Random Art
+        // File Upload
         const fileInput = document.getElementById('fileUpload');
         fileInput.onchange = (e) => {
           const file = e.target.files[0];
@@ -1574,7 +1638,7 @@
               this.imageSource = img;
               document.querySelectorAll('.image-thumb').forEach(t => t.classList.remove('selected'));
               this.updateHintImage();
-              this.showToast('Custom Picture Loaded');
+              this.showToast('Custom Photo Loaded');
             };
             img.src = event.target.result;
           };
@@ -1588,7 +1652,7 @@
           this.showToast(`Selected: ${rand.name}`);
         };
 
-        // Win Screen Buttons
+        // Win Buttons
         document.getElementById('playAgainBtn').onclick = () => {
           document.getElementById('winOverlay').style.display = 'none';
           this.openSettings();
@@ -1627,14 +1691,14 @@
         toast.textContent = msg;
         toast.classList.add('show');
         clearTimeout(this.toastTimeout);
-        this.toastTimeout = setTimeout(() => toast.classList.remove('show'), 1800);
+        this.toastTimeout = setTimeout(() => toast.classList.remove('show'), 1600);
       }
 
       rotatePiece(piece, deltaDeg) {
         this.pushUndoState();
         piece.rotation = (piece.rotation + deltaDeg + 360) % 360;
         audio.playRotate();
-        this.showToast(`Rotated ${piece.rotation}°`);
+        this.showToast(`Rotated to ${piece.rotation}°`);
       }
 
       pushUndoState() {
@@ -1647,7 +1711,7 @@
           isLocked: p.isLocked
         }));
         this.undoStack.push({ snapshot, moves: this.moves, lockedCount: this.lockedCount });
-        if (this.undoStack.length > 30) this.undoStack.shift();
+        if (this.undoStack.length > 25) this.undoStack.shift();
       }
 
       undoLastMove() {
@@ -1672,13 +1736,11 @@
         this.showToast('Move Undone');
       }
 
-      /* ==========================================================================
-         COMPLETE FEATURE: AUTO SOLVE & STEP ANIMATION
-         ========================================================================== */
+      /* Auto-Solve */
       startAutoSolve() {
         if (this.autoSolving || this.isGameOver) return;
         this.autoSolving = true;
-        this.showToast('Auto Solving Puzzle ⚡...');
+        this.showToast('Auto Solving Puzzle ⚡');
 
         const unlocked = this.pieces.filter(p => !p.isLocked);
         if (unlocked.length === 0) {
@@ -1699,13 +1761,12 @@
           piece.animStartY = piece.y;
           piece.animTargetX = piece.targetX;
           piece.animTargetY = piece.targetY;
-          piece.animProgress = 0;
           piece.rotation = 0;
 
-          const duration = 240; // ms per piece
+          const duration = 220;
           const startTime = performance.now();
 
-          const animateStep = (now) => {
+          const step = (now) => {
             const progress = Math.min(1, (now - startTime) / duration);
             const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
 
@@ -1713,7 +1774,7 @@
             piece.y = piece.animStartY + (piece.animTargetY - piece.animStartY) * ease;
 
             if (progress < 1) {
-              requestAnimationFrame(animateStep);
+              requestAnimationFrame(step);
             } else {
               piece.x = piece.targetX;
               piece.y = piece.targetY;
@@ -1724,26 +1785,23 @@
               this.updateStats();
               audio.playSnap();
 
-              // Bring locked piece to lower layer
               const pIdx = this.pieces.indexOf(piece);
               this.pieces.splice(pIdx, 1);
               this.pieces.unshift(piece);
 
               idx++;
               this.checkWinCondition();
-              setTimeout(solveNext, 70);
+              setTimeout(solveNext, 60);
             }
           };
 
-          requestAnimationFrame(animateStep);
+          requestAnimationFrame(step);
         };
 
         solveNext();
       }
 
-      /* ==========================================================================
-         COMPLETE FEATURE: SMART 1-PIECE HINT
-         ========================================================================== */
+      /* Smart Hint */
       provideHint() {
         if (this.autoSolving || this.isGameOver) return;
         const unlocked = this.pieces.filter(p => !p.isLocked && p.visible);
@@ -1752,7 +1810,6 @@
           return;
         }
 
-        // Prioritize edge pieces for realistic human solving strategy
         unlocked.sort((a, b) => (b.isEdge ? 1 : 0) - (a.isEdge ? 1 : 0));
         const piece = unlocked[0];
 
@@ -1765,7 +1822,7 @@
         piece.rotation = 0;
 
         const startTime = performance.now();
-        const duration = 300;
+        const duration = 280;
 
         const animateHint = (now) => {
           const progress = Math.min(1, (now - startTime) / duration);
@@ -1798,16 +1855,13 @@
         requestAnimationFrame(animateHint);
       }
 
-      /* ==========================================================================
-         COMPLETE FEATURE: CHECK ANSWER / VALIDATE PROGRESS
-         ========================================================================== */
+      /* Check Alignment */
       checkBoardAlignment() {
         if (this.isGameOver) return;
         const total = this.pieces.length;
         const correct = this.pieces.filter(p => p.isLocked).length;
         const percent = Math.round((correct / total) * 100);
 
-        // Flash highlight all placed pieces
         this.pieces.forEach(p => {
           if (p.isLocked) {
             p.isHighlighted = true;
@@ -1819,14 +1873,13 @@
         }, 1200);
 
         audio.playCheck(correct > 0);
-        this.showToast(`Board Check: ${correct}/${total} Placed (${percent}%)`);
+        this.showToast(`Progress: ${correct}/${total} Placed (${percent}%)`);
       }
 
-      /* Resize & Board Layout */
+      /* Responsive Layout: Guarantee Board & Pieces Are ALWAYS Visible */
       resize() {
-        const wrapper = document.getElementById('canvasWrapper');
         const dpr = window.devicePixelRatio || 1;
-        const rect = wrapper.getBoundingClientRect();
+        const rect = this.viewport.getBoundingClientRect();
 
         this.canvas.width = rect.width * dpr;
         this.canvas.height = rect.height * dpr;
@@ -1839,39 +1892,65 @@
         this.viewW = rect.width;
         this.viewH = rect.height;
 
-        this.recalculateBoardLayout();
+        this.recalculateLayout();
       }
 
-      recalculateBoardLayout() {
+      recalculateLayout() {
         if (!this.imageSource) return;
 
+        const isLandscape = this.viewW >= 768 || (this.viewW > this.viewH && this.viewW > 560);
         const imgAspect = (this.imageSource.width || 4) / (this.imageSource.height || 3);
-        const isMobile = this.viewW < 768;
-        const maxBoardW = isMobile ? this.viewW * 0.88 : this.viewW * 0.62;
-        const maxBoardH = isMobile ? this.viewH * 0.52 : this.viewH * 0.78;
 
-        let bw = maxBoardW;
-        let bh = bw / imgAspect;
+        if (isLandscape) {
+          // Landscape / Desktop: Board on Left, Tray on Right
+          const maxBoardW = this.viewW * 0.58;
+          const maxBoardH = this.viewH * 0.88;
 
-        if (bh > maxBoardH) {
-          bh = maxBoardH;
-          bw = bh * imgAspect;
-        }
+          let bw = maxBoardW;
+          let bh = bw / imgAspect;
 
-        this.boardW = Math.floor(bw);
-        this.boardH = Math.floor(bh);
+          if (bh > maxBoardH) {
+            bh = maxBoardH;
+            bw = bh * imgAspect;
+          }
 
-        if (isMobile) {
-          this.boardX = Math.floor((this.viewW - this.boardW) / 2);
-          this.boardY = Math.floor(this.viewH * 0.08);
-        } else {
-          this.boardX = Math.floor(this.viewW * 0.06);
+          this.boardW = Math.floor(bw);
+          this.boardH = Math.floor(bh);
+          this.boardX = Math.floor((maxBoardW - this.boardW) / 2 + 16);
           this.boardY = Math.floor((this.viewH - this.boardH) / 2);
+
+          this.trayX = this.boardX + this.boardW + 16;
+          this.trayY = 10;
+          this.trayW = Math.max(120, this.viewW - this.trayX - 16);
+          this.trayH = this.viewH - 20;
+        } else {
+          // Portrait / Mobile: Board on Top, Tray on Bottom
+          const maxBoardW = this.viewW * 0.92;
+          const maxBoardH = this.viewH * 0.44; // Leaves ample 56% height for tray below
+
+          let bw = maxBoardW;
+          let bh = bw / imgAspect;
+
+          if (bh > maxBoardH) {
+            bh = maxBoardH;
+            bw = bh * imgAspect;
+          }
+
+          this.boardW = Math.floor(bw);
+          this.boardH = Math.floor(bh);
+          this.boardX = Math.floor((this.viewW - this.boardW) / 2);
+          this.boardY = 10;
+
+          this.trayX = 8;
+          this.trayY = this.boardY + this.boardH + 12;
+          this.trayW = this.viewW - 16;
+          this.trayH = Math.max(140, this.viewH - this.trayY - 8);
         }
 
         this.pieceW = this.boardW / this.cols;
         this.pieceH = this.boardH / this.rows;
 
+        // Re-bake pieces
         if (this.pieces.length > 0) {
           this.pieces.forEach(p => {
             const oldTargetX = p.targetX;
@@ -1886,8 +1965,9 @@
               p.x = p.targetX;
               p.y = p.targetY;
             } else if (oldTargetX !== 0) {
-              p.x = Math.max(10, Math.min(this.viewW - p.w - 10, p.x));
-              p.y = Math.max(10, Math.min(this.viewH - p.h - 10, p.y));
+              // Clamp inside tray bounds
+              p.x = Math.max(this.trayX, Math.min(this.trayX + this.trayW - p.w, p.x));
+              p.y = Math.max(this.trayY, Math.min(this.trayY + this.trayH - p.h, p.y));
             }
           });
         }
@@ -1910,7 +1990,7 @@
         document.getElementById('winOverlay').style.display = 'none';
         document.getElementById('pauseOverlay').classList.remove('show');
 
-        this.recalculateBoardLayout();
+        this.recalculateLayout();
         this.generatePieces();
         this.scatterPieces();
         this.startTimer();
@@ -1960,43 +2040,43 @@
       }
 
       scatterPieces() {
-        const isMobile = this.viewW < 768;
+        const isLandscape = this.viewW >= 768 || (this.viewW > this.viewH && this.viewW > 560);
         this.pieces.forEach(p => {
-          if (isMobile) {
-            const trayTop = this.boardY + this.boardH + 20;
-            const trayHeight = Math.max(120, this.viewH - trayTop - 80);
-            p.x = 15 + Math.random() * (this.viewW - p.w - 30);
-            p.y = trayTop + Math.random() * Math.max(20, trayHeight - p.h);
+          if (!isLandscape) {
+            // Scatter comfortably into the bottom tray
+            const maxX = Math.max(10, this.trayW - p.w - 10);
+            const maxY = Math.max(10, this.trayH - p.h - 10);
+            p.x = this.trayX + 5 + Math.random() * maxX;
+            p.y = this.trayY + 5 + Math.random() * maxY;
           } else {
-            const trayLeft = this.boardX + this.boardW + 40;
-            const trayWidth = Math.max(140, this.viewW - trayLeft - 40);
-            p.x = trayLeft + Math.random() * Math.max(20, trayWidth - p.w);
-            p.y = 20 + Math.random() * (this.viewH - p.h - 100);
+            // Scatter comfortably into the side tray
+            const maxX = Math.max(10, this.trayW - p.w - 10);
+            const maxY = Math.max(10, this.trayH - p.h - 10);
+            p.x = this.trayX + 5 + Math.random() * maxX;
+            p.y = this.trayY + 5 + Math.random() * maxY;
           }
         });
       }
 
       arrangePiecesNeatly() {
         const unlocked = this.pieces.filter(p => !p.isLocked && p.visible);
-        const isMobile = this.viewW < 768;
+        const isLandscape = this.viewW >= 768 || (this.viewW > this.viewH && this.viewW > 560);
 
-        if (isMobile) {
-          const trayTop = this.boardY + this.boardH + 20;
-          const colsCount = Math.max(3, Math.floor(this.viewW / (this.pieceW * 0.9)));
+        if (!isLandscape) {
+          const colsCount = Math.max(3, Math.floor(this.trayW / (this.pieceW * 0.85)));
           unlocked.forEach((p, idx) => {
             const col = idx % colsCount;
             const row = Math.floor(idx / colsCount);
-            p.x = 20 + col * (this.pieceW * 0.85);
-            p.y = trayTop + row * (this.pieceH * 0.85);
+            p.x = this.trayX + 8 + col * (this.pieceW * 0.82);
+            p.y = this.trayY + 8 + row * (this.pieceH * 0.82);
           });
         } else {
-          const trayLeft = this.boardX + this.boardW + 40;
-          const rowsCount = Math.max(3, Math.floor((this.viewH - 120) / (this.pieceH * 0.9)));
+          const rowsCount = Math.max(3, Math.floor(this.trayH / (this.pieceH * 0.85)));
           unlocked.forEach((p, idx) => {
             const row = idx % rowsCount;
             const col = Math.floor(idx / rowsCount);
-            p.x = trayLeft + col * (this.pieceW * 0.85);
-            p.y = 40 + row * (this.pieceH * 0.85);
+            p.x = this.trayX + 8 + col * (this.pieceW * 0.82);
+            p.y = this.trayY + 8 + row * (this.pieceH * 0.82);
           });
         }
       }
@@ -2009,78 +2089,6 @@
           }
         }
         return null;
-      }
-
-      onPointerDown(e) {
-        if (this.isGameOver || this.isPaused || this.autoSolving) return;
-        audio.init();
-
-        const rect = this.canvas.getBoundingClientRect();
-        const px = (e.clientX - rect.left) * (this.canvas.width / (rect.width * (window.devicePixelRatio || 1)));
-        const py = (e.clientY - rect.top) * (this.canvas.height / (rect.height * (window.devicePixelRatio || 1)));
-
-        const piece = this.getPieceAt(px, py);
-        if (piece) {
-          this.canvas.setPointerCapture(e.pointerId);
-          this.draggedPiece = piece;
-          this.selectedPiece = piece;
-          this.dragOffsetX = px - piece.x;
-          this.dragOffsetY = py - piece.y;
-
-          this.pushUndoState();
-
-          const idx = this.pieces.indexOf(piece);
-          this.pieces.splice(idx, 1);
-          this.pieces.push(piece);
-
-          audio.playPick();
-        }
-      }
-
-      onPointerMove(e) {
-        if (this.isPaused) return;
-        const rect = this.canvas.getBoundingClientRect();
-        const px = (e.clientX - rect.left) * (this.canvas.width / (rect.width * (window.devicePixelRatio || 1)));
-        const py = (e.clientY - rect.top) * (this.canvas.height / (rect.height * (window.devicePixelRatio || 1)));
-
-        if (this.draggedPiece) {
-          this.draggedPiece.x = px - this.dragOffsetX;
-          this.draggedPiece.y = py - this.dragOffsetY;
-        } else {
-          const hovered = this.getPieceAt(px, py);
-          this.pieces.forEach(p => p.isHovered = (p === hovered));
-        }
-      }
-
-      onPointerUp(e) {
-        if (this.draggedPiece) {
-          const p = this.draggedPiece;
-          this.moves++;
-          this.updateStats();
-
-          const snapThreshold = Math.max(26, Math.min(p.w, p.h) * 0.38);
-          const dist = Math.hypot(p.x - p.targetX, p.y - p.targetY);
-          const isCorrectRotation = (p.rotation === 0);
-
-          if (dist < snapThreshold && isCorrectRotation) {
-            p.x = p.targetX;
-            p.y = p.targetY;
-            p.isLocked = true;
-            p.rotation = 0;
-            this.lockedCount++;
-            audio.playSnap();
-            this.showToast('Piece Snapped! ✨');
-
-            const idx = this.pieces.indexOf(p);
-            this.pieces.splice(idx, 1);
-            this.pieces.unshift(p);
-
-            this.updateStats();
-            this.checkWinCondition();
-          }
-
-          this.draggedPiece = null;
-        }
       }
 
       checkWinCondition() {
@@ -2144,10 +2152,25 @@
       render() {
         this.ctx.clearRect(0, 0, this.viewW, this.viewH);
 
-        // 1. Board Frame
+        // 1. Draw Piece Tray Box
         this.ctx.save();
-        this.ctx.fillStyle = 'var(--board-felt)';
-        this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        this.ctx.fillStyle = 'var(--tray-bg)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        this.ctx.lineWidth = 1.5;
+        this.ctx.roundRect ? this.ctx.roundRect(this.trayX, this.trayY, this.trayW, this.trayH, 10) : this.ctx.rect(this.trayX, this.trayY, this.trayW, this.trayH);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        // Tray Label
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.font = '11px system-ui';
+        this.ctx.fillText('PIECE TRAY', this.trayX + 10, this.trayY + 18);
+        this.ctx.restore();
+
+        // 2. Draw Target Assembly Board
+        this.ctx.save();
+        this.ctx.fillStyle = 'var(--board-bg)';
+        this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.5)';
         this.ctx.lineWidth = 2;
         this.ctx.roundRect ? this.ctx.roundRect(this.boardX, this.boardY, this.boardW, this.boardH, 8) : this.ctx.rect(this.boardX, this.boardY, this.boardW, this.boardH);
         this.ctx.fill();
@@ -2177,7 +2200,7 @@
         }
         this.ctx.restore();
 
-        // 2. Jigsaw Pieces
+        // 3. Draw All Jigsaw Pieces
         this.pieces.forEach(p => {
           if (!p.visible) return;
 
@@ -2188,23 +2211,22 @@
           }
 
           if (!p.isLocked) {
-            this.ctx.shadowColor = (p === this.draggedPiece) ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.45)';
-            this.ctx.shadowBlur = (p === this.draggedPiece) ? 20 : 8;
-            this.ctx.shadowOffsetX = (p === this.draggedPiece) ? 9 : 4;
-            this.ctx.shadowOffsetY = (p === this.draggedPiece) ? 9 : 4;
+            this.ctx.shadowColor = (p === this.draggedPiece) ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.45)';
+            this.ctx.shadowBlur = (p === this.draggedPiece) ? 18 : 6;
+            this.ctx.shadowOffsetX = (p === this.draggedPiece) ? 6 : 3;
+            this.ctx.shadowOffsetY = (p === this.draggedPiece) ? 6 : 3;
           }
 
           this.ctx.drawImage(p.canvas, -p.w / 2 - p.pad, -p.h / 2 - p.pad);
 
-          // Highlights
           if (p.isHighlighted) {
             this.ctx.strokeStyle = '#10b981';
             this.ctx.lineWidth = 3.5;
             p.drawPath(this.ctx, -p.w / 2, -p.h / 2);
             this.ctx.stroke();
-          } else if (p.isHovered && !p.isLocked && p !== this.draggedPiece) {
+          } else if ((p.isHovered || p === this.selectedPiece) && !p.isLocked && p !== this.draggedPiece) {
             this.ctx.shadowColor = '#38bdf8';
-            this.ctx.shadowBlur = 12;
+            this.ctx.shadowBlur = 10;
             p.drawPath(this.ctx, -p.w / 2, -p.h / 2);
             this.ctx.strokeStyle = '#38bdf8';
             this.ctx.lineWidth = 2.5;
@@ -2219,12 +2241,12 @@
       triggerConfetti() {
         this.confettiParticles = [];
         const colors = ['#38bdf8', '#818cf8', '#f43f5e', '#fbbf24', '#34d399', '#a855f7'];
-        for (let i = 0; i < 150; i++) {
+        for (let i = 0; i < 120; i++) {
           this.confettiParticles.push({
             x: window.innerWidth / 2,
             y: window.innerHeight / 2,
-            vx: (Math.random() - 0.5) * 24,
-            vy: (Math.random() - 0.7) * 22,
+            vx: (Math.random() - 0.5) * 22,
+            vy: (Math.random() - 0.7) * 20,
             size: Math.random() * 8 + 4,
             color: colors[Math.floor(Math.random() * colors.length)],
             rotation: Math.random() * 360,
@@ -2262,7 +2284,7 @@
       }
     }
 
-    // Launch Game
+    // Launch on DOM Ready
     window.addEventListener('DOMContentLoaded', () => {
       window.game = new JigsawGame();
     });
