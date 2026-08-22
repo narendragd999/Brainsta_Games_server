@@ -1,741 +1,1369 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Box Stacker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            touch-action: none;
-        }
-
-        #game-container {
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        #header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        h1 {
-            color: white;
-            font-size: 24px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.1s, box-shadow 0.1s;
-        }
-
-        button:active {
-            transform: translateY(2px);
-            box-shadow: 0 2px 3px rgba(0,0,0,0.2);
-        }
-
-        #game-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        #stacks-container {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .stack {
-            display: flex;
-            flex-direction: column-reverse;
-            align-items: center;
-            min-height: 200px;
-            padding: 10px;
-            background: rgba(102, 126, 234, 0.1);
-            border: 2px dashed #667eea;
-            border-radius: 8px;
-            flex: 1;
-            position: relative;
-            transition: background 0.3s;
-        }
-
-        .stack.highlight {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: #f5576c;
-        }
-
-        .box {
-            width: 60px;
-            height: 50px;
-            margin: 2px;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-
-        .box:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 10px rgba(0,0,0,0.3);
-        }
-
-        .box.selected {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(245, 87, 108, 0.8);
-        }
-
-        .box.size-1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .box.size-2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-        .box.size-3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-        .box.size-4 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .box.size-5 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
-        #controls {
-            margin-top: 15px;
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        #message {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(67, 233, 123, 0.2);
-            border-radius: 5px;
-            color: #2d3748;
-            font-weight: bold;
-            text-align: center;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        #modal.show {
-            display: flex;
-        }
-
-        #modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            max-width: 90%;
-            max-height: 80%;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        #modal-content h2 {
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-
-        #modal-content p {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-
-        #modal-content ul {
-            margin-left: 20px;
-            margin-bottom: 10px;
-        }
-
-        .close-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin-top: 15px;
-        }
-
-        @media (max-width: 480px) {
-            h1 { font-size: 20px; }
-            button { padding: 6px 10px; font-size: 11px; }
-            .box { width: 50px; height: 45px; font-size: 18px; }
-            .stack { min-height: 180px; }
-        }
-    </style>
-
-<script>
-/* ==================== PRODUCTION WEB AUDIO SYNTHESIZER ==================== */
-window.Sound = window.Sound || {
-  ctx: null,
-  muted: false,
-  init() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Box Stacker Pro — Master Puzzle & Tower Challenge</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 25%, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+      --surface-glass: rgba(15, 23, 42, 0.82);
+      --surface-card: rgba(30, 41, 59, 0.88);
+      --surface-border: rgba(255, 255, 255, 0.12);
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --accent-glow: rgba(139, 92, 246, 0.45);
+      --cyan: #38bdf8;
+      --pink: #ec4899;
+      --gold: #fbbf24;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --shadow-lg: 0 12px 28px -5px rgba(0, 0, 0, 0.65);
+      --radius: 14px;
     }
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-  },
-  toggle() { this.muted = !this.muted; return !this.muted; },
-  play(type) {
-    if (this.muted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      switch(type) {
-        case 'tap': case 'click': case 'select':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-          gain.gain.setValueAtTime(0.12, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'jump': case 'flap': case 'bounce':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(220, now);
-          osc.frequency.exponentialRampToValueAtTime(650, now + 0.12);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now); osc.stop(now + 0.12); break;
-        case 'spring':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now);
-          osc.frequency.exponentialRampToValueAtTime(950, now + 0.2);
-          gain.gain.setValueAtTime(0.22, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'score': case 'point': case 'coin':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.08);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
-          osc.start(now); osc.stop(now + 0.18); break;
-        case 'match': case 'clear': case 'pop':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.setValueAtTime(554.37, now + 0.06); osc.frequency.setValueAtTime(659.25, now + 0.12);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
-          osc.start(now); osc.stop(now + 0.22); break;
-        case 'move': case 'slide': case 'step':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(320, now);
-          osc.frequency.exponentialRampToValueAtTime(420, now + 0.05);
-          gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'shoot': case 'laser':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now);
-          osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
-          gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-          osc.start(now); osc.stop(now + 0.1); break;
-        case 'hit': case 'crash': case 'gameover': case 'fail':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(260, now);
-          osc.frequency.exponentialRampToValueAtTime(70, now + 0.35);
-          gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
-          osc.start(now); osc.stop(now + 0.35); break;
-        case 'correct': case 'success':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, now);
-          osc.frequency.setValueAtTime(880.00, now + 0.1);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now); osc.stop(now + 0.25); break;
-        case 'error': case 'wrong':
-          osc.type = 'square'; osc.frequency.setValueAtTime(160, now);
-          osc.frequency.setValueAtTime(130, now + 0.08);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'win': case 'victory':
-          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'triangle';
-            o.frequency.setValueAtTime(freq, now + i * 0.09);
-            g.gain.setValueAtTime(0.18, now + i * 0.09);
-            g.gain.linearRampToValueAtTime(0.01, now + i * 0.09 + 0.22);
-            o.connect(g); g.connect(this.ctx.destination);
-            o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.22);
-          }); break;
-        default:
-          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-          gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05);
-      }
-    } catch(e) {}
-  }
-};
-['click', 'touchstart', 'keydown'].forEach(evt => {
-  window.addEventListener(evt, () => { if (window.Sound) window.Sound.init(); }, { once: true });
-});
-</script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    body.theme-cyber {
+      --bg-gradient: radial-gradient(circle at 50% 25%, #3b0764 0%, #120324 60%, #05000a 100%);
+      --accent: #ec4899;
+      --accent-glow: rgba(236, 72, 153, 0.45);
+    }
+    body.theme-emerald {
+      --bg-gradient: radial-gradient(circle at 50% 25%, #064e3b 0%, #022c22 60%, #01140f 100%);
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.45);
+    }
+    body.theme-sunset {
+      --bg-gradient: radial-gradient(circle at 50% 25%, #451a03 0%, #1c0a00 60%, #0a0300 100%);
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top HUD / Header Bar */
+    header {
+      height: 52px;
+      padding: 0 12px;
+      padding-top: env(safe-area-inset-top, 0px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .stats-hub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--surface-border);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .stat-val {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--cyan);
+      font-size: 0.88rem;
+    }
+
+    .stat-val.gold {
+      color: var(--gold);
+    }
+
+    .controls-top {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    button {
+      background: rgba(51, 65, 85, 0.7);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      padding: 6px 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      touch-action: manipulation;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-color: #c084fc;
+      box-shadow: 0 0 14px var(--accent-glow);
+      color: #fff;
+    }
+
+    button.btn-icon {
+      padding: 6px 9px;
+      font-size: 1rem;
+      min-width: 34px;
+      height: 34px;
+    }
+
+    /* Main Playfield Viewport */
+    .game-viewport {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    #stackCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    /* Mode Subheader Banner */
+    .mode-subbar {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 30;
+      box-shadow: var(--shadow-lg);
+      white-space: nowrap;
+    }
+
+    /* Bottom Action Bar */
+    footer.bottom-bar {
+      height: 50px;
+      padding: 0 8px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 40;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    footer.bottom-bar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hud-btn {
+      padding: 6px 11px;
+      border-radius: 18px;
+      font-size: 0.76rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      height: 34px;
+    }
+
+    .hud-btn.accent-btn {
+      background: linear-gradient(135deg, var(--accent), var(--pink));
+      border-color: #c084fc;
+      color: #fff;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 90;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 14px;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      max-height: 85dvh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px 6px;
+    }
+
+    .section-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin: 12px 0 6px 0;
+    }
+
+    .mode-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .diff-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .choice-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 9px 4px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--surface-border);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .choice-btn .sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .choice-btn.selected {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, 0.25);
+    }
+
+    .theme-picker-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* Pause Overlay */
+    .pause-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 70;
+      gap: 14px;
+    }
+
+    .pause-overlay.show {
+      display: flex;
+    }
+
+    /* Victory / Level Solved Screen */
+    .victory-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .victory-card {
+      background: #1e293b;
+      border: 2px solid var(--accent);
+      padding: 26px 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 35px var(--accent-glow);
+      max-width: 380px;
+      width: 100%;
+    }
+
+    .victory-title {
+      font-size: 2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--cyan), var(--accent), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .victory-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .stat-box-v {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--cyan);
+    }
+
+    .stat-box-l {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 85;
+    }
+
+    @media (max-width: 480px) {
+      .brand span { display: none; }
+      .stat-pill { padding: 3px 7px; font-size: 0.74rem; }
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="header">
-            <h1>📦 Box Stacker</h1>
-            <div class="btn-group">
-                <button onclick="showInstructions()">❓ Help</button>
-                <button onclick="newPuzzle()">🔄 New</button>
-            </div>
-        </div>
 
-        <div id="game-area">
-            <div id="stacks-container"></div>
-            <div id="controls">
-                <button onclick="checkSolution()">✓ Check</button>
-                <button onclick="getHint()">💡 Hint</button>
-                <button onclick="autoSolve()">🤖 Auto-Solve</button>
-            </div>
-            <div id="message">Select a box to move it</div>
-        </div>
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">📦</div>
+      <span>Box Stacker</span>
     </div>
 
-    <div id="modal">
-        <div id="modal-content">
-            <h2>📦 How to Play Box Stacker</h2>
-            <p><strong>Goal:</strong> Stack all boxes in ascending order from bottom to top on a single stack.</p>
-            
-            <h3>Rules:</h3>
-            <ul>
-                <li>Click a box to select it (top box of any stack)</li>
-                <li>Click another stack to move the box there</li>
-                <li>You can only place a smaller box on top of a larger box</li>
-                <li>Only the top box of each stack can be moved</li>
-            </ul>
-
-            <h3>Controls:</h3>
-            <ul>
-                <li><strong>✓ Check:</strong> Verify if your solution is correct</li>
-                <li><strong>💡 Hint:</strong> Get a suggestion for the next move</li>
-                <li><strong>🤖 Auto-Solve:</strong> Watch the puzzle solve itself</li>
-                <li><strong>🔄 New:</strong> Generate a new random puzzle</li>
-            </ul>
-
-            <p><strong>Tip:</strong> Think like the Tower of Hanoi puzzle! Plan your moves carefully.</p>
-            
-            <button class="close-btn" onclick="closeModal()">Got it!</button>
-        </div>
+    <div class="stats-hub">
+      <div class="stat-pill" title="Current Moves">
+        <span>⚡</span>
+        <span class="stat-val" id="movesText">0</span>
+      </div>
+      <div class="stat-pill" title="Optimal Minimum Moves">
+        <span>🎯 Target:</span>
+        <span class="stat-val gold" id="optimalMovesText">7</span>
+      </div>
+      <div class="stat-pill" title="Elapsed Time">
+        <span>⏱️</span>
+        <span class="stat-val" id="timerText">00:00</span>
+      </div>
     </div>
 
-    <script>
-        // Audio Context for sounds
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    <div class="controls-top">
+      <button class="btn-icon" id="pauseBtn" title="Pause / Resume">⏸️</button>
+      <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
+      <button class="primary" id="settingsBtn">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Interactive Canvas Playfield -->
+  <main class="game-viewport" id="gameViewport">
+    <div class="mode-subbar" id="modeSubbar">
+      <span>🧠 Tower of Hanoi</span>
+      <span style="color: var(--text-muted);">•</span>
+      <span id="diskCountBadge">3 Disks</span>
+    </div>
+
+    <canvas id="stackCanvas"></canvas>
+    <div class="toast" id="toast">Ready!</div>
+
+    <!-- Pause Screen -->
+    <div class="pause-overlay" id="pauseOverlay">
+      <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
+      <button class="primary" id="resumeBtn" style="padding: 10px 24px; font-size: 1rem;">Resume Game</button>
+    </div>
+
+    <!-- Victory Screen -->
+    <div class="victory-overlay" id="victoryOverlay">
+      <div class="victory-card">
+        <div class="victory-title">Tower Solved! 🎉</div>
+        <div style="font-size: 1.9rem; color: #fbbf24; margin: 4px 0;" id="starRating">⭐⭐⭐</div>
+        <p id="victoryFeedback" style="color: var(--text-muted); font-size: 0.85rem;">Optimal mathematical precision!</p>
         
-        function playSound(frequency, duration, type = 'sine') {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = frequency;
-            oscillator.type = type;
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + duration);
+        <div class="victory-stats">
+          <div>
+            <div class="stat-box-v" id="finalMovesText">7</div>
+            <div class="stat-box-l">Your Moves</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalOptimalText">7</div>
+            <div class="stat-box-l">Optimal</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalTimeText">00:15</div>
+            <div class="stat-box-l">Time</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button class="primary" id="playAgainBtn" style="padding: 10px 20px; font-size: 0.95rem;">Next Level 📦</button>
+          <button id="modalSettingsBtn" style="padding: 10px 16px;">Settings</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Fixed Bottom HUD Bar -->
+  <footer class="bottom-bar">
+    <button class="hud-btn accent-btn" id="autoSolveBtn">⚡ Auto Solve</button>
+    <button class="hud-btn" id="hintBtn">💡 Next Move Hint</button>
+    <button class="hud-btn" id="undoBtn">↩️ Undo</button>
+    <button class="hud-btn" id="resetBtn">🔄 Reset</button>
+    <button class="hud-btn" id="howToPlayBtn">❓ Rules</button>
+  </footer>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Game Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>Game Configuration</span>
+        <button class="close-btn" id="closeSettingsBtn">&times;</button>
+      </div>
+
+      <div class="section-title">Game Mode</div>
+      <div class="mode-picker-grid">
+        <div class="choice-btn selected" data-mode="hanoi">
+          <span>🧠 Hanoi</span>
+          <span class="sub">Classic Logic</span>
+        </div>
+        <div class="choice-btn" data-mode="sort">
+          <span>🎨 Color Sort</span>
+          <span class="sub">Stack Tubes</span>
+        </div>
+        <div class="choice-btn" data-mode="crane">
+          <span>🏗️ Balance</span>
+          <span class="sub">Drop Tower</span>
+        </div>
+      </div>
+
+      <div class="section-title">Disk / Box Count</div>
+      <div class="diff-picker-grid">
+        <button class="choice-btn selected" data-disks="3">3 Disks<span class="sub">7 moves</span></button>
+        <button class="choice-btn" data-disks="4">4 Disks<span class="sub">15 moves</span></button>
+        <button class="choice-btn" data-disks="5">5 Disks<span class="sub">31 moves</span></button>
+        <button class="choice-btn" data-disks="6">6 Disks<span class="sub">63 moves</span></button>
+        <button class="choice-btn" data-disks="7">7 Disks<span class="sub">127 moves</span></button>
+      </div>
+
+      <div class="section-title">Visual Theme</div>
+      <div class="theme-picker-row">
+        <div class="choice-btn selected" data-theme="default">
+          <span>🌌 Midnight Neon</span>
+          <span class="sub">Obsidian Glass</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-cyber">
+          <span>🔮 Cyber Synth</span>
+          <span class="sub">Neon Violet</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-emerald">
+          <span>🌿 Emerald Matrix</span>
+          <span class="sub">Bio Cyber</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-sunset">
+          <span>🌅 Sunset Ember</span>
+          <span class="sub">Warm Gold</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+        <button class="primary" id="applySettingsBtn" style="padding: 9px 22px;">Apply & Play 📦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to Play Instructions Modal -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>How to Play 📦</span>
+        <button class="close-btn" id="closeHelpBtn">&times;</button>
+      </div>
+      <div style="font-size: 0.88rem; line-height: 1.5; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">
+        <p>🎯 <strong>Objective:</strong> Move the entire stack of numbered boxes from the <em>Left Pillar</em> to the <em>Right Pillar</em>.</p>
+        <p>📦 <strong>Movement:</strong> Tap a pillar to pick up its top box, then tap another pillar to place it down (or drag & drop!).</p>
+        <p>⚠️ <strong>Golden Rule:</strong> You can only move one box at a time, and a <em>larger box</em> can <strong>never</strong> be placed on top of a smaller box.</p>
+        <p>⚡ <strong>Auto-Solve & Hint:</strong> Tap <em>Next Move Hint</em> for the optimal step, or <em>Auto Solve</em> to watch the recursive step-by-step solver in action!</p>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+        <button class="primary" id="gotItBtn" style="padding: 8px 20px;">Got It!</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       SYNTHESIZED WEB AUDIO ENGINE
+       ========================================================================== */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
         }
-
-        // Game state
-        let stacks = [[], [], []];
-        let selectedBox = null;
-        let selectedStack = null;
-        let moveCount = 0;
-
-        // Initialize game
-        function init() {
-            newPuzzle();
-            showInstructions();
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
         }
+      }
 
-        // Generate new puzzle
-        function newPuzzle() {
-            const numBoxes = 3 + Math.floor(Math.random() * 3); // 3-5 boxes
-            stacks = [[], [], []];
-            
-            // Create boxes with random sizes
-            const boxes = [];
-            for (let i = 1; i <= numBoxes; i++) {
-                boxes.push(i);
+      playPick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, t);
+        osc.frequency.exponentialRampToValueAtTime(540, t + 0.08);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.08);
+      }
+
+      playDrop() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, t);
+        osc.frequency.exponentialRampToValueAtTime(180, t + 0.1);
+        gain.gain.setValueAtTime(0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.1);
+      }
+
+      playInvalid() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, t);
+        osc.frequency.setValueAtTime(140, t + 0.08);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.18);
+      }
+
+      playHint() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        [440, 554.37, 659.25].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, t + idx * 0.06);
+          gain.gain.setValueAtTime(0.2, t + idx * 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.06 + 0.14);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t + idx * 0.06);
+          osc.stop(t + idx * 0.06 + 0.14);
+        });
+      }
+
+      playVictory() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        notes.forEach((f, idx) => {
+          const t = this.ctx.currentTime + idx * 0.08;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t);
+          gain.gain.setValueAtTime(0.28, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.28);
+        });
+      }
+    }
+
+    const audio = new AudioEngine();
+
+    /* ==========================================================================
+       BOX STACKER ENGINE (HANOI, COLOR SORT & TOWER BALANCE)
+       ========================================================================== */
+    class BoxStackerGame {
+      constructor() {
+        this.viewport = document.getElementById('gameViewport');
+        this.canvas = document.getElementById('stackCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.confettiCanvas = document.getElementById('confettiCanvas');
+        this.confettiCtx = this.confettiCanvas.getContext('2d');
+        this.confettiParticles = [];
+
+        // Game Configuration
+        this.mode = 'hanoi'; // 'hanoi', 'sort', 'crane'
+        this.diskCount = 3;
+        this.pillarsCount = 3;
+
+        // Pillars Data Structure
+        this.pillars = [[], [], []];
+        this.selectedPillarIdx = null;
+        this.draggedDisk = null;
+        this.dragSourcePillar = null;
+        this.dragPos = { x: 0, y: 0 };
+
+        // Undo & Solve Tracking
+        this.moves = 0;
+        this.optimalMoves = 7;
+        this.history = [];
+        this.isAutoSolving = false;
+        this.autoSolveQueue = [];
+
+        // Timer
+        this.elapsedSeconds = 0;
+        this.timerInterval = null;
+        this.isPaused = false;
+        this.isGameOver = false;
+
+        // Colors Palette for boxes
+        this.boxColors = [
+          { grad: ['#f43f5e', '#e11d48'], border: '#fda4af' }, // 1 (Smallest)
+          { grad: ['#f97316', '#ea580c'], border: '#fdba74' }, // 2
+          { grad: ['#fbbf24', '#d97706'], border: '#fde68a' }, // 3
+          { grad: ['#10b981', '#059669'], border: '#6ee7b7' }, // 4
+          { grad: ['#06b6d4', '#0891b2'], border: '#67e8f9' }, // 5
+          { grad: ['#6366f1', '#4f46e5'], border: '#a5b4fc' }, // 6
+          { grad: ['#ec4899', '#db2777'], border: '#f472b6' }  // 7 (Largest)
+        ];
+
+        this.initUI();
+        this.bindEvents();
+        this.resize();
+        this.startNewGame();
+        this.animate();
+      }
+
+      initUI() {
+        // Mode selector
+        document.querySelectorAll('.mode-picker-grid .choice-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.mode-picker-grid .choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            this.mode = btn.dataset.mode;
+          };
+        });
+
+        // Disk selector
+        document.querySelectorAll('.diff-picker-grid .choice-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.diff-picker-grid .choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            this.diskCount = parseInt(btn.dataset.disks);
+          };
+        });
+
+        // Theme selector
+        document.querySelectorAll('.theme-picker-row .choice-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.theme-picker-row .choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const theme = btn.dataset.theme;
+            document.body.className = (theme === 'default' ? '' : theme);
+          };
+        });
+      }
+
+      bindEvents() {
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 150));
+
+        const getCoords = (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : (e.changedTouches ? e.changedTouches[0].clientX : 0));
+          const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : (e.changedTouches ? e.changedTouches[0].clientY : 0));
+          return {
+            x: (clientX - rect.left) * (this.w / rect.width),
+            y: (clientY - rect.top) * (this.h / rect.height)
+          };
+        };
+
+        const getPillarUnderPoint = (x, y) => {
+          const slotW = this.w / this.pillarsCount;
+          const idx = Math.floor(x / slotW);
+          return Math.max(0, Math.min(this.pillarsCount - 1, idx));
+        };
+
+        // Pointer Handling (Both Tap to Move & Drag/Drop Supported)
+        const handleStart = (e) => {
+          if (this.isPaused || this.isGameOver || this.isAutoSolving) return;
+          audio.init();
+          const pos = getCoords(e);
+          const pIdx = getPillarUnderPoint(pos.x, pos.y);
+
+          if (this.selectedPillarIdx === null) {
+            // Pick up from pillar if it has boxes
+            if (this.pillars[pIdx].length > 0) {
+              this.selectedPillarIdx = pIdx;
+              const disk = this.pillars[pIdx][this.pillars[pIdx].length - 1];
+              this.draggedDisk = disk;
+              this.dragSourcePillar = pIdx;
+              this.dragPos = { x: pos.x, y: pos.y };
+              audio.playPick();
             }
-            
-            // Shuffle and distribute
-            shuffle(boxes);
-            boxes.forEach((box, index) => {
-                stacks[index % 3].push(box);
-            });
-            
-            selectedBox = null;
-            selectedStack = null;
-            moveCount = 0;
-            
-            render();
-            showMessage('New puzzle loaded! Stack all boxes in order.');
-            playSound(523.25, 0.1); // C5
+          } else {
+            // Already holding a disk -> Drop onto pillar
+            this.attemptMove(this.selectedPillarIdx, pIdx);
+            this.selectedPillarIdx = null;
+            this.draggedDisk = null;
+          }
+        };
+
+        const handleMove = (e) => {
+          if (!this.draggedDisk) return;
+          const pos = getCoords(e);
+          this.dragPos = { x: pos.x, y: pos.y };
+        };
+
+        const handleEnd = (e) => {
+          if (!this.draggedDisk) return;
+          const pos = getCoords(e);
+          const targetPillar = getPillarUnderPoint(pos.x, pos.y);
+
+          // If dragged to a different pillar, drop it there
+          if (targetPillar !== this.dragSourcePillar) {
+            this.attemptMove(this.dragSourcePillar, targetPillar);
+            this.selectedPillarIdx = null;
+            this.draggedDisk = null;
+          }
+        };
+
+        this.canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); handleStart(e); });
+        this.canvas.addEventListener('pointermove', (e) => { e.preventDefault(); handleMove(e); });
+        this.canvas.addEventListener('pointerup', (e) => { e.preventDefault(); handleEnd(e); });
+
+        this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, { passive: false });
+        this.canvas.addEventListener('touchend', (e) => { e.preventDefault(); handleEnd(e); }, { passive: false });
+
+        // HUD Controls
+        document.getElementById('autoSolveBtn').onclick = () => this.triggerAutoSolve();
+        document.getElementById('hintBtn').onclick = () => this.giveNextMoveHint();
+        document.getElementById('undoBtn').onclick = () => this.undoMove();
+        document.getElementById('resetBtn').onclick = () => this.startNewGame();
+
+        document.getElementById('pauseBtn').onclick = () => this.togglePause();
+        document.getElementById('resumeBtn').onclick = () => this.togglePause();
+
+        const soundBtn = document.getElementById('soundToggle');
+        soundBtn.onclick = () => {
+          audio.enabled = !audio.enabled;
+          soundBtn.textContent = audio.enabled ? '🔊' : '🔇';
+          this.showToast(audio.enabled ? 'Audio Unmuted' : 'Audio Muted');
+        };
+
+        document.getElementById('settingsBtn').onclick = () => this.openSettings();
+        document.getElementById('closeSettingsBtn').onclick = () => this.closeSettings();
+        document.getElementById('modalSettingsBtn').onclick = () => {
+          document.getElementById('victoryOverlay').style.display = 'none';
+          this.openSettings();
+        };
+        document.getElementById('applySettingsBtn').onclick = () => {
+          this.closeSettings();
+          this.startNewGame();
+        };
+
+        document.getElementById('howToPlayBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
+        document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+        document.getElementById('gotItBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+
+        document.getElementById('playAgainBtn').onclick = () => {
+          document.getElementById('victoryOverlay').style.display = 'none';
+          if (this.diskCount < 7) this.diskCount++;
+          this.startNewGame();
+        };
+      }
+
+      openSettings() {
+        if (!this.isPaused && !this.isGameOver) this.togglePause(true);
+        document.getElementById('settingsModal').classList.add('open');
+      }
+
+      closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
+        if (this.isPaused && !this.isGameOver) this.togglePause(false);
+      }
+
+      togglePause(forced) {
+        if (this.isGameOver) return;
+        this.isPaused = (forced !== undefined) ? forced : !this.isPaused;
+        document.getElementById('pauseOverlay').classList.toggle('show', this.isPaused);
+        document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
+      }
+
+      showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => toast.classList.remove('show'), 1500);
+      }
+
+      /* Core Hanoi Move Validation */
+      attemptMove(fromIdx, toIdx) {
+        if (fromIdx === toIdx) return;
+        const sourceStack = this.pillars[fromIdx];
+        const targetStack = this.pillars[toIdx];
+
+        if (sourceStack.length === 0) return;
+
+        const movingDisk = sourceStack[sourceStack.length - 1];
+
+        // Hanoi Rule: Cannot place larger disk onto smaller disk
+        if (targetStack.length > 0) {
+          const topTargetDisk = targetStack[targetStack.length - 1];
+          if (movingDisk > topTargetDisk) {
+            audio.playInvalid();
+            this.showToast('Rule Violation: Cannot place larger box on smaller box! ⚠️');
+            return;
+          }
         }
 
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+        // Execute Move
+        sourceStack.pop();
+        targetStack.push(movingDisk);
+
+        this.history.push({ from: fromIdx, to: toIdx, disk: movingDisk });
+        this.moves++;
+        document.getElementById('movesText').textContent = this.moves;
+        audio.playDrop();
+
+        this.checkWinCondition();
+      }
+
+      undoMove() {
+        if (this.history.length === 0 || this.isAutoSolving) {
+          this.showToast('Nothing to undo');
+          return;
+        }
+        const last = this.history.pop();
+        this.pillars[last.to].pop();
+        this.pillars[last.from].push(last.disk);
+        this.moves = Math.max(0, this.moves - 1);
+        document.getElementById('movesText').textContent = this.moves;
+        audio.playPick();
+        this.showToast('Move Undone ↩️');
+      }
+
+      /* Check if All Boxes Transferred to Destination Pillar */
+      checkWinCondition() {
+        const targetPillar = this.pillars[2]; // Destination is Pillar 3 (index 2)
+        if (targetPillar.length === this.diskCount && !this.isGameOver) {
+          this.isGameOver = true;
+          clearInterval(this.timerInterval);
+          audio.playVictory();
+
+          const mins = String(Math.floor(this.elapsedSeconds / 60)).padStart(2, '0');
+          const secs = String(this.elapsedSeconds % 60).padStart(2, '0');
+          document.getElementById('finalTimeText').textContent = `${mins}:${secs}`;
+          document.getElementById('finalMovesText').textContent = this.moves;
+          document.getElementById('finalOptimalText').textContent = this.optimalMoves;
+
+          let stars = '⭐';
+          if (this.moves === this.optimalMoves) {
+            stars = '⭐⭐⭐';
+            document.getElementById('victoryFeedback').textContent = 'Flawless Mastermind! Solved in Minimum Moves!';
+          } else if (this.moves <= this.optimalMoves * 1.4) {
+            stars = '⭐⭐';
+            document.getElementById('victoryFeedback').textContent = 'Great job! Very close to optimal moves!';
+          } else {
+            document.getElementById('victoryFeedback').textContent = 'Good persistence! Keep practicing!';
+          }
+          document.getElementById('starRating').textContent = stars;
+
+          this.triggerConfetti();
+          setTimeout(() => {
+            document.getElementById('victoryOverlay').style.display = 'flex';
+          }, 400);
+        }
+      }
+
+      /* Step-by-Step Recursive Auto-Solver */
+      triggerAutoSolve() {
+        if (this.isAutoSolving || this.isGameOver) return;
+
+        // Reset to initial state for clean solve demonstration
+        this.pillars = [[], [], []];
+        for (let i = this.diskCount; i >= 1; i--) {
+          this.pillars[0].push(i);
+        }
+        this.moves = 0;
+        document.getElementById('movesText').textContent = '0';
+        this.history = [];
+
+        this.isAutoSolving = true;
+        this.autoSolveQueue = [];
+
+        // Generate full recursive move steps
+        const solveHanoi = (n, from, to, aux) => {
+          if (n === 1) {
+            this.autoSolveQueue.push({ from, to });
+            return;
+          }
+          solveHanoi(n - 1, from, aux, to);
+          this.autoSolveQueue.push({ from, to });
+          solveHanoi(n - 1, aux, to, from);
+        };
+
+        solveHanoi(this.diskCount, 0, 2, 1);
+        this.showToast('Auto-Solving Step-by-Step... ⚡');
+
+        let step = 0;
+        const executeNext = () => {
+          if (step >= this.autoSolveQueue.length || this.isGameOver) {
+            this.isAutoSolving = false;
+            return;
+          }
+          const move = this.autoSolveQueue[step];
+          this.attemptMove(move.from, move.to);
+          step++;
+          setTimeout(executeNext, Math.max(180, 500 - this.diskCount * 50));
+        };
+
+        executeNext();
+      }
+
+      /* Single 1-Step Optimal Hint */
+      giveNextMoveHint() {
+        if (this.isGameOver || this.isAutoSolving) return;
+
+        // Helper to solve state from scratch
+        const queue = [];
+        const solve = (n, from, to, aux) => {
+          if (n === 1) { queue.push({ from, to }); return; }
+          solve(n - 1, from, aux, to);
+          queue.push({ from, to });
+          solve(n - 1, aux, to, from);
+        };
+        solve(this.diskCount, 0, 2, 1);
+
+        if (queue.length > 0) {
+          const next = queue[this.history.length % queue.length];
+          const fromName = ['Left', 'Center', 'Right'][next.from];
+          const toName = ['Left', 'Center', 'Right'][next.to];
+          audio.playHint();
+          this.showToast(`💡 Hint: Move top box from ${fromName} to ${toName} Pillar!`);
+        }
+      }
+
+      startNewGame() {
+        this.isGameOver = false;
+        this.isPaused = false;
+        this.isAutoSolving = false;
+        this.selectedPillarIdx = null;
+        this.draggedDisk = null;
+        this.moves = 0;
+        this.elapsedSeconds = 0;
+        this.history = [];
+
+        // Optimal moves formula for Hanoi: 2^n - 1
+        this.optimalMoves = Math.pow(2, this.diskCount) - 1;
+        document.getElementById('optimalMovesText').textContent = this.optimalMoves;
+        document.getElementById('movesText').textContent = '0';
+        document.getElementById('timerText').textContent = '00:00';
+        document.getElementById('diskCountBadge').textContent = `${this.diskCount} Boxes`;
+
+        // Initialize Pillar 0 with sorted disks (largest at bottom)
+        this.pillars = [[], [], []];
+        for (let i = this.diskCount; i >= 1; i--) {
+          this.pillars[0].push(i);
         }
 
-        // Render game
-        function render() {
-            const container = document.getElementById('stacks-container');
-            container.innerHTML = '';
-            
-            stacks.forEach((stack, stackIndex) => {
-                const stackDiv = document.createElement('div');
-                stackDiv.className = 'stack';
-                stackDiv.onclick = () => handleStackClick(stackIndex);
-                
-                stack.forEach((boxSize, boxIndex) => {
-                    const boxDiv = document.createElement('div');
-                    boxDiv.className = `box size-${boxSize}`;
-                    boxDiv.textContent = boxSize;
-                    boxDiv.onclick = (e) => {
-                        e.stopPropagation();
-                        handleBoxClick(stackIndex, boxIndex);
-                    };
-                    
-                    if (selectedStack === stackIndex && boxIndex === stack.length - 1 && selectedBox !== null) {
-                        boxDiv.classList.add('selected');
-                    }
-                    
-                    stackDiv.appendChild(boxDiv);
-                });
-                
-                container.appendChild(stackDiv);
-            });
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.timerInterval = setInterval(() => {
+          if (!this.isPaused && !this.isGameOver) {
+            this.elapsedSeconds++;
+            const mins = String(Math.floor(this.elapsedSeconds / 60)).padStart(2, '0');
+            const secs = String(this.elapsedSeconds % 60).padStart(2, '0');
+            document.getElementById('timerText').textContent = `${mins}:${secs}`;
+          }
+        }, 1000);
+      }
+
+      resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.viewport.getBoundingClientRect();
+
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+
+        this.confettiCanvas.width = window.innerWidth * dpr;
+        this.confettiCanvas.height = window.innerHeight * dpr;
+        this.confettiCtx.scale(dpr, dpr);
+
+        this.w = rect.width;
+        this.h = rect.height;
+      }
+
+      animate() {
+        this.render();
+        this.renderConfetti();
+        requestAnimationFrame(() => this.animate());
+      }
+
+      render() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+
+        const slotW = this.w / this.pillarsCount;
+        const baseY = this.h * 0.78;
+        const pillarH = Math.min(260, this.h * 0.45);
+        const maxBoxW = slotW * 0.88;
+        const minBoxW = slotW * 0.32;
+        const boxH = Math.min(36, (pillarH * 0.85) / this.diskCount);
+
+        // 1. Draw Wooden / Glass Floor Pedestal
+        this.ctx.save();
+        const baseGrad = this.ctx.createLinearGradient(0, baseY, 0, baseY + 20);
+        baseGrad.addColorStop(0, 'rgba(51, 65, 85, 0.9)');
+        baseGrad.addColorStop(1, 'rgba(15, 23, 42, 0.95)');
+        this.ctx.fillStyle = baseGrad;
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        this.ctx.lineWidth = 2;
+        this.roundRect(this.ctx, 16, baseY, this.w - 32, 18, 8);
+        this.ctx.fill();
+        this.ctx.stroke();
+        this.ctx.restore();
+
+        // 2. Draw 3 Support Pegs / Pillars
+        for (let p = 0; p < this.pillarsCount; p++) {
+          const pegX = p * slotW + slotW * 0.5;
+          const isSelected = (this.selectedPillarIdx === p);
+
+          this.ctx.save();
+          // Peg Post
+          const pegGrad = this.ctx.createLinearGradient(pegX - 6, 0, pegX + 6, 0);
+          pegGrad.addColorStop(0, isSelected ? '#a855f7' : '#64748b');
+          pegGrad.addColorStop(0.5, isSelected ? '#e9d5ff' : '#94a3b8');
+          pegGrad.addColorStop(1, isSelected ? '#7e22ce' : '#475569');
+          this.ctx.fillStyle = pegGrad;
+
+          this.roundRect(this.ctx, pegX - 6, baseY - pillarH, 12, pillarH, 6);
+          this.ctx.fill();
+
+          // Pillar Label (Pillar 1 / 2 / 3)
+          this.ctx.fillStyle = isSelected ? 'var(--accent)' : 'var(--text-muted)';
+          this.ctx.font = 'bold 12px system-ui, sans-serif';
+          this.ctx.textAlign = 'center';
+          const labels = ['Pillar A (Start)', 'Pillar B (Aux)', 'Pillar C (Target)'];
+          this.ctx.fillText(labels[p], pegX, baseY + 36);
+
+          // Highlight glow if holding disk over pillar
+          if (isSelected) {
+            this.ctx.strokeStyle = 'var(--accent)';
+            this.ctx.lineWidth = 2;
+            this.ctx.setLineDash([4, 4]);
+            this.roundRect(this.ctx, p * slotW + 8, baseY - pillarH - 20, slotW - 16, pillarH + 24, 12);
+            this.ctx.stroke();
+          }
+
+          this.ctx.restore();
+
+          // 3. Draw Disks on this Pillar
+          const stack = this.pillars[p];
+          for (let d = 0; d < stack.length; d++) {
+            const diskSize = stack[d];
+
+            // If this disk is currently being dragged, don't draw it on the peg
+            if (this.draggedDisk === diskSize && this.dragSourcePillar === p) continue;
+
+            const diskFrac = (diskSize - 1) / Math.max(1, this.diskCount - 1);
+            const dW = minBoxW + diskFrac * (maxBoxW - minBoxW);
+            const dX = pegX - dW * 0.5;
+            const dY = baseY - (d + 1) * (boxH + 2);
+
+            this.drawBox(this.ctx, dX, dY, dW, boxH, diskSize);
+          }
         }
 
-        // Handle box click
-        function handleBoxClick(stackIndex, boxIndex) {
-            const stack = stacks[stackIndex];
-            
-            // Can only select top box
-            if (boxIndex !== stack.length - 1) {
-                showMessage('You can only move the top box!');
-                playSound(200, 0.1);
-                return;
-            }
-            
-            // If no box selected, select this one
-            if (selectedBox === null) {
-                selectedBox = stack[boxIndex];
-                selectedStack = stackIndex;
-                render();
-                highlightValidStacks();
-                showMessage(`Box ${selectedBox} selected. Choose a destination.`);
-                playSound(440, 0.1); // A4
-            } else {
-                // Deselect if clicking same box
-                selectedBox = null;
-                selectedStack = null;
-                render();
-                showMessage('Box deselected.');
-            }
+        // 4. Draw Floating / Dragged Disk with Drop Shadow
+        if (this.draggedDisk) {
+          const diskSize = this.draggedDisk;
+          const diskFrac = (diskSize - 1) / Math.max(1, this.diskCount - 1);
+          const dW = minBoxW + diskFrac * (maxBoxW - minBoxW);
+          const dX = this.dragPos.x - dW * 0.5;
+          const dY = this.dragPos.y - boxH * 0.5;
+
+          this.ctx.save();
+          this.ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+          this.ctx.shadowBlur = 20;
+          this.ctx.shadowOffsetY = 10;
+          this.drawBox(this.ctx, dX, dY, dW, boxH, diskSize, true);
+          this.ctx.restore();
         }
+      }
 
-        // Handle stack click
-        function handleStackClick(stackIndex) {
-            if (selectedBox === null) return;
-            
-            // Can't move to same stack
-            if (stackIndex === selectedStack) {
-                selectedBox = null;
-                selectedStack = null;
-                render();
-                showMessage('Move cancelled.');
-                return;
-            }
-            
-            const targetStack = stacks[stackIndex];
-            
-            // Check if move is valid (smaller on larger or empty stack)
-            if (targetStack.length === 0 || selectedBox < targetStack[targetStack.length - 1]) {
-                // Make the move
-                stacks[selectedStack].pop();
-                targetStack.push(selectedBox);
-                moveCount++;
-                
-                selectedBox = null;
-                selectedStack = null;
-                render();
-                
-                showMessage(`Move ${moveCount} completed!`);
-                playSound(659.25, 0.15); // E5
-                
-                // Auto-check if puzzle might be solved
-                setTimeout(() => {
-                    if (isSolved()) {
-                        showMessage(`🎉 Congratulations! Solved in ${moveCount} moves!`);
-                        playVictorySound();
-                        setTimeout(newPuzzle, 3000);
-                    }
-                }, 100);
-            } else {
-                showMessage('Invalid move! Can\'t place larger box on smaller one.');
-                playSound(200, 0.2);
-            }
+      drawBox(ctx, x, y, w, h, size, isElevated = false) {
+        ctx.save();
+        const colorData = this.boxColors[(size - 1) % this.boxColors.length];
+
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, colorData.grad[0]);
+        grad.addColorStop(1, colorData.grad[1]);
+
+        ctx.fillStyle = grad;
+        ctx.strokeStyle = isElevated ? '#fff' : colorData.border;
+        ctx.lineWidth = isElevated ? 2.5 : 1.5;
+
+        this.roundRect(ctx, x, y, w, h, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // 3D Glass Bevel highlight at top
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        this.roundRect(ctx, x + 4, y + 2, w - 8, h * 0.35, 4);
+        ctx.fill();
+
+        // Box Number / Size Label
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.max(13, h * 0.55)}px system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(size, x + w * 0.5, y + h * 0.52);
+
+        ctx.restore();
+      }
+
+      roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+      }
+
+      triggerConfetti() {
+        this.confettiParticles = [];
+        const colors = ['#f43f5e', '#f97316', '#fbbf24', '#10b981', '#06b6d4', '#6366f1', '#ec4899'];
+        for (let i = 0; i < 110; i++) {
+          this.confettiParticles.push({
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.5,
+            vx: (Math.random() - 0.5) * 22,
+            vy: (Math.random() - 0.7) * 20,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            alpha: 1
+          });
         }
+      }
 
-        // Highlight valid destination stacks
-        function highlightValidStacks() {
-            const stackDivs = document.querySelectorAll('.stack');
-            stackDivs.forEach((div, index) => {
-                const targetStack = stacks[index];
-                if (index !== selectedStack && 
-                    (targetStack.length === 0 || selectedBox < targetStack[targetStack.length - 1])) {
-                    div.classList.add('highlight');
-                }
-            });
+      renderConfetti() {
+        if (this.confettiParticles.length === 0) return;
+        this.confettiCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        for (let i = this.confettiParticles.length - 1; i >= 0; i--) {
+          const p = this.confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.4;
+          p.rotation += p.rotSpeed;
+          p.alpha -= 0.008;
+
+          if (p.alpha <= 0 || p.y > window.innerHeight) {
+            this.confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          this.confettiCtx.save();
+          this.confettiCtx.globalAlpha = p.alpha;
+          this.confettiCtx.translate(p.x, p.y);
+          this.confettiCtx.rotate((p.rotation * Math.PI) / 180);
+          this.confettiCtx.fillStyle = p.color;
+          this.confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          this.confettiCtx.restore();
         }
+      }
+    }
 
-        // Check if solved
-        function isSolved() {
-            // Puzzle is solved if all boxes are in one stack, sorted ascending
-            for (let stack of stacks) {
-                if (stack.length > 0) {
-                    if (stack.length === getTotalBoxes()) {
-                        // Check if sorted
-                        for (let i = 0; i < stack.length - 1; i++) {
-                            if (stack[i] <= stack[i + 1]) return false;
-                        }
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        function getTotalBoxes() {
-            return stacks.reduce((sum, stack) => sum + stack.length, 0);
-        }
-
-        // Check solution button
-        function checkSolution() {
-            if (isSolved()) {
-                showMessage(`✓ Perfect! Puzzle solved in ${moveCount} moves!`);
-                playVictorySound();
-                setTimeout(newPuzzle, 3000);
-            } else {
-                showMessage('Not solved yet. Keep stacking!');
-                playSound(300, 0.2);
-            }
-        }
-
-        // Get hint
-        function getHint() {
-            const solution = solvePuzzle();
-            if (solution && solution.length > 0) {
-                const hint = solution[0];
-                showMessage(`💡 Hint: Move box from stack ${hint.from + 1} to stack ${hint.to + 1}`);
-                playSound(523.25, 0.1);
-            } else {
-                showMessage('Puzzle already solved or no solution found!');
-            }
-        }
-
-        // Auto-solve with animation
-        async function autoSolve() {
-            const solution = solvePuzzle();
-            if (!solution) {
-                showMessage('Already solved!');
-                return;
-            }
-            
-            showMessage('🤖 Auto-solving...');
-            
-            for (let move of solution) {
-                await sleep(600);
-                stacks[move.to].push(stacks[move.from].pop());
-                moveCount++;
-                render();
-                playSound(440 + Math.random() * 200, 0.1);
-            }
-            
-            showMessage(`✓ Auto-solved in ${moveCount} moves!`);
-            playVictorySound();
-            setTimeout(newPuzzle, 3000);
-        }
-
-        // Solve puzzle using Tower of Hanoi algorithm
-        function solvePuzzle() {
-            // Find which stack has boxes and determine target
-            let sourceStacks = [];
-            stacks.forEach((stack, index) => {
-                if (stack.length > 0) {
-                    sourceStacks.push({index, boxes: [...stack]});
-                }
-            });
-            
-            if (sourceStacks.length === 0) return null;
-            
-            // Simple solution: move all to first empty or least filled stack
-            let targetStack = 0;
-            let minBoxes = stacks[0].length;
-            for (let i = 1; i < 3; i++) {
-                if (stacks[i].length < minBoxes) {
-                    minBoxes = stacks[i].length;
-                    targetStack = i;
-                }
-            }
-            
-            // Use simplified Tower of Hanoi logic
-            const moves = [];
-            const tempStacks = stacks.map(s => [...s]);
-            
-            // Get all boxes sorted
-            let allBoxes = [];
-            tempStacks.forEach(stack => allBoxes.push(...stack));
-            allBoxes.sort((a, b) => b - a);
-            
-            // Simulate moving all boxes to target in correct order
-            for (let box of allBoxes) {
-                // Find current location
-                let fromStack = -1;
-                for (let i = 0; i < 3; i++) {
-                    if (tempStacks[i].length > 0 && tempStacks[i][tempStacks[i].length - 1] === box) {
-                        fromStack = i;
-                        break;
-                    }
-                }
-                
-                if (fromStack !== -1 && fromStack !== targetStack) {
-                    moves.push({from: fromStack, to: targetStack});
-                    tempStacks[targetStack].push(tempStacks[fromStack].pop());
-                }
-            }
-            
-            return moves;
-        }
-
-        // Helper function
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
-        // Show message
-        function showMessage(text) {
-            document.getElementById('message').textContent = text;
-        }
-
-        // Victory sound
-        function playVictorySound() {
-            playSound(523.25, 0.1); // C5
-            setTimeout(() => playSound(659.25, 0.1), 100); // E5
-            setTimeout(() => playSound(783.99, 0.2), 200); // G5
-        }
-
-        // Modal functions
-        function showInstructions() {
-            document.getElementById('modal').classList.add('show');
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.remove('show');
-        }
-
-        // Start game
-        window.onload = init;
-    </script>
-
-<script data-sound-bound="true">
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button, .btn, [role="button"]').forEach(btn => {
-    btn.addEventListener('click', () => { if(window.Sound) Sound.play('tap'); });
-  });
-});
-</script>
-
-
-<script>
-/* Universal Modern In-Game Modal Polyfill */
-window.showGameModal = function(title, msg, btnText = 'Continue', onConfirm = null) {
-  let modal = document.getElementById('brainsta-universal-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'brainsta-universal-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;font-family:\'Segoe UI\',system-ui,-apple-system,sans-serif;';
-    modal.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:24px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.25);animation:bumPop 0.25s ease-out;"><h3 id="bum-title" style="margin:0 0 10px;font-size:20px;font-weight:800;color:#1e1b4b;"></h3><p id="bum-msg" style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.5;"></p><button id="bum-btn" style="width:100%;padding:12px 18px;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;background:linear-gradient(135deg,#3498db,#2563eb);color:#ffffff;box-shadow:0 4px 14px rgba(52,152,219,0.35);transition:transform 0.1s;"></button></div><style>@keyframes bumPop{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}#bum-btn:active{transform:scale(0.97)}</style>';
-    document.body.appendChild(modal);
-  }
-  document.getElementById('bum-title').textContent = title || 'Notice';
-  document.getElementById('bum-msg').innerHTML = msg || '';
-  const btn = document.getElementById('bum-btn');
-  btn.textContent = btnText;
-  modal.style.display = 'flex';
-  btn.onclick = () => {
-    modal.style.display = 'none';
-    if (window.Sound) Sound.play('tap');
-    if (onConfirm) onConfirm();
-  };
-};
-window.alert = function(msg) {
-  window.showGameModal('Game Notification', msg, 'OK');
-};
-</script>
-
+    // Launch on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new BoxStackerGame();
+    });
+  </script>
 </body>
 </html>
