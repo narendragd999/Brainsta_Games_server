@@ -1,1748 +1,1838 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Bungee Masters - Mobile Optimized</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            touch-action: manipulation;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: white;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        #game-container {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        #game-canvas {
-            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        
-        #ui-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-        
-        .ui-element {
-            position: absolute;
-            pointer-events: auto;
-        }
-        
-        #score-display {
-            top: 20px;
-            left: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
-        }
-        
-        #combo-display {
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 8px 15px;
-            border-radius: 20px;
-        }
-        
-        #trick-hint {
-            top: 70px;
-            left: 20px;
-            font-size: 16px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 6px 12px;
-            border-radius: 15px;
-            max-width: 250px;
-        }
-        
-        #controls {
-            bottom: 20px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        
-        .control-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            border-radius: 50px;
-            color: white;
-            padding: 12px 25px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(5px);
-            pointer-events: auto;
-        }
-        
-        .control-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        #mobile-controls {
-            position: absolute;
-            bottom: 100px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 30px;
-            pointer-events: none;
-        }
-        
-        .mobile-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            border: 2px solid white;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            user-select: none;
-            pointer-events: auto;
-            transition: all 0.2s;
-        }
-        
-        .mobile-btn:active {
-            transform: scale(0.9);
-            background: rgba(255, 255, 255, 0.5);
-        }
-        
-        #start-screen, #game-over-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 20;
-            pointer-events: auto;
-        }
-        
-        .screen-content {
-            text-align: center;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            max-width: 90%;
-            box-shadow: 0 0 30px rgba(253, 187, 45, 0.3);
-        }
-        
-        h1 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            color: #fdbb2d;
-            text-shadow: 0 0 10px rgba(253, 187, 45, 0.5);
-        }
-        
-        h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-        
-        p {
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #fdbb2d, #b21f1f);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        #qte-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 200px;
-            height: 200px;
-            pointer-events: none;
-            z-index: 15;
-        }
-        
-        .floating-text {
-            position: absolute;
-            font-size: 24px;
-            font-weight: bold;
-            color: #fdbb2d;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 5;
-            animation: floatUp 2s ease-out forwards;
-        }
-        
-        @keyframes floatUp {
-            0% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-120px);
-                opacity: 0;
-            }
-        }
-        
-        .power-up {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            animation: float 3s infinite ease-in-out;
-            z-index: 2;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(10deg); }
-        }
-        
-        #jump-meter {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 200px;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        
-        #jump-fill {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(to right, #4CAF50, #FFEB3B, #FF5722);
-            border-radius: 10px;
-            transition: width 0.2s ease-out;
-        }
-        
-        #instructions {
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 14px;
-            max-width: 90%;
-        }
-        
-        #challenge-list {
-            position: absolute;
-            top: 120px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 12px;
-            max-width: 200px;
-        }
-        
-        .challenge-item {
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .challenge-completed {
-            color: #4CAF50;
-        }
-
-        /* Mobile-specific optimizations */
-        @media (max-width: 768px) {
-            #score-display, #combo-display {
-                font-size: 18px;
-                padding: 6px 12px;
-            }
-            
-            #trick-hint {
-                font-size: 14px;
-                top: 60px;
-            }
-            
-            #challenge-list {
-                font-size: 10px;
-                top: 100px;
-                right: 10px;
-                max-width: 180px;
-            }
-            
-            .control-btn {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-            
-            .mobile-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 20px;
-            }
-            
-            #mobile-controls {
-                bottom: 80px;
-            }
-            
-            #instructions {
-                font-size: 12px;
-                bottom: 40px;
-            }
-            
-            h1 {
-                font-size: 36px;
-            }
-            
-            h2 {
-                font-size: 28px;
-            }
-            
-            .btn {
-                padding: 12px 24px;
-                font-size: 16px;
-            }
-        }
-    </style>
-
-<script>
-/* Universal Web Audio Synthesizer */
-window.Sound = window.Sound || {
-  ctx: null,
-  muted: false,
-  init() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Bungee Master Pro — Extreme Stunt & Dive</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #0369a1 0%, #0c4a6e 60%, #020617 100%);
+      --surface-glass: rgba(15, 23, 42, 0.82);
+      --surface-card: rgba(30, 41, 59, 0.88);
+      --surface-border: rgba(255, 255, 255, 0.12);
+      --accent: #38bdf8;
+      --accent-hover: #0284c7;
+      --accent-glow: rgba(56, 189, 248, 0.45);
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --gold: #fbbf24;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --shadow-lg: 0 12px 28px -5px rgba(0, 0, 0, 0.65);
+      --radius: 14px;
     }
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-  },
-  toggle() { this.muted = !this.muted; return !this.muted; },
-  play(type) {
-    if (this.muted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      switch(type) {
-        case 'tap': case 'click': case 'select':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-          gain.gain.setValueAtTime(0.12, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'jump': case 'flap': case 'bounce':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(220, now);
-          osc.frequency.exponentialRampToValueAtTime(650, now + 0.12);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now); osc.stop(now + 0.12); break;
-        case 'spring':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now);
-          osc.frequency.exponentialRampToValueAtTime(950, now + 0.2);
-          gain.gain.setValueAtTime(0.22, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'score': case 'point': case 'coin':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.08);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
-          osc.start(now); osc.stop(now + 0.18); break;
-        case 'match': case 'clear': case 'pop':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.setValueAtTime(554.37, now + 0.06); osc.frequency.setValueAtTime(659.25, now + 0.12);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
-          osc.start(now); osc.stop(now + 0.22); break;
-        case 'move': case 'slide': case 'step':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(320, now);
-          osc.frequency.exponentialRampToValueAtTime(420, now + 0.05);
-          gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'shoot': case 'laser':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now);
-          osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
-          gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-          osc.start(now); osc.stop(now + 0.1); break;
-        case 'hit': case 'crash': case 'gameover': case 'fail':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(260, now);
-          osc.frequency.exponentialRampToValueAtTime(70, now + 0.35);
-          gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
-          osc.start(now); osc.stop(now + 0.35); break;
-        case 'correct': case 'success':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, now);
-          osc.frequency.setValueAtTime(880.00, now + 0.1);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now); osc.stop(now + 0.25); break;
-        case 'error': case 'wrong':
-          osc.type = 'square'; osc.frequency.setValueAtTime(160, now);
-          osc.frequency.setValueAtTime(130, now + 0.08);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'win': case 'victory':
-          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'triangle';
-            o.frequency.setValueAtTime(freq, now + i * 0.09);
-            g.gain.setValueAtTime(0.18, now + i * 0.09);
-            g.gain.linearRampToValueAtTime(0.01, now + i * 0.09 + 0.22);
-            o.connect(g); g.connect(this.ctx.destination);
-            o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.22);
-          }); break;
-      }
-    } catch(e) {}
-  }
-};
-['click', 'touchstart', 'keydown'].forEach(evt => {
-  window.addEventListener(evt, () => { if (window.Sound) window.Sound.init(); }, { once: true });
-});
-</script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    body.theme-sunset {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #c2410c 0%, #7c2d12 60%, #1c0a00 100%);
+      --accent: #f97316;
+      --accent-glow: rgba(249, 115, 22, 0.45);
+    }
+    body.theme-neon {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #4c1d95 0%, #2e1065 60%, #090014 100%);
+      --accent: #ec4899;
+      --accent-glow: rgba(236, 72, 153, 0.45);
+    }
+    body.theme-alps {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #0e7490 0%, #155e75 60%, #082f49 100%);
+      --accent: #2dd4bf;
+      --accent-glow: rgba(45, 212, 191, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Header Bar */
+    header {
+      height: 52px;
+      padding: 0 12px;
+      padding-top: env(safe-area-inset-top, 0px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .stats-hub {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--surface-border);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .stat-val {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--accent);
+      font-size: 0.92rem;
+    }
+
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.pink { color: var(--pink); }
+
+    .controls-top {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    button {
+      background: rgba(51, 65, 85, 0.7);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      padding: 6px 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      touch-action: manipulation;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    button:active { transform: scale(0.95); }
+
+    button.primary {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      border-color: #7dd3fc;
+      box-shadow: 0 0 14px var(--accent-glow);
+      color: #fff;
+    }
+
+    button.btn-icon {
+      padding: 6px 9px;
+      font-size: 1rem;
+      min-width: 34px;
+      height: 34px;
+    }
+
+    /* Main Playfield Viewport */
+    .game-viewport {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #bungeeCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    /* Floating Status Badges */
+    .altitude-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-lg);
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    .stunt-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--surface-card);
+      border: 1.5px solid var(--pink);
+      padding: 5px 12px;
+      border-radius: 14px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 0 16px rgba(236, 72, 153, 0.5);
+      z-index: 25;
+      pointer-events: none;
+      color: #fff;
+    }
+
+    /* Jump Charge Bar */
+    .charge-meter-box {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--surface-border);
+      padding: 6px 14px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 30;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .charge-track {
+      width: 80px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .charge-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #38bdf8, #fbbf24, #ef4444);
+      border-radius: 4px;
+      transition: width 0.05s ease;
+    }
+
+    /* Directional Sway Controls (Left / Right Buttons) */
+    .dodge-controls {
+      position: absolute;
+      bottom: 84px;
+      left: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 30;
+    }
+
+    .dodge-fab {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--surface-card);
+      border: 2px solid var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      box-shadow: 0 0 16px var(--accent-glow);
+      cursor: pointer;
+      pointer-events: auto;
+      touch-action: manipulation;
+    }
+
+    .dodge-fab:active {
+      transform: scale(0.9);
+      background: rgba(56, 189, 248, 0.35);
+    }
+
+    /* Stunt Actions Floating Right */
+    .stunt-touch-controls {
+      position: absolute;
+      bottom: 84px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      pointer-events: none;
+      z-index: 30;
+    }
+
+    .stunt-fab {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: var(--surface-card);
+      border: 2px solid var(--pink);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: 0 0 16px rgba(236, 72, 153, 0.4);
+      cursor: pointer;
+      pointer-events: auto;
+      transition: transform 0.1s ease;
+    }
+
+    .stunt-fab span.lbl {
+      font-size: 8px;
+      font-weight: 800;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .stunt-fab:active {
+      transform: scale(0.9);
+      background: rgba(236, 72, 153, 0.35);
+    }
+
+    /* Bottom Action Bar */
+    footer.bottom-bar {
+      height: 50px;
+      padding: 0 8px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 40;
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    footer.bottom-bar::-webkit-scrollbar { display: none; }
+
+    .hud-btn {
+      padding: 6px 11px;
+      border-radius: 18px;
+      font-size: 0.76rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      height: 34px;
+    }
+
+    .hud-btn.accent-btn {
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-color: #7dd3fc;
+      color: #fff;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-50px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1.5px solid var(--accent);
+      color: var(--text);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 90;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 14px;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      max-height: 85vh;
+      max-height: 85dvh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px 6px;
+    }
+
+    .section-title {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin: 12px 0 6px 0;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .choice-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 6px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--surface-border);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .choice-btn .sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .choice-btn.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.2);
+    }
+
+    /* Pause Overlay */
+    .pause-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 70;
+      gap: 14px;
+    }
+
+    .pause-overlay.show { display: flex; }
+
+    /* Victory / Game Over Overlay */
+    .gameover-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .gameover-card {
+      background: #1e293b;
+      border: 2px solid var(--accent);
+      padding: 26px 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 35px var(--accent-glow);
+      max-width: 380px;
+      width: 100%;
+    }
+
+    .gameover-title {
+      font-size: 2rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--gold), var(--pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+
+    .gameover-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 16px 0;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .stat-box-v {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .stat-box-l {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 85;
+    }
+
+    .score-float {
+      position: absolute;
+      pointer-events: none;
+      font-weight: 900;
+      font-size: 1.3rem;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+      z-index: 60;
+      animation: floatFade 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes floatFade {
+      0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+      20% { opacity: 1; transform: translate(-50%, -70%) scale(1.2); }
+      100% { opacity: 0; transform: translate(-50%, -130%) scale(1); }
+    }
+
+    @media (max-width: 480px) {
+      .brand span { display: none; }
+      .stat-pill { padding: 3px 7px; font-size: 0.74rem; }
+      .dodge-fab, .stunt-fab { width: 44px; height: 44px; font-size: 1.1rem; }
+    }
+  </style>
 </head>
 <body>
-    <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-        
-        <div id="ui-overlay">
-            <div id="score-display" class="ui-element">Score: 0</div>
-            <div id="combo-display" class="ui-element">Combo: 1x</div>
-            <div id="trick-hint" class="ui-element">Hold SPACE or tap to charge jump!</div>
-            
-            <div id="jump-meter" class="ui-element">
-                <div id="jump-fill"></div>
-            </div>
-            
-            <div id="challenge-list" class="ui-element">
-                <h3>Challenges</h3>
-                <div class="challenge-item">
-                    <span>Perfect Jump</span>
-                    <span id="perfect-count">0/5</span>
-                </div>
-                <div class="challenge-item">
-                    <span>3-Trick Combo</span>
-                    <span id="combo-count">0/3</span>
-                </div>
-                <div class="challenge-item">
-                    <span>Chain 3 Rebounds</span>
-                    <span id="rebound-count">0/3</span>
-                </div>
-                <div class="challenge-item">
-                    <span>Collect Power-ups</span>
-                    <span id="powerup-count">0/3</span>
-                </div>
-            </div>
-            
-            <div id="controls" class="ui-element">
-                <button id="jump-btn" class="control-btn">JUMP</button>
-                <button id="demo-btn" class="control-btn">AUTO DEMO</button>
-                <button id="restart-btn" class="control-btn">RESTART</button>
-            </div>
-            
-            <div id="mobile-controls" class="ui-element">
-                <div id="left-btn" class="mobile-btn">←</div>
-                <div id="right-btn" class="mobile-btn">→</div>
-                <div id="jump-mobile-btn" class="mobile-btn">↑</div>
-            </div>
-            
-            <div id="instructions" class="ui-element">
-                Perform tricks with arrow keys or mobile buttons during jumps!
-            </div>
-        </div>
-        
-        <div id="start-screen">
-            <div class="screen-content">
-                <h1>BUNGEE MASTERS</h1>
-                <p><strong>Complete Challenges to Master the Game!</strong></p>
-                <p><strong>Step 1:</strong> Charge jump (SPACE/Tap) & release for perfect timing</p>
-                <p><strong>Step 2:</strong> Perform tricks in air (Arrow Keys) for bonus points</p>
-                <p><strong>Step 3:</strong> Time QTE rebounds perfectly for chain combos</p>
-                <p><strong>Step 4:</strong> Collect power-ups for score multipliers</p>
-                <p><strong>Step 5:</strong> Complete challenges for massive bonuses!</p>
-                <button id="start-btn" class="btn">START GAME</button>
-            </div>
-        </div>
-        
-        <div id="game-over-screen" class="hidden">
-            <div class="screen-content">
-                <h2>GAME OVER</h2>
-                <p id="final-score">Your score: 0</p>
-                <p id="high-score">High score: 0</p>
-                <p id="challenges-completed">Challenges completed: 0/4</p>
-                <button id="play-again-btn" class="btn">PLAY AGAIN</button>
-            </div>
-        </div>
+
+  <!-- Top Navigation Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🪂</div>
+      <span>Bungee Master</span>
     </div>
 
-    <script>
-        // Game variables
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        let score = 0;
-        let highScore = 0;
-        let isJumping = false;
-        let isFalling = false;
-        let jumpPower = 0;
-        let maxJumpPower = 500;
-        let trickMultiplier = 1;
-        let currentTrick = null;
-        let qteActive = false;
-        let qteProgress = 0;
-        let qteMaxTime = 150;
-        let qteCurrentTime = 0;
-        let powerUps = [];
-        let isAutoDemo = false;
-        let autoDemoStep = 0;
-        let demoInterval;
-        let isMobile = false;
-        let floatingTexts = [];
-        let gameActive = false;
-        let ropeSegments = [];
-        let clouds = [];
+    <div class="stats-hub">
+      <div class="stat-pill" title="Score">
+        <span>⭐</span>
+        <span class="stat-val gold" id="scoreText">0</span>
+      </div>
+      <div class="stat-pill" title="Target Altitude">
+        <span>📏</span>
+        <span class="stat-val" id="depthText">0m</span>
+      </div>
+      <div class="stat-pill" title="Lives Remaining">
+        <span>❤️</span>
+        <span class="stat-val pink" id="livesText">3</span>
+      </div>
+    </div>
+
+    <div class="controls-top">
+      <button class="btn-icon" id="pauseBtn" title="Pause / Resume">⏸️</button>
+      <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
+      <button class="primary" id="settingsBtn">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Interactive Canvas Playfield -->
+  <main class="game-viewport" id="gameViewport">
+    <div class="altitude-badge" id="altitudeBadge">
+      <span>Stage 1</span>
+      <span style="color: var(--text-muted);">•</span>
+      <span id="stageName">Golden Gate Bridge</span>
+    </div>
+
+    <div class="stunt-badge" id="stuntBadge">
+      <span id="stuntNameText">360 BACKFLIP!</span>
+      <span>+250 🔥</span>
+    </div>
+
+    <div class="charge-meter-box" id="chargeMeterBox">
+      <span>⚡ Dive Power:</span>
+      <div class="charge-track">
+        <div class="charge-fill" id="chargeFill"></div>
+      </div>
+    </div>
+
+    <canvas id="bungeeCanvas"></canvas>
+    <div class="toast" id="toast">Hold anywhere to charge dive, release to jump! 🪂</div>
+
+    <!-- On-Screen Left / Right Dodge Sway Buttons -->
+    <div class="dodge-controls">
+      <button class="dodge-fab" id="swayLeftBtn" title="Dodge Left">◀</button>
+      <button class="dodge-fab" id="swayRightBtn" title="Dodge Right">▶</button>
+    </div>
+
+    <!-- On-Screen Stunt Action Trigger Buttons -->
+    <div class="stunt-touch-controls">
+      <div class="stunt-fab" id="flipStuntBtn" title="Front Flip (Invincible Spin!)">
+        🤸
+        <span class="lbl">Flip</span>
+      </div>
+      <div class="stunt-fab" id="spinStuntBtn" title="360 Spin (Evasion!)">
+        🌪️
+        <span class="lbl">Spin</span>
+      </div>
+      <div class="stunt-fab" id="rocketBoostBtn" title="Spring Boost">
+        🚀
+        <span class="lbl">Boost</span>
+      </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div class="pause-overlay" id="pauseOverlay">
+      <div style="font-size: 2rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
+      <button class="primary" id="resumeBtn" style="padding: 10px 24px; font-size: 1rem;">Resume Dive</button>
+    </div>
+
+    <!-- Game Over / Stage Solved Overlay -->
+    <div class="gameover-overlay" id="gameOverOverlay">
+      <div class="gameover-card">
+        <div class="gameover-title" id="endTitle">Dive Mastered! 🪂</div>
+        <div style="font-size: 1.9rem; color: #fbbf24; margin: 4px 0;" id="starRating">⭐⭐⭐</div>
+        <p id="endFeedback" style="color: var(--text-muted); font-size: 0.85rem;">Insane adrenaline stunts!</p>
         
-        // Challenge system
-        let challenges = {
-            perfectJumps: { target: 5, completed: 0, bonus: 500 },
-            trickCombos: { target: 3, completed: 0, bonus: 300 },
-            reboundChains: { target: 3, completed: 0, bonus: 400 },
-            powerUpsCollected: { target: 3, completed: 0, bonus: 200 }
-        };
-        
-        let currentCombo = 1;
-        let reboundChain = 0;
-        let tricksInCurrentJump = 0;
-        
-        // Player properties
-        const player = {
-            x: 400,
-            y: 300,
-            width: 30,
-            height: 50,
-            velocityY: 0,
-            velocityX: 0,
-            rotation: 0,
-            color: '#3498db',
-            scale: 1,
-            targetScale: 1
-        };
-        
-        // Platform properties
-        const platform = {
-            x: 300,
-            y: 550,
-            width: 400,
-            height: 40,
-            color: '#2c3e50'
-        };
-        
-        // Rope properties
-        const rope = {
-            x: 400,
-            y: 0,
-            length: 300,
-            stretchedLength: 300,
-            color: '#8B4513',
-            width: 4,
-            segments: 20
-        };
-        
-        // QTE properties - Will be updated based on canvas size
-        const qte = {
-            x: 0, // Will be set based on canvas width
-            y: 0, // Will be set based on canvas height
-            radius: 90,
-            currentRadius: 90,
-            color: '#fdbb2d'
-        };
-        
-        // Physics constants
-        const GRAVITY = 0.2;
-        const JUMP_POWER_FACTOR = 0.08;
-        const DAMPING = 0.92;
-        
-        // Game initialization
-        function init() {
-            // Set canvas size to full screen
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            
-            // Check if mobile
-            isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-            
-            // Setup event listeners
-            setupEventListeners();
-            
-            // Create rope segments
-            createRopeSegments();
-            
-            // Create clouds
-            createClouds();
-            
-            // Start game loop
-            requestAnimationFrame(gameLoop);
+        <div class="gameover-stats">
+          <div>
+            <div class="stat-box-v" id="finalScoreText">0</div>
+            <div class="stat-box-l">Total Score</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalStuntsText">0</div>
+            <div class="stat-box-l">Stunts Performed</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalNearMissText">0</div>
+            <div class="stat-box-l">Near Misses</div>
+          </div>
+          <div>
+            <div class="stat-box-v" id="finalStageText">1</div>
+            <div class="stat-box-l">Stage</div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: center;">
+          <button class="primary" id="playAgainBtn" style="padding: 10px 20px; font-size: 0.95rem;">Next Stage 🪂</button>
+          <button id="modalSettingsBtn" style="padding: 10px 16px;">Settings</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom HUD Bar -->
+  <footer class="bottom-bar">
+    <button class="hud-btn accent-btn" id="autoStuntBotBtn">🤖 Auto Pilot</button>
+    <button class="hud-btn" id="magnetPowerBtn">🧲 Magnet (3)</button>
+    <button class="hud-btn" id="shieldPowerBtn">🛡️ Shield Bubble</button>
+    <button class="hud-btn" id="slowMoPowerBtn">⏳ Slow-Mo (2)</button>
+    <button class="hud-btn" id="resetDiveBtn">🔄 Retry Jump</button>
+    <button class="hud-btn" id="rulesBtn">❓ Help</button>
+  </footer>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Game Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>Bungee Configuration</span>
+        <button class="close-btn" id="closeSettingsBtn">&times;</button>
+      </div>
+
+      <div class="section-title">Jump Location & Stage</div>
+      <div class="choice-grid">
+        <div class="choice-btn selected" data-stage="1">
+          <span>🌉 Golden Gate</span>
+          <span class="sub">Sunny Bay Dive</span>
+        </div>
+        <div class="choice-btn" data-stage="2">
+          <span>🏜️ Grand Canyon</span>
+          <span class="sub">Red Chasm Gorge</span>
+        </div>
+        <div class="choice-btn" data-stage="3">
+          <span>🏔️ Swiss Alps</span>
+          <span class="sub">Glacier Peak</span>
+        </div>
+        <div class="choice-btn" data-stage="4">
+          <span>🌆 Cyber Tower</span>
+          <span class="sub">Neon Skyscraper</span>
+        </div>
+      </div>
+
+      <div class="section-title">Visual Atmosphere</div>
+      <div class="choice-grid">
+        <div class="choice-btn selected" data-theme="default">
+          <span>☀️ Clear Daylight</span>
+          <span class="sub">Azure Sky</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-sunset">
+          <span>🌅 Sunset Ember</span>
+          <span class="sub">Warm Gold Glow</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-neon">
+          <span>🔮 Synthwave Night</span>
+          <span class="sub">Neon Violet</span>
+        </div>
+        <div class="choice-btn" data-theme="theme-alps">
+          <span>❄️ Arctic Frost</span>
+          <span class="sub">Emerald Mist</span>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+        <button class="primary" id="applySettingsBtn" style="padding: 9px 22px;">Apply & Dive 🪂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- How to Play Instructions Modal -->
+  <div class="modal-overlay" id="helpModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>How to Escape & Dodge Enemies 🪂</span>
+        <button class="close-btn" id="closeHelpBtn">&times;</button>
+      </div>
+      <div style="font-size: 0.88rem; line-height: 1.5; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">
+        <p>🎮 <strong>1. Tap ◀ / ▶ or Drag Screen:</strong> Use the on-screen left/right arrow buttons or drag anywhere to steer your jumper away from birds 🦅 and drones 🛸!</p>
+        <p>🌀 <strong>2. Stunt Invincibility (I-Frames):</strong> Tapping <code>Flip</code> 🤸 or <code>Spin</code> 🌪️ grants <strong>1.5 seconds of Invincibility</strong>. You pass right through enemies and earn <strong>EVASION +150 PTS</strong>!</p>
+        <p>🛡️ <strong>3. Shield Bubble:</strong> Tap <em>Shield Bubble</em> in the bottom bar to protect against collisions.</p>
+        <p>🤖 <strong>4. Auto Stunt Pilot:</strong> Turn on Auto-Pilot for automatic obstacle evasion!</p>
+      </div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+        <button class="primary" id="gotItBtn" style="padding: 8px 20px;">Got It!</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       SYNTHESIZED WEB AUDIO ENGINE
+       ========================================================================== */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
         }
-        
-        // Create rope segments for smoother animation
-        function createRopeSegments() {
-            ropeSegments = [];
-            const segmentLength = rope.length / rope.segments;
-            
-            for (let i = 0; i < rope.segments; i++) {
-                ropeSegments.push({
-                    x: rope.x,
-                    y: i * segmentLength,
-                    length: segmentLength,
-                    angle: 0
-                });
-            }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
         }
-        
-        // Create clouds for background
-        function createClouds() {
-            clouds = [
-                { x: 100, y: 80, size: 1, speed: 0.2 },
-                { x: 300, y: 120, size: 1.2, speed: 0.3 },
-                { x: 500, y: 60, size: 0.8, speed: 0.25 },
-                { x: 700, y: 100, size: 1.1, speed: 0.15 }
-            ];
-        }
-        
-        // Resize canvas to fit container - FULL SCREEN
-        function resizeCanvas() {
-            const container = document.getElementById('game-container');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            // Adjust game elements for new size
-            player.x = canvas.width / 2;
-            platform.x = (canvas.width - platform.width) / 2;
-            platform.y = canvas.height - 50;
-            rope.x = canvas.width / 2;
-            
-            // Update QTE position to center of screen
-            qte.x = canvas.width / 2;
-            qte.y = canvas.height / 2;
-            
-            // Update rope segments
-            createRopeSegments();
-            
-            // Adjust platform width for mobile
-            if (isMobile) {
-                platform.width = canvas.width * 0.8;
-                platform.x = (canvas.width - platform.width) / 2;
-            }
-        }
-        
-        // Setup event listeners
-        function setupEventListeners() {
-            // Start button
-            document.getElementById('start-btn').addEventListener('click', startGame);
-            
-            // Play again button
-            document.getElementById('play-again-btn').addEventListener('click', startGame);
-            
-            // Control buttons
-            document.getElementById('jump-btn').addEventListener('click', handleJumpButton);
-            document.getElementById('demo-btn').addEventListener('click', toggleAutoDemo);
-            document.getElementById('restart-btn').addEventListener('click', resetGame);
-            
-            // Keyboard controls
-            document.addEventListener('keydown', handleKeyDown);
-            document.addEventListener('keyup', handleKeyUp);
-            
-            // Mobile controls - always show on mobile
-            if (isMobile) {
-                document.getElementById('mobile-controls').style.display = 'flex';
-                document.getElementById('left-btn').addEventListener('touchstart', () => performTrick('left'));
-                document.getElementById('right-btn').addEventListener('touchstart', () => performTrick('right'));
-                document.getElementById('jump-mobile-btn').addEventListener('touchstart', handleMobileJump);
-            } else {
-                document.getElementById('mobile-controls').style.display = 'none';
-            }
-            
-            // Touch controls for jump
-            canvas.addEventListener('touchstart', handleTouchStart);
-            canvas.addEventListener('touchend', handleTouchEnd);
-        }
-        
-        // Handle keyboard input
-        function handleKeyDown(e) {
-            if (!gameActive) return;
-            
-            switch(e.code) {
-                case 'Space':
-                    e.preventDefault();
-                    if (!isJumping && !isFalling) {
-                        startJump();
-                    }
-                    break;
-                case 'ArrowLeft':
-                    performTrick('left');
-                    break;
-                case 'ArrowRight':
-                    performTrick('right');
-                    break;
-                case 'ArrowUp':
-                    performTrick('up');
-                    break;
-                case 'ArrowDown':
-                    performTrick('down');
-                    break;
-            }
-        }
-        
-        function handleKeyUp(e) {
-            if (!gameActive) return;
-            
-            if (e.code === 'Space' && isJumping) {
-                e.preventDefault();
-                executeJump();
-            }
-        }
-        
-        // Handle mobile jump
-        function handleMobileJump() {
-            if (!gameActive) return;
-            
-            if (!isJumping && !isFalling) {
-                startJump();
-            } else if (isJumping) {
-                executeJump();
-            } else {
-                performTrick('up');
-            }
-        }
-        
-        // Handle touch input
-        function handleTouchStart(e) {
-            if (!gameActive) return;
-            e.preventDefault();
-            
-            if (!isJumping && !isFalling) {
-                startJump();
-            }
-        }
-        
-        function handleTouchEnd(e) {
-            if (!gameActive) return;
-            e.preventDefault();
-            
-            if (isJumping) {
-                executeJump();
-            }
-        }
-        
-        // Handle jump button
-        function handleJumpButton() {
-            if (!gameActive) return;
-            
-            if (!isJumping && !isFalling) {
-                startJump();
-            } else if (isJumping) {
-                executeJump();
-            }
-        }
-        
-        // Start jump charging
-        function startJump() {
-            isJumping = true;
-            jumpPower = 0;
-            tricksInCurrentJump = 0;
-            
-            // Update UI
-            document.getElementById('trick-hint').textContent = 'Charging jump... Release to jump!';
-            
-            // Start charging animation
-            const chargeInterval = setInterval(() => {
-                if (isJumping && jumpPower < maxJumpPower) {
-                    jumpPower += 4;
-                    document.getElementById('jump-fill').style.width = `${(jumpPower / maxJumpPower) * 100}%`;
-                    
-                    // Squash player while charging
-                    player.targetScale = 1 - (jumpPower / maxJumpPower) * 0.3;
-                } else {
-                    clearInterval(chargeInterval);
-                }
-            }, 20);
-        }
-        
-        // Execute jump
-        function executeJump() {
-            if (!isJumping) return;
-            
-            isJumping = false;
-            isFalling = true;
-            
-            // Apply jump velocity with slower factor
-            player.velocityY = -jumpPower * JUMP_POWER_FACTOR;
-            
-            // Reset player scale with bounce effect
-            player.targetScale = 1.2;
-            setTimeout(() => {
-                player.targetScale = 1;
-            }, 200);
-            
-            // Play jump sound
-            playSound('jump');
-            
-            // Animate rope
-            animateRope();
-            
-            // Show jump power text
-            let powerText = jumpPower > 450 ? 'PERFECT!' : 'GOOD!';
-            showFloatingText(powerText, player.x, player.y);
-            
-            // Check for perfect jump challenge
-            if (jumpPower > 450) {
-                playSound('perfect');
-                score += 100;
-                
-                // Perfect jump challenge
-                showFloatingText('PERFECT JUMP! +100', player.x, player.y - 30);
-            } else {
-                score += Math.floor(jumpPower / 10);
-            }
-            
-            updateScore();
-            
-            // Reset jump meter
-            document.getElementById('jump-fill').style.width = '0%';
-            
-            // Update UI
-            document.getElementById('trick-hint').textContent = 'Perform tricks with arrow keys or mobile buttons!';
-            
-            // Start QTE for rebound after a delay
-            setTimeout(() => {
-                startQTE();
-            }, 1000);
-        }
-        
-        // Animate rope stretching with smooth easing
-        function animateRope() {
-            rope.stretchedLength = rope.length + 200;
-            
-            // Gradually return rope to normal length with easing
-            const startTime = Date.now();
-            const duration = 800;
-            
-            const animate = () => {
-                const elapsed = Date.now() - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                
-                // Easing function for smooth animation
-                const easeOut = 1 - Math.pow(1 - progress, 3);
-                
-                rope.stretchedLength = rope.length + 200 * (1 - easeOut);
-                
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                }
-            };
-            
-            animate();
-        }
-        
-        // Start QTE for rebound - NOW CENTERED
-        function startQTE() {
-            if (!isFalling) return;
-            
-            qteActive = true;
-            qteCurrentTime = 0;
-            qte.currentRadius = qte.radius;
-            
-            // Update UI
-            document.getElementById('trick-hint').textContent = 'Press SPACE or tap for rebound!';
-            
-            // QTE update loop
-            const qteInterval = setInterval(() => {
-                if (qteActive && qteCurrentTime < qteMaxTime) {
-                    qteCurrentTime += 2;
-                    qte.currentRadius = qte.radius * (1 - qteCurrentTime / qteMaxTime);
-                    
-                    if (qteCurrentTime >= qteMaxTime) {
-                        clearInterval(qteInterval);
-                        endQTE(false);
-                    }
-                } else if (!qteActive) {
-                    clearInterval(qteInterval);
-                }
-            }, 20);
-            
-            // QTE input
-            const handleQTEEnd = () => {
-                if (qteActive) {
-                    clearInterval(qteInterval);
-                    endQTE(true);
-                }
-            };
-            
-            document.addEventListener('keydown', handleQTEEnd);
-            canvas.addEventListener('touchstart', handleQTEEnd);
-            
-            // Remove event listeners after QTE ends
-            setTimeout(() => {
-                document.removeEventListener('keydown', handleQTEEnd);
-                canvas.removeEventListener('touchstart', handleQTEEnd);
-            }, 3000);
-        }
-        
-        // End QTE
-        function endQTE(success) {
-            qteActive = false;
-            
-            if (success) {
-                // Successful rebound with slower physics
-                const reboundPower = 200 - (qteCurrentTime / qteMaxTime) * 150;
-                player.velocityY = -reboundPower * JUMP_POWER_FACTOR;
-                
-                // Add bounce effect to player
-                player.targetScale = 1.3;
-                setTimeout(() => {
-                    player.targetScale = 1;
-                }, 300);
-                
-                // Increment rebound chain
-                reboundChain++;
-                
-                // Check rebound chain challenge
-                if (reboundChain >= 3) {
-                    challenges.reboundChains.completed++;
-                    updateChallengesDisplay();
-                    showFloatingText('REBOUND CHAIN! +400', player.x, player.y - 60);
-                    score += 400;
-                    reboundChain = 0; // Reset chain
-                } else {
-                    showFloatingText('REBOUND! +50', player.x, player.y);
-                    score += 50;
-                }
-                
-                playSound('perfect');
-                updateScore();
-                
-                // Allow tricks during rebound
-                isFalling = true;
-                
-                // Start next QTE after rebound
-                setTimeout(() => {
-                    startQTE();
-                }, 800);
-            } else {
-                // Failed QTE - fall to platform
-                isFalling = false;
-                reboundChain = 0; // Reset rebound chain on failed QTE
-                
-                // Check if player landed on platform
-                setTimeout(() => {
-                    if (player.y + player.height/2 >= platform.y - 10) {
-                        // Landed successfully
-                        showFloatingText('LANDED! +100', player.x, player.y);
-                        score += 100;
-                        updateScore();
-                        
-                        // Check trick combo challenge
-                        if (tricksInCurrentJump >= 3) {
-                            challenges.trickCombos.completed++;
-                            updateChallengesDisplay();
-                            showFloatingText('TRICK COMBO! +300', player.x, player.y - 30);
-                            score += 300;
-                        }
-                        
-                        // Bounce effect
-                        player.velocityY = -3;
-                        player.targetScale = 1.1;
-                        setTimeout(() => {
-                            player.velocityY = 0;
-                            player.y = platform.y - player.height/2;
-                            player.targetScale = 1;
-                        }, 300);
-                    } else {
-                        // Fell off - game over
-                        endGame();
-                    }
-                }, 500);
-            }
-            
-            // Update UI
-            document.getElementById('trick-hint').textContent = 'Hold SPACE or tap to charge jump, release to jump!';
-        }
-        
-        // Perform trick with enhanced animations and boundary checks
-        function performTrick(direction) {
-            if (!isFalling || currentTrick) return;
-            
-            currentTrick = direction;
-            tricksInCurrentJump++;
-            
-            // Apply trick effect with boundary protection
-            switch(direction) {
-                case 'left':
-                    player.velocityX = -6;
-                    showFloatingText('SIDE FLIP! +50', player.x, player.y);
-                    player.rotation = -360;
-                    break;
-                case 'right':
-                    player.velocityX = 6;
-                    showFloatingText('SIDE FLIP! +50', player.x, player.y);
-                    player.rotation = 360;
-                    break;
-                case 'up':
-                    player.velocityY = player.velocityY - 4;
-                    showFloatingText('DOUBLE JUMP! +50', player.x, player.y);
-                    player.targetScale = 1.2;
-                    break;
-                case 'down':
-                    player.velocityY = player.velocityY + 4;
-                    showFloatingText('QUICK DROP! +50', player.x, player.y);
-                    player.targetScale = 0.8;
-                    break;
-            }
-            
-            // Add score for trick
-            const trickScore = 50 * trickMultiplier;
-            score += trickScore;
-            updateScore();
-            
-            // Update combo
-            currentCombo++;
-            document.getElementById('combo-display').textContent = `Combo: ${currentCombo}x`;
-            
-            // Play trick sound
-            playSound('trick');
-            
-            // Reset trick after animation
-            setTimeout(() => {
-                currentTrick = null;
-                player.rotation = 0;
-                player.velocityX *= 0.5; // Reduce horizontal velocity after trick
-                player.targetScale = 1;
-            }, 600);
-        }
-        
-        // Show floating text with enhanced animation - FIXED VERSION
-        function showFloatingText(text, x, y) {
-            const floatingText = {
-                text: text,
-                x: x,
-                y: y,
-                opacity: 1,
-                life: 100,
-                scale: 0.5,
-                targetScale: 1
-            };
-            
-            floatingTexts.push(floatingText);
-            
-            // Remove oldest floating text if we have too many (performance)
-            if (floatingTexts.length > 10) {
-                floatingTexts.shift();
-            }
-        }
-        
-        // Update score display
-        function updateScore() {
-            document.getElementById('score-display').textContent = `Score: ${score}`;
-            
-            // Update high score
-            if (score > highScore) {
-                highScore = score;
-            }
-        }
-        
-        // Update challenges display
-        function updateChallengesDisplay() {
-            document.getElementById('perfect-count').textContent = 
-                `${challenges.perfectJumps.completed}/${challenges.perfectJumps.target}`;
-            document.getElementById('combo-count').textContent = 
-                `${challenges.trickCombos.completed}/${challenges.trickCombos.target}`;
-            document.getElementById('rebound-count').textContent = 
-                `${challenges.reboundChains.completed}/${challenges.reboundChains.target}`;
-            document.getElementById('powerup-count').textContent = 
-                `${challenges.powerUpsCollected.completed}/${challenges.powerUpsCollected.target}`;
-            
-            // Add completed class to finished challenges
-            document.getElementById('perfect-count').className = 
-                challenges.perfectJumps.completed >= challenges.perfectJumps.target ? 'challenge-completed' : '';
-            document.getElementById('combo-count').className = 
-                challenges.trickCombos.completed >= challenges.trickCombos.target ? 'challenge-completed' : '';
-            document.getElementById('rebound-count').className = 
-                challenges.reboundChains.completed >= challenges.reboundChains.target ? 'challenge-completed' : '';
-            document.getElementById('powerup-count').className = 
-                challenges.powerUpsCollected.completed >= challenges.powerUpsCollected.target ? 'challenge-completed' : '';
-        }
-        
-        // Play sound
-        function playSound(type) {
-            // In a real implementation, you would play actual sound files here
-            // For this demo, we'll just log the sound type
-            console.log(`Playing sound: ${type}`);
-        }
-        
-        // Start auto demo
-        function startAutoDemo() {
-            isAutoDemo = true;
-            document.getElementById('demo-btn').textContent = 'STOP DEMO';
-            autoDemoStep = 0;
-            
-            // Reset game for demo
-            resetGame();
-            
-            // Demo sequence with slower timing
-            demoInterval = setInterval(() => {
-                if (!gameActive) {
-                    clearInterval(demoInterval);
-                    return;
-                }
-                
-                switch(autoDemoStep) {
-                    case 0:
-                        // Jump
-                        startJump();
-                        break;
-                    case 2:
-                        // Execute jump with perfect power
-                        jumpPower = maxJumpPower;
-                        executeJump();
-                        break;
-                    case 5:
-                        // Perform trick
-                        performTrick('left');
-                        break;
-                    case 8:
-                        // Perform another trick
-                        performTrick('right');
-                        break;
-                    case 11:
-                        // Rebound
-                        startQTE();
-                        break;
-                    case 13:
-                        // Successfully rebound
-                        endQTE(true);
-                        break;
-                    case 16:
-                        // Perform trick after rebound
-                        performTrick('up');
-                        break;
-                    case 19:
-                        // Final rebound and land
-                        startQTE();
-                        break;
-                    case 21:
-                        // Land successfully
-                        endQTE(false);
-                        break;
-                    case 25:
-                        // Restart demo
-                        autoDemoStep = -1;
-                        break;
-                }
-                
-                autoDemoStep++;
-            }, 1200);
-        }
-        
-        // Stop auto demo
-        function stopAutoDemo() {
-            isAutoDemo = false;
-            document.getElementById('demo-btn').textContent = 'AUTO DEMO';
-            
-            if (demoInterval) {
-                clearInterval(demoInterval);
-            }
-        }
-        
-        // Toggle auto demo
-        function toggleAutoDemo() {
-            if (isAutoDemo) {
-                stopAutoDemo();
-            } else {
-                startAutoDemo();
-            }
-        }
-        
-        // End game
-        function endGame() {
-            gameActive = false;
-            
-            // Calculate completed challenges
-            const completedChallenges = 
-                (challenges.perfectJumps.completed >= challenges.perfectJumps.target ? 1 : 0) +
-                (challenges.trickCombos.completed >= challenges.trickCombos.target ? 1 : 0) +
-                (challenges.reboundChains.completed >= challenges.reboundChains.target ? 1 : 0) +
-                (challenges.powerUpsCollected.completed >= challenges.powerUpsCollected.target ? 1 : 0);
-            
-            // Show game over screen
-            document.getElementById('final-score').textContent = `Your score: ${score}`;
-            document.getElementById('high-score').textContent = `High score: ${highScore}`;
-            document.getElementById('challenges-completed').textContent = `Challenges completed: ${completedChallenges}/4`;
-            document.getElementById('game-over-screen').classList.remove('hidden');
-            
-            // Stop auto demo if active
-            if (isAutoDemo) {
-                stopAutoDemo();
-            }
-        }
-        
-        // Start game
-        function startGame() {
-            resetGame();
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('game-over-screen').classList.add('hidden');
-            gameActive = true;
-        }
-        
-        // Reset game
-        function resetGame() {
-            // Reset player
-            player.x = canvas.width / 2;
-            player.y = 300;
-            player.velocityY = 0;
-            player.velocityX = 0;
-            player.rotation = 0;
-            player.scale = 1;
-            player.targetScale = 1;
-            
-            // Reset game state
-            score = 0;
-            isJumping = false;
-            isFalling = false;
-            jumpPower = 0;
-            trickMultiplier = 1;
-            currentTrick = null;
-            qteActive = false;
-            floatingTexts = [];
-            currentCombo = 1;
-            reboundChain = 0;
-            tricksInCurrentJump = 0;
-            
-            // Reset challenges
-            challenges = {
-                perfectJumps: { target: 5, completed: 0, bonus: 500 },
-                trickCombos: { target: 3, completed: 0, bonus: 300 },
-                reboundChains: { target: 3, completed: 0, bonus: 400 },
-                powerUpsCollected: { target: 3, completed: 0, bonus: 200 }
-            };
-            
-            // Reset rope
-            rope.stretchedLength = rope.length;
-            createRopeSegments();
-            
-            // Create power-ups
-            createPowerUps();
-            
-            // Update UI
-            updateScore();
-            updateChallengesDisplay();
-            document.getElementById('combo-display').textContent = `Combo: 1x`;
-            document.getElementById('jump-fill').style.width = '0%';
-            document.getElementById('trick-hint').textContent = 'Hold SPACE or tap to charge jump, release to jump!';
-            
-            // Stop auto demo if active
-            if (isAutoDemo) {
-                stopAutoDemo();
-            }
-            
-            gameActive = true;
-        }
-        
-        // Create power-ups
-        function createPowerUps() {
-            powerUps = [];
-            
-            for (let i = 0; i < 3; i++) {
-                const powerUp = {
-                    x: Math.random() * (canvas.width - 60) + 30,
-                    y: Math.random() * (canvas.height - 200) + 100,
-                    radius: 15,
-                    type: 'trickBoost',
-                    value: 2,
-                    color: '#fdbb2d',
-                    collected: false,
-                    rotation: 0
-                };
-                
-                powerUps.push(powerUp);
-            }
-        }
-        
-        // Check power-up collection
-        function checkPowerUpCollection() {
-            for (let i = 0; i < powerUps.length; i++) {
-                const p = powerUps[i];
-                if (p.collected) continue;
-                
-                // Simple collision detection
-                const dx = player.x - p.x;
-                const dy = player.y - p.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < player.width / 2 + p.radius) {
-                    p.collected = true;
-                    
-                    trickMultiplier = p.value;
-                    
-                    // Update power-up challenge
-                    challenges.powerUpsCollected.completed++;
-                    updateChallengesDisplay();
-                    
-                    // Show power-up effect
-                    showFloatingText('TRICK BOOST! x2', player.x, player.y);
-                    playSound('perfect');
-                    
-                    // Reset multiplier after 10 seconds
-                    setTimeout(() => {
-                        trickMultiplier = 1;
-                        showFloatingText('Boost Ended', player.x, player.y);
-                    }, 10000);
-                }
-            }
-        }
-        
-        // Update clouds position
-        function updateClouds() {
-            for (let i = 0; i < clouds.length; i++) {
-                const cloud = clouds[i];
-                cloud.x += cloud.speed;
-                
-                // Wrap around when clouds move off screen
-                if (cloud.x > canvas.width + 100) {
-                    cloud.x = -100;
-                    cloud.y = Math.random() * 150 + 50;
-                }
-            }
-        }
-        
-        // Draw game elements with enhanced visuals
-        function draw() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw sky gradient
-            const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            skyGradient.addColorStop(0, '#87CEEB');
-            skyGradient.addColorStop(1, '#1E90FF');
-            ctx.fillStyle = skyGradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw clouds
-            drawClouds();
-            
-            // Draw rope with segments for smoother animation
-            drawRope();
-            
-            // Draw platform
-            drawPlatform();
-            
-            // Draw power-ups
-            drawPowerUps();
-            
-            // Draw player with smooth scaling
-            drawPlayer();
-            
-            // Draw QTE if active - NOW CENTERED
-            if (qteActive) {
-                drawQTE();
-            }
-            
-            // Draw floating texts
-            drawFloatingTexts();
-        }
-        
-        // Draw clouds with smooth animation
-        function drawClouds() {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            
-            for (let i = 0; i < clouds.length; i++) {
-                const cloud = clouds[i];
-                
-                ctx.beginPath();
-                ctx.arc(cloud.x, cloud.y, 30 * cloud.size, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 40 * cloud.size, cloud.y, 40 * cloud.size, 0, Math.PI * 2);
-                ctx.arc(cloud.x + 80 * cloud.size, cloud.y, 30 * cloud.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        
-        // Draw rope with segmented animation
-        function drawRope() {
-            const segmentLength = rope.stretchedLength / rope.segments;
-            
-            ctx.strokeStyle = rope.color;
-            ctx.lineWidth = rope.width;
-            ctx.lineCap = 'round';
-            
-            ctx.beginPath();
-            ctx.moveTo(rope.x, rope.y);
-            
-            for (let i = 0; i < rope.segments; i++) {
-                const segmentY = rope.y + i * segmentLength;
-                const nextSegmentY = rope.y + (i + 1) * segmentLength;
-                
-                // Add slight sway to rope segments
-                const sway = Math.sin(Date.now() / 500 + i * 0.5) * 2;
-                
-                if (i < rope.segments - 1) {
-                    ctx.lineTo(rope.x + sway, (segmentY + nextSegmentY) / 2);
-                } else {
-                    ctx.lineTo(player.x, player.y);
-                }
-            }
-            
-            ctx.stroke();
-        }
-        
-        // Draw platform with 3D effect
-        function drawPlatform() {
-            // Platform top
-            ctx.fillStyle = platform.color;
-            ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            
-            // Platform side (3D effect)
-            ctx.fillStyle = '#1a252f';
-            ctx.fillRect(platform.x, platform.y + platform.height, platform.width, 10);
-            
-            // Platform details
-            ctx.strokeStyle = '#34495e';
-            ctx.lineWidth = 2;
-            for (let i = 0; i < 5; i++) {
-                const x = platform.x + 80 + i * 60;
-                ctx.beginPath();
-                ctx.moveTo(x, platform.y);
-                ctx.lineTo(x, platform.y + platform.height);
-                ctx.stroke();
-            }
-        }
-        
-        // Draw power-ups with rotation
-        function drawPowerUps() {
-            for (let i = 0; i < powerUps.length; i++) {
-                const p = powerUps[i];
-                if (p.collected) continue;
-                
-                // Update rotation
-                p.rotation += 0.02;
-                
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rotation);
-                
-                // Power-up body
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Power-up star
-                ctx.fillStyle = '#b21f1f';
-                drawStar(ctx, 0, 0, 5, p.radius * 0.6, p.radius * 0.3);
-                ctx.fill();
-                
-                ctx.restore();
-            }
-        }
-        
-        // Draw player with smooth animations
-        function drawPlayer() {
-            // Smooth scale interpolation
-            player.scale += (player.targetScale - player.scale) * 0.1;
-            
-            ctx.save();
-            ctx.translate(player.x, player.y);
-            ctx.rotate(player.rotation * Math.PI / 180);
-            ctx.scale(player.scale, player.scale);
-            
-            // Player body with gradient
-            const bodyGradient = ctx.createLinearGradient(-player.width/2, -player.height/2, -player.width/2, player.height/2);
-            bodyGradient.addColorStop(0, '#2980b9');
-            bodyGradient.addColorStop(1, player.color);
-            ctx.fillStyle = bodyGradient;
-            ctx.fillRect(-player.width / 2, -player.height / 2, player.width, player.height);
-            
-            // Player head with gradient
-            const headGradient = ctx.createRadialGradient(0, -player.height/2, 0, 0, -player.height/2, player.width/2);
-            headGradient.addColorStop(0, '#ffd700');
-            headGradient.addColorStop(1, '#fdbb2d');
-            ctx.fillStyle = headGradient;
-            ctx.beginPath();
-            ctx.arc(0, -player.height / 2, player.width / 2, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Player face
-            ctx.fillStyle = '#2c3e50';
-            ctx.beginPath();
-            ctx.arc(-player.width/6, -player.height/2 - 2, 3, 0, Math.PI * 2);
-            ctx.arc(player.width/6, -player.height/2 - 2, 3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.arc(0, -player.height/2 + 3, 4, 0, Math.PI);
-            ctx.stroke();
-            
-            ctx.restore();
-        }
-        
-        // Draw QTE with pulsing effect - NOW CENTERED
-        function drawQTE() {
-            // Ensure radius is never negative
-            const safeRadius = Math.max(0, qte.currentRadius);
-            
-            // Pulsing effect with safe radius
-            const pulse = Math.sin(Date.now() / 200) * 5;
-            const radiusWithPulse = Math.max(1, safeRadius + pulse); // Ensure at least 1 pixel radius
-            
-            ctx.strokeStyle = qte.color;
-            ctx.lineWidth = 8;
-            ctx.beginPath();
-            ctx.arc(qte.x, qte.y, radiusWithPulse, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            ctx.fillStyle = 'rgba(253, 187, 45, 0.3)';
-            ctx.beginPath();
-            ctx.arc(qte.x, qte.y, 30, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        // Draw star shape
-        function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
-            let rot = Math.PI / 2 * 3;
-            let x = cx;
-            let y = cy;
-            let step = Math.PI / spikes;
-            
-            ctx.beginPath();
-            ctx.moveTo(cx, cy - outerRadius);
-            
-            for (let i = 0; i < spikes; i++) {
-                x = cx + Math.cos(rot) * outerRadius;
-                y = cy + Math.sin(rot) * outerRadius;
-                ctx.lineTo(x, y);
-                rot += step;
-                
-                x = cx + Math.cos(rot) * innerRadius;
-                y = cy + Math.sin(rot) * innerRadius;
-                ctx.lineTo(x, y);
-                rot += step;
-            }
-            
-            ctx.lineTo(cx, cy - outerRadius);
-            ctx.closePath();
-        }
-        
-        // Draw floating texts with smooth animations
-        function drawFloatingTexts() {
-            for (let i = 0; i < floatingTexts.length; i++) {
-                const text = floatingTexts[i];
-                
-                // Smooth scale animation
-                text.scale += (text.targetScale - text.scale) * 0.1;
-                
-                ctx.save();
-                ctx.globalAlpha = text.opacity;
-                ctx.fillStyle = '#fdbb2d';
-                ctx.font = `bold ${24 * text.scale}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text.text, text.x, text.y);
-                ctx.restore();
-                
-                // Update text properties
-                text.y -= 1.5;
-                text.life -= 1;
-                text.opacity = text.life / 100;
-                
-                // Remove text if life is over
-                if (text.life <= 0) {
-                    floatingTexts.splice(i, 1);
-                    i--;
-                }
-            }
-        }
-        
-        // Update game state with proper gravity and boundary checks
-        function update() {
-            if (!gameActive) return;
-            
-            // Update clouds
-            updateClouds();
-            
-            // Apply gravity (fixed - now player will come down)
-            if (isFalling || isJumping) {
-                player.velocityY += GRAVITY;
-            }
-            
-            // Update player position
-            player.y += player.velocityY;
-            player.x += player.velocityX;
-            
-            // Apply damping to horizontal movement
-            player.velocityX *= DAMPING;
-            
-            // Smooth rotation reset
-            if (!currentTrick && Math.abs(player.rotation) > 0.1) {
-                player.rotation *= 0.95;
-            }
-            
-            // FIXED: Enhanced boundary checks to prevent player from going off screen
-            const playerHalfWidth = (player.width * player.scale) / 2;
-            const playerHalfHeight = (player.height * player.scale) / 2;
-            
-            // Left boundary
-            if (player.x < playerHalfWidth) {
-                player.x = playerHalfWidth;
-                player.velocityX = Math.abs(player.velocityX) * 0.5; // Bounce back with reduced force
-            }
-            // Right boundary
-            else if (player.x > canvas.width - playerHalfWidth) {
-                player.x = canvas.width - playerHalfWidth;
-                player.velocityX = -Math.abs(player.velocityX) * 0.5; // Bounce back with reduced force
-            }
-            
-            // Top boundary (prevent going above rope attachment)
-            if (player.y < playerHalfHeight) {
-                player.y = playerHalfHeight;
-                player.velocityY = Math.abs(player.velocityY) * 0.5; // Bounce down with reduced force
-            }
-            
-            // Check if player landed on platform
-            if (player.y + playerHalfHeight >= platform.y && 
-                player.x >= platform.x && 
-                player.x <= platform.x + platform.width) {
-                
-                if (isFalling && player.velocityY > 0) {
-                    player.y = platform.y - playerHalfHeight;
-                    player.velocityY = 0;
-                    isFalling = false;
-                    
-                    // Reset combo on landing
-                    currentCombo = 1;
-                    document.getElementById('combo-display').textContent = `Combo: 1x`;
-                    
-                    // Landing bounce effect
-                    player.targetScale = 1.1;
-                    setTimeout(() => {
-                        player.targetScale = 1;
-                    }, 150);
-                }
-            }
-            
-            // Check if player fell off
-            if (player.y > canvas.height + 100 && !isAutoDemo) {
-                endGame();
-            }
-            
-            // Check power-up collection
-            checkPowerUpCollection();
-        }
-        
-        // Game loop
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Initialize the game when the page loads
-        window.addEventListener('load', () => {
-            init();
-            createPowerUps();
+      }
+
+      playJump() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(380, t);
+        osc.frequency.exponentialRampToValueAtTime(140, t + 0.16);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.16);
+      }
+
+      playBounce() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(120, t);
+        osc.frequency.exponentialRampToValueAtTime(540, t + 0.22);
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      }
+
+      playStunt() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t + idx * 0.05);
+          gain.gain.setValueAtTime(0.2, t + idx * 0.05);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + idx * 0.05 + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t + idx * 0.05);
+          osc.stop(t + idx * 0.05 + 0.12);
         });
-    </script>
+      }
 
-<script data-sound-bound="true">
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button, .btn, [role="button"]').forEach(btn => {
-    btn.addEventListener('click', () => { if(window.Sound) Sound.play('tap'); });
-  });
-});
-</script>
+      playStar() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, t);
+        osc.frequency.exponentialRampToValueAtTime(1760, t + 0.08);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.08);
+      }
 
+      playSplash() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const bufferSize = this.ctx.sampleRate * 0.25;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(900, t);
+        filter.frequency.exponentialRampToValueAtTime(100, t + 0.25);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.45, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(t);
+      }
 
-<script>
-/* Universal Modern In-Game Modal Polyfill */
-window.showGameModal = function(title, msg, btnText = 'Continue', onConfirm = null) {
-  let modal = document.getElementById('brainsta-universal-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'brainsta-universal-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;font-family:\'Segoe UI\',system-ui,-apple-system,sans-serif;';
-    modal.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:24px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.25);animation:bumPop 0.25s ease-out;"><h3 id="bum-title" style="margin:0 0 10px;font-size:20px;font-weight:800;color:#1e1b4b;"></h3><p id="bum-msg" style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.5;"></p><button id="bum-btn" style="width:100%;padding:12px 18px;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;background:linear-gradient(135deg,#3498db,#2563eb);color:#ffffff;box-shadow:0 4px 14px rgba(52,152,219,0.35);transition:transform 0.1s;"></button></div><style>@keyframes bumPop{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}#bum-btn:active{transform:scale(0.97)}</style>';
-    document.body.appendChild(modal);
-  }
-  document.getElementById('bum-title').textContent = title || 'Notice';
-  document.getElementById('bum-msg').innerHTML = msg || '';
-  const btn = document.getElementById('bum-btn');
-  btn.textContent = btnText;
-  modal.style.display = 'flex';
-  btn.onclick = () => {
-    modal.style.display = 'none';
-    if (window.Sound) Sound.play('tap');
-    if (onConfirm) onConfirm();
-  };
-};
-window.alert = function(msg) {
-  window.showGameModal('Game Notification', msg, 'OK');
-};
-</script>
+      playCrash() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, t);
+        osc.frequency.exponentialRampToValueAtTime(60, t + 0.3);
+        gain.gain.setValueAtTime(0.4, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.3);
+      }
 
+      playVictory() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const notes = [440, 554.37, 659.25, 880, 1108.73, 1318.51];
+        notes.forEach((f, idx) => {
+          const t = this.ctx.currentTime + idx * 0.08;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.3);
+        });
+      }
+    }
+
+    const audio = new AudioEngine();
+
+    /* ==========================================================================
+       BUNGEE MASTER PRO PHYSICS, STUNT & EVASION ENGINE
+       ========================================================================== */
+    class BungeeGame {
+      constructor() {
+        this.viewport = document.getElementById('gameViewport');
+        this.canvas = document.getElementById('bungeeCanvas');
+        this.ctx = this.canvas.getContext('2d');
+
+        this.confettiCanvas = document.getElementById('confettiCanvas');
+        this.confettiCtx = this.confettiCanvas.getContext('2d');
+        this.confettiParticles = [];
+        this.sparks = [];
+
+        // Game Configuration
+        this.stage = 1;
+        this.score = 0;
+        this.lives = 3;
+        this.stuntsPerformed = 0;
+        this.nearMisses = 0;
+        this.combo = 1;
+
+        // Stage Names
+        this.stageNames = [
+          'Golden Gate Bridge',
+          'Grand Canyon Gorge',
+          'Swiss Alps Glacier',
+          'Neo Tokyo Skyscraper',
+          'Volcano Magma Crater'
+        ];
+
+        // Jumper State
+        this.jumper = {
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          targetX: 0,
+          rotation: 0,
+          rotSpeed: 0,
+          isDiving: false,
+          stuntActive: false,
+          isInvincible: false,
+          invincibleTimer: null,
+          hasShield: false,
+          hasMagnet: false
+        };
+
+        // Bungee Anchor & Cord Physics
+        this.anchorX = 0;
+        this.anchorY = 40;
+        this.cordRestLength = 160;
+        this.cordStiffness = 18;
+        this.cordDamping = 0.985;
+
+        // Jump Charge State
+        this.isCharging = false;
+        this.chargePower = 0;
+        this.chargeDir = 1;
+
+        // World Items (Collectibles & Obstacles)
+        this.stars = [];
+        this.obstacles = [];
+        this.clouds = [];
+
+        // Power-Up Limits
+        this.powerups = {
+          magnet: 3,
+          shield: 2,
+          slowmo: 2
+        };
+        this.slowMoActive = false;
+        this.autoPilot = false;
+
+        this.isPaused = false;
+        this.isGameOver = false;
+
+        this.initUI();
+        this.bindEvents();
+        this.resize();
+        this.startStage(1);
+        this.animate();
+      }
+
+      initUI() {
+        document.querySelectorAll('.choice-grid .choice-btn').forEach(btn => {
+          btn.onclick = () => {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            if (btn.dataset.stage) this.stage = parseInt(btn.dataset.stage);
+            if (btn.dataset.theme) {
+              const theme = btn.dataset.theme;
+              document.body.className = (theme === 'default' ? '' : theme);
+            }
+          };
+        });
+      }
+
+      bindEvents() {
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 150));
+
+        const getCoords = (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          let clientX = e.clientX;
+          let clientY = e.clientY;
+
+          if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+          } else if (e.changedTouches && e.changedTouches.length > 0) {
+            clientX = e.changedTouches[0].clientX;
+            clientY = e.changedTouches[0].clientY;
+          }
+
+          return {
+            x: (clientX - rect.left) * (this.w / rect.width),
+            y: (clientY - rect.top) * (this.h / rect.height)
+          };
+        };
+
+        const handleStart = (e) => {
+          if (this.isPaused || this.isGameOver) return;
+          audio.init();
+          if (!this.jumper.isDiving) {
+            this.isCharging = true;
+          } else {
+            const pos = getCoords(e);
+            this.jumper.targetX = pos.x;
+          }
+        };
+
+        const handleMove = (e) => {
+          if (this.isPaused || this.isGameOver) return;
+          const pos = getCoords(e);
+          if (this.jumper.isDiving) {
+            this.jumper.targetX = pos.x;
+          }
+        };
+
+        const handleEnd = (e) => {
+          if (this.isCharging && !this.jumper.isDiving) {
+            this.isCharging = false;
+            this.launchDive();
+          }
+        };
+
+        this.canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); handleStart(e); });
+        this.canvas.addEventListener('pointermove', (e) => { handleMove(e); });
+        this.canvas.addEventListener('pointerup', (e) => { handleEnd(e); });
+
+        // Left / Right Dodge Sway Buttons
+        document.getElementById('swayLeftBtn').onclick = () => this.swayJumper(-85);
+        document.getElementById('swayRightBtn').onclick = () => this.swayJumper(85);
+
+        // Keyboard Arrows Support
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft' || e.key === 'a') this.swayJumper(-85);
+          if (e.key === 'ArrowRight' || e.key === 'd') this.swayJumper(85);
+          if (e.key === ' ' || e.key === 'ArrowUp') {
+            if (!this.jumper.isDiving) this.launchDive();
+            else this.executeStunt('FRONT FLIP 360', 150, 14);
+          }
+        });
+
+        // Stunt Action Buttons with Invincibility Evasion!
+        document.getElementById('flipStuntBtn').onclick = () => this.executeStunt('FRONT FLIP 360', 150, 14);
+        document.getElementById('spinStuntBtn').onclick = () => this.executeStunt('TORNADO SPIN', 200, -18);
+        document.getElementById('rocketBoostBtn').onclick = () => this.executeBoost();
+
+        // Power-Up Buttons
+        document.getElementById('autoStuntBotBtn').onclick = () => {
+          this.autoPilot = !this.autoPilot;
+          const btn = document.getElementById('autoStuntBotBtn');
+          btn.style.borderColor = this.autoPilot ? '#10b981' : '#7dd3fc';
+          this.showToast(this.autoPilot ? '🤖 Auto Pilot Active!' : '🤖 Auto Pilot Off');
+        };
+
+        document.getElementById('magnetPowerBtn').onclick = () => this.triggerMagnet();
+        document.getElementById('shieldPowerBtn').onclick = () => this.triggerShield();
+        document.getElementById('slowMoPowerBtn').onclick = () => this.triggerSlowMo();
+        document.getElementById('resetDiveBtn').onclick = () => this.resetJumperPosition();
+
+        document.getElementById('pauseBtn').onclick = () => this.togglePause();
+        document.getElementById('resumeBtn').onclick = () => this.togglePause();
+
+        const soundBtn = document.getElementById('soundToggle');
+        soundBtn.onclick = () => {
+          audio.enabled = !audio.enabled;
+          soundBtn.textContent = audio.enabled ? '🔊' : '🔇';
+          this.showToast(audio.enabled ? 'Audio Unmuted' : 'Audio Muted');
+        };
+
+        document.getElementById('settingsBtn').onclick = () => this.openSettings();
+        document.getElementById('closeSettingsBtn').onclick = () => this.closeSettings();
+        document.getElementById('modalSettingsBtn').onclick = () => {
+          document.getElementById('gameOverOverlay').style.display = 'none';
+          this.openSettings();
+        };
+        document.getElementById('applySettingsBtn').onclick = () => {
+          this.closeSettings();
+          this.startStage(this.stage);
+        };
+
+        document.getElementById('rulesBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
+        document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+        document.getElementById('gotItBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+
+        document.getElementById('playAgainBtn').onclick = () => {
+          document.getElementById('gameOverOverlay').style.display = 'none';
+          if (this.lives <= 0) {
+            this.startStage(1);
+          } else {
+            this.startStage(this.stage + 1);
+          }
+        };
+      }
+
+      openSettings() {
+        if (!this.isPaused && !this.isGameOver) this.togglePause(true);
+        document.getElementById('settingsModal').classList.add('open');
+      }
+
+      closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
+        if (this.isPaused && !this.isGameOver) this.togglePause(false);
+      }
+
+      togglePause(forced) {
+        if (this.isGameOver) return;
+        this.isPaused = (forced !== undefined) ? forced : !this.isPaused;
+        document.getElementById('pauseOverlay').classList.toggle('show', this.isPaused);
+        document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
+      }
+
+      showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => toast.classList.remove('show'), 1600);
+      }
+
+      showFloatingText(text, x, y, color = '#fbbf24') {
+        const div = document.createElement('div');
+        div.className = 'score-float';
+        div.textContent = text;
+        div.style.left = `${(x / this.w) * 100}%`;
+        div.style.top = `${(y / this.h) * 100}%`;
+        div.style.color = color;
+        this.viewport.appendChild(div);
+        setTimeout(() => div.remove(), 1000);
+      }
+
+      swayJumper(deltaX) {
+        if (!this.jumper.isDiving) return;
+        this.jumper.targetX = Math.max(this.w * 0.18, Math.min(this.w * 0.82, this.jumper.targetX + deltaX));
+        this.jumper.vx += deltaX * 3.2;
+        audio.playBounce();
+      }
+
+      launchDive() {
+        this.jumper.isDiving = true;
+        const powerScale = 0.5 + (this.chargePower / 100) * 0.9;
+        this.jumper.vy = 450 * powerScale;
+        this.jumper.rotSpeed = 4;
+        audio.playJump();
+        this.showToast('BUNGEE DIVE LAUNCHED! 🪂');
+      }
+
+      /* Stunt execution with Invincibility Evasion Window */
+      executeStunt(name, points, rotationBoost) {
+        if (!this.jumper.isDiving) return;
+        this.stuntsPerformed++;
+        this.combo++;
+        const totalPoints = points * this.combo;
+        this.score += totalPoints;
+        this.jumper.rotSpeed = rotationBoost;
+
+        // Grant 1.5 seconds of Stunt Invincibility to pass safely through enemies!
+        this.jumper.isInvincible = true;
+        clearTimeout(this.jumper.invincibleTimer);
+        this.jumper.invincibleTimer = setTimeout(() => {
+          this.jumper.isInvincible = false;
+        }, 1500);
+
+        document.getElementById('scoreText').textContent = this.score;
+        document.getElementById('stuntNameText').textContent = `${name}! (EVASION)`;
+        document.getElementById('stuntBadge').querySelector('span:last-child').textContent = `+${totalPoints} 🔥`;
+        document.getElementById('stuntBadge').style.display = 'flex';
+
+        audio.playStunt();
+        this.showFloatingText(`+${totalPoints} ${name}! 🛡️`, this.jumper.x, this.jumper.y - 20, '#ec4899');
+        this.createSparks(this.jumper.x, this.jumper.y, '#ec4899', 22);
+
+        clearTimeout(this.stuntBadgeTimeout);
+        this.stuntBadgeTimeout = setTimeout(() => {
+          document.getElementById('stuntBadge').style.display = 'none';
+        }, 1500);
+      }
+
+      executeBoost() {
+        if (!this.jumper.isDiving) return;
+        this.jumper.vy = -620;
+        this.jumper.isInvincible = true;
+        setTimeout(() => { this.jumper.isInvincible = false; }, 1200);
+        this.createSparks(this.jumper.x, this.jumper.y + 15, '#f97316', 22);
+        audio.playBounce();
+        this.showToast('ROCKET SPRING BOOST! 🚀');
+      }
+
+      triggerMagnet() {
+        if (this.powerups.magnet <= 0) {
+          this.showToast('No more Star Magnets!');
+          return;
+        }
+        this.powerups.magnet--;
+        document.getElementById('magnetPowerBtn').textContent = `🧲 Magnet (${this.powerups.magnet})`;
+        this.jumper.hasMagnet = true;
+        audio.playStar();
+        this.showToast('Star Magnet Active (10s)! 🧲');
+        setTimeout(() => { this.jumper.hasMagnet = false; }, 10000);
+      }
+
+      triggerShield() {
+        if (this.powerups.shield <= 0) {
+          this.showToast('No more Shield Bubbles!');
+          return;
+        }
+        this.powerups.shield--;
+        this.jumper.hasShield = true;
+        audio.playStar();
+        this.showToast('Shield Bubble Protected! 🛡️');
+      }
+
+      triggerSlowMo() {
+        if (this.powerups.slowmo <= 0) {
+          this.showToast('No more Slow-Mo Matrices!');
+          return;
+        }
+        this.powerups.slowmo--;
+        document.getElementById('slowMoPowerBtn').textContent = `⏳ Slow-Mo (${this.powerups.slowmo})`;
+        this.slowMoActive = true;
+        audio.playStar();
+        this.showToast('Matrix Slow-Motion Active! ⏳');
+        setTimeout(() => { this.slowMoActive = false; }, 8000);
+      }
+
+      startStage(stageNum) {
+        this.stage = stageNum;
+        this.isGameOver = false;
+        this.isCharging = false;
+        this.chargePower = 0;
+        this.combo = 1;
+
+        if (stageNum === 1) {
+          this.score = 0;
+          this.lives = 3;
+          this.stuntsPerformed = 0;
+          this.nearMisses = 0;
+        }
+
+        const name = this.stageNames[(stageNum - 1) % this.stageNames.length];
+        document.getElementById('stageName').textContent = name;
+        document.getElementById('altitudeBadge').querySelector('span').textContent = `Stage ${this.stage}`;
+        document.getElementById('scoreText').textContent = this.score;
+        document.getElementById('livesText').textContent = this.lives;
+        document.getElementById('gameOverOverlay').style.display = 'none';
+
+        this.resetJumperPosition();
+        this.generateWorldItems();
+        audio.playVictory();
+        this.showToast(`${name} Ready! Tap ◀ ▶ to dodge! 🪂`);
+      }
+
+      resetJumperPosition() {
+        this.jumper.x = this.w * 0.5;
+        this.jumper.y = this.anchorY + 30;
+        this.jumper.vx = 0;
+        this.jumper.vy = 0;
+        this.jumper.targetX = this.w * 0.5;
+        this.jumper.rotation = 0;
+        this.jumper.rotSpeed = 0;
+        this.jumper.isDiving = false;
+        this.jumper.isInvincible = false;
+      }
+
+      generateWorldItems() {
+        this.stars = [];
+        this.obstacles = [];
+        this.clouds = [];
+
+        for (let i = 0; i < 5; i++) {
+          this.clouds.push({
+            x: Math.random() * this.w,
+            y: 80 + Math.random() * (this.h * 0.65),
+            size: 35 + Math.random() * 45,
+            speed: (Math.random() - 0.5) * 20
+          });
+        }
+
+        for (let i = 0; i < 14; i++) {
+          this.stars.push({
+            x: this.w * 0.25 + Math.random() * (this.w * 0.5),
+            y: 120 + i * (this.h * 0.05),
+            radius: 9,
+            collected: false
+          });
+        }
+
+        for (let i = 0; i < 3 + this.stage; i++) {
+          this.obstacles.push({
+            x: (i % 2 === 0 ? this.w * 0.28 : this.w * 0.72),
+            y: 160 + i * (this.h * 0.12),
+            vx: (i % 2 === 0 ? 40 : -40),
+            radius: 14,
+            type: i % 2 === 0 ? 'drone' : 'bird'
+          });
+        }
+      }
+
+      resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = this.viewport.getBoundingClientRect();
+
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+
+        this.confettiCanvas.width = window.innerWidth * dpr;
+        this.confettiCanvas.height = window.innerHeight * dpr;
+        this.confettiCtx.scale(dpr, dpr);
+
+        this.w = rect.width;
+        this.h = rect.height;
+
+        this.anchorX = this.w * 0.5;
+        this.cordRestLength = this.h * 0.38;
+
+        if (!this.jumper.isDiving) {
+          this.resetJumperPosition();
+        }
+      }
+
+      animate() {
+        this.update();
+        this.render();
+        this.renderSparks();
+        this.renderConfetti();
+        requestAnimationFrame(() => this.animate());
+      }
+
+      update() {
+        if (this.isPaused || this.isGameOver) return;
+
+        let dt = 1 / 60;
+        if (this.slowMoActive) dt *= 0.5;
+
+        // Dive Power Charging Animation
+        if (this.isCharging) {
+          this.chargePower += 160 * dt * this.chargeDir;
+          if (this.chargePower > 100) { this.chargePower = 100; this.chargeDir = -1; }
+          if (this.chargePower < 0) { this.chargePower = 0; this.chargeDir = 1; }
+          document.getElementById('chargeFill').style.width = `${this.chargePower}%`;
+        }
+
+        // AI Auto-Pilot Stunts & Obstacle Avoidance
+        if (this.autoPilot && this.jumper.isDiving) {
+          if (Math.abs(this.jumper.vy) < 40 && Math.random() < 0.1) {
+            const stunts = ['FRONT FLIP 360', 'TORNADO SPIN'];
+            this.executeStunt(stunts[Math.floor(Math.random() * stunts.length)], 200, 14);
+          }
+          const nearObstacle = this.obstacles.find(o => Math.hypot(o.x - this.jumper.x, o.y - this.jumper.y) < 70);
+          if (nearObstacle) {
+            this.jumper.targetX = (nearObstacle.x > this.w * 0.5 ? this.w * 0.25 : this.w * 0.75);
+          }
+        }
+
+        // Bungee Spring Physics Engine
+        if (this.jumper.isDiving) {
+          const gravity = 880;
+
+          const dx = this.jumper.x - this.anchorX;
+          const dy = this.jumper.y - this.anchorY;
+          const currentLength = Math.hypot(dx, dy);
+
+          let springForceY = 0;
+          let springForceX = 0;
+
+          if (currentLength > this.cordRestLength) {
+            const stretch = currentLength - this.cordRestLength;
+            const springMag = stretch * this.cordStiffness;
+            const nx = dx / currentLength;
+            const ny = dy / currentLength;
+
+            springForceX = -springMag * nx;
+            springForceY = -springMag * ny;
+
+            if (this.jumper.vy > 0 && dy > this.cordRestLength + 40) {
+              audio.playBounce();
+            }
+          }
+
+          this.jumper.vy += (gravity + springForceY) * dt;
+          this.jumper.vx += (springForceX) * dt;
+
+          this.jumper.vx += (this.jumper.targetX - this.jumper.x) * 4.5 * dt;
+          this.jumper.vx *= 0.92;
+          this.jumper.vy *= this.cordDamping;
+
+          this.jumper.x += this.jumper.vx * dt;
+          this.jumper.y += this.jumper.vy * dt;
+
+          this.jumper.rotation += this.jumper.rotSpeed * dt;
+          this.jumper.rotSpeed *= 0.96;
+
+          const depthMeters = Math.max(0, Math.round((this.jumper.y - this.anchorY) * 0.4));
+          document.getElementById('depthText').textContent = `${depthMeters}m`;
+
+          const floorY = this.h - 35;
+          if (this.jumper.y >= floorY - 30 && this.jumper.vy > 0) {
+            if (this.jumper.y >= floorY) {
+              audio.playSplash();
+              this.createSparks(this.jumper.x, floorY, '#38bdf8', 25);
+              this.jumper.vy = -Math.abs(this.jumper.vy) * 0.85;
+            } else {
+              this.nearMisses++;
+              this.score += 300;
+              document.getElementById('scoreText').textContent = this.score;
+              this.showFloatingText('DEEP DIVE NEAR MISS! +300 🔥', this.jumper.x, this.jumper.y - 25, '#fbbf24');
+              audio.playSplash();
+            }
+          }
+
+          this.stars.forEach(s => {
+            if (!s.collected) {
+              const dist = Math.hypot(s.x - this.jumper.x, s.y - this.jumper.y);
+              if (this.jumper.hasMagnet && dist < 120) {
+                s.x += (this.jumper.x - s.x) * 0.14;
+                s.y += (this.jumper.y - s.y) * 0.14;
+              }
+
+              if (dist < s.radius + 16) {
+                s.collected = true;
+                this.score += 50 * this.combo;
+                document.getElementById('scoreText').textContent = this.score;
+                audio.playStar();
+                this.createSparks(s.x, s.y, '#fbbf24', 10);
+              }
+            }
+          });
+
+          // Check Obstacle Collisions & Stunt Evasions
+          this.obstacles.forEach(o => {
+            o.x += o.vx * dt;
+            if (o.x > this.w - 30 || o.x < 30) o.vx = -o.vx;
+
+            const dist = Math.hypot(o.x - this.jumper.x, o.y - this.jumper.y);
+            if (dist < o.radius + 14) {
+              if (this.jumper.isInvincible) {
+                // Stunt Evasion: Successfully spin through obstacle without damage!
+                audio.playStar();
+                this.score += 150;
+                document.getElementById('scoreText').textContent = this.score;
+                this.showFloatingText('ENEMY EVADED! +150 💨', this.jumper.x, this.jumper.y - 20, '#10b981');
+                this.createSparks(o.x, o.y, '#10b981', 14);
+              } else if (this.jumper.hasShield) {
+                this.jumper.hasShield = false;
+                audio.playBounce();
+                this.showToast('Shield Absorbed Impact! 🛡️');
+                this.createSparks(o.x, o.y, '#38bdf8', 14);
+              } else {
+                this.lives--;
+                document.getElementById('livesText').textContent = this.lives;
+                audio.playCrash();
+                this.createSparks(this.jumper.x, this.jumper.y, '#ef4444', 20);
+                this.showToast(`Obstacle Hit! ❤️ ${this.lives} Lives Left`);
+
+                if (this.lives <= 0) {
+                  this.gameOver(false);
+                } else {
+                  this.jumper.vy = -350;
+                }
+              }
+            }
+          });
+
+          const allStarsCollected = this.stars.every(s => s.collected);
+          if (allStarsCollected && !this.isGameOver) {
+            this.gameOver(true);
+          }
+        }
+      }
+
+      gameOver(won = true) {
+        this.isGameOver = true;
+        if (won) {
+          audio.playVictory();
+          this.triggerConfetti();
+          document.getElementById('endTitle').textContent = `Stage ${this.stage} Mastered! 🪂`;
+          document.getElementById('endFeedback').textContent = 'Extreme High Altitude Stunt Champion!';
+          document.getElementById('playAgainBtn').textContent = 'Next Stage 🚀';
+        } else {
+          audio.playCrash();
+          document.getElementById('endTitle').textContent = 'Jump Failed 💔';
+          document.getElementById('endFeedback').textContent = 'Too many hazards hit! Try again!';
+          document.getElementById('playAgainBtn').textContent = 'Try Again 🔄';
+        }
+
+        document.getElementById('finalScoreText').textContent = this.score;
+        document.getElementById('finalStuntsText').textContent = this.stuntsPerformed;
+        document.getElementById('finalNearMissText').textContent = this.nearMisses;
+        document.getElementById('finalStageText').textContent = this.stage;
+
+        document.getElementById('gameOverOverlay').style.display = 'flex';
+      }
+
+      render() {
+        this.ctx.clearRect(0, 0, this.w, this.h);
+
+        // 1. Clouds Background
+        this.ctx.save();
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+        this.clouds.forEach(c => {
+          c.x += c.speed * 0.016;
+          if (c.x > this.w + 60) c.x = -60;
+          if (c.x < -60) c.x = this.w + 60;
+
+          this.ctx.beginPath();
+          this.ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+          this.ctx.arc(c.x + c.size * 0.6, c.y - c.size * 0.3, c.size * 0.8, 0, Math.PI * 2);
+          this.ctx.arc(c.x - c.size * 0.6, c.y - c.size * 0.2, c.size * 0.7, 0, Math.PI * 2);
+          this.ctx.fill();
+        });
+        this.ctx.restore();
+
+        // 2. Canyon / Water Floor Base
+        this.ctx.save();
+        const waterY = this.h - 30;
+        const waterGrad = this.ctx.createLinearGradient(0, waterY, 0, this.h);
+        waterGrad.addColorStop(0, '#0284c7');
+        waterGrad.addColorStop(1, '#082f49');
+        this.ctx.fillStyle = waterGrad;
+        this.ctx.fillRect(0, waterY, this.w, 30);
+
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        this.ctx.lineWidth = 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, waterY);
+        for (let x = 0; x < this.w; x += 30) {
+          this.ctx.quadraticCurveTo(x + 15, waterY - 4, x + 30, waterY);
+        }
+        this.ctx.stroke();
+        this.ctx.restore();
+
+        // 3. Golden Stars Collectibles
+        this.stars.forEach(s => {
+          if (!s.collected) {
+            this.ctx.save();
+            this.ctx.fillStyle = '#fbbf24';
+            this.ctx.shadowColor = '#fbbf24';
+            this.ctx.shadowBlur = 12;
+            this.drawStar(this.ctx, s.x, s.y, 5, s.radius, s.radius * 0.5);
+            this.ctx.fill();
+            this.ctx.restore();
+          }
+        });
+
+        // 4. Moving Obstacles (Birds / Drones) + Danger Pulse Warning
+        this.obstacles.forEach(o => {
+          this.ctx.save();
+          // Show proximity warning if jumper is close
+          const isApproaching = Math.abs(o.y - this.jumper.y) < 90;
+          if (isApproaching) {
+            this.ctx.strokeStyle = '#ef4444';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(o.x, o.y, o.radius + 8, 0, Math.PI * 2);
+            this.ctx.stroke();
+          }
+
+          this.ctx.font = '22px system-ui';
+          this.ctx.textAlign = 'center';
+          this.ctx.textBaseline = 'middle';
+          this.ctx.fillText(o.type === 'bird' ? '🦅' : '🛸', o.x, o.y);
+          this.ctx.restore();
+        });
+
+        // 5. Elastic Bungee Cord
+        this.ctx.save();
+        this.ctx.strokeStyle = '#f97316';
+        this.ctx.lineWidth = 3.5;
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.anchorX, this.anchorY);
+
+        const dist = Math.hypot(this.jumper.x - this.anchorX, this.jumper.y - this.anchorY);
+        if (dist < this.cordRestLength) {
+          const coils = 12;
+          for (let i = 1; i <= coils; i++) {
+            const frac = i / coils;
+            const cx = this.anchorX + (this.jumper.x - this.anchorX) * frac + (i % 2 === 0 ? 10 : -10);
+            const cy = this.anchorY + (this.jumper.y - this.anchorY) * frac;
+            this.ctx.lineTo(cx, cy);
+          }
+        } else {
+          this.ctx.lineTo(this.jumper.x, this.jumper.y);
+        }
+        this.ctx.stroke();
+        this.ctx.restore();
+
+        // 6. Platform / Bridge Anchor Beam
+        this.ctx.save();
+        this.ctx.fillStyle = '#475569';
+        this.ctx.strokeStyle = '#94a3b8';
+        this.ctx.lineWidth = 2;
+        this.ctx.fillRect(this.anchorX - 60, this.anchorY - 14, 120, 14);
+        this.ctx.strokeRect(this.anchorX - 60, this.anchorY - 14, 120, 14);
+
+        this.ctx.fillStyle = '#f59e0b';
+        this.ctx.beginPath();
+        this.ctx.arc(this.anchorX, this.anchorY, 6, 0, Math.PI * 2);
+        this.ctx.fill();
+        this.ctx.restore();
+
+        // 7. Bungee Jumper Character
+        this.ctx.save();
+        this.ctx.translate(this.jumper.x, this.jumper.y);
+        this.ctx.rotate(this.jumper.rotation);
+
+        // Stunt Invincibility Glowing Aura (Passing safely through enemies!)
+        if (this.jumper.isInvincible) {
+          this.ctx.strokeStyle = '#10b981';
+          this.ctx.lineWidth = 3.5;
+          this.ctx.shadowColor = '#10b981';
+          this.ctx.shadowBlur = 20;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, 26, 0, Math.PI * 2);
+          this.ctx.stroke();
+        }
+
+        // Shield Aura
+        if (this.jumper.hasShield) {
+          this.ctx.strokeStyle = '#38bdf8';
+          this.ctx.lineWidth = 3;
+          this.ctx.shadowColor = '#38bdf8';
+          this.ctx.shadowBlur = 16;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, 24, 0, Math.PI * 2);
+          this.ctx.stroke();
+        }
+
+        // Magnet Aura
+        if (this.jumper.hasMagnet) {
+          this.ctx.strokeStyle = '#ec4899';
+          this.ctx.lineWidth = 2;
+          this.ctx.setLineDash([4, 4]);
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, 28, 0, Math.PI * 2);
+          this.ctx.stroke();
+        }
+
+        // Jumper Body
+        this.ctx.fillStyle = this.jumper.isInvincible ? '#10b981' : '#38bdf8';
+        this.ctx.beginPath();
+        this.ctx.arc(0, -8, 8, 0, Math.PI * 2);
+        this.ctx.fill();
+
+        this.ctx.strokeStyle = '#fff';
+        this.ctx.lineWidth = 3.5;
+        this.ctx.lineCap = 'round';
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, 0);
+        this.ctx.lineTo(0, 14);
+        this.ctx.moveTo(-10, 4);
+        this.ctx.lineTo(10, 4);
+        this.ctx.moveTo(0, 14);
+        this.ctx.lineTo(-8, 24);
+        this.ctx.moveTo(0, 14);
+        this.ctx.lineTo(8, 24);
+        this.ctx.stroke();
+
+        this.ctx.restore();
+      }
+
+      drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+        let rot = Math.PI / 2 * 3;
+        let x = cx;
+        let y = cy;
+        const step = Math.PI / spikes;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < spikes; i++) {
+          x = cx + Math.cos(rot) * outerRadius;
+          y = cy + Math.sin(rot) * outerRadius;
+          ctx.lineTo(x, y);
+          rot += step;
+
+          x = cx + Math.cos(rot) * innerRadius;
+          y = cy + Math.sin(rot) * innerRadius;
+          ctx.lineTo(x, y);
+          rot += step;
+        }
+        ctx.lineTo(cx, cy - outerRadius);
+        ctx.closePath();
+      }
+
+      createSparks(x, y, color = '#38bdf8', count = 14) {
+        for (let i = 0; i < count; i++) {
+          this.sparks.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 240,
+            vy: (Math.random() - 0.5) * 240,
+            color,
+            alpha: 1,
+            size: Math.random() * 3.5 + 1.5
+          });
+        }
+      }
+
+      renderSparks() {
+        for (let i = this.sparks.length - 1; i >= 0; i--) {
+          const s = this.sparks[i];
+          s.x += s.vx * 0.016;
+          s.y += s.vy * 0.016;
+          s.alpha -= 0.024;
+
+          if (s.alpha <= 0) {
+            this.sparks.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.save();
+          this.ctx.globalAlpha = s.alpha;
+          this.ctx.fillStyle = s.color;
+          this.ctx.beginPath();
+          this.ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+          this.ctx.fill();
+          this.ctx.restore();
+        }
+      }
+
+      triggerConfetti() {
+        this.confettiParticles = [];
+        const colors = ['#38bdf8', '#fbbf24', '#f43f5e', '#10b981', '#a855f7'];
+        for (let i = 0; i < 110; i++) {
+          this.confettiParticles.push({
+            x: window.innerWidth * 0.5,
+            y: window.innerHeight * 0.5,
+            vx: (Math.random() - 0.5) * 22,
+            vy: (Math.random() - 0.7) * 20,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            alpha: 1
+          });
+        }
+      }
+
+      renderConfetti() {
+        if (this.confettiParticles.length === 0) return;
+        this.confettiCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        for (let i = this.confettiParticles.length - 1; i >= 0; i--) {
+          const p = this.confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.4;
+          p.rotation += p.rotSpeed;
+          p.alpha -= 0.008;
+
+          if (p.alpha <= 0 || p.y > window.innerHeight) {
+            this.confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          this.confettiCtx.save();
+          this.confettiCtx.globalAlpha = p.alpha;
+          this.confettiCtx.translate(p.x, p.y);
+          this.confettiCtx.rotate((p.rotation * Math.PI) / 180);
+          this.confettiCtx.fillStyle = p.color;
+          this.confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          this.confettiCtx.restore();
+        }
+      }
+    }
+
+    // Launch on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new BungeeGame();
+    });
+  </script>
 </body>
 </html>
