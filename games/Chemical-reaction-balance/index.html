@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Chem Balancer Pro — Molecular Reaction Lab</title>
+  <title>Chem Balancer Pro — 50+ Molecular Reactions Lab</title>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #0f172a 50%, #020617 100%);
@@ -49,7 +49,7 @@
       flex-direction: column;
     }
 
-    /* Top Navigation Bar - Guaranteed No Overflow */
+    /* Top Navigation Bar */
     header {
       padding: 8px 12px;
       padding-top: env(safe-area-inset-top, 8px);
@@ -146,10 +146,10 @@
       align-items: center;
       gap: 5px;
       background: rgba(15, 23, 42, 0.75);
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 16px;
       border: 1px solid var(--surface-border);
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
       flex: 1;
       justify-content: center;
@@ -157,12 +157,41 @@
 
     .stat-val {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 800;
     }
     .stat-val.gold { color: var(--amber); }
     .stat-val.cyan { color: var(--accent); }
     .stat-val.emerald { color: var(--emerald); }
+
+    /* Category Filter Tabs */
+    .category-scroll-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding: 2px 0;
+      width: 100%;
+    }
+    .category-scroll-bar::-webkit-scrollbar { display: none; }
+
+    .cat-tab {
+      padding: 4px 10px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--surface-border);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .cat-tab.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
 
     /* Main Playfield Viewport */
     .game-viewport {
@@ -171,10 +200,10 @@
       position: relative;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 12px 14px 18px 14px;
+      padding: 10px 12px 16px 12px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       max-width: 680px;
       margin: 0 auto;
     }
@@ -182,7 +211,7 @@
     /* Visual Reaction Flask Canvas */
     .lab-canvas-card {
       width: 100%;
-      height: 120px;
+      height: 110px;
       background: var(--surface-card);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
@@ -216,12 +245,12 @@
       background: var(--surface-card);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
-      padding: 16px 10px;
+      padding: 14px 10px;
       box-shadow: var(--shadow-lg);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .reaction-type-badge {
@@ -241,8 +270,8 @@
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 8px;
-      font-size: 1.25rem;
+      gap: 6px;
+      font-size: 1.2rem;
       font-weight: 800;
       line-height: 1.2;
     }
@@ -252,15 +281,15 @@
       align-items: center;
       background: rgba(15, 23, 42, 0.85);
       border: 1px solid var(--surface-border);
-      padding: 4px 6px;
+      padding: 3px 5px;
       border-radius: 12px;
       gap: 4px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     .stepper-btn {
-      width: 30px;
-      height: 32px;
+      width: 28px;
+      height: 30px;
       border-radius: 8px;
       background: rgba(51, 65, 85, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -276,16 +305,16 @@
     .stepper-btn:active { transform: scale(0.9); }
 
     .coef-display {
-      min-width: 24px;
+      min-width: 22px;
       text-align: center;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 900;
       font-family: ui-monospace, SFMono-Regular, monospace;
       color: var(--amber);
     }
 
     .formula-span {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: #f8fafc;
       padding: 0 4px;
@@ -293,20 +322,20 @@
     }
 
     .formula-span sub {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       font-weight: 900;
       color: var(--accent);
     }
 
     .operator-sign {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 900;
       color: var(--text-muted);
       padding: 0 2px;
     }
 
     .reaction-arrow {
-      font-size: 1.4rem;
+      font-size: 1.35rem;
       font-weight: 900;
       color: var(--accent);
       padding: 0 4px;
@@ -317,18 +346,18 @@
       background: var(--surface-card);
       border: 1px solid var(--surface-border);
       border-radius: var(--radius);
-      padding: 14px;
+      padding: 12px;
       box-shadow: var(--shadow-lg);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .inventory-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 800;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -337,19 +366,19 @@
 
     .element-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+      gap: 6px;
     }
 
     .element-chip {
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid var(--surface-border);
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 6px 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       transition: all 0.2s ease;
     }
 
@@ -367,26 +396,26 @@
     .elem-symbol {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-weight: 900;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .elem-dot {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       box-shadow: 0 0 6px currentColor;
     }
 
     .elem-counts {
       font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 800;
     }
 
     .elem-status {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
     }
 
     /* Explanation & Hint Box */
@@ -394,8 +423,8 @@
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid var(--surface-border);
       border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 0.82rem;
+      padding: 10px 12px;
+      font-size: 0.8rem;
       line-height: 1.4;
       color: var(--text-muted);
       display: flex;
@@ -411,7 +440,7 @@
     /* Bottom Action Bar */
     footer.bottom-bar {
       height: 56px;
-      padding: 0 12px;
+      padding: 0 10px;
       padding-bottom: env(safe-area-inset-bottom, 0px);
       background: var(--surface-glass);
       backdrop-filter: blur(16px);
@@ -420,15 +449,15 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       z-index: 40;
       flex-shrink: 0;
     }
 
     .hud-btn {
-      padding: 8px 10px;
+      padding: 8px 8px;
       border-radius: 12px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 800;
       flex: 1;
       height: 40px;
@@ -523,6 +552,32 @@
       padding: 4px 6px;
     }
 
+    .reaction-list-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .reaction-item-btn {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text);
+      font-size: 0.84rem;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .reaction-item-btn:hover {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.15);
+    }
+
     #confettiCanvas {
       position: fixed;
       inset: 0;
@@ -542,6 +597,7 @@
       </div>
 
       <div class="controls-top">
+        <button id="reactionListBtn" title="Select Reaction List">📑 50+ List</button>
         <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
         <button class="btn-icon primary" id="helpBtn" title="How to Play & Theory">❓</button>
       </div>
@@ -553,14 +609,25 @@
         <span>⭐</span>
         <span class="stat-val gold" id="scoreText">0</span>
       </div>
-      <div class="stat-pill" title="Current Reaction">
+      <div class="stat-pill" title="Current Reaction Index">
         <span>🔬</span>
-        <span class="stat-val cyan" id="puzzleCountText">1/25</span>
+        <span class="stat-val cyan" id="puzzleCountText">1/50</span>
       </div>
       <div class="stat-pill" title="Streak">
         <span>🔥</span>
         <span class="stat-val emerald" id="streakText">0</span>
       </div>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="category-scroll-bar" id="categoryTabs">
+      <div class="cat-tab active" data-cat="all">All (50+)</div>
+      <div class="cat-tab" data-cat="Synthesis">Synthesis</div>
+      <div class="cat-tab" data-cat="Decomposition">Decomposition</div>
+      <div class="cat-tab" data-cat="Combustion">Combustion</div>
+      <div class="cat-tab" data-cat="Single Displacement">Single Disp.</div>
+      <div class="cat-tab" data-cat="Double Displacement">Double Disp.</div>
+      <div class="cat-tab" data-cat="Redox">Redox & Special</div>
     </div>
   </header>
 
@@ -609,6 +676,19 @@
   </footer>
 
   <canvas id="confettiCanvas"></canvas>
+
+  <!-- 50+ Reaction Explorer Modal -->
+  <div class="modal-overlay" id="listModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>Select Reaction (50+) 📑</span>
+        <button class="close-btn" id="closeListBtn">&times;</button>
+      </div>
+      <div class="reaction-list-grid" id="reactionListGrid">
+        <!-- Dynamically generated list -->
+      </div>
+    </div>
+  </div>
 
   <!-- How to Play & Theory Modal -->
   <div class="modal-overlay" id="helpModal">
@@ -726,71 +806,123 @@
     const audio = new ChemAudioEngine();
 
     /* ==========================================================================
-       CHEMICAL REACTION DATABASE & PARSER
+       MASSIVE 50+ CHEMICAL REACTION DATABASE
        ========================================================================== */
     const REACTIONS_DB = [
+      // --- SYNTHESIS REACTIONS ---
       {
         type: "Synthesis",
         reactants: ["H₂", "O₂"],
         products: ["H₂O"],
         coefficients: [2, 1, 2],
-        hint: "Hydrogen and oxygen combine to form water. Balance oxygen first!"
+        hint: "Hydrogen gas and oxygen combine to form water. Balance oxygen first!"
       },
       {
         type: "Synthesis",
         reactants: ["N₂", "H₂"],
         products: ["NH₃"],
         coefficients: [1, 3, 2],
-        hint: "Haber Process: Nitrogen gas reacts with hydrogen to make ammonia."
+        hint: "Haber Process: Nitrogen gas reacts with hydrogen to synthesize ammonia."
       },
       {
-        type: "Combustion",
-        reactants: ["CH₄", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [1, 2, 1, 2],
-        hint: "Methane burns in oxygen producing carbon dioxide and steam."
-      },
-      {
-        type: "Oxidation",
+        type: "Synthesis",
         reactants: ["Fe", "O₂"],
         products: ["Fe₂O₃"],
         coefficients: [4, 3, 2],
-        hint: "Rusting of iron: Iron reacts with oxygen to form Iron(III) Oxide."
+        hint: "Iron oxidation creates reddish Iron(III) Oxide rust."
       },
       {
         type: "Synthesis",
         reactants: ["Al", "O₂"],
         products: ["Al₂O₃"],
         coefficients: [4, 3, 2],
-        hint: "Aluminum oxidation forms a protective aluminum oxide coating."
+        hint: "Aluminum reacts with atmospheric oxygen to form aluminum oxide."
       },
       {
         type: "Synthesis",
         reactants: ["Na", "Cl₂"],
         products: ["NaCl"],
         coefficients: [2, 1, 2],
-        hint: "Sodium metal reacts vigorously with toxic chlorine gas to yield table salt."
+        hint: "Sodium metal reacts vigorously with toxic chlorine gas to produce table salt."
       },
+      {
+        type: "Synthesis",
+        reactants: ["Mg", "O₂"],
+        products: ["MgO"],
+        coefficients: [2, 1, 2],
+        hint: "Magnesium ribbon burns with a blinding white light into magnesium oxide."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["P₄", "O₂"],
+        products: ["P₂O₅"],
+        coefficients: [1, 5, 2],
+        hint: "White phosphorus combines with excess oxygen to form phosphorus pentoxide."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["CO", "O₂"],
+        products: ["CO₂"],
+        coefficients: [2, 1, 2],
+        hint: "Carbon monoxide burns in oxygen to produce carbon dioxide."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["SO₂", "O₂"],
+        products: ["SO₃"],
+        coefficients: [2, 1, 2],
+        hint: "Contact Process: Catalytic oxidation of sulfur dioxide to sulfur trioxide."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["CaO", "H₂O"],
+        products: ["Ca(OH)₂"],
+        coefficients: [1, 1, 1],
+        hint: "Slaking of quicklime: Calcium oxide with water produces calcium hydroxide."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["SO₃", "H₂O"],
+        products: ["H₂SO₄"],
+        coefficients: [1, 1, 1],
+        hint: "Sulfur trioxide absorbs into water to form concentrated sulfuric acid."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["Na₂O", "H₂O"],
+        products: ["NaOH"],
+        coefficients: [1, 1, 2],
+        hint: "Sodium oxide dissolves in water to form sodium hydroxide."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["H₂", "Cl₂"],
+        products: ["HCl"],
+        coefficients: [1, 1, 2],
+        hint: "Direct synthesis of hydrogen chloride gas from pure elemental gases."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["NH₃", "HCl"],
+        products: ["NH₄Cl"],
+        coefficients: [1, 1, 1],
+        hint: "Ammonia gas reacts with hydrogen chloride to produce white ammonium chloride smoke."
+      },
+      {
+        type: "Synthesis",
+        reactants: ["Fe", "S"],
+        products: ["FeS"],
+        coefficients: [1, 1, 1],
+        hint: "Iron filings heated with sulfur powder form black iron(II) sulfide."
+      },
+
+      // --- DECOMPOSITION REACTIONS ---
       {
         type: "Decomposition",
         reactants: ["H₂O₂"],
         products: ["H₂O", "O₂"],
         coefficients: [2, 2, 1],
         hint: "Hydrogen peroxide decomposes into water and oxygen gas."
-      },
-      {
-        type: "Combustion",
-        reactants: ["C₃H₈", "O₂"],
-        products: ["CO₂", "H₂O"],
-        coefficients: [1, 5, 3, 4],
-        hint: "Propane combustion in oxygen gas produces carbon dioxide and water."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Zn", "HCl"],
-        products: ["ZnCl₂", "H₂"],
-        coefficients: [1, 2, 1, 1],
-        hint: "Zinc metal reacts with hydrochloric acid, releasing bubbling hydrogen gas."
       },
       {
         type: "Decomposition",
@@ -800,74 +932,299 @@
         hint: "Potassium chlorate decomposes upon heating into potassium chloride and oxygen."
       },
       {
-        type: "Neutralization",
-        reactants: ["H₂SO₄", "NaOH"],
-        products: ["Na₂SO₄", "H₂O"],
-        coefficients: [1, 2, 1, 2],
-        hint: "Sulfuric acid neutralizes sodium hydroxide to yield sodium sulfate and water."
-      },
-      {
-        type: "Single Displacement",
-        reactants: ["Cu", "AgNO₃"],
-        products: ["Cu(NO₃)₂", "Ag"],
-        coefficients: [1, 2, 1, 2],
-        hint: "Copper wire displaces silver from silver nitrate solution, forming silver crystals."
-      },
-      {
         type: "Decomposition",
         reactants: ["CaCO₃"],
         products: ["CaO", "CO₂"],
         coefficients: [1, 1, 1],
-        hint: "Thermal decomposition of limestone (calcium carbonate) into quicklime."
+        hint: "Limestone (calcium carbonate) calcination in industrial kilns."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["Ag₂O"],
+        products: ["Ag", "O₂"],
+        coefficients: [2, 4, 1],
+        hint: "Thermal decomposition of silver oxide into shiny silver metal and oxygen."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["NaN₃"],
+        products: ["Na", "N₂"],
+        coefficients: [2, 2, 3],
+        hint: "Automotive Airbag: Sodium azide explodes rapidly into nitrogen gas to inflate bags."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["HgO"],
+        products: ["Hg", "O₂"],
+        coefficients: [2, 2, 1],
+        hint: "Priestley's classic experiment: Red mercury(II) oxide decomposes to liquid mercury."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["NaHCO₃"],
+        products: ["Na₂CO₃", "H₂O", "CO₂"],
+        coefficients: [2, 1, 1, 1],
+        hint: "Baking soda decomposition upon heating in ovens, releasing CO₂ gas bubbles."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["CuCO₃"],
+        products: ["CuO", "CO₂"],
+        coefficients: [1, 1, 1],
+        hint: "Green copper(II) carbonate decomposes upon heating into black copper(II) oxide."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["Fe(OH)₃"],
+        products: ["Fe₂O₃", "H₂O"],
+        coefficients: [2, 1, 3],
+        hint: "Iron(III) hydroxide dehydrates when heated to yield rust (iron oxide)."
+      },
+      {
+        type: "Decomposition",
+        reactants: ["NH₄NO₃"],
+        products: ["N₂O", "H₂O"],
+        coefficients: [1, 1, 2],
+        hint: "Gentle heating of ammonium nitrate releases nitrous oxide (laughing gas)."
+      },
+
+      // --- COMBUSTION REACTIONS ---
+      {
+        type: "Combustion",
+        reactants: ["CH₄", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [1, 2, 1, 2],
+        hint: "Natural gas (methane) combustion yields carbon dioxide and water vapor."
+      },
+      {
+        type: "Combustion",
+        reactants: ["C₃H₈", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [1, 5, 3, 4],
+        hint: "Propane gas used in outdoor grills combusts completely in oxygen."
       },
       {
         type: "Combustion",
         reactants: ["C₂H₅OH", "O₂"],
         products: ["CO₂", "H₂O"],
         coefficients: [1, 3, 2, 3],
-        hint: "Ethanol alcohol burns cleanly in oxygen yielding carbon dioxide and steam."
+        hint: "Biofuel ethanol combustion produces clean exhaust of CO₂ and water vapor."
       },
       {
-        type: "Double Displacement",
-        reactants: ["BaCl₂", "Na₂SO₄"],
-        products: ["BaSO₄", "NaCl"],
-        coefficients: [1, 1, 1, 2],
-        hint: "Precipitation reaction forming insoluble white barium sulfate."
+        type: "Combustion",
+        reactants: ["C₄H₁₀", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [2, 13, 8, 10],
+        hint: "Butane lighter fuel combustion. Balance carbons and hydrogens first!"
+      },
+      {
+        type: "Combustion",
+        reactants: ["C₂H₂", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [2, 5, 4, 2],
+        hint: "Oxy-acetylene torch gas reaches over 3,000°C for metal welding."
+      },
+      {
+        type: "Combustion",
+        reactants: ["C₆H₁₂O₆", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [1, 6, 6, 6],
+        hint: "Cellular Respiration: Glucose sugar oxidizes into metabolic energy."
+      },
+      {
+        type: "Combustion",
+        reactants: ["C₂H₆", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [2, 7, 4, 6],
+        hint: "Ethane gas combustion: Notice the 7 oxygen molecules required!"
+      },
+      {
+        type: "Combustion",
+        reactants: ["CH₃OH", "O₂"],
+        products: ["CO₂", "H₂O"],
+        coefficients: [2, 3, 2, 4],
+        hint: "Racing fuel methanol burns with an almost invisible pale blue flame."
+      },
+
+      // --- SINGLE DISPLACEMENT REACTIONS ---
+      {
+        type: "Single Displacement",
+        reactants: ["Zn", "HCl"],
+        products: ["ZnCl₂", "H₂"],
+        coefficients: [1, 2, 1, 1],
+        hint: "Zinc metal reacts with hydrochloric acid, generating hydrogen gas bubbles."
+      },
+      {
+        type: "Single Displacement",
+        reactants: ["Cu", "AgNO₃"],
+        products: ["Cu(NO₃)₂", "Ag"],
+        coefficients: [1, 2, 1, 2],
+        hint: "Copper wire displaces silver from silver nitrate, forming beautiful silver crystals."
       },
       {
         type: "Single Displacement",
         reactants: ["Al", "HCl"],
         products: ["AlCl₃", "H₂"],
         coefficients: [2, 6, 2, 3],
-        hint: "Aluminum reacts vigorously with hydrochloric acid."
+        hint: "Aluminum reacts vigorously with acid to produce aluminum chloride and hydrogen."
       },
       {
-        type: "Oxidation",
-        reactants: ["SO₂", "O₂"],
-        products: ["SO₃"],
-        coefficients: [2, 1, 2],
-        hint: "Contact process: Sulfur dioxide oxidizes to sulfur trioxide."
+        type: "Single Displacement",
+        reactants: ["Na", "H₂O"],
+        products: ["NaOH", "H₂"],
+        coefficients: [2, 2, 2, 1],
+        hint: "Sodium metal skitters across water with sparks, creating sodium hydroxide."
       },
+      {
+        type: "Single Displacement",
+        reactants: ["K", "H₂O"],
+        products: ["KOH", "H₂"],
+        coefficients: [2, 2, 2, 1],
+        hint: "Potassium reacts explosively with cold water yielding potassium hydroxide."
+      },
+      {
+        type: "Single Displacement",
+        reactants: ["Fe", "CuSO₄"],
+        products: ["FeSO₄", "Cu"],
+        coefficients: [1, 1, 1, 1],
+        hint: "An iron nail placed in blue copper sulfate gets coated with reddish copper."
+      },
+      {
+        type: "Single Displacement",
+        reactants: ["Zn", "H₂SO₄"],
+        products: ["ZnSO₄", "H₂"],
+        coefficients: [1, 1, 1, 1],
+        hint: "Zinc reacts with dilute sulfuric acid to generate hydrogen gas."
+      },
+      {
+        type: "Single Displacement",
+        reactants: ["Mg", "HCl"],
+        products: ["MgCl₂", "H₂"],
+        coefficients: [1, 2, 1, 1],
+        hint: "Magnesium ribbon reacts rapidly in hydrochloric acid test tubes."
+      },
+      {
+        type: "Single Displacement",
+        reactants: ["Cl₂", "NaBr"],
+        products: ["NaCl", "Br₂"],
+        coefficients: [1, 2, 2, 1],
+        hint: "Chlorine gas displaces bromine from sodium bromide solution."
+      },
+
+      // --- DOUBLE DISPLACEMENT & NEUTRALIZATION ---
+      {
+        type: "Double Displacement",
+        reactants: ["H₂SO₄", "NaOH"],
+        products: ["Na₂SO₄", "H₂O"],
+        coefficients: [1, 2, 1, 2],
+        hint: "Sulfuric acid neutralizes sodium hydroxide to yield sodium sulfate salt and water."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["HCl", "NaOH"],
+        products: ["NaCl", "H₂O"],
+        coefficients: [1, 1, 1, 1],
+        hint: "Classic acid-base neutralization producing sodium chloride solution."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["BaCl₂", "Na₂SO₄"],
+        products: ["BaSO₄", "NaCl"],
+        coefficients: [1, 1, 1, 2],
+        hint: "Precipitation reaction forming a bright white insoluble barium sulfate solid."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["AgNO₃", "NaCl"],
+        products: ["AgCl", "NaNO₃"],
+        coefficients: [1, 1, 1, 1],
+        hint: "Silver nitrate and table salt form a white curd precipitate of silver chloride."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["Pb(NO₃)₂", "KI"],
+        products: ["PbI₂", "KNO₃"],
+        coefficients: [1, 2, 1, 2],
+        hint: "'Golden Rain' reaction forming bright canary-yellow lead(II) iodide crystals."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["CaCl₂", "Na₂CO₃"],
+        products: ["CaCO₃", "NaCl"],
+        coefficients: [1, 1, 1, 2],
+        hint: "Precipitation of insoluble chalk (calcium carbonate) from soluble salts."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["HCl", "CaCO₃"],
+        products: ["CaCl₂", "CO₂", "H₂O"],
+        coefficients: [2, 1, 1, 1, 1],
+        hint: "Acid rain reaction on marble/limestone statues, releasing carbon dioxide."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["FeCl₃", "NaOH"],
+        products: ["Fe(OH)₃", "NaCl"],
+        coefficients: [1, 3, 1, 3],
+        hint: "Iron(III) chloride precipitates rusty brown iron(III) hydroxide."
+      },
+      {
+        type: "Double Displacement",
+        reactants: ["CuSO₄", "NaOH"],
+        products: ["Cu(OH)₂", "Na₂SO₄"],
+        coefficients: [1, 2, 1, 1],
+        hint: "Copper(II) sulfate reacts with base to form a sky-blue copper hydroxide gel."
+      },
+
+      // --- REDOX & SPECIAL INDUSTRIAL REACTIONS ---
       {
         type: "Redox",
         reactants: ["Fe₂O₃", "CO"],
         products: ["Fe", "CO₂"],
         coefficients: [1, 3, 2, 3],
-        hint: "Blast furnace reduction of iron ore with carbon monoxide."
+        hint: "Blast Furnace: Carbon monoxide reduces molten iron ore into pure liquid iron."
       },
       {
-        type: "Neutralization",
-        reactants: ["HCl", "CaCO₃"],
-        products: ["CaCl₂", "CO₂", "H₂O"],
-        coefficients: [2, 1, 1, 1, 1],
-        hint: "Acid rain reaction on marble/limestone releasing carbon dioxide gas."
+        type: "Redox",
+        reactants: ["Al", "Fe₂O₃"],
+        products: ["Al₂O₃", "Fe"],
+        coefficients: [2, 1, 1, 2],
+        hint: "Thermite Reaction: Highly exothermic reaction used for welding railroad tracks."
       },
       {
-        type: "Synthesis",
-        reactants: ["Na₂O", "H₂O"],
-        products: ["NaOH"],
-        coefficients: [1, 1, 2],
-        hint: "Basic metal oxide reacts with water to form a strong alkaline hydroxide."
+        type: "Redox",
+        reactants: ["NH₃", "O₂"],
+        products: ["NO", "H₂O"],
+        coefficients: [4, 5, 4, 6],
+        hint: "Ostwald Process: Catalytic oxidation of ammonia to nitric oxide."
+      },
+      {
+        type: "Redox",
+        reactants: ["NO₂", "H₂O"],
+        products: ["HNO₃", "NO"],
+        coefficients: [3, 1, 2, 1],
+        hint: "Nitrogen dioxide gas dissolves in water to form concentrated nitric acid."
+      },
+      {
+        type: "Redox",
+        reactants: ["Cu", "HNO₃"],
+        products: ["Cu(NO₃)₂", "NO₂", "H₂O"],
+        coefficients: [1, 4, 1, 2, 2],
+        hint: "Copper metal reacts with nitric acid producing dense brown nitrogen dioxide gas."
+      },
+      {
+        type: "Redox",
+        reactants: ["CaC₂", "H₂O"],
+        products: ["C₂H₂", "Ca(OH)₂"],
+        coefficients: [1, 2, 1, 1],
+        hint: "Miner's Carbide Lamp: Calcium carbide reacts with water drips to yield acetylene."
+      },
+      {
+        type: "Redox",
+        reactants: ["KMnO₄", "HCl"],
+        products: ["KCl", "MnCl₂", "Cl₂", "H₂O"],
+        coefficients: [2, 16, 2, 2, 5, 8],
+        hint: "Master Redox: Potassium permanganate strongly oxidizes hydrochloric acid."
       }
     ];
 
@@ -887,7 +1244,12 @@
       K: '#ec4899',
       Ca: '#f97316',
       Ba: '#06b6d4',
-      P: '#f43f5e'
+      P: '#f43f5e',
+      Pb: '#a1a1aa',
+      I: '#d946ef',
+      Mn: '#c084fc',
+      Br: '#fb923c',
+      Hg: '#94a3b8'
     };
 
     function parseFormula(formula) {
@@ -940,6 +1302,8 @@
         this.score = 0;
         this.streak = 0;
         this.currentIndex = 0;
+        this.currentFilter = 'all';
+        this.filteredList = [...REACTIONS_DB];
         this.userCoefficients = [];
         this.isBalanced = false;
 
@@ -998,9 +1362,52 @@
           this.showToast(audio.enabled ? 'Audio Unmuted' : 'Audio Muted');
         };
 
+        document.querySelectorAll('#categoryTabs .cat-tab').forEach(tab => {
+          tab.onclick = () => {
+            document.querySelectorAll('#categoryTabs .cat-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const cat = tab.dataset.cat;
+            this.currentFilter = cat;
+            if (cat === 'all') {
+              this.filteredList = [...REACTIONS_DB];
+            } else {
+              this.filteredList = REACTIONS_DB.filter(r => r.type === cat || (cat === 'Redox' && (r.type === 'Redox' || r.type === 'Oxidation')));
+            }
+            this.loadPuzzle(0);
+          };
+        });
+
+        document.getElementById('reactionListBtn').onclick = () => this.openReactionList();
+        document.getElementById('closeListBtn').onclick = () => document.getElementById('listModal').classList.remove('open');
+
         document.getElementById('helpBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
         document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
         document.getElementById('gotItBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+      }
+
+      openReactionList() {
+        const grid = document.getElementById('reactionListGrid');
+        grid.innerHTML = '';
+
+        this.filteredList.forEach((r, idx) => {
+          const btn = document.createElement('div');
+          btn.className = 'reaction-item-btn';
+          const equationStr = `${r.reactants.join(' + ')} ➔ ${r.products.join(' + ')}`;
+          btn.innerHTML = `
+            <div>
+              <span style="font-weight:800; color:var(--accent);">${idx + 1}.</span>
+              <span>${equationStr}</span>
+            </div>
+            <span style="font-size:0.7rem; color:var(--text-muted); padding:2px 6px; background:rgba(255,255,255,0.08); border-radius:6px;">${r.type}</span>
+          `;
+          btn.onclick = () => {
+            this.loadPuzzle(idx);
+            document.getElementById('listModal').classList.remove('open');
+          };
+          grid.appendChild(btn);
+        });
+
+        document.getElementById('listModal').classList.add('open');
       }
 
       showToast(msg) {
@@ -1012,15 +1419,15 @@
       }
 
       loadPuzzle(idx) {
-        this.currentIndex = idx % REACTIONS_DB.length;
-        const puzzle = REACTIONS_DB[this.currentIndex];
+        this.currentIndex = idx % this.filteredList.length;
+        const puzzle = this.filteredList[this.currentIndex];
         this.isBalanced = false;
 
         const totalTerms = puzzle.reactants.length + puzzle.products.length;
         this.userCoefficients = new Array(totalTerms).fill(1);
 
         document.getElementById('reactionTypeBadge').textContent = `${puzzle.type} Reaction`;
-        document.getElementById('puzzleCountText').textContent = `${this.currentIndex + 1}/${REACTIONS_DB.length}`;
+        document.getElementById('puzzleCountText').textContent = `${this.currentIndex + 1}/${this.filteredList.length}`;
         document.getElementById('hintText').textContent = puzzle.hint;
         document.getElementById('statusTag').textContent = `⚗️ Reaction Chamber: ${puzzle.type}`;
         document.getElementById('statusTag').style.color = 'var(--accent)';
@@ -1030,7 +1437,7 @@
       }
 
       renderEquation() {
-        const puzzle = REACTIONS_DB[this.currentIndex];
+        const puzzle = this.filteredList[this.currentIndex];
         const row = document.getElementById('equationRow');
         row.innerHTML = '';
 
@@ -1092,7 +1499,7 @@
         incBtn.className = 'stepper-btn';
         incBtn.textContent = '+';
         incBtn.onclick = () => {
-          if (this.userCoefficients[termIndex] < 12) {
+          if (this.userCoefficients[termIndex] < 16) {
             this.userCoefficients[termIndex]++;
             numSpan.textContent = this.userCoefficients[termIndex];
             audio.playStep();
@@ -1112,7 +1519,7 @@
       }
 
       updateInventory() {
-        const puzzle = REACTIONS_DB[this.currentIndex];
+        const puzzle = this.filteredList[this.currentIndex];
         const reactantCounts = {};
         const productCounts = {};
         const allElements = new Set();
@@ -1188,7 +1595,7 @@
           this.showToast('✨ Reaction Perfectly Balanced! +100 PTS');
 
           setTimeout(() => {
-            if (this.currentIndex < REACTIONS_DB.length - 1) {
+            if (this.currentIndex < this.filteredList.length - 1) {
               this.loadPuzzle(this.currentIndex + 1);
             }
           }, 1800);
@@ -1201,7 +1608,7 @@
       }
 
       autoSolve() {
-        const puzzle = REACTIONS_DB[this.currentIndex];
+        const puzzle = this.filteredList[this.currentIndex];
         this.userCoefficients = [...puzzle.coefficients];
         this.renderEquation();
         this.updateInventory();
@@ -1210,7 +1617,7 @@
       }
 
       resetCoefficients() {
-        const puzzle = REACTIONS_DB[this.currentIndex];
+        const puzzle = this.filteredList[this.currentIndex];
         const totalTerms = puzzle.reactants.length + puzzle.products.length;
         this.userCoefficients = new Array(totalTerms).fill(1);
         this.renderEquation();
@@ -1241,9 +1648,9 @@
         this.labCtx.fillStyle = bgGrad;
         this.labCtx.fillRect(0, 0, w, h);
 
-        this.drawFlask(w * 0.2, h * 0.55, 36, this.isBalanced ? '#10b981' : '#0ea5e9');
-        this.drawFlask(w * 0.5, h * 0.52, 44, this.isBalanced ? '#34d399' : '#a855f7');
-        this.drawFlask(w * 0.8, h * 0.55, 36, this.isBalanced ? '#10b981' : '#f59e0b');
+        this.drawFlask(w * 0.2, h * 0.55, 34, this.isBalanced ? '#10b981' : '#0ea5e9');
+        this.drawFlask(w * 0.5, h * 0.52, 42, this.isBalanced ? '#34d399' : '#a855f7');
+        this.drawFlask(w * 0.8, h * 0.55, 34, this.isBalanced ? '#10b981' : '#f59e0b');
 
         this.bubbles.forEach(b => {
           b.y -= b.vy;
