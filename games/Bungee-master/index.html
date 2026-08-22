@@ -259,50 +259,71 @@
       transition: width 0.05s ease;
     }
 
-    /* Directional Sway Controls (Left / Right Buttons) */
-    .dodge-controls {
+    /* 4-Way Ergonomic D-Pad (Up, Down, Left, Right) */
+    .dpad-container {
       position: absolute;
-      bottom: 84px;
-      left: 12px;
-      display: flex;
-      gap: 8px;
+      bottom: 74px;
+      left: 14px;
+      width: 120px;
+      height: 120px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 4px;
       z-index: 30;
+      pointer-events: auto;
     }
 
-    .dodge-fab {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
+    .dpad-btn {
       background: var(--surface-card);
-      border: 2px solid var(--accent);
+      border: 1.5px solid var(--accent);
+      border-radius: 12px;
+      color: #fff;
       display: grid;
       place-items: center;
-      font-size: 1.4rem;
-      box-shadow: 0 0 16px var(--accent-glow);
+      font-size: 1.25rem;
+      font-weight: 900;
       cursor: pointer;
-      pointer-events: auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
       touch-action: manipulation;
+      transition: transform 0.08s ease, background 0.08s ease;
     }
 
-    .dodge-fab:active {
+    .dpad-btn:active {
       transform: scale(0.9);
       background: rgba(56, 189, 248, 0.35);
+      border-color: #fff;
     }
+
+    .dpad-up { grid-column: 2; grid-row: 1; }
+    .dpad-left { grid-column: 1; grid-row: 2; }
+    .dpad-center {
+      grid-column: 2; grid-row: 2;
+      background: rgba(56, 189, 248, 0.2);
+      border-radius: 50%;
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--accent);
+      border: 1px dashed var(--accent);
+    }
+    .dpad-right { grid-column: 3; grid-row: 2; }
+    .dpad-down { grid-column: 2; grid-row: 3; }
 
     /* Stunt Actions Floating Right */
     .stunt-touch-controls {
       position: absolute;
-      bottom: 84px;
-      right: 12px;
+      bottom: 74px;
+      right: 14px;
       display: flex;
+      flex-direction: column;
       gap: 8px;
       pointer-events: none;
       z-index: 30;
     }
 
     .stunt-fab {
-      width: 52px;
-      height: 52px;
+      width: 54px;
+      height: 54px;
       border-radius: 16px;
       background: var(--surface-card);
       border: 2px solid var(--pink);
@@ -577,7 +598,8 @@
     @media (max-width: 480px) {
       .brand span { display: none; }
       .stat-pill { padding: 3px 7px; font-size: 0.74rem; }
-      .dodge-fab, .stunt-fab { width: 44px; height: 44px; font-size: 1.1rem; }
+      .dpad-container { width: 104px; height: 104px; }
+      .stunt-fab { width: 48px; height: 48px; font-size: 1.1rem; }
     }
   </style>
 </head>
@@ -635,23 +657,26 @@
     <canvas id="bungeeCanvas"></canvas>
     <div class="toast" id="toast">Hold anywhere to charge dive, release to jump! 🪂</div>
 
-    <!-- On-Screen Left / Right Dodge Sway Buttons -->
-    <div class="dodge-controls">
-      <button class="dodge-fab" id="swayLeftBtn" title="Dodge Left">◀</button>
-      <button class="dodge-fab" id="swayRightBtn" title="Dodge Right">▶</button>
+    <!-- 4-Way Directional D-Pad (Up, Down, Left, Right) -->
+    <div class="dpad-container">
+      <div class="dpad-btn dpad-up" id="dpadUp" title="Spring Pull Up / Boost (⬆️)">▲</div>
+      <div class="dpad-btn dpad-left" id="dpadLeft" title="Sway Left (◀)">◀</div>
+      <div class="dpad-center" id="dpadCenter">DIVE</div>
+      <div class="dpad-btn dpad-right" id="dpadRight" title="Sway Right (▶)">▶</div>
+      <div class="dpad-btn dpad-down" id="dpadDown" title="Power Plunge Down (⬇️)">▼</div>
     </div>
 
     <!-- On-Screen Stunt Action Trigger Buttons -->
     <div class="stunt-touch-controls">
-      <div class="stunt-fab" id="flipStuntBtn" title="Front Flip (Invincible Spin!)">
+      <div class="stunt-fab" id="flipStuntBtn" title="Front Flip (Invincible Evasion!)">
         🤸
         <span class="lbl">Flip</span>
       </div>
-      <div class="stunt-fab" id="spinStuntBtn" title="360 Spin (Evasion!)">
+      <div class="stunt-fab" id="spinStuntBtn" title="360 Spin (Invincible Evasion!)">
         🌪️
         <span class="lbl">Spin</span>
       </div>
-      <div class="stunt-fab" id="rocketBoostBtn" title="Spring Boost">
+      <div class="stunt-fab" id="rocketBoostBtn" title="Rocket Spring Boost">
         🚀
         <span class="lbl">Boost</span>
       </div>
@@ -767,14 +792,18 @@
   <div class="modal-overlay" id="helpModal">
     <div class="modal-card">
       <div class="modal-title">
-        <span>How to Escape & Dodge Enemies 🪂</span>
+        <span>Full 4-Way Flight Controls 🪂</span>
         <button class="close-btn" id="closeHelpBtn">&times;</button>
       </div>
       <div style="font-size: 0.88rem; line-height: 1.5; color: #cbd5e1; display: flex; flex-direction: column; gap: 10px;">
-        <p>🎮 <strong>1. Tap ◀ / ▶ or Drag Screen:</strong> Use the on-screen left/right arrow buttons or drag anywhere to steer your jumper away from birds 🦅 and drones 🛸!</p>
-        <p>🌀 <strong>2. Stunt Invincibility (I-Frames):</strong> Tapping <code>Flip</code> 🤸 or <code>Spin</code> 🌪️ grants <strong>1.5 seconds of Invincibility</strong>. You pass right through enemies and earn <strong>EVASION +150 PTS</strong>!</p>
-        <p>🛡️ <strong>3. Shield Bubble:</strong> Tap <em>Shield Bubble</em> in the bottom bar to protect against collisions.</p>
-        <p>🤖 <strong>4. Auto Stunt Pilot:</strong> Turn on Auto-Pilot for automatic obstacle evasion!</p>
+        <p>🕹️ <strong>4-Way Directional D-Pad:</strong></p>
+        <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+          <li><strong>▲ (Up):</strong> Spring pull / thruster lift — pull upward away from hazards and water!</li>
+          <li><strong>▼ (Down):</strong> Aerodynamic Power Plunge — dive faster to zip past flying birds or aim for deep near-miss scores!</li>
+          <li><strong>◀ (Left) / ▶ (Right):</strong> Sway and glide sideways across the gorge.</li>
+        </ul>
+        <p>🌀 <strong>Stunts Evasion:</strong> Tap <code>Flip</code> 🤸 or <code>Spin</code> 🌪️ for 1.5s Invincibility to safely pass through any obstacle!</p>
+        <p>🛡️ <strong>Shield & Magnet:</strong> Activate power-ups from the bottom bar to protect yourself and vacuum stars.</p>
       </div>
       <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
         <button class="primary" id="gotItBtn" style="padding: 8px 20px;">Got It!</button>
@@ -941,7 +970,7 @@
     const audio = new AudioEngine();
 
     /* ==========================================================================
-       BUNGEE MASTER PRO PHYSICS, STUNT & EVASION ENGINE
+       BUNGEE MASTER PRO PHYSICS, STUNT & FULL 4-WAY ENGINE
        ========================================================================== */
     class BungeeGame {
       constructor() {
@@ -1062,13 +1091,17 @@
           };
         };
 
+        let dragStartY = 0;
+
         const handleStart = (e) => {
           if (this.isPaused || this.isGameOver) return;
           audio.init();
+          const pos = getCoords(e);
+          dragStartY = pos.y;
+
           if (!this.jumper.isDiving) {
             this.isCharging = true;
           } else {
-            const pos = getCoords(e);
             this.jumper.targetX = pos.x;
           }
         };
@@ -1078,6 +1111,15 @@
           const pos = getCoords(e);
           if (this.jumper.isDiving) {
             this.jumper.targetX = pos.x;
+            // Vertical swipe gesture to accelerate dive or pull up
+            const deltaY = pos.y - dragStartY;
+            if (deltaY < -40) {
+              this.liftUpward();
+              dragStartY = pos.y;
+            } else if (deltaY > 40) {
+              this.plungeDownward();
+              dragStartY = pos.y;
+            }
           }
         };
 
@@ -1092,24 +1134,32 @@
         this.canvas.addEventListener('pointermove', (e) => { handleMove(e); });
         this.canvas.addEventListener('pointerup', (e) => { handleEnd(e); });
 
-        // Left / Right Dodge Sway Buttons
-        document.getElementById('swayLeftBtn').onclick = () => this.swayJumper(-85);
-        document.getElementById('swayRightBtn').onclick = () => this.swayJumper(85);
+        // 4-Way D-Pad Event Handlers
+        document.getElementById('dpadUp').onclick = () => this.liftUpward();
+        document.getElementById('dpadDown').onclick = () => this.plungeDownward();
+        document.getElementById('dpadLeft').onclick = () => this.swayJumper(-85);
+        document.getElementById('dpadRight').onclick = () => this.swayJumper(85);
+        document.getElementById('dpadCenter').onclick = () => {
+          if (!this.jumper.isDiving) this.launchDive();
+          else this.executeStunt('FRONT FLIP 360', 150, 14);
+        };
 
-        // Keyboard Arrows Support
+        // Keyboard 4-Way Arrow & WASD Navigation
         window.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowLeft' || e.key === 'a') this.swayJumper(-85);
-          if (e.key === 'ArrowRight' || e.key === 'd') this.swayJumper(85);
-          if (e.key === ' ' || e.key === 'ArrowUp') {
+          if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') this.swayJumper(-85);
+          if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') this.swayJumper(85);
+          if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') this.liftUpward();
+          if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') this.plungeDownward();
+          if (e.key === ' ') {
             if (!this.jumper.isDiving) this.launchDive();
             else this.executeStunt('FRONT FLIP 360', 150, 14);
           }
         });
 
-        // Stunt Action Buttons with Invincibility Evasion!
+        // Stunt Buttons
         document.getElementById('flipStuntBtn').onclick = () => this.executeStunt('FRONT FLIP 360', 150, 14);
         document.getElementById('spinStuntBtn').onclick = () => this.executeStunt('TORNADO SPIN', 200, -18);
-        document.getElementById('rocketBoostBtn').onclick = () => this.executeBoost();
+        document.getElementById('rocketBoostBtn').onclick = () => this.liftUpward(true);
 
         // Power-Up Buttons
         document.getElementById('autoStuntBotBtn').onclick = () => {
@@ -1195,11 +1245,38 @@
         setTimeout(() => div.remove(), 1000);
       }
 
+      /* Horizontal sway left / right */
       swayJumper(deltaX) {
         if (!this.jumper.isDiving) return;
         this.jumper.targetX = Math.max(this.w * 0.18, Math.min(this.w * 0.82, this.jumper.targetX + deltaX));
         this.jumper.vx += deltaX * 3.2;
         audio.playBounce();
+      }
+
+      /* Vertical Up: Spring Pull Up / Thruster Boost */
+      liftUpward(isSuperBoost = false) {
+        if (!this.jumper.isDiving) return;
+        const liftForce = isSuperBoost ? -620 : -420;
+        this.jumper.vy = Math.min(this.jumper.vy, 0) + liftForce;
+        this.jumper.isInvincible = true;
+        clearTimeout(this.jumper.invincibleTimer);
+        this.jumper.invincibleTimer = setTimeout(() => { this.jumper.isInvincible = false; }, 1200);
+
+        this.createSparks(this.jumper.x, this.jumper.y + 14, '#38bdf8', 18);
+        audio.playBounce();
+        this.showFloatingText(isSuperBoost ? 'ROCKET BOOST! 🚀' : 'SPRING PULL UP! ▲', this.jumper.x, this.jumper.y - 20, '#38bdf8');
+      }
+
+      /* Vertical Down: Power Plunge Streamline Dive */
+      plungeDownward() {
+        if (!this.jumper.isDiving) {
+          this.launchDive();
+          return;
+        }
+        this.jumper.vy += 380;
+        this.createSparks(this.jumper.x, this.jumper.y - 10, '#f97316', 16);
+        audio.playJump();
+        this.showFloatingText('POWER PLUNGE! ▼', this.jumper.x, this.jumper.y - 20, '#f97316');
       }
 
       launchDive() {
@@ -1240,16 +1317,6 @@
         this.stuntBadgeTimeout = setTimeout(() => {
           document.getElementById('stuntBadge').style.display = 'none';
         }, 1500);
-      }
-
-      executeBoost() {
-        if (!this.jumper.isDiving) return;
-        this.jumper.vy = -620;
-        this.jumper.isInvincible = true;
-        setTimeout(() => { this.jumper.isInvincible = false; }, 1200);
-        this.createSparks(this.jumper.x, this.jumper.y + 15, '#f97316', 22);
-        audio.playBounce();
-        this.showToast('ROCKET SPRING BOOST! 🚀');
       }
 
       triggerMagnet() {
@@ -1313,7 +1380,7 @@
         this.resetJumperPosition();
         this.generateWorldItems();
         audio.playVictory();
-        this.showToast(`${name} Ready! Tap ◀ ▶ to dodge! 🪂`);
+        this.showToast(`${name} Ready! Use D-Pad (▲ ▼ ◀ ▶) to fly! 🪂`);
       }
 
       resetJumperPosition() {
@@ -1416,6 +1483,8 @@
           const nearObstacle = this.obstacles.find(o => Math.hypot(o.x - this.jumper.x, o.y - this.jumper.y) < 70);
           if (nearObstacle) {
             this.jumper.targetX = (nearObstacle.x > this.w * 0.5 ? this.w * 0.25 : this.w * 0.75);
+            if (this.jumper.y > nearObstacle.y) this.plungeDownward();
+            else this.liftUpward();
           }
         }
 
@@ -1501,7 +1570,6 @@
             const dist = Math.hypot(o.x - this.jumper.x, o.y - this.jumper.y);
             if (dist < o.radius + 14) {
               if (this.jumper.isInvincible) {
-                // Stunt Evasion: Successfully spin through obstacle without damage!
                 audio.playStar();
                 this.score += 150;
                 document.getElementById('scoreText').textContent = this.score;
@@ -1612,7 +1680,6 @@
         // 4. Moving Obstacles (Birds / Drones) + Danger Pulse Warning
         this.obstacles.forEach(o => {
           this.ctx.save();
-          // Show proximity warning if jumper is close
           const isApproaching = Math.abs(o.y - this.jumper.y) < 90;
           if (isApproaching) {
             this.ctx.strokeStyle = '#ef4444';
@@ -1670,7 +1737,6 @@
         this.ctx.translate(this.jumper.x, this.jumper.y);
         this.ctx.rotate(this.jumper.rotation);
 
-        // Stunt Invincibility Glowing Aura (Passing safely through enemies!)
         if (this.jumper.isInvincible) {
           this.ctx.strokeStyle = '#10b981';
           this.ctx.lineWidth = 3.5;
@@ -1681,7 +1747,6 @@
           this.ctx.stroke();
         }
 
-        // Shield Aura
         if (this.jumper.hasShield) {
           this.ctx.strokeStyle = '#38bdf8';
           this.ctx.lineWidth = 3;
@@ -1692,7 +1757,6 @@
           this.ctx.stroke();
         }
 
-        // Magnet Aura
         if (this.jumper.hasMagnet) {
           this.ctx.strokeStyle = '#ec4899';
           this.ctx.lineWidth = 2;
@@ -1702,7 +1766,6 @@
           this.ctx.stroke();
         }
 
-        // Jumper Body
         this.ctx.fillStyle = this.jumper.isInvincible ? '#10b981' : '#38bdf8';
         this.ctx.beginPath();
         this.ctx.arc(0, -8, 8, 0, Math.PI * 2);
