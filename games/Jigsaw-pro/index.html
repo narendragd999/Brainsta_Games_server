@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Master Jigsaw Puzzle Pro - Complete Edition</title>
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #1e293b, #0f172a 70%, #020617);
+      --board-felt: rgba(15, 23, 42, 0.7);
+      --surface-glass: rgba(30, 41, 59, 0.85);
+      --surface-border: rgba(255, 255, 255, 0.12);
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --accent-glow: rgba(56, 189, 248, 0.4);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --panel-bg: rgba(15, 23, 42, 0.9);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+      --radius: 14px;
+    }
+
+    /* Themes */
+    body.theme-wood {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #3e2723, #1b0000 80%, #0f0000);
+      --board-felt: rgba(43, 27, 23, 0.85);
+      --accent: #f59e0b;
+      --accent-glow: rgba(245, 158, 11, 0.4);
+    }
+    body.theme-felt {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #064e3b, #022c22 80%, #011812);
+      --board-felt: rgba(6, 78, 59, 0.8);
+      --accent: #34d399;
+      --accent-glow: rgba(52, 211, 153, 0.4);
+    }
+    body.theme-cyber {
+      --bg-gradient: radial-gradient(circle at 50% 20%, #2e1065, #0f051d 80%, #05010a);
+      --board-felt: rgba(30, 10, 60, 0.8);
+      --accent: #e879f9;
+      --accent-glow: rgba(232, 121, 249, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: background 0.3s ease;
+    }
+
+    /* Header Bar */
+    header {
+      background: var(--surface-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 30;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 12px var(--accent-glow);
+      font-size: 14px;
+    }
+
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--surface-border);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-val {
+      color: var(--accent);
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.92rem;
+      min-width: 36px;
+    }
+
+    .controls-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button, label.btn-file {
+      background: rgba(51, 65, 85, 0.7);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      padding: 6px 11px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.82rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button:hover, label.btn-file:hover {
+      background: rgba(71, 85, 105, 0.9);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    button:active, label.btn-file:active {
+      transform: translateY(1px);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border-color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    button.primary:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+    }
+
+    button.accent-btn {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      border-color: #f472b6;
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.35);
+    }
+
+    button.active-toggle {
+      background: var(--accent);
+      color: #0f172a;
+      font-weight: 700;
+      border-color: #fff;
+    }
+
+    button.btn-icon {
+      padding: 6px 9px;
+      font-size: 1rem;
+    }
+
+    /* Main Game Area */
+    .game-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    .canvas-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    #puzzleCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    #puzzleCanvas:active {
+      cursor: grabbing;
+    }
+
+    /* Bottom Floating Action Hub */
+    .hud-toolbar {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--surface-border);
+      padding: 6px 12px;
+      border-radius: 32px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-lg);
+      z-index: 20;
+      max-width: 96vw;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .hud-toolbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hud-btn {
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Floating Rotating Pad for Mobile */
+    .mobile-rotate-pad {
+      position: absolute;
+      right: 14px;
+      bottom: 74px;
+      background: var(--panel-bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 50px;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: var(--shadow-lg);
+      z-index: 20;
+    }
+
+    .mobile-rotate-pad.show {
+      display: flex;
+    }
+
+    /* Mini Reference Picture Floater */
+    .hint-modal {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 170px;
+      height: 125px;
+      background: var(--panel-bg);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      z-index: 25;
+      display: none;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    .hint-modal.visible {
+      display: flex;
+    }
+
+    .hint-modal img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .hint-modal-header {
+      position: absolute;
+      top: 3px;
+      right: 4px;
+      background: rgba(0,0,0,0.7);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 14px;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-overlay.open .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      padding: 4px 8px;
+    }
+
+    .close-btn:hover {
+      color: var(--text);
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--text-muted);
+      margin: 14px 0 8px 0;
+    }
+
+    .grid-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    .grid-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 3px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      font-size: 0.8rem;
+      border: 1px solid var(--surface-border);
+    }
+
+    .grid-btn .pcs {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .grid-btn .dim {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .grid-btn.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    @media (min-width: 480px) {
+      .image-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .image-thumb {
+      aspect-ratio: 4/3;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .image-thumb canvas, .image-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-thumb.selected {
+      border-color: var(--accent);
+      transform: scale(1.03);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .theme-picker-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .theme-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+    }
+
+    .theme-btn.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, 0.2);
+    }
+
+    /* Pause Overlay */
+    .pause-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 75;
+      gap: 16px;
+    }
+
+    .pause-overlay.show {
+      display: flex;
+    }
+
+    /* Win Banner */
+    .win-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 80;
+      text-align: center;
+      padding: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .win-card {
+      background: #1e293b;
+      border: 2px solid var(--accent);
+      padding: 30px 24px;
+      border-radius: 20px;
+      box-shadow: 0 0 35px var(--accent-glow);
+      max-width: 420px;
+      width: 100%;
+    }
+
+    .win-title {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), #818cf8, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .win-stars {
+      font-size: 2.2rem;
+      color: #fbbf24;
+      margin-bottom: 14px;
+    }
+
+    .win-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .win-stat-v {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .win-stat-l {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    /* Confetti Canvas */
+    #confettiCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 85;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-40px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid var(--accent);
+      color: var(--text);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 95;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Responsive */
+    @media (max-width: 650px) {
+      header {
+        padding: 6px 8px;
+      }
+      .brand span {
+        display: none;
+      }
+      .stat-label {
+        display: none;
+      }
+      .stats-bar {
+        gap: 8px;
+        padding: 3px 8px;
+      }
+      .hud-toolbar {
+        bottom: 8px;
+        padding: 4px 8px;
+        gap: 4px;
+      }
+      .hud-btn {
+        font-size: 0.72rem;
+        padding: 5px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Statistics -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🧩</div>
+      <span>Jigsaw Pro</span>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-item" title="Elapsed Time">
+        <span class="stat-label">Time</span>
+        <span class="stat-val" id="timeDisplay">00:00</span>
+      </div>
+      <div class="stat-item" title="Total Moves">
+        <span class="stat-label">Moves</span>
+        <span class="stat-val" id="moveDisplay">0</span>
+      </div>
+      <div class="stat-item" title="Placed Pieces">
+        <span class="stat-label">Placed</span>
+        <span class="stat-val" id="placedDisplay">0/12</span>
+      </div>
+    </div>
+
+    <div class="controls-top">
+      <button class="btn-icon" id="undoBtn" title="Undo Move (Ctrl+Z)">↩️</button>
+      <button class="btn-icon" id="pauseBtn" title="Pause / Resume">⏸️</button>
+      <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
+      <button class="btn-icon" id="fullscreenBtn" title="Toggle Fullscreen">⛶</button>
+      <button id="newGameBtn" class="primary">⚙️ New</button>
+    </div>
+  </header>
+
+  <!-- Game Canvas Layout -->
+  <div class="game-container">
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="puzzleCanvas"></canvas>
+
+      <!-- Floating mini picture reference -->
+      <div class="hint-modal" id="hintModal">
+        <div class="hint-modal-header" id="closeHintBtn">✕</div>
+        <img id="hintImg" src="" alt="Reference Image">
+      </div>
+
+      <!-- Toast Alerts -->
+      <div class="toast" id="toast">Ready</div>
+
+      <!-- Mobile Rotation Floating Buttons -->
+      <div class="mobile-rotate-pad" id="mobileRotatePad">
+        <button class="btn-icon" id="mobRotLeftBtn" title="Rotate Left 90°">↺</button>
+        <button class="btn-icon" id="mobRotRightBtn" title="Rotate Right 90°">↻</button>
+      </div>
+
+      <!-- Pause Screen -->
+      <div class="pause-overlay" id="pauseOverlay">
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent);">Game Paused ⏸️</div>
+        <button class="primary" id="resumeBtn" style="padding: 12px 28px; font-size: 1.1rem;">Resume Puzzle</button>
+      </div>
+
+      <!-- Win Celebration Overlay -->
+      <div class="win-overlay" id="winOverlay">
+        <div class="win-card">
+          <div class="win-title">Puzzle Complete! 🎉</div>
+          <div class="win-stars" id="winStars">⭐⭐⭐</div>
+          <div class="win-stats">
+            <div>
+              <div class="win-stat-v" id="finalTime">01:45</div>
+              <div class="win-stat-l">Total Time</div>
+            </div>
+            <div>
+              <div class="win-stat-v" id="finalMoves">48</div>
+              <div class="win-stat-l">Moves</div>
+            </div>
+            <div>
+              <div class="win-stat-v" id="finalPieces">16</div>
+              <div class="win-stat-l">Pieces</div>
+            </div>
+            <div>
+              <div class="win-stat-v" id="finalAccuracy">96%</div>
+              <div class="win-stat-l">Accuracy</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="primary" id="playAgainBtn" style="padding: 10px 22px;">Next Puzzle</button>
+            <button id="replayBtn" style="padding: 10px 18px;">Replay</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complete Bottom Control HUD -->
+    <div class="hud-toolbar">
+      <button class="hud-btn accent-btn" id="autoSolveBtn" title="Watch Animated Auto Solution">⚡ Auto Solve</button>
+      <button class="hud-btn" id="hintOneBtn" title="Snap 1 Correct Piece">💡 Hint</button>
+      <button class="hud-btn" id="checkBoardBtn" title="Check Current Alignment">✅ Check Answer</button>
+      <button class="hud-btn" id="hintGhostBtn" title="Toggle Board Ghost Outline">👻 Ghost</button>
+      <button class="hud-btn" id="previewPicBtn" title="Toggle Reference Picture">🖼️ Picture</button>
+      <button class="hud-btn" id="edgeOnlyBtn" title="Show Only Edge Pieces">🔲 Edges</button>
+      <button class="hud-btn" id="scatterBtn" title="Neatly Arrange Loose Pieces">🧹 Arrange</button>
+      <button class="hud-btn" id="rotateToggleBtn" title="Toggle 90° Piece Rotation Challenge">🔄 Rotate: <span id="rotState">Off</span></button>
+    </div>
+  </div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Settings & Customization Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-card">
+      <div class="modal-title">
+        <span>Puzzle Configuration</span>
+        <button class="close-btn" id="closeSettingsBtn">&times;</button>
+      </div>
+
+      <div class="section-title">Difficulty Grid (Pieces)</div>
+      <div class="grid-options" id="gridPicker">
+        <div class="grid-btn" data-cols="2" data-rows="2"><span class="pcs">4</span><span class="dim">2×2 (Tiny)</span></div>
+        <div class="grid-btn" data-cols="3" data-rows="2"><span class="pcs">6</span><span class="dim">3×2 (Easy)</span></div>
+        <div class="grid-btn selected" data-cols="4" data-rows="3"><span class="pcs">12</span><span class="dim">4×3 (Normal)</span></div>
+        <div class="grid-btn" data-cols="5" data-rows="4"><span class="pcs">20</span><span class="dim">5×4 (Medium)</span></div>
+        <div class="grid-btn" data-cols="6" data-rows="5"><span class="pcs">30</span><span class="dim">6×5 (Hard)</span></div>
+        <div class="grid-btn" data-cols="8" data-rows="6"><span class="pcs">48</span><span class="dim">8×6 (Expert)</span></div>
+        <div class="grid-btn" data-cols="10" data-rows="7"><span class="pcs">70</span><span class="dim">10×7 (Master)</span></div>
+      </div>
+
+      <div class="section-title">Table Surface Theme</div>
+      <div class="theme-picker-row">
+        <button class="theme-btn selected" data-theme="default">🌌 Midnight Dark</button>
+        <button class="theme-btn" data-theme="theme-wood">🪵 Studio Wood</button>
+        <button class="theme-btn" data-theme="theme-felt">🎲 Green Felt</button>
+        <button class="theme-btn" data-theme="theme-cyber">🔮 Cyber Glow</button>
+      </div>
+
+      <div class="section-title">Select Picture</div>
+      <div class="image-grid" id="imagePicker">
+        <!-- Preset Artworks populated dynamically -->
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+        <label class="btn-file" style="flex: 1; justify-content: center;">
+          📁 Upload Image File
+          <input type="file" id="fileUpload" accept="image/*" style="display: none;">
+        </label>
+        <button id="randomArtBtn" style="flex: 1;">🎨 Random Art</button>
+      </div>
+
+      <div style="margin-top: 22px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button id="startNewGameBtn" class="primary" style="padding: 10px 24px; font-size: 1rem;">Start Puzzle 🧩</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       SYNTHESIZED WEB AUDIO ENGINE (Zero external dependencies)
+       ========================================================================== */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playSnap() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(480, t);
+        osc.frequency.exponentialRampToValueAtTime(140, t + 0.08);
+
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.08);
+
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(1300, t);
+        osc2.frequency.exponentialRampToValueAtTime(320, t + 0.03);
+        gain2.gain.setValueAtTime(0.28, t);
+        gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(t);
+        osc2.stop(t + 0.03);
+      }
+
+      playPick() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(240, t);
+        osc.frequency.exponentialRampToValueAtTime(380, t + 0.06);
+
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.06);
+      }
+
+      playRotate() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(500, t);
+        osc.frequency.exponentialRampToValueAtTime(760, t + 0.05);
+
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.05);
+      }
+
+      playHint() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const notes = [587.33, 880, 1174.66]; // D5, A5, D6
+        notes.forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.07;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.18);
+        });
+      }
+
+      playCheck(isAllGood) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const notes = isAllGood ? [523.25, 659.25, 783.99] : [330, 270];
+        notes.forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.08;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = isAllGood ? 'triangle' : 'sawtooth';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.2);
+        });
+      }
+
+      playShuffle() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const notes = [300, 420, 560, 680];
+        notes.forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.04;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.15, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.06);
+        });
+      }
+
+      playWin() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const chords = [
+          { freq: 440, time: 0 },
+          { freq: 554.37, time: 0.12 },
+          { freq: 659.25, time: 0.24 },
+          { freq: 880, time: 0.38 },
+          { freq: 1108.73, time: 0.55 },
+          { freq: 1318.51, time: 0.72 }
+        ];
+
+        chords.forEach(({ freq, time }) => {
+          const t = this.ctx.currentTime + time;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.25, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.45);
+        });
+      }
+    }
+
+    const audio = new AudioEngine();
+
+    /* ==========================================================================
+       PROCEDURAL ARTWORK & PRESET GENERATOR
+       ========================================================================== */
+    function createArtwork(type) {
+      const c = document.createElement('canvas');
+      c.width = 1200;
+      c.height = 900;
+      const ctx = c.getContext('2d');
+      const w = c.width;
+      const h = c.height;
+
+      if (type === 'mountain') {
+        const sky = ctx.createLinearGradient(0, 0, 0, h * 0.7);
+        sky.addColorStop(0, '#0f172a');
+        sky.addColorStop(0.3, '#431407');
+        sky.addColorStop(0.6, '#9a3412');
+        sky.addColorStop(0.85, '#ea580c');
+        sky.addColorStop(1, '#fbbf24');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.save();
+        ctx.fillStyle = '#fef08a';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 40;
+        ctx.beginPath();
+        ctx.arc(w * 0.5, h * 0.48, 80, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.fillStyle = '#31102e';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.7);
+        ctx.lineTo(w * 0.2, h * 0.35);
+        ctx.lineTo(w * 0.45, h * 0.6);
+        ctx.lineTo(w * 0.7, h * 0.3);
+        ctx.lineTo(w, h * 0.65);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        ctx.fillStyle = '#180728';
+        ctx.beginPath();
+        ctx.moveTo(0, h * 0.8);
+        ctx.lineTo(w * 0.35, h * 0.45);
+        ctx.lineTo(w * 0.6, h * 0.75);
+        ctx.lineTo(w * 0.85, h * 0.5);
+        ctx.lineTo(w, h * 0.75);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
+        ctx.fill();
+
+        const lake = ctx.createLinearGradient(0, h * 0.75, 0, h);
+        lake.addColorStop(0, '#110726');
+        lake.addColorStop(0.5, '#7c2d12');
+        lake.addColorStop(1, '#0c0a1e');
+        ctx.fillStyle = lake;
+        ctx.fillRect(0, h * 0.75, w, h * 0.25);
+
+        ctx.fillStyle = '#090314';
+        for (let i = 0; i < w; i += 25) {
+          const treeH = 30 + Math.sin(i * 0.05) * 20 + Math.random() * 20;
+          ctx.beginPath();
+          ctx.moveTo(i, h * 0.77);
+          ctx.lineTo(i + 12, h * 0.77 - treeH);
+          ctx.lineTo(i + 24, h * 0.77);
+          ctx.fill();
+        }
+      } else if (type === 'tropical') {
+        const bg = ctx.createLinearGradient(0, 0, w, h);
+        bg.addColorStop(0, '#064e3b');
+        bg.addColorStop(0.5, '#047857');
+        bg.addColorStop(1, '#065f46');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+
+        for (let i = 0; i < 16; i++) {
+          ctx.save();
+          ctx.translate((i % 4) * 320 + 80, Math.floor(i / 4) * 240 + 60);
+          ctx.rotate((i * 45 * Math.PI) / 180);
+          ctx.fillStyle = i % 2 === 0 ? '#10b981' : '#34d399';
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 160, 70, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#047857';
+          ctx.lineWidth = 4;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        ctx.save();
+        ctx.translate(w * 0.5, h * 0.5);
+        for (let j = 0; j < 8; j++) {
+          ctx.rotate((Math.PI * 2) / 8);
+          ctx.fillStyle = '#f43f5e';
+          ctx.beginPath();
+          ctx.ellipse(90, 0, 90, 40, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#fbbf24';
+        ctx.beginPath();
+        ctx.arc(0, 0, 50, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else if (type === 'space') {
+        const bg = ctx.createRadialGradient(w/2, h/2, 50, w/2, h/2, w*0.8);
+        bg.addColorStop(0, '#3b0764');
+        bg.addColorStop(0.4, '#1e1b4b');
+        bg.addColorStop(0.8, '#090514');
+        bg.addColorStop(1, '#020617');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+
+        const clouds = [
+          { x: w * 0.3, y: h * 0.4, r: 240, color: 'rgba(236, 72, 153, 0.25)' },
+          { x: w * 0.7, y: h * 0.6, r: 280, color: 'rgba(56, 189, 248, 0.25)' },
+          { x: w * 0.5, y: h * 0.3, r: 200, color: 'rgba(168, 85, 247, 0.28)' },
+        ];
+        clouds.forEach(c => {
+          const g = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+          g.addColorStop(0, c.color);
+          g.addColorStop(1, 'transparent');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        for (let s = 0; s < 180; s++) {
+          const sx = Math.random() * w;
+          const sy = Math.random() * h;
+          const sr = Math.random() * 2.5 + 0.5;
+          ctx.fillStyle = Math.random() > 0.3 ? '#ffffff' : '#a5f3fc';
+          ctx.beginPath();
+          ctx.arc(sx, sy, sr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        ctx.save();
+        ctx.translate(w * 0.75, h * 0.32);
+        ctx.rotate(-0.3);
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 160, 35, 0, Math.PI, Math.PI * 2);
+        ctx.stroke();
+        const pg = ctx.createLinearGradient(-70, -70, 70, 70);
+        pg.addColorStop(0, '#fde68a');
+        pg.addColorStop(0.5, '#d97706');
+        pg.addColorStop(1, '#78350f');
+        ctx.fillStyle = pg;
+        ctx.beginPath();
+        ctx.arc(0, 0, 70, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 160, 35, 0, 0, Math.PI);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        const grad = ctx.createLinearGradient(0, 0, w, h);
+        grad.addColorStop(0, '#0f172a');
+        grad.addColorStop(0.5, '#1e1b4b');
+        grad.addColorStop(1, '#312e81');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, w, h);
+
+        for (let k = 0; k < 28; k++) {
+          ctx.save();
+          ctx.translate((k * 137) % w, (k * 223) % h);
+          ctx.rotate(k * 0.4);
+          ctx.strokeStyle = `hsl(${(k * 25) % 360}, 85%, 65%)`;
+          ctx.lineWidth = 5;
+          ctx.fillStyle = `hsla(${(k * 25) % 360}, 85%, 55%, 0.15)`;
+          ctx.beginPath();
+          const side = 60 + (k % 4) * 35;
+          ctx.rect(-side/2, -side/2, side, side);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      return c;
+    }
+
+    const PRESETS = [
+      { id: 'mountain', name: 'Sunset Peaks', gen: () => createArtwork('mountain') },
+      { id: 'tropical', name: 'Tropical Jungle', gen: () => createArtwork('tropical') },
+      { id: 'space', name: 'Cosmic Nebula', gen: () => createArtwork('space') },
+      { id: 'cyber', name: 'Neon Geometry', gen: () => createArtwork('cyber') }
+    ];
+
+    /* ==========================================================================
+       JIGSAW PIECE CLASS & SHAPE GENERATOR
+       ========================================================================== */
+    class JigsawPiece {
+      constructor(c, r, width, height, shapeDef) {
+        this.c = c;
+        this.r = r;
+        this.w = width;
+        this.h = height;
+        this.shape = shapeDef; // { top: 0|1|-1, right: 0|1|-1, bottom: 0|1|-1, left: 0|1|-1 }
+        
+        this.targetX = 0;
+        this.targetY = 0;
+        this.x = 0;
+        this.y = 0;
+        this.rotation = 0; // 0, 90, 180, 270
+        this.isLocked = false;
+        this.isHovered = false;
+        this.isHighlighted = false;
+        this.isEdge = (shapeDef.top === 0 || shapeDef.right === 0 || shapeDef.bottom === 0 || shapeDef.left === 0);
+        this.visible = true;
+
+        // Animation interpolation
+        this.animating = false;
+        this.animStartX = 0;
+        this.animStartY = 0;
+        this.animTargetX = 0;
+        this.animTargetY = 0;
+        this.animProgress = 0;
+
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.pad = Math.max(width, height) * 0.45;
+      }
+
+      drawPath(ctx, ox, oy, scale = 1) {
+        const w = this.w * scale;
+        const h = this.h * scale;
+        const tabSize = Math.min(w, h) * 0.22;
+
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+
+        // Top
+        if (this.shape.top === 0) {
+          ctx.lineTo(ox + w, oy);
+        } else {
+          const dir = this.shape.top;
+          const midX = ox + w * 0.5;
+          const cp = tabSize * dir;
+          ctx.lineTo(ox + w * 0.35, oy);
+          ctx.bezierCurveTo(ox + w * 0.35, oy - cp * 0.2, midX - tabSize * 0.7, oy - cp, midX, oy - cp);
+          ctx.bezierCurveTo(midX + tabSize * 0.7, oy - cp, ox + w * 0.65, oy - cp * 0.2, ox + w * 0.65, oy);
+          ctx.lineTo(ox + w, oy);
+        }
+
+        // Right
+        if (this.shape.right === 0) {
+          ctx.lineTo(ox + w, oy + h);
+        } else {
+          const dir = this.shape.right;
+          const midY = oy + h * 0.5;
+          const cp = tabSize * dir;
+          ctx.lineTo(ox + w, oy + h * 0.35);
+          ctx.bezierCurveTo(ox + w + cp * 0.2, oy + h * 0.35, ox + w + cp, midY - tabSize * 0.7, ox + w + cp, midY);
+          ctx.bezierCurveTo(ox + w + cp, midY + tabSize * 0.7, ox + w + cp * 0.2, oy + h * 0.65, ox + w, oy + h * 0.65);
+          ctx.lineTo(ox + w, oy + h);
+        }
+
+        // Bottom
+        if (this.shape.bottom === 0) {
+          ctx.lineTo(ox, oy + h);
+        } else {
+          const dir = this.shape.bottom;
+          const midX = ox + w * 0.5;
+          const cp = tabSize * dir;
+          ctx.lineTo(ox + w * 0.65, oy + h);
+          ctx.bezierCurveTo(ox + w * 0.65, oy + h + cp * 0.2, midX + tabSize * 0.7, oy + h + cp, midX, oy + h + cp);
+          ctx.bezierCurveTo(midX - tabSize * 0.7, oy + h + cp, ox + w * 0.35, oy + h + cp * 0.2, ox + w * 0.35, oy + h);
+          ctx.lineTo(ox, oy + h);
+        }
+
+        // Left
+        if (this.shape.left === 0) {
+          ctx.lineTo(ox, oy);
+        } else {
+          const dir = this.shape.left;
+          const midY = oy + h * 0.5;
+          const cp = tabSize * dir;
+          ctx.lineTo(ox, oy + h * 0.65);
+          ctx.bezierCurveTo(ox - cp * 0.2, oy + h * 0.65, ox - cp, midY + tabSize * 0.7, ox - cp, midY);
+          ctx.bezierCurveTo(ox - cp, midY - tabSize * 0.7, ox - cp * 0.2, oy + h * 0.35, ox, oy + h * 0.35);
+          ctx.lineTo(ox, oy + h);
+        }
+
+        ctx.closePath();
+      }
+
+      bake(sourceImage, sourceW, sourceH) {
+        const fullW = this.w + this.pad * 2;
+        const fullH = this.h + this.pad * 2;
+        this.canvas.width = fullW;
+        this.canvas.height = fullH;
+
+        this.ctx.clearRect(0, 0, fullW, fullH);
+        this.ctx.save();
+
+        this.drawPath(this.ctx, this.pad, this.pad);
+        this.ctx.clip();
+
+        const scaleX = sourceImage.width / sourceW;
+        const scaleY = sourceImage.height / sourceH;
+
+        const sx = (this.c * this.w - this.pad) * scaleX;
+        const sy = (this.r * this.h - this.pad) * scaleY;
+        const sWidth = fullW * scaleX;
+        const sHeight = fullH * scaleY;
+
+        this.ctx.drawImage(sourceImage, sx, sy, sWidth, sHeight, 0, 0, fullW, fullH);
+
+        // 3D tactile bevel
+        this.ctx.lineWidth = 2.5;
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        this.drawPath(this.ctx, this.pad, this.pad);
+        this.ctx.stroke();
+
+        this.ctx.lineWidth = 1.5;
+        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+        this.drawPath(this.ctx, this.pad, this.pad);
+        this.ctx.stroke();
+
+        this.ctx.restore();
+      }
+
+      isPointInside(px, py, testCtx) {
+        if (!this.visible) return false;
+        const dx = px - (this.x + this.w / 2);
+        const dy = py - (this.y + this.h / 2);
+
+        const rad = -((this.rotation * Math.PI) / 180);
+        const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
+
+        const localX = rx + this.w / 2;
+        const localY = ry + this.h / 2;
+
+        testCtx.save();
+        this.drawPath(testCtx, 0, 0);
+        const inside = testCtx.isPointInPath(localX, localY);
+        testCtx.restore();
+
+        return inside;
+      }
+    }
+
+    /* ==========================================================================
+       COMPLETE JIGSAW GAME CONTROLLER
+       ========================================================================== */
+    class JigsawGame {
+      constructor() {
+        this.canvas = document.getElementById('puzzleCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.offscreenCanvas = document.createElement('canvas');
+        this.offCtx = this.offscreenCanvas.getContext('2d');
+
+        this.confettiCanvas = document.getElementById('confettiCanvas');
+        this.confettiCtx = this.confettiCanvas.getContext('2d');
+        this.confettiParticles = [];
+
+        // Game Configuration
+        this.cols = 4;
+        this.rows = 3;
+        this.totalPieces = 12;
+        this.rotationEnabled = false;
+        this.showGhost = false;
+        this.showEdgeOnly = false;
+        this.isPaused = false;
+        this.autoSolving = false;
+        this.imageSource = PRESETS[0].gen();
+
+        // Undo History
+        this.undoStack = [];
+
+        // Board & Layout
+        this.boardX = 0;
+        this.boardY = 0;
+        this.boardW = 0;
+        this.boardH = 0;
+        this.pieceW = 0;
+        this.pieceH = 0;
+
+        // Pieces & Interaction
+        this.pieces = [];
+        this.draggedPiece = null;
+        this.selectedPiece = null;
+        this.dragOffsetX = 0;
+        this.dragOffsetY = 0;
+
+        // Gameplay Metrics
+        this.startTime = null;
+        this.timerInterval = null;
+        this.elapsedSeconds = 0;
+        this.moves = 0;
+        this.lockedCount = 0;
+        this.isGameOver = false;
+
+        this.initUI();
+        this.bindEvents();
+        this.resize();
+        this.loadNewGame();
+        this.animate();
+      }
+
+      initUI() {
+        const container = document.getElementById('imagePicker');
+        container.innerHTML = '';
+        PRESETS.forEach((p, idx) => {
+          const thumb = document.createElement('div');
+          thumb.className = `image-thumb ${idx === 0 ? 'selected' : ''}`;
+          thumb.dataset.id = p.id;
+          const c = p.gen();
+          thumb.appendChild(c);
+          thumb.onclick = () => {
+            document.querySelectorAll('.image-thumb').forEach(t => t.classList.remove('selected'));
+            thumb.classList.add('selected');
+            this.imageSource = p.gen();
+          };
+          container.appendChild(thumb);
+        });
+
+        document.querySelectorAll('.grid-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.grid-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            this.cols = parseInt(btn.dataset.cols);
+            this.rows = parseInt(btn.dataset.rows);
+            this.totalPieces = this.cols * this.rows;
+          };
+        });
+
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+          btn.onclick = () => {
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const theme = btn.dataset.theme;
+            document.body.className = (theme === 'default' ? '' : theme);
+          };
+        });
+
+        this.updateHintImage();
+      }
+
+      updateHintImage() {
+        if (this.imageSource) {
+          const hintImg = document.getElementById('hintImg');
+          if (this.imageSource instanceof HTMLCanvasElement) {
+            hintImg.src = this.imageSource.toDataURL();
+          } else {
+            hintImg.src = this.imageSource.src;
+          }
+        }
+      }
+
+      bindEvents() {
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('keydown', (e) => {
+          if (e.ctrlKey && e.key === 'z') {
+            this.undoLastMove();
+          }
+        });
+
+        // Pointer Events
+        this.canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e));
+        this.canvas.addEventListener('pointermove', (e) => this.onPointerMove(e));
+        this.canvas.addEventListener('pointerup', (e) => this.onPointerUp(e));
+        this.canvas.addEventListener('pointercancel', (e) => this.onPointerUp(e));
+
+        // Right-Click Rotation
+        this.canvas.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (!this.rotationEnabled || this.isPaused || this.autoSolving) return;
+          const rect = this.canvas.getBoundingClientRect();
+          const px = (e.clientX - rect.left) * (this.canvas.width / (rect.width * (window.devicePixelRatio || 1)));
+          const py = (e.clientY - rect.top) * (this.canvas.height / (rect.height * (window.devicePixelRatio || 1)));
+          const piece = this.getPieceAt(px, py);
+          if (piece && !piece.isLocked) {
+            this.rotatePiece(piece, 90);
+          }
+        });
+
+        // Top Navigation Controls
+        document.getElementById('newGameBtn').onclick = () => this.openSettings();
+        document.getElementById('closeSettingsBtn').onclick = () => this.closeSettings();
+        document.getElementById('startNewGameBtn').onclick = () => {
+          this.closeSettings();
+          this.loadNewGame();
+        };
+
+        document.getElementById('undoBtn').onclick = () => this.undoLastMove();
+
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.onclick = () => this.togglePause();
+        document.getElementById('resumeBtn').onclick = () => this.togglePause();
+
+        const soundBtn = document.getElementById('soundToggle');
+        soundBtn.onclick = () => {
+          audio.enabled = !audio.enabled;
+          soundBtn.textContent = audio.enabled ? '🔊' : '🔇';
+          this.showToast(audio.enabled ? 'Audio Unmuted' : 'Audio Muted');
+        };
+
+        const fsBtn = document.getElementById('fullscreenBtn');
+        fsBtn.onclick = () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+            fsBtn.textContent = '🗗';
+          } else {
+            document.exitFullscreen().catch(() => {});
+            fsBtn.textContent = '⛶';
+          }
+        };
+
+        // Complete HUD Functions
+        document.getElementById('autoSolveBtn').onclick = () => this.startAutoSolve();
+        document.getElementById('hintOneBtn').onclick = () => this.provideHint();
+        document.getElementById('checkBoardBtn').onclick = () => this.checkBoardAlignment();
+
+        const ghostBtn = document.getElementById('hintGhostBtn');
+        ghostBtn.onclick = () => {
+          this.showGhost = !this.showGhost;
+          ghostBtn.classList.toggle('active-toggle', this.showGhost);
+          this.showToast(this.showGhost ? 'Ghost Overlay On' : 'Ghost Overlay Off');
+        };
+
+        const previewBtn = document.getElementById('previewPicBtn');
+        const hintModal = document.getElementById('hintModal');
+        previewBtn.onclick = () => {
+          const visible = hintModal.classList.toggle('visible');
+          previewBtn.classList.toggle('active-toggle', visible);
+        };
+        document.getElementById('closeHintBtn').onclick = () => {
+          hintModal.classList.remove('visible');
+          previewBtn.classList.remove('active-toggle');
+        };
+
+        const edgeBtn = document.getElementById('edgeOnlyBtn');
+        edgeBtn.onclick = () => {
+          this.showEdgeOnly = !this.showEdgeOnly;
+          edgeBtn.classList.toggle('active-toggle', this.showEdgeOnly);
+          this.pieces.forEach(p => {
+            if (!p.isLocked) {
+              p.visible = !this.showEdgeOnly || p.isEdge;
+            }
+          });
+          this.showToast(this.showEdgeOnly ? 'Edges Only Mode' : 'All Pieces Mode');
+        };
+
+        const rotBtn = document.getElementById('rotateToggleBtn');
+        const rotState = document.getElementById('rotState');
+        const mobPad = document.getElementById('mobileRotatePad');
+        rotBtn.onclick = () => {
+          this.rotationEnabled = !this.rotationEnabled;
+          rotState.textContent = this.rotationEnabled ? 'On' : 'Off';
+          rotBtn.classList.toggle('active-toggle', this.rotationEnabled);
+          mobPad.classList.toggle('show', this.rotationEnabled);
+
+          if (this.rotationEnabled) {
+            this.pieces.forEach(p => {
+              if (!p.isLocked) {
+                p.rotation = [0, 90, 180, 270][Math.floor(Math.random() * 4)];
+              }
+            });
+            audio.playShuffle();
+          } else {
+            this.pieces.forEach(p => {
+              if (!p.isLocked) p.rotation = 0;
+            });
+          }
+          this.showToast(this.rotationEnabled ? 'Rotation Active (Tap/Rotate)' : 'Rotation Off');
+        };
+
+        // Mobile Rotation Buttons
+        document.getElementById('mobRotLeftBtn').onclick = () => {
+          if (this.selectedPiece && !this.selectedPiece.isLocked) {
+            this.rotatePiece(this.selectedPiece, -90);
+          } else {
+            this.showToast('Select a piece first');
+          }
+        };
+        document.getElementById('mobRotRightBtn').onclick = () => {
+          if (this.selectedPiece && !this.selectedPiece.isLocked) {
+            this.rotatePiece(this.selectedPiece, 90);
+          } else {
+            this.showToast('Select a piece first');
+          }
+        };
+
+        document.getElementById('scatterBtn').onclick = () => {
+          this.arrangePiecesNeatly();
+          audio.playShuffle();
+          this.showToast('Pieces Organized');
+        };
+
+        // File Upload & Random Art
+        const fileInput = document.getElementById('fileUpload');
+        fileInput.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+              this.imageSource = img;
+              document.querySelectorAll('.image-thumb').forEach(t => t.classList.remove('selected'));
+              this.updateHintImage();
+              this.showToast('Custom Picture Loaded');
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        };
+
+        document.getElementById('randomArtBtn').onclick = () => {
+          const rand = PRESETS[Math.floor(Math.random() * PRESETS.length)];
+          this.imageSource = rand.gen();
+          this.updateHintImage();
+          this.showToast(`Selected: ${rand.name}`);
+        };
+
+        // Win Screen Buttons
+        document.getElementById('playAgainBtn').onclick = () => {
+          document.getElementById('winOverlay').style.display = 'none';
+          this.openSettings();
+        };
+
+        document.getElementById('replayBtn').onclick = () => {
+          document.getElementById('winOverlay').style.display = 'none';
+          this.loadNewGame();
+        };
+      }
+
+      openSettings() {
+        if (!this.isPaused && !this.isGameOver) this.togglePause(true);
+        document.getElementById('settingsModal').classList.add('open');
+      }
+
+      closeSettings() {
+        document.getElementById('settingsModal').classList.remove('open');
+        if (this.isPaused && !this.isGameOver) this.togglePause(false);
+      }
+
+      togglePause(forcedState) {
+        if (this.isGameOver) return;
+        this.isPaused = (forcedState !== undefined) ? forcedState : !this.isPaused;
+        document.getElementById('pauseOverlay').classList.toggle('show', this.isPaused);
+        document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
+        if (this.isPaused) {
+          this.stopTimer();
+        } else {
+          this.startTimer();
+        }
+      }
+
+      showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => toast.classList.remove('show'), 1800);
+      }
+
+      rotatePiece(piece, deltaDeg) {
+        this.pushUndoState();
+        piece.rotation = (piece.rotation + deltaDeg + 360) % 360;
+        audio.playRotate();
+        this.showToast(`Rotated ${piece.rotation}°`);
+      }
+
+      pushUndoState() {
+        const snapshot = this.pieces.map(p => ({
+          c: p.c,
+          r: p.r,
+          x: p.x,
+          y: p.y,
+          rotation: p.rotation,
+          isLocked: p.isLocked
+        }));
+        this.undoStack.push({ snapshot, moves: this.moves, lockedCount: this.lockedCount });
+        if (this.undoStack.length > 30) this.undoStack.shift();
+      }
+
+      undoLastMove() {
+        if (this.undoStack.length === 0) {
+          this.showToast('Nothing to undo');
+          return;
+        }
+        const prev = this.undoStack.pop();
+        prev.snapshot.forEach(saved => {
+          const piece = this.pieces.find(p => p.c === saved.c && p.r === saved.r);
+          if (piece) {
+            piece.x = saved.x;
+            piece.y = saved.y;
+            piece.rotation = saved.rotation;
+            piece.isLocked = saved.isLocked;
+          }
+        });
+        this.moves = Math.max(0, this.moves - 1);
+        this.lockedCount = prev.lockedCount;
+        this.updateStats();
+        audio.playPick();
+        this.showToast('Move Undone');
+      }
+
+      /* ==========================================================================
+         COMPLETE FEATURE: AUTO SOLVE & STEP ANIMATION
+         ========================================================================== */
+      startAutoSolve() {
+        if (this.autoSolving || this.isGameOver) return;
+        this.autoSolving = true;
+        this.showToast('Auto Solving Puzzle ⚡...');
+
+        const unlocked = this.pieces.filter(p => !p.isLocked);
+        if (unlocked.length === 0) {
+          this.autoSolving = false;
+          return;
+        }
+
+        let idx = 0;
+        const solveNext = () => {
+          if (idx >= unlocked.length || this.isGameOver) {
+            this.autoSolving = false;
+            return;
+          }
+
+          const piece = unlocked[idx];
+          piece.animating = true;
+          piece.animStartX = piece.x;
+          piece.animStartY = piece.y;
+          piece.animTargetX = piece.targetX;
+          piece.animTargetY = piece.targetY;
+          piece.animProgress = 0;
+          piece.rotation = 0;
+
+          const duration = 240; // ms per piece
+          const startTime = performance.now();
+
+          const animateStep = (now) => {
+            const progress = Math.min(1, (now - startTime) / duration);
+            const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+            piece.x = piece.animStartX + (piece.animTargetX - piece.animStartX) * ease;
+            piece.y = piece.animStartY + (piece.animTargetY - piece.animStartY) * ease;
+
+            if (progress < 1) {
+              requestAnimationFrame(animateStep);
+            } else {
+              piece.x = piece.targetX;
+              piece.y = piece.targetY;
+              piece.isLocked = true;
+              piece.animating = false;
+              this.lockedCount++;
+              this.moves++;
+              this.updateStats();
+              audio.playSnap();
+
+              // Bring locked piece to lower layer
+              const pIdx = this.pieces.indexOf(piece);
+              this.pieces.splice(pIdx, 1);
+              this.pieces.unshift(piece);
+
+              idx++;
+              this.checkWinCondition();
+              setTimeout(solveNext, 70);
+            }
+          };
+
+          requestAnimationFrame(animateStep);
+        };
+
+        solveNext();
+      }
+
+      /* ==========================================================================
+         COMPLETE FEATURE: SMART 1-PIECE HINT
+         ========================================================================== */
+      provideHint() {
+        if (this.autoSolving || this.isGameOver) return;
+        const unlocked = this.pieces.filter(p => !p.isLocked && p.visible);
+        if (unlocked.length === 0) {
+          this.showToast('All pieces placed!');
+          return;
+        }
+
+        // Prioritize edge pieces for realistic human solving strategy
+        unlocked.sort((a, b) => (b.isEdge ? 1 : 0) - (a.isEdge ? 1 : 0));
+        const piece = unlocked[0];
+
+        this.pushUndoState();
+        piece.animating = true;
+        piece.animStartX = piece.x;
+        piece.animStartY = piece.y;
+        piece.animTargetX = piece.targetX;
+        piece.animTargetY = piece.targetY;
+        piece.rotation = 0;
+
+        const startTime = performance.now();
+        const duration = 300;
+
+        const animateHint = (now) => {
+          const progress = Math.min(1, (now - startTime) / duration);
+          const ease = 1 - Math.pow(1 - progress, 3);
+
+          piece.x = piece.animStartX + (piece.animTargetX - piece.animStartX) * ease;
+          piece.y = piece.animStartY + (piece.animTargetY - piece.animStartY) * ease;
+
+          if (progress < 1) {
+            requestAnimationFrame(animateHint);
+          } else {
+            piece.x = piece.targetX;
+            piece.y = piece.targetY;
+            piece.isLocked = true;
+            piece.animating = false;
+            this.lockedCount++;
+            this.moves++;
+            this.updateStats();
+            audio.playHint();
+            this.showToast(`Hint: Placed piece (${piece.r + 1}, ${piece.c + 1}) ✨`);
+
+            const pIdx = this.pieces.indexOf(piece);
+            this.pieces.splice(pIdx, 1);
+            this.pieces.unshift(piece);
+
+            this.checkWinCondition();
+          }
+        };
+
+        requestAnimationFrame(animateHint);
+      }
+
+      /* ==========================================================================
+         COMPLETE FEATURE: CHECK ANSWER / VALIDATE PROGRESS
+         ========================================================================== */
+      checkBoardAlignment() {
+        if (this.isGameOver) return;
+        const total = this.pieces.length;
+        const correct = this.pieces.filter(p => p.isLocked).length;
+        const percent = Math.round((correct / total) * 100);
+
+        // Flash highlight all placed pieces
+        this.pieces.forEach(p => {
+          if (p.isLocked) {
+            p.isHighlighted = true;
+          }
+        });
+
+        setTimeout(() => {
+          this.pieces.forEach(p => p.isHighlighted = false);
+        }, 1200);
+
+        audio.playCheck(correct > 0);
+        this.showToast(`Board Check: ${correct}/${total} Placed (${percent}%)`);
+      }
+
+      /* Resize & Board Layout */
+      resize() {
+        const wrapper = document.getElementById('canvasWrapper');
+        const dpr = window.devicePixelRatio || 1;
+        const rect = wrapper.getBoundingClientRect();
+
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+
+        this.confettiCanvas.width = window.innerWidth * dpr;
+        this.confettiCanvas.height = window.innerHeight * dpr;
+        this.confettiCtx.scale(dpr, dpr);
+
+        this.viewW = rect.width;
+        this.viewH = rect.height;
+
+        this.recalculateBoardLayout();
+      }
+
+      recalculateBoardLayout() {
+        if (!this.imageSource) return;
+
+        const imgAspect = (this.imageSource.width || 4) / (this.imageSource.height || 3);
+        const isMobile = this.viewW < 768;
+        const maxBoardW = isMobile ? this.viewW * 0.88 : this.viewW * 0.62;
+        const maxBoardH = isMobile ? this.viewH * 0.52 : this.viewH * 0.78;
+
+        let bw = maxBoardW;
+        let bh = bw / imgAspect;
+
+        if (bh > maxBoardH) {
+          bh = maxBoardH;
+          bw = bh * imgAspect;
+        }
+
+        this.boardW = Math.floor(bw);
+        this.boardH = Math.floor(bh);
+
+        if (isMobile) {
+          this.boardX = Math.floor((this.viewW - this.boardW) / 2);
+          this.boardY = Math.floor(this.viewH * 0.08);
+        } else {
+          this.boardX = Math.floor(this.viewW * 0.06);
+          this.boardY = Math.floor((this.viewH - this.boardH) / 2);
+        }
+
+        this.pieceW = this.boardW / this.cols;
+        this.pieceH = this.boardH / this.rows;
+
+        if (this.pieces.length > 0) {
+          this.pieces.forEach(p => {
+            const oldTargetX = p.targetX;
+            p.w = this.pieceW;
+            p.h = this.pieceH;
+            p.pad = Math.max(p.w, p.h) * 0.45;
+            p.targetX = this.boardX + p.c * this.pieceW;
+            p.targetY = this.boardY + p.r * this.pieceH;
+            p.bake(this.imageSource, this.boardW, this.boardH);
+
+            if (p.isLocked) {
+              p.x = p.targetX;
+              p.y = p.targetY;
+            } else if (oldTargetX !== 0) {
+              p.x = Math.max(10, Math.min(this.viewW - p.w - 10, p.x));
+              p.y = Math.max(10, Math.min(this.viewH - p.h - 10, p.y));
+            }
+          });
+        }
+      }
+
+      loadNewGame() {
+        this.stopTimer();
+        this.elapsedSeconds = 0;
+        this.moves = 0;
+        this.lockedCount = 0;
+        this.isGameOver = false;
+        this.isPaused = false;
+        this.autoSolving = false;
+        this.draggedPiece = null;
+        this.selectedPiece = null;
+        this.undoStack = [];
+
+        this.updateStats();
+        this.updateHintImage();
+        document.getElementById('winOverlay').style.display = 'none';
+        document.getElementById('pauseOverlay').classList.remove('show');
+
+        this.recalculateBoardLayout();
+        this.generatePieces();
+        this.scatterPieces();
+        this.startTimer();
+        audio.playShuffle();
+      }
+
+      generatePieces() {
+        this.pieces = [];
+
+        const horizontalEdges = [];
+        for (let r = 0; r < this.rows - 1; r++) {
+          horizontalEdges[r] = [];
+          for (let c = 0; c < this.cols; c++) {
+            horizontalEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
+          }
+        }
+
+        const verticalEdges = [];
+        for (let r = 0; r < this.rows; r++) {
+          verticalEdges[r] = [];
+          for (let c = 0; c < this.cols - 1; c++) {
+            verticalEdges[r][c] = Math.random() < 0.5 ? 1 : -1;
+          }
+        }
+
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            const shape = {
+              top: r === 0 ? 0 : -horizontalEdges[r - 1][c],
+              right: c === this.cols - 1 ? 0 : verticalEdges[r][c],
+              bottom: r === this.rows - 1 ? 0 : horizontalEdges[r][c],
+              left: c === 0 ? 0 : -verticalEdges[r][c - 1]
+            };
+
+            const piece = new JigsawPiece(c, r, this.pieceW, this.pieceH, shape);
+            piece.targetX = this.boardX + c * this.pieceW;
+            piece.targetY = this.boardY + r * this.pieceH;
+            piece.bake(this.imageSource, this.boardW, this.boardH);
+
+            if (this.rotationEnabled) {
+              piece.rotation = [0, 90, 180, 270][Math.floor(Math.random() * 4)];
+            }
+
+            this.pieces.push(piece);
+          }
+        }
+      }
+
+      scatterPieces() {
+        const isMobile = this.viewW < 768;
+        this.pieces.forEach(p => {
+          if (isMobile) {
+            const trayTop = this.boardY + this.boardH + 20;
+            const trayHeight = Math.max(120, this.viewH - trayTop - 80);
+            p.x = 15 + Math.random() * (this.viewW - p.w - 30);
+            p.y = trayTop + Math.random() * Math.max(20, trayHeight - p.h);
+          } else {
+            const trayLeft = this.boardX + this.boardW + 40;
+            const trayWidth = Math.max(140, this.viewW - trayLeft - 40);
+            p.x = trayLeft + Math.random() * Math.max(20, trayWidth - p.w);
+            p.y = 20 + Math.random() * (this.viewH - p.h - 100);
+          }
+        });
+      }
+
+      arrangePiecesNeatly() {
+        const unlocked = this.pieces.filter(p => !p.isLocked && p.visible);
+        const isMobile = this.viewW < 768;
+
+        if (isMobile) {
+          const trayTop = this.boardY + this.boardH + 20;
+          const colsCount = Math.max(3, Math.floor(this.viewW / (this.pieceW * 0.9)));
+          unlocked.forEach((p, idx) => {
+            const col = idx % colsCount;
+            const row = Math.floor(idx / colsCount);
+            p.x = 20 + col * (this.pieceW * 0.85);
+            p.y = trayTop + row * (this.pieceH * 0.85);
+          });
+        } else {
+          const trayLeft = this.boardX + this.boardW + 40;
+          const rowsCount = Math.max(3, Math.floor((this.viewH - 120) / (this.pieceH * 0.9)));
+          unlocked.forEach((p, idx) => {
+            const row = idx % rowsCount;
+            const col = Math.floor(idx / rowsCount);
+            p.x = trayLeft + col * (this.pieceW * 0.85);
+            p.y = 40 + row * (this.pieceH * 0.85);
+          });
+        }
+      }
+
+      getPieceAt(px, py) {
+        for (let i = this.pieces.length - 1; i >= 0; i--) {
+          const p = this.pieces[i];
+          if (!p.isLocked && p.visible && p.isPointInside(px, py, this.offCtx)) {
+            return p;
+          }
+        }
+        return null;
+      }
+
+      onPointerDown(e) {
+        if (this.isGameOver || this.isPaused || this.autoSolving) return;
+        audio.init();
+
+        const rect = this.canvas.getBoundingClientRect();
+        const px = (e.clientX - rect.left) * (this.canvas.width / (rect.width * (window.devicePixelRatio || 1)));
+        const py = (e.clientY - rect.top) * (this.canvas.height / (rect.height * (window.devicePixelRatio || 1)));
+
+        const piece = this.getPieceAt(px, py);
+        if (piece) {
+          this.canvas.setPointerCapture(e.pointerId);
+          this.draggedPiece = piece;
+          this.selectedPiece = piece;
+          this.dragOffsetX = px - piece.x;
+          this.dragOffsetY = py - piece.y;
+
+          this.pushUndoState();
+
+          const idx = this.pieces.indexOf(piece);
+          this.pieces.splice(idx, 1);
+          this.pieces.push(piece);
+
+          audio.playPick();
+        }
+      }
+
+      onPointerMove(e) {
+        if (this.isPaused) return;
+        const rect = this.canvas.getBoundingClientRect();
+        const px = (e.clientX - rect.left) * (this.canvas.width / (rect.width * (window.devicePixelRatio || 1)));
+        const py = (e.clientY - rect.top) * (this.canvas.height / (rect.height * (window.devicePixelRatio || 1)));
+
+        if (this.draggedPiece) {
+          this.draggedPiece.x = px - this.dragOffsetX;
+          this.draggedPiece.y = py - this.dragOffsetY;
+        } else {
+          const hovered = this.getPieceAt(px, py);
+          this.pieces.forEach(p => p.isHovered = (p === hovered));
+        }
+      }
+
+      onPointerUp(e) {
+        if (this.draggedPiece) {
+          const p = this.draggedPiece;
+          this.moves++;
+          this.updateStats();
+
+          const snapThreshold = Math.max(26, Math.min(p.w, p.h) * 0.38);
+          const dist = Math.hypot(p.x - p.targetX, p.y - p.targetY);
+          const isCorrectRotation = (p.rotation === 0);
+
+          if (dist < snapThreshold && isCorrectRotation) {
+            p.x = p.targetX;
+            p.y = p.targetY;
+            p.isLocked = true;
+            p.rotation = 0;
+            this.lockedCount++;
+            audio.playSnap();
+            this.showToast('Piece Snapped! ✨');
+
+            const idx = this.pieces.indexOf(p);
+            this.pieces.splice(idx, 1);
+            this.pieces.unshift(p);
+
+            this.updateStats();
+            this.checkWinCondition();
+          }
+
+          this.draggedPiece = null;
+        }
+      }
+
+      checkWinCondition() {
+        if (this.lockedCount === this.pieces.length) {
+          this.isGameOver = true;
+          this.stopTimer();
+          audio.playWin();
+          this.triggerConfetti();
+
+          const accuracy = Math.max(50, Math.min(100, Math.round((this.pieces.length / Math.max(this.pieces.length, this.moves)) * 100)));
+          document.getElementById('finalTime').textContent = this.formatTime(this.elapsedSeconds);
+          document.getElementById('finalMoves').textContent = this.moves;
+          document.getElementById('finalPieces').textContent = this.pieces.length;
+          document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+
+          let stars = '⭐⭐⭐';
+          if (this.moves > this.pieces.length * 2.5) stars = '⭐';
+          else if (this.moves > this.pieces.length * 1.5) stars = '⭐⭐';
+          document.getElementById('winStars').textContent = stars;
+
+          setTimeout(() => {
+            document.getElementById('winOverlay').style.display = 'flex';
+          }, 600);
+        }
+      }
+
+      /* Timer */
+      startTimer() {
+        this.stopTimer();
+        this.startTime = Date.now() - (this.elapsedSeconds * 1000);
+        this.timerInterval = setInterval(() => {
+          if (!this.isPaused) {
+            this.elapsedSeconds = Math.floor((Date.now() - this.startTime) / 1000);
+            document.getElementById('timeDisplay').textContent = this.formatTime(this.elapsedSeconds);
+          }
+        }, 1000);
+      }
+
+      stopTimer() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+      }
+
+      formatTime(sec) {
+        const m = Math.floor(sec / 60).toString().padStart(2, '0');
+        const s = (sec % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      }
+
+      updateStats() {
+        document.getElementById('moveDisplay').textContent = this.moves;
+        document.getElementById('placedDisplay').textContent = `${this.lockedCount}/${this.pieces.length}`;
+      }
+
+      /* Render Loop */
+      animate() {
+        this.render();
+        this.renderConfetti();
+        requestAnimationFrame(() => this.animate());
+      }
+
+      render() {
+        this.ctx.clearRect(0, 0, this.viewW, this.viewH);
+
+        // 1. Board Frame
+        this.ctx.save();
+        this.ctx.fillStyle = 'var(--board-felt)';
+        this.ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+        this.ctx.lineWidth = 2;
+        this.ctx.roundRect ? this.ctx.roundRect(this.boardX, this.boardY, this.boardW, this.boardH, 8) : this.ctx.rect(this.boardX, this.boardY, this.boardW, this.boardH);
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        if (this.showGhost && this.imageSource) {
+          this.ctx.save();
+          this.ctx.globalAlpha = 0.25;
+          this.ctx.drawImage(this.imageSource, this.boardX, this.boardY, this.boardW, this.boardH);
+          this.ctx.restore();
+        }
+
+        // Guidelines
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        this.ctx.lineWidth = 1;
+        for (let c = 1; c < this.cols; c++) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.boardX + c * this.pieceW, this.boardY);
+          this.ctx.lineTo(this.boardX + c * this.pieceW, this.boardY + this.boardH);
+          this.ctx.stroke();
+        }
+        for (let r = 1; r < this.rows; r++) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.boardX, this.boardY + r * this.pieceH);
+          this.ctx.lineTo(this.boardX + this.boardW, this.boardY + r * this.pieceH);
+          this.ctx.stroke();
+        }
+        this.ctx.restore();
+
+        // 2. Jigsaw Pieces
+        this.pieces.forEach(p => {
+          if (!p.visible) return;
+
+          this.ctx.save();
+          this.ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+          if (p.rotation !== 0) {
+            this.ctx.rotate((p.rotation * Math.PI) / 180);
+          }
+
+          if (!p.isLocked) {
+            this.ctx.shadowColor = (p === this.draggedPiece) ? 'rgba(0, 0, 0, 0.75)' : 'rgba(0, 0, 0, 0.45)';
+            this.ctx.shadowBlur = (p === this.draggedPiece) ? 20 : 8;
+            this.ctx.shadowOffsetX = (p === this.draggedPiece) ? 9 : 4;
+            this.ctx.shadowOffsetY = (p === this.draggedPiece) ? 9 : 4;
+          }
+
+          this.ctx.drawImage(p.canvas, -p.w / 2 - p.pad, -p.h / 2 - p.pad);
+
+          // Highlights
+          if (p.isHighlighted) {
+            this.ctx.strokeStyle = '#10b981';
+            this.ctx.lineWidth = 3.5;
+            p.drawPath(this.ctx, -p.w / 2, -p.h / 2);
+            this.ctx.stroke();
+          } else if (p.isHovered && !p.isLocked && p !== this.draggedPiece) {
+            this.ctx.shadowColor = '#38bdf8';
+            this.ctx.shadowBlur = 12;
+            p.drawPath(this.ctx, -p.w / 2, -p.h / 2);
+            this.ctx.strokeStyle = '#38bdf8';
+            this.ctx.lineWidth = 2.5;
+            this.ctx.stroke();
+          }
+
+          this.ctx.restore();
+        });
+      }
+
+      /* Confetti System */
+      triggerConfetti() {
+        this.confettiParticles = [];
+        const colors = ['#38bdf8', '#818cf8', '#f43f5e', '#fbbf24', '#34d399', '#a855f7'];
+        for (let i = 0; i < 150; i++) {
+          this.confettiParticles.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            vx: (Math.random() - 0.5) * 24,
+            vy: (Math.random() - 0.7) * 22,
+            size: Math.random() * 8 + 4,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            alpha: 1
+          });
+        }
+      }
+
+      renderConfetti() {
+        if (this.confettiParticles.length === 0) return;
+        this.confettiCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        for (let i = this.confettiParticles.length - 1; i >= 0; i--) {
+          const p = this.confettiParticles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.45;
+          p.rotation += p.rotSpeed;
+          p.alpha -= 0.008;
+
+          if (p.alpha <= 0 || p.y > window.innerHeight) {
+            this.confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          this.confettiCtx.save();
+          this.confettiCtx.globalAlpha = p.alpha;
+          this.confettiCtx.translate(p.x, p.y);
+          this.confettiCtx.rotate((p.rotation * Math.PI) / 180);
+          this.confettiCtx.fillStyle = p.color;
+          this.confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+          this.confettiCtx.restore();
+        }
+      }
+    }
+
+    // Launch Game
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new JigsawGame();
+    });
+  </script>
+</body>
+</html>
