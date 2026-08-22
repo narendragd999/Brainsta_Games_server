@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Duck Hunt Master Pro — Arcade Marsh Odyssey</title>
+  <title>Duck Hunt Frenzy Pro — Sky Arcade</title>
   <style>
     :root {
       --bg: #060a12;
       --panel-bg: rgba(15, 23, 42, 0.92);
-      --border-color: rgba(255, 255, 255, 0.12);
+      --border-color: rgba(255, 255, 255, 0.14);
       --accent: #22c55e;
       --accent-glow: rgba(34, 197, 94, 0.45);
       --cyan: #38bdf8;
       --gold: #fbbf24;
+      --orange: #f97316;
       --danger: #ef4444;
       --text: #f8fafc;
       --text-muted: #94a3b8;
@@ -42,7 +43,7 @@
     #game-layout {
       width: 100%;
       height: 100%;
-      max-width: 480px;
+      max-width: 500px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -51,7 +52,7 @@
       box-shadow: 0 0 50px rgba(0, 0, 0, 0.85);
     }
 
-    /* Single-Tier Glass Header */
+    /* Sleek Clean Header */
     header {
       padding: 10px 14px;
       padding-top: env(safe-area-inset-top, 10px);
@@ -98,7 +99,7 @@
       border: 1px solid var(--border-color);
       padding: 4px 8px;
       border-radius: 12px;
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       font-weight: 800;
       display: flex;
       align-items: center;
@@ -110,7 +111,7 @@
       color: var(--gold);
     }
     .stat-val.cyan { color: var(--cyan); }
-    .stat-val.red { color: var(--danger); }
+    .stat-val.orange { color: var(--orange); }
 
     .header-btns {
       display: flex;
@@ -149,7 +150,7 @@
       display: block;
     }
 
-    /* Floating In-Game HUD (Ammo & Duck Meter) */
+    /* Floating Ammo & Reload Bar */
     .hud-bottom-bar {
       position: absolute;
       bottom: 12px;
@@ -158,56 +159,85 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      pointer-events: none;
       z-index: 20;
     }
 
     .ammo-card {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       border: 1px solid var(--border-color);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
       padding: 6px 12px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       gap: 6px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      pointer-events: none;
     }
 
-    .ammo-icon {
-      font-size: 1.1rem;
-      letter-spacing: 2px;
+    .ammo-shells {
+      display: flex;
+      gap: 4px;
     }
 
-    .duck-progress-card {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid var(--border-color);
-      backdrop-filter: blur(8px);
-      padding: 6px 10px;
-      border-radius: 14px;
+    .shell-pip {
+      width: 10px;
+      height: 20px;
+      border-radius: 3px;
+      background: linear-gradient(to top, #dc2626, #ef4444);
+      border: 1px solid #fca5a5;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .shell-pip.empty {
+      background: rgba(71, 85, 105, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+      opacity: 0.4;
+    }
+
+    .reload-btn {
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      border: 1.5px solid #fdba74;
+      border-radius: 12px;
+      padding: 8px 16px;
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+      touch-action: manipulation;
       display: flex;
       align-items: center;
-      gap: 4px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      gap: 5px;
+    }
+    .reload-btn:active { transform: scale(0.94); }
+
+    /* Combo Banner */
+    .combo-banner {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1.5px solid var(--gold);
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: #fff;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      z-index: 25;
+      animation: comboPulse 0.4s ease-out;
     }
 
-    .duck-pip {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-      background: rgba(71, 85, 105, 0.6);
-      border: 1px solid var(--border-color);
-      transition: background 0.2s ease, transform 0.2s ease;
-    }
-    .duck-pip.hit {
-      background: #22c55e;
-      border-color: #4ade80;
-      box-shadow: 0 0 8px rgba(34, 197, 94, 0.6);
-      transform: scale(1.1);
-    }
-    .duck-pip.miss {
-      background: #ef4444;
-      border-color: #f87171;
+    @keyframes comboPulse {
+      0% { transform: translateX(-50%) scale(0.7); opacity: 0; }
+      50% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+      100% { transform: translateX(-50%) scale(1); opacity: 1; }
     }
 
     /* Modals & Overlays */
@@ -234,7 +264,7 @@
       border: 1.5px solid var(--border-color);
       border-radius: var(--radius);
       width: 100%;
-      max-width: 350px;
+      max-width: 360px;
       padding: 24px;
       text-align: center;
       box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8);
@@ -250,10 +280,57 @@
     }
 
     .modal-title {
-      font-size: 1.45rem;
+      font-size: 1.5rem;
       font-weight: 900;
       color: #fff;
     }
+
+    .mode-select-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 4px 0;
+    }
+
+    .mode-btn {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1.5px solid var(--border-color);
+      padding: 10px 8px;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .mode-btn.active {
+      border-color: var(--gold);
+      background: rgba(245, 158, 11, 0.18);
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-action {
+      height: 48px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: 1px solid #4ade80;
+      border-radius: 12px;
+      color: #fff;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 0 16px var(--accent-glow);
+      touch-action: manipulation;
+    }
+    .btn-action:active { transform: scale(0.96); }
 
     .modal-stats-grid {
       background: rgba(15, 23, 42, 0.7);
@@ -275,29 +352,11 @@
     .stat-label { font-size: 0.7rem; color: #94a3b8; font-weight: 700; }
     .stat-value-large { font-family: ui-monospace, SFMono-Regular, monospace; font-size: 1.25rem; font-weight: 900; color: var(--gold); }
 
-    .btn-action {
-      height: 46px;
-      background: linear-gradient(135deg, #f59e0b, #ea580c);
-      border: 1px solid #fdba74;
-      border-radius: 12px;
-      color: #fff;
-      font-weight: 900;
-      font-size: 0.98rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
-      touch-action: manipulation;
-    }
-    .btn-action:active { transform: scale(0.96); }
-
     /* Muzzle Flash Overlay */
     #flashOverlay {
       position: absolute;
       inset: 0;
-      background: rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.65);
       pointer-events: none;
       opacity: 0;
       transition: opacity 0.05s ease;
@@ -311,7 +370,7 @@
     <header>
       <div class="brand-group">
         <div class="brand-badge">🦆</div>
-        <span>Duck Hunt Pro</span>
+        <span>Duck Hunt Frenzy</span>
       </div>
 
       <div class="stats-hub">
@@ -319,9 +378,13 @@
           <span>⭐</span>
           <span class="stat-val" id="scoreText">0</span>
         </div>
-        <div class="stat-chip" title="Current Wave">
-          <span>🌊</span>
-          <span class="stat-val cyan" id="waveText">WAVE 1</span>
+        <div class="stat-chip" title="Timer / Wave">
+          <span id="modeIcon">⏱️</span>
+          <span class="stat-val cyan" id="timerOrWaveText">60s</span>
+        </div>
+        <div class="stat-chip" title="Combo">
+          <span>🔥</span>
+          <span class="stat-val orange" id="comboText">x1</span>
         </div>
       </div>
 
@@ -337,28 +400,52 @@
       <canvas id="gameCanvas"></canvas>
       <div id="flashOverlay"></div>
 
-      <!-- In-Game HUD: Ammo & Duck Hits -->
+      <!-- Combo Alert Banner -->
+      <div class="combo-banner" id="comboBanner">
+        <span id="comboIcon">🔥</span>
+        <span id="comboBannerText">DOUBLE HIT! x2</span>
+      </div>
+
+      <!-- Bottom HUD: 5-Shot Ammo & Quick Reload -->
       <div class="hud-bottom-bar">
         <div class="ammo-card">
-          <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 800;">SHOTS:</span>
-          <span class="ammo-icon" id="ammoDisplay">💥💥💥</span>
+          <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 800;">AMMO:</span>
+          <div class="ammo-shells" id="ammoShellsContainer">
+            <div class="shell-pip"></div>
+            <div class="shell-pip"></div>
+            <div class="shell-pip"></div>
+            <div class="shell-pip"></div>
+            <div class="shell-pip"></div>
+          </div>
         </div>
 
-        <div class="duck-progress-card" id="duckPipsContainer">
-          <!-- 10 wave pips generated dynamically -->
-        </div>
+        <button class="reload-btn" id="reloadBtn">
+          ⚡ RELOAD
+        </button>
       </div>
 
       <!-- Start Game Modal -->
       <div class="modal-overlay open" id="startModal">
         <div class="modal-card">
-          <div style="font-size: 3.5rem;">🦆🌾🐕</div>
-          <div class="modal-title">Duck Hunt Master Pro</div>
+          <div style="font-size: 3.2rem;">🦆✨🌾</div>
+          <div class="modal-title">Duck Hunt Frenzy Pro</div>
           <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">
-            Aim and tap the flying ducks before they escape across the marsh horizon! 3 shotgun shells per round. Watch out for fast golden bonus birds!
+            Flocks of ducks are taking off across the marsh! Tap ducks to shoot, build combos, and pop golden bonus birds!
           </p>
-          <button class="btn-action" id="playNowBtn" style="margin-top: 6px;">
-            🎯 Start Hunt
+
+          <div class="mode-select-grid">
+            <div class="mode-btn active" id="modeTimeAttack">
+              <span style="font-size: 1.3rem;">⚡</span>
+              <span>60s Frenzy</span>
+            </div>
+            <div class="mode-btn" id="modeClassicWaves">
+              <span style="font-size: 1.3rem;">🌊</span>
+              <span>10 Waves</span>
+            </div>
+          </div>
+
+          <button class="btn-action" id="playNowBtn">
+            🎯 Play Now
           </button>
         </div>
       </div>
@@ -367,7 +454,7 @@
       <div class="modal-overlay" id="gameOverModal">
         <div class="modal-card">
           <div style="font-size: 3rem;" id="gameOverIcon">🏆</div>
-          <div class="modal-title" id="gameOverTitle">Hunt Complete!</div>
+          <div class="modal-title" id="gameOverTitle">Frenzy Complete!</div>
           <div class="modal-stats-grid">
             <div class="modal-stat-item">
               <span class="stat-label">FINAL SCORE</span>
@@ -382,12 +469,12 @@
               <span class="stat-value-large" id="ducksBaggedText" style="color: var(--accent);">0</span>
             </div>
             <div class="modal-stat-item">
-              <span class="stat-label">WAVE REACHED</span>
-              <span class="stat-value-large" id="finalWaveText">1</span>
+              <span class="stat-label">MAX COMBO</span>
+              <span class="stat-value-large" id="maxComboText" style="color: var(--orange);">x1</span>
             </div>
           </div>
           <button class="btn-action" id="retryBtn">
-            🔄 Hunt Again
+            🔄 Play Again
           </button>
         </div>
       </div>
@@ -397,14 +484,14 @@
         <div class="modal-card">
           <div class="modal-title">How to Play 🦆</div>
           <div style="font-size: 0.82rem; line-height: 1.5; color: #cbd5e1; text-align: left; display: flex; flex-direction: column; gap: 8px;">
-            <p>🎯 <strong>Aim & Shoot:</strong> Tap directly on flying ducks or click with your mouse cursor.</p>
-            <p>💥 <strong>Limited Ammo:</strong> You have <code>3 Shots</code> per flight. Reload happens automatically each wave.</p>
-            <p>🦆 <strong>Duck Species:</strong>
-              <br>• 🟢 <strong>Green Mallard:</strong> Standard speed (100 PTS)
-              <br>• 🔴 <strong>Redhead Swift:</strong> High-speed zigzag (250 PTS)
-              <br>• 👑 <strong>Golden King:</strong> Ultra-fast bonus bird (500 PTS + 1 Shell)
+            <p>🎯 <strong>Tap Anywhere to Shoot:</strong> Large forgiving hitboxes make popping ducks super smooth and satisfying on mobile.</p>
+            <p>⚡ <strong>Quick Reload:</strong> 5 shots in your magazine. Tap <code>⚡ RELOAD</code> or tap when empty to instantly chamber 5 fresh shells.</p>
+            <p>🔥 <strong>Combo Multipliers:</strong> Shoot consecutive ducks without missing to multiply your score up to <code>x5</code>!</p>
+            <p>🦆 <strong>Duck Types:</strong>
+              <br>• 🟢 <strong>Mallard:</strong> 100 PTS
+              <br>• 🔴 <strong>Redhead Swift:</strong> 250 PTS
+              <br>• 👑 <strong>Golden King:</strong> 500 PTS + instant ammo reload
             </p>
-            <p>🐕 <strong>Hunting Dog:</strong> Collects your prize upon hits or chuckles if ducks fly away!</p>
           </div>
           <button class="btn-action" id="closeHelpBtn" style="margin-top: 4px;">Got It 👍</button>
         </div>
@@ -438,21 +525,20 @@
         if (!this.ctx) return;
         const t = this.ctx.currentTime;
 
-        // Bass Impact
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(160, t);
-        osc.frequency.exponentialRampToValueAtTime(25, t + 0.18);
-        gain.gain.setValueAtTime(0.4, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.frequency.setValueAtTime(170, t);
+        osc.frequency.exponentialRampToValueAtTime(25, t + 0.16);
+        gain.gain.setValueAtTime(0.35, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.18);
+        osc.stop(t + 0.16);
 
-        // Muzzle Crack Noise
-        const bufferSize = this.ctx.sampleRate * 0.12;
+        // Muzzle noise burst
+        const bufferSize = this.ctx.sampleRate * 0.1;
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -461,11 +547,48 @@
         const noise = this.ctx.createBufferSource();
         const noiseGain = this.ctx.createGain();
         noise.buffer = buffer;
-        noiseGain.gain.setValueAtTime(0.35, t);
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        noiseGain.gain.setValueAtTime(0.3, t);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
         noise.connect(noiseGain);
         noiseGain.connect(this.ctx.destination);
         noise.start(t);
+      }
+
+      playReload() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [0, 0.1].forEach((off, idx) => {
+          const t = this.ctx.currentTime + off;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(idx === 0 ? 300 : 580, t);
+          gain.gain.setValueAtTime(0.18, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.08);
+        });
+      }
+
+      playDuckHit() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.exponentialRampToValueAtTime(140, t + 0.18);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.18);
       }
 
       playQuack() {
@@ -476,90 +599,32 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(320, t);
-        osc.frequency.linearRampToValueAtTime(240, t + 0.08);
-        gain.gain.setValueAtTime(0.12, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+        osc.frequency.setValueAtTime(360, t);
+        osc.frequency.linearRampToValueAtTime(260, t + 0.07);
+        gain.gain.setValueAtTime(0.09, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(t);
-        osc.stop(t + 0.12);
+        osc.stop(t + 0.07);
       }
 
-      playDuckHit() {
+      playComboBonus() {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-        const t = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(540, t);
-        osc.frequency.exponentialRampToValueAtTime(120, t + 0.22);
-        gain.gain.setValueAtTime(0.25, t);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(t);
-        osc.stop(t + 0.22);
-      }
-
-      playDogBark() {
-        if (!this.enabled) return;
-        this.init();
-        if (!this.ctx) return;
-        [0, 0.12].forEach((offset) => {
-          const t = this.ctx.currentTime + offset;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(400, t);
-          osc.frequency.exponentialRampToValueAtTime(180, t + 0.09);
-          gain.gain.setValueAtTime(0.2, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + 0.09);
-        });
-      }
-
-      playVictoryFanfare() {
-        if (!this.enabled) return;
-        this.init();
-        if (!this.ctx) return;
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((freq, i) => {
-          const t = this.ctx.currentTime + i * 0.09;
+        [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+          const t = this.ctx.currentTime + idx * 0.06;
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.18, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+          gain.gain.setValueAtTime(0.16, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
           osc.start(t);
-          osc.stop(t + 0.16);
-        });
-      }
-
-      playDogChuckle() {
-        if (!this.enabled) return;
-        this.init();
-        if (!this.ctx) return;
-        [320, 260, 320, 260].forEach((freq, idx) => {
-          const t = this.ctx.currentTime + idx * 0.09;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.1, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + 0.07);
+          osc.stop(t + 0.12);
         });
       }
     }
@@ -567,7 +632,7 @@
     const audio = new DuckHuntAudio();
 
     /* ==========================================================================
-       DUCK HUNT MASTER PRO ENGINE (HTML5 CANVAS)
+       DUCK HUNT FRENZY PRO ENGINE (FAST, SATISFYING, ACTION PACKED)
        ========================================================================== */
     class DuckHuntGame {
       constructor() {
@@ -575,13 +640,18 @@
         this.ctx = this.canvas.getContext('2d');
         this.flash = document.getElementById('flashOverlay');
 
+        this.mode = 'time_attack'; // 'time_attack' | 'classic_waves'
         this.score = 0;
+        this.combo = 1;
+        this.maxCombo = 1;
+        this.timeLeft = 60;
         this.wave = 1;
         this.maxWaves = 10;
-        this.totalShotsFired = 0;
-        this.totalDucksHit = 0;
-        this.ammo = 3;
-        this.maxAmmo = 3;
+        this.totalShots = 0;
+        this.totalHits = 0;
+
+        this.ammo = 5;
+        this.maxAmmo = 5;
 
         this.isPlaying = false;
         this.isPaused = false;
@@ -590,29 +660,28 @@
         this.ducks = [];
         this.particles = [];
         this.floatingTexts = [];
-        this.wavePips = [];
+        this.spawnTimer = 0;
 
-        // Dog companion state
+        // Dog Companion (Active in marsh)
         this.dog = {
-          x: 0,
+          x: 40,
           y: 0,
-          w: 60,
-          h: 56,
-          state: 'idle', // 'sniff', 'jump', 'hold_duck', 'laugh', 'hidden'
-          timer: 0,
-          targetY: 0
+          w: 50,
+          h: 46,
+          targetY: 0,
+          state: 'marsh_watch', // 'marsh_watch', 'cheer'
+          timer: 0
         };
 
-        this.crosshair = { x: -100, y: -100, visible: false };
-
         this.clouds = [
-          { x: 30, y: 50, speed: 0.15, scale: 1.1 },
-          { x: 220, y: 90, speed: 0.22, scale: 0.8 },
-          { x: 380, y: 40, speed: 0.12, scale: 1.3 }
+          { x: 30, y: 50, speed: 0.18, scale: 1.1 },
+          { x: 240, y: 90, speed: 0.25, scale: 0.8 },
+          { x: 390, y: 40, speed: 0.14, scale: 1.3 }
         ];
 
+        this.crosshair = { x: -100, y: -100, visible: false, pulse: 0 };
+
         this.initCanvas();
-        this.initPips();
         this.bindEvents();
         this.lastTime = performance.now();
         this.animate(this.lastTime);
@@ -632,32 +701,22 @@
         resize();
       }
 
-      initPips() {
-        const container = document.getElementById('duckPipsContainer');
-        container.innerHTML = '';
-        this.wavePips = [];
-        for (let i = 0; i < 10; i++) {
-          const pip = document.createElement('div');
-          pip.className = 'duck-pip';
-          container.appendChild(pip);
-          this.wavePips.push(pip);
-        }
-      }
-
       bindEvents() {
-        const triggerShoot = (clientX, clientY) => {
+        const handleShoot = (clientX, clientY) => {
           if (!this.isPlaying || this.isPaused || this.isGameOver) return;
           const rect = this.canvas.getBoundingClientRect();
           const x = clientX - rect.left;
           const y = clientY - rect.top;
           this.crosshair.x = x;
           this.crosshair.y = y;
+          this.crosshair.visible = true;
+          this.crosshair.pulse = 1.0;
           this.shoot(x, y);
         };
 
         this.canvas.addEventListener('pointerdown', (e) => {
           e.preventDefault();
-          triggerShoot(e.clientX, e.clientY);
+          handleShoot(e.clientX, e.clientY);
         });
 
         this.canvas.addEventListener('pointermove', (e) => {
@@ -670,6 +729,20 @@
         this.canvas.addEventListener('pointerleave', () => {
           this.crosshair.visible = false;
         });
+
+        document.getElementById('reloadBtn').onclick = () => this.reload();
+
+        document.getElementById('modeTimeAttack').onclick = () => {
+          this.mode = 'time_attack';
+          document.getElementById('modeTimeAttack').classList.add('active');
+          document.getElementById('modeClassicWaves').classList.remove('active');
+        };
+
+        document.getElementById('modeClassicWaves').onclick = () => {
+          this.mode = 'classic_waves';
+          document.getElementById('modeClassicWaves').classList.add('active');
+          document.getElementById('modeTimeAttack').classList.remove('active');
+        };
 
         document.getElementById('playNowBtn').onclick = () => this.startGame();
         document.getElementById('retryBtn').onclick = () => this.startGame();
@@ -686,15 +759,29 @@
         document.getElementById('startModal').classList.remove('open');
         document.getElementById('gameOverModal').classList.remove('open');
         this.score = 0;
+        this.combo = 1;
+        this.maxCombo = 1;
+        this.timeLeft = (this.mode === 'time_attack') ? 60 : 0;
         this.wave = 1;
-        this.totalShotsFired = 0;
-        this.totalDucksHit = 0;
+        this.totalShots = 0;
+        this.totalHits = 0;
+        this.ammo = this.maxAmmo;
+        this.ducks = [];
+        this.particles = [];
+        this.floatingTexts = [];
+        this.spawnTimer = 0;
+
         this.isPlaying = true;
         this.isGameOver = false;
         this.isPaused = false;
 
-        this.initPips();
-        this.startWaveIntro();
+        document.getElementById('modeIcon').textContent = (this.mode === 'time_attack') ? '⏱️' : '🌊';
+
+        // Spawn initial flock of ducks immediately!
+        for (let i = 0; i < 3; i++) {
+          this.spawnSingleDuck();
+        }
+
         this.updateUI();
       }
 
@@ -704,228 +791,206 @@
         document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
       }
 
-      startWaveIntro() {
+      reload() {
+        if (this.ammo === this.maxAmmo) return;
         this.ammo = this.maxAmmo;
-        this.ducks = [];
+        audio.playReload();
+        this.addFloatingText('RELOADED! ⚡', this.width * 0.5, this.height * 0.75, '#38bdf8');
         this.updateUI();
-
-        // Dog intro animation
-        this.dog.x = this.width * 0.2;
-        this.dog.y = this.height * 0.72;
-        this.dog.state = 'sniff';
-        this.dog.timer = 1.2;
-        audio.playDogBark();
       }
 
-      spawnDucksForWave() {
-        const duckCount = (this.wave >= 4 && Math.random() > 0.3) ? 2 : 1;
-        const baseSpeed = 2.4 + (this.wave * 0.45);
+      spawnSingleDuck() {
+        const randType = Math.random();
+        let type = 'green';
+        let pts = 100;
+        let speed = 2.2 + Math.random() * 1.5;
 
-        for (let i = 0; i < duckCount; i++) {
-          const randType = Math.random();
-          let type = 'green';
-          let pts = 100;
-          let speedMult = 1.0;
-
-          if (randType < 0.15) {
-            type = 'gold'; // bonus fast
-            pts = 500;
-            speedMult = 1.55;
-          } else if (randType < 0.45) {
-            type = 'red'; // fast erratic
-            pts = 250;
-            speedMult = 1.28;
-          }
-
-          const startLeft = Math.random() > 0.5;
-          this.ducks.push({
-            x: startLeft ? -30 : this.width + 30,
-            y: this.height * 0.55 + (Math.random() * 40),
-            w: 48,
-            h: 40,
-            vx: (startLeft ? 1 : -1) * baseSpeed * speedMult,
-            vy: -(Math.random() * 1.8 + 2.0),
-            type,
-            pts,
-            alive: true,
-            flapping: 0,
-            wingUp: true,
-            quackTimer: Math.random() * 1.5,
-            escaped: false,
-            fallVy: 0
-          });
+        if (randType < 0.18) {
+          type = 'gold'; // bonus super fast
+          pts = 500;
+          speed = 4.2 + Math.random() * 1.2;
+        } else if (randType < 0.48) {
+          type = 'red'; // fast zigzag
+          pts = 250;
+          speed = 3.2 + Math.random() * 1.4;
         }
+
+        const startLeft = Math.random() > 0.5;
+        this.ducks.push({
+          x: startLeft ? -20 : this.width + 20,
+          y: this.height * 0.45 + Math.random() * (this.height * 0.25),
+          w: 52,
+          h: 44,
+          vx: (startLeft ? 1 : -1) * speed,
+          vy: -(1.5 + Math.random() * 2.2),
+          type,
+          pts,
+          alive: true,
+          flapping: Math.random() * Math.PI,
+          wingUp: true,
+          quackTimer: Math.random() * 2.0,
+          lifespan: 8.0 + Math.random() * 4.0, // generous time in air
+          fallVy: 0
+        });
+
+        audio.playQuack();
       }
 
       shoot(x, y) {
-        if (this.ammo <= 0) return;
+        if (this.ammo <= 0) {
+          this.reload();
+          return;
+        }
 
         this.ammo--;
-        this.totalShotsFired++;
+        this.totalShots++;
         audio.playGunshot();
 
         // Muzzle Flash
         this.flash.style.opacity = '1';
-        setTimeout(() => this.flash.style.opacity = '0', 50);
+        setTimeout(() => this.flash.style.opacity = '0', 45);
 
-        // Shell Ejection Particle
-        this.particles.push({
-          x: this.width * 0.5 + (Math.random() - 0.5) * 40,
-          y: this.height - 30,
-          vx: (Math.random() - 0.5) * 3,
-          vy: -(Math.random() * 4 + 3),
-          size: 6,
-          color: '#fbbf24',
-          alpha: 1,
-          life: 0.6
-        });
+        // Generous Hit Detection Radius (Super friendly for touchscreens!)
+        let hitDuck = null;
+        for (let i = this.ducks.length - 1; i >= 0; i--) {
+          const d = this.ducks[i];
+          if (!d.alive) continue;
 
-        // Hit Detection against flying ducks
-        let hitAny = false;
-        this.ducks.forEach(d => {
-          if (!d.alive || d.escaped) return;
-
-          const hitRadius = d.w * 0.65;
+          const hitRadius = d.w * 0.95; // generous hit zone
           const dist = Math.hypot(x - d.x, y - d.y);
 
           if (dist < hitRadius) {
-            d.alive = false;
-            d.fallVy = 1.5;
-            hitAny = true;
-            this.totalDucksHit++;
-            this.score += d.pts;
-
-            if (d.type === 'gold') {
-              this.ammo = Math.min(this.maxAmmo, this.ammo + 1); // bonus shell
-            }
-
-            audio.playDuckHit();
-            this.addFloatingText(`+${d.pts} ${d.type.toUpperCase()}!`, d.x, d.y - 10, d.type === 'gold' ? '#fbbf24' : '#22c55e');
-
-            // Feathers burst
-            for (let i = 0; i < 8; i++) {
-              this.particles.push({
-                x: d.x,
-                y: d.y,
-                vx: (Math.random() - 0.5) * 5,
-                vy: (Math.random() - 0.5) * 5,
-                size: 4 + Math.random() * 4,
-                color: d.type === 'gold' ? '#fbbf24' : d.type === 'red' ? '#ef4444' : '#22c55e',
-                alpha: 1,
-                life: 0.8
-              });
-            }
+            hitDuck = d;
+            break;
           }
-        });
+        }
+
+        if (hitDuck) {
+          hitDuck.alive = false;
+          hitDuck.fallVy = 2.0;
+          this.totalHits++;
+
+          const gainedPts = hitDuck.pts * this.combo;
+          this.score += gainedPts;
+
+          if (hitDuck.type === 'gold') {
+            this.ammo = this.maxAmmo; // Instant magazine refill on gold duck!
+            audio.playComboBonus();
+            this.addFloatingText(`+${gainedPts} GOLD RUSH! 👑`, hitDuck.x, hitDuck.y - 15, '#fbbf24');
+          } else {
+            audio.playDuckHit();
+            this.addFloatingText(`+${gainedPts} ${this.combo > 1 ? `x${this.combo}!` : ''}`, hitDuck.x, hitDuck.y - 15, hitDuck.type === 'red' ? '#f87171' : '#4ade80');
+          }
+
+          // Increase Combo
+          this.combo++;
+          if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+          if (this.combo >= 2) this.showComboBanner(`COMBO x${this.combo}! 🔥`);
+
+          // Feather explosion particles
+          for (let i = 0; i < 10; i++) {
+            this.particles.push({
+              x: hitDuck.x,
+              y: hitDuck.y,
+              vx: (Math.random() - 0.5) * 6,
+              vy: (Math.random() - 0.5) * 6,
+              size: 4 + Math.random() * 4,
+              color: hitDuck.type === 'gold' ? '#fbbf24' : hitDuck.type === 'red' ? '#ef4444' : '#22c55e',
+              alpha: 1,
+              life: 0.7
+            });
+          }
+
+          // Dog cheers
+          this.dog.state = 'cheer';
+          this.dog.timer = 1.0;
+        } else {
+          // Miss resets combo
+          if (this.combo > 1) {
+            this.addFloatingText('COMBO LOST', x, y - 10, '#94a3b8');
+          }
+          this.combo = 1;
+        }
 
         this.updateUI();
+      }
 
-        // If all ammo used and ducks remain alive, trigger escape
-        if (this.ammo === 0 && !hitAny) {
-          this.ducks.forEach(d => {
-            if (d.alive) {
-              d.vy = -6; // fly away fast
-              d.escaped = true;
-            }
-          });
-        }
+      showComboBanner(text) {
+        const banner = document.getElementById('comboBanner');
+        document.getElementById('comboBannerText').textContent = text;
+        banner.style.display = 'flex';
+        clearTimeout(this.comboTimeout);
+        this.comboTimeout = setTimeout(() => banner.style.display = 'none', 1400);
       }
 
       update(dt) {
         if (!this.isPlaying || this.isPaused || this.isGameOver) return;
 
-        // Clouds movement
+        // Mode Timer Countdown
+        if (this.mode === 'time_attack') {
+          this.timeLeft -= dt;
+          if (this.timeLeft <= 0) {
+            this.timeLeft = 0;
+            this.triggerGameOver();
+          }
+        }
+
+        // Continual Duck Spawner (Ensures the sky is always full of action!)
+        this.spawnTimer += dt;
+        const aliveDucks = this.ducks.filter(d => d.alive).length;
+        if (aliveDucks < 3 && this.spawnTimer > 1.0) {
+          this.spawnSingleDuck();
+          this.spawnTimer = 0;
+        }
+
+        // Update Clouds
         this.clouds.forEach(c => {
           c.x += c.speed;
           if (c.x > this.width + 60) c.x = -60;
         });
 
-        // Dog intro animation update
-        if (this.dog.state === 'sniff') {
-          this.dog.timer -= dt;
-          if (this.dog.timer <= 0) {
-            this.dog.state = 'jump';
-            this.dog.timer = 0.6;
-          }
-        } else if (this.dog.state === 'jump') {
-          this.dog.timer -= dt;
-          this.dog.y += 1.8;
-          if (this.dog.timer <= 0) {
-            this.dog.state = 'hidden';
-            this.spawnDucksForWave();
-          }
-        } else if (this.dog.state === 'hold_duck' || this.dog.state === 'laugh') {
-          this.dog.timer -= dt;
-          if (this.dog.timer <= 0) {
-            this.dog.state = 'hidden';
-            this.advanceWave();
-          }
-        }
-
         // Update Ducks
-        let allDucksDone = (this.ducks.length > 0);
+        for (let i = this.ducks.length - 1; i >= 0; i--) {
+          const d = this.ducks[i];
 
-        this.ducks.forEach(d => {
           if (d.alive) {
-            d.quackTimer -= dt;
-            if (d.quackTimer <= 0) {
-              audio.playQuack();
-              d.quackTimer = 1.5 + Math.random() * 2;
-            }
-
-            d.flapping += dt * 12;
+            d.lifespan -= dt;
+            d.flapping += dt * 14;
             d.wingUp = Math.sin(d.flapping) > 0;
 
             d.x += d.vx;
             d.y += d.vy;
 
-            // Bounce off side marsh edges unless escaping
-            if (!d.escaped) {
-              if (d.x < 20 || d.x > this.width - 20) d.vx *= -1;
-              if (d.y < 40) d.vy = Math.abs(d.vy) * 0.8;
-              if (d.y > this.height * 0.68) d.vy = -Math.abs(d.vy);
+            // Marsh bounding reflections (gentle bounces keeping them in play)
+            if (d.x < 20 || d.x > this.width - 20) d.vx *= -1;
+            if (d.y < 45) d.vy = Math.abs(d.vy);
+            if (d.y > this.height * 0.68) d.vy = -Math.abs(d.vy);
+
+            // If lifespan ends, duck takes off upward
+            if (d.lifespan <= 0) {
+              d.vy = -5.5;
             }
 
-            // Escaped off the top
-            if (d.y < -50) {
-              d.escaped = true;
-            } else {
-              allDucksDone = false;
+            if (d.y < -60) {
+              this.ducks.splice(i, 1);
             }
           } else {
-            // Duck falling down after being shot
-            d.fallVy += 0.35;
+            // Tumbling fall
+            d.fallVy += 0.4;
             d.y += d.fallVy;
-
-            if (d.y < this.height * 0.76) {
-              allDucksDone = false;
+            if (d.y > this.height * 0.8) {
+              this.ducks.splice(i, 1);
             }
-          }
-        });
-
-        // If wave turn is finished
-        if (allDucksDone && this.dog.state === 'hidden') {
-          const hitCount = this.ducks.filter(d => !d.alive).length;
-          const pipIdx = this.wave - 1;
-
-          if (hitCount > 0) {
-            if (this.wavePips[pipIdx]) this.wavePips[pipIdx].className = 'duck-pip hit';
-            this.dog.state = 'hold_duck';
-            this.dog.timer = 1.4;
-            this.dog.x = this.width * 0.5 - 30;
-            this.dog.y = this.height * 0.68;
-            audio.playVictoryFanfare();
-          } else {
-            if (this.wavePips[pipIdx]) this.wavePips[pipIdx].className = 'duck-pip miss';
-            this.dog.state = 'laugh';
-            this.dog.timer = 1.4;
-            this.dog.x = this.width * 0.5 - 30;
-            this.dog.y = this.height * 0.68;
-            audio.playDogChuckle();
           }
         }
 
-        // Particles & Floating texts
+        // Dog Animation
+        if (this.dog.timer > 0) {
+          this.dog.timer -= dt;
+          if (this.dog.timer <= 0) this.dog.state = 'marsh_watch';
+        }
+
+        // Particles & Floating Text
         for (let i = this.particles.length - 1; i >= 0; i--) {
           const pt = this.particles[i];
           pt.x += pt.vx;
@@ -940,40 +1005,35 @@
           ft.alpha -= dt / ft.life;
           if (ft.alpha <= 0) this.floatingTexts.splice(i, 1);
         }
-      }
 
-      advanceWave() {
-        if (this.wave >= this.maxWaves) {
-          this.triggerGameOver(true);
-        } else {
-          this.wave++;
-          this.startWaveIntro();
+        if (this.crosshair.pulse > 0) {
+          this.crosshair.pulse -= dt * 3;
         }
+
+        this.updateUI();
       }
 
-      triggerGameOver(victory = false) {
+      triggerGameOver() {
         this.isGameOver = true;
         this.isPlaying = false;
 
-        const accuracy = this.totalShotsFired > 0
-          ? Math.round((this.totalDucksHit / this.totalShotsFired) * 100)
+        const accuracy = this.totalShots > 0
+          ? Math.round((this.totalHits / this.totalShots) * 100)
           : 0;
 
         document.getElementById('finalScoreText').textContent = this.score;
         document.getElementById('accuracyText').textContent = `${accuracy}%`;
-        document.getElementById('ducksBaggedText').textContent = `${this.totalDucksHit}`;
-        document.getElementById('finalWaveText').textContent = `${this.wave}/${this.maxWaves}`;
+        document.getElementById('ducksBaggedText').textContent = `${this.totalHits}`;
+        document.getElementById('maxComboText').textContent = `x${this.maxCombo}`;
 
-        document.getElementById('gameOverTitle').textContent = victory ? '🎉 Master Marksman!' : 'Hunt Complete!';
-        document.getElementById('gameOverIcon').textContent = victory ? '👑' : '🦆';
-
+        audio.playComboBonus();
         document.getElementById('gameOverModal').classList.add('open');
       }
 
       addFloatingText(text, x, y, color = '#fbbf24') {
         this.floatingTexts.push({
           text, x, y,
-          vy: -1.2,
+          vy: -1.4,
           alpha: 1,
           color,
           life: 0.85
@@ -982,12 +1042,23 @@
 
       updateUI() {
         document.getElementById('scoreText').textContent = this.score;
-        document.getElementById('waveText').textContent = `WAVE ${this.wave}`;
+        document.getElementById('comboText').textContent = `x${this.combo}`;
 
-        let ammoStr = '';
-        for (let i = 0; i < this.ammo; i++) ammoStr += '💥';
-        for (let i = this.ammo; i < this.maxAmmo; i++) ammoStr += '🔘';
-        document.getElementById('ammoDisplay').textContent = ammoStr || 'EMPTY';
+        if (this.mode === 'time_attack') {
+          document.getElementById('timerOrWaveText').textContent = `${Math.ceil(this.timeLeft)}s`;
+        } else {
+          document.getElementById('timerOrWaveText').textContent = `WAVE ${this.wave}`;
+        }
+
+        // Ammo Pips
+        const pips = document.querySelectorAll('.shell-pip');
+        pips.forEach((pip, idx) => {
+          if (idx < this.ammo) {
+            pip.classList.remove('empty');
+          } else {
+            pip.classList.add('empty');
+          }
+        });
       }
 
       render() {
@@ -997,23 +1068,15 @@
 
         ctx.clearRect(0, 0, w, h);
 
-        // Sky Dynamic Gradient based on wave
+        // Sky Dynamic Gradient
         const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.75);
-        if (this.wave <= 3) {
-          skyGrad.addColorStop(0, '#38bdf8'); // Morning bright blue
-          skyGrad.addColorStop(1, '#bae6fd');
-        } else if (this.wave <= 7) {
-          skyGrad.addColorStop(0, '#f97316'); // Dusk orange
-          skyGrad.addColorStop(1, '#fed7aa');
-        } else {
-          skyGrad.addColorStop(0, '#0f172a'); // Night starry twilight
-          skyGrad.addColorStop(1, '#475569');
-        }
+        skyGrad.addColorStop(0, '#38bdf8');
+        skyGrad.addColorStop(1, '#bae6fd');
         ctx.fillStyle = skyGrad;
         ctx.fillRect(0, 0, w, h);
 
         // Clouds
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         this.clouds.forEach(c => {
           ctx.beginPath();
           ctx.arc(c.x, c.y, 22 * c.scale, 0, Math.PI * 2);
@@ -1022,26 +1085,25 @@
           ctx.fill();
         });
 
-        // Distant Mountain/Tree Silhouettes
+        // Distant Mountains
         ctx.fillStyle = '#1e3a5f';
         ctx.beginPath();
         ctx.moveTo(0, h * 0.72);
-        ctx.lineTo(w * 0.3, h * 0.65);
+        ctx.lineTo(w * 0.35, h * 0.64);
         ctx.lineTo(w * 0.7, h * 0.70);
-        ctx.lineTo(w, h * 0.64);
-        ctx.lineTo(w, h * 0.75);
-        ctx.lineTo(0, h * 0.75);
+        ctx.lineTo(w, h * 0.63);
+        ctx.lineTo(w, h * 0.76);
+        ctx.lineTo(0, h * 0.76);
         ctx.fill();
 
-        // Render Flying Ducks
+        // Render Ducks
         this.ducks.forEach(d => {
           ctx.save();
           ctx.translate(d.x, d.y);
 
           if (d.vx < 0 && d.alive) ctx.scale(-1, 1);
-          if (!d.alive) ctx.rotate(Math.PI * 0.75); // tumbled fall
+          if (!d.alive) ctx.rotate(Math.PI * 0.75);
 
-          // Duck Colors
           const bodyColor = d.type === 'gold' ? '#f59e0b' : d.type === 'red' ? '#dc2626' : '#15803d';
           const headColor = d.type === 'gold' ? '#fbbf24' : d.type === 'red' ? '#b91c1c' : '#166534';
           const beakColor = '#ea580c';
@@ -1049,130 +1111,82 @@
           // Body
           ctx.fillStyle = bodyColor;
           ctx.beginPath();
-          ctx.ellipse(0, 0, 20, 13, 0, 0, Math.PI * 2);
+          ctx.ellipse(0, 0, 22, 14, 0, 0, Math.PI * 2);
           ctx.fill();
 
           // Wing (Flapping)
           ctx.fillStyle = d.type === 'gold' ? '#d97706' : '#475569';
           ctx.beginPath();
           if (d.wingUp) {
-            ctx.ellipse(-2, -10, 12, 6, -Math.PI / 4, 0, Math.PI * 2);
+            ctx.ellipse(-3, -12, 13, 7, -Math.PI / 4, 0, Math.PI * 2);
           } else {
-            ctx.ellipse(-2, 6, 12, 6, Math.PI / 4, 0, Math.PI * 2);
+            ctx.ellipse(-3, 7, 13, 7, Math.PI / 4, 0, Math.PI * 2);
           }
           ctx.fill();
 
-          // Neck & Head
+          // Head
           ctx.fillStyle = headColor;
           ctx.beginPath();
-          ctx.arc(14, -6, 9, 0, Math.PI * 2);
+          ctx.arc(16, -7, 10, 0, Math.PI * 2);
           ctx.fill();
-
-          // White neck ring for standard mallard
-          if (d.type === 'green') {
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.arc(9, -2, 4, 0, Math.PI);
-            ctx.stroke();
-          }
 
           // Eye
           ctx.fillStyle = '#fff';
           ctx.beginPath();
-          ctx.arc(16, -8, 2.5, 0, Math.PI * 2);
+          ctx.arc(18, -9, 3, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = '#000';
           ctx.beginPath();
-          ctx.arc(17, -8, 1.2, 0, Math.PI * 2);
+          ctx.arc(19, -9, 1.5, 0, Math.PI * 2);
           ctx.fill();
 
           // Beak
           ctx.fillStyle = beakColor;
           ctx.beginPath();
-          ctx.moveTo(22, -8);
-          ctx.lineTo(30, -5);
-          ctx.lineTo(22, -3);
+          ctx.moveTo(24, -9);
+          ctx.lineTo(33, -6);
+          ctx.lineTo(24, -4);
           ctx.closePath();
           ctx.fill();
 
           ctx.restore();
         });
 
-        // Dog Companion Render
-        if (this.dog.state !== 'hidden') {
-          ctx.save();
-          ctx.translate(this.dog.x, this.dog.y);
-
-          // Dog Body (Golden Retriever brown)
-          ctx.fillStyle = '#b45309';
-          ctx.beginPath();
-          ctx.roundRect(-20, -15, 42, 34, 10);
-          ctx.fill();
-
-          // Head & Floppy Ears
-          ctx.fillStyle = '#92400e';
-          ctx.beginPath();
-          ctx.arc(2, -18, 14, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Ears
-          ctx.fillStyle = '#78350f';
-          ctx.beginPath();
-          ctx.ellipse(-10, -18, 5, 12, Math.PI / 8, 0, Math.PI * 2);
-          ctx.ellipse(14, -18, 5, 12, -Math.PI / 8, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Snout & Nose
-          ctx.fillStyle = '#d97706';
-          ctx.beginPath();
-          ctx.ellipse(2, -13, 8, 6, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#000';
-          ctx.beginPath();
-          ctx.arc(2, -16, 3, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Eyes
-          ctx.fillStyle = '#000';
-          ctx.beginPath();
-          ctx.arc(-3, -20, 2, 0, Math.PI * 2);
-          ctx.arc(7, -20, 2, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Duck in mouth if successful hit
-          if (this.dog.state === 'hold_duck') {
-            ctx.fillStyle = '#22c55e';
-            ctx.beginPath();
-            ctx.ellipse(18, -10, 10, 6, -Math.PI / 6, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#ea580c';
-            ctx.fillRect(26, -12, 6, 4);
-          }
-
-          // Laughing giggle emoji bubble if missed
-          if (this.dog.state === 'laugh') {
-            ctx.fillStyle = '#fff';
-            ctx.font = '22px sans-serif';
-            ctx.fillText('😂', 18, -32);
-          }
-
-          ctx.restore();
-        }
-
-        // Marsh Reeds & Foreground Grass
-        ctx.fillStyle = '#15803d';
+        // Dog Companion in Marsh Reeds
+        ctx.save();
+        ctx.translate(w * 0.18, h * 0.70);
+        ctx.fillStyle = '#b45309';
         ctx.beginPath();
-        ctx.rect(0, h * 0.74, w, h * 0.26);
+        ctx.roundRect(-16, -12, 34, 28, 8);
+        ctx.fill();
+        ctx.fillStyle = '#92400e';
+        ctx.beginPath();
+        ctx.arc(2, -14, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(-2, -15, 2, 0, Math.PI * 2);
+        ctx.arc(6, -15, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Tall Grass Blades
+        if (this.dog.state === 'cheer') {
+          ctx.fillStyle = '#fff';
+          ctx.font = '18px sans-serif';
+          ctx.fillText('🐶🏆', 14, -24);
+        }
+        ctx.restore();
+
+        // Marsh Reeds Foreground
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(0, h * 0.74, w, h * 0.26);
+
+        // Grass Blades
         ctx.strokeStyle = '#22c55e';
         ctx.lineWidth = 3;
-        for (let x = 8; x < w; x += 14) {
+        for (let x = 8; x < w; x += 12) {
           ctx.beginPath();
           ctx.moveTo(x, h * 0.77);
-          ctx.quadraticCurveTo(x + 6, h * 0.71, x + (x % 4 === 0 ? 10 : -4), h * 0.69);
+          ctx.quadraticCurveTo(x + 5, h * 0.71, x + (x % 4 === 0 ? 8 : -4), h * 0.69);
           ctx.stroke();
         }
 
@@ -1192,7 +1206,7 @@
           ctx.save();
           ctx.globalAlpha = Math.max(0, ft.alpha);
           ctx.fillStyle = ft.color;
-          ctx.font = '900 13px system-ui, sans-serif';
+          ctx.font = '900 14px system-ui, sans-serif';
           ctx.textAlign = 'center';
           ctx.shadowColor = '#000';
           ctx.shadowBlur = 6;
@@ -1200,29 +1214,33 @@
           ctx.restore();
         });
 
-        // Neon Glow Crosshair Cursor
+        // Crosshair Touch Indicator
         if (this.crosshair.visible && !this.isGameOver) {
           ctx.save();
           ctx.translate(this.crosshair.x, this.crosshair.y);
+
+          const scale = 1 + (this.crosshair.pulse || 0) * 0.4;
+          ctx.scale(scale, scale);
+
           ctx.strokeStyle = '#ef4444';
           ctx.lineWidth = 2;
           ctx.shadowColor = '#ef4444';
-          ctx.shadowBlur = 8;
+          ctx.shadowBlur = 10;
 
           ctx.beginPath();
-          ctx.arc(0, 0, 14, 0, Math.PI * 2);
+          ctx.arc(0, 0, 16, 0, Math.PI * 2);
           ctx.stroke();
 
           ctx.beginPath();
-          ctx.moveTo(-20, 0); ctx.lineTo(-6, 0);
-          ctx.moveTo(6, 0);   ctx.lineTo(20, 0);
-          ctx.moveTo(0, -20); ctx.lineTo(0, -6);
-          ctx.moveTo(0, 6);   ctx.lineTo(0, 20);
+          ctx.moveTo(-22, 0); ctx.lineTo(-8, 0);
+          ctx.moveTo(8, 0);   ctx.lineTo(22, 0);
+          ctx.moveTo(0, -22); ctx.lineTo(0, -8);
+          ctx.moveTo(0, 8);   ctx.lineTo(0, 22);
           ctx.stroke();
 
           ctx.fillStyle = '#ef4444';
           ctx.beginPath();
-          ctx.arc(0, 0, 2.5, 0, Math.PI * 2);
+          ctx.arc(0, 0, 3, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
