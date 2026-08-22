@@ -1,1140 +1,1089 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Color Switch — Levels & Lives</title>
-<style>
-  :root{
-    --primary:#3498db;
-    --accent:#6a11cb;
-    --card:#ffffff;
-    --bg-start:#1a1a2e;
-    --bg-end:#16213e;
-    --text-dark:#222;
-  }
-  html,body{
-    height:100%;
-    margin:0;
-    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    background: linear-gradient(to bottom, var(--bg-start), var(--bg-end));
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    overflow:hidden;
-    touch-action: manipulation;
-  }
-
-  .stage {
-    position:relative;
-    width:100%;
-    height:100%;
-    max-width:1000px;
-    max-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-  }
-
-  canvas {
-    width:100%;
-    height:100%;
-    display:block;
-    touch-action: none;
-  }
-
-  .topbar {
-    position:absolute;
-    top:10px;
-    left:12px;
-    right:12px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    pointer-events:none;
-    z-index:10;
-  }
-  .card {
-    pointer-events:auto;
-    background: var(--card);
-    color: var(--text-dark);
-    padding:8px 12px;
-    border-radius:12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-    display:flex;
-    gap:10px;
-    align-items:center;
-    font-weight:600;
-    font-size:16px;
-  }
-  .score {
-    min-width:86px;
-    text-align:center;
-  }
-
-  .lives {
-    display:flex;
-    gap:5px;
-    align-items:center;
-  }
-  .life {
-    width:12px;
-    height:12px;
-    border-radius:50%;
-    background:#e74c3c;
-  }
-  .life.lost {
-    background:#ccc;
-    opacity:0.5;
-  }
-
-  .icon-btn {
-    pointer-events:auto;
-    background:transparent;
-    border:none;
-    padding:8px;
-    border-radius:10px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    font-size:18px;
-  }
-  .info {
-    position:absolute;
-    top:14px;
-    right:14px;
-    pointer-events:auto;
-    width:44px;
-    height:44px;
-    border-radius:12px;
-    background: rgba(255,255,255,0.95);
-    box-shadow:0 6px 18px rgba(0,0,0,0.12);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:700;
-    color:var(--accent);
-    font-size:18px;
-    z-index:10;
-  }
-
-  .overlay {
-    position:absolute;
-    inset:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:20;
-    pointer-events:auto;
-    background: rgba(0,0,0,0.7);
-  }
-  .panel {
-    width:min(92%,420px);
-    background:var(--card);
-    color:var(--text-dark);
-    padding:24px;
-    border-radius:20px;
-    text-align:center;
-    box-shadow:0 14px 40px rgba(0,0,0,0.25);
-    transform: translateY(0);
-    animation: panelAppear 0.3s ease-out;
-  }
-  @keyframes panelAppear {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .panel h1 { margin-bottom:8px; font-size:24px; }
-  .panel p { margin:10px 0 18px; font-size:15px; color:#333; line-height:1.4; }
-  .btn-row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px; }
-  .btn {
-    border:0;
-    padding:12px 20px;
-    border-radius:14px;
-    font-weight:700;
-    cursor:pointer;
-    min-width:120px;
-    font-size:16px;
-    transition: transform 0.1s, box-shadow 0.2s;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    touch-action: manipulation;
-  }
-  .btn:active {
-    transform: scale(0.96);
-  }
-  .btn.primary { background:var(--primary); color:#fff; }
-  .btn.secondary { background:var(--accent); color:#fff; }
-
-  .hint {
-    position:absolute;
-    bottom:16px;
-    left:50%;
-    transform:translateX(-50%);
-    background:rgba(255,255,255,0.92);
-    padding:8px 16px;
-    border-radius:12px;
-    box-shadow:0 8px 20px rgba(0,0,0,0.12);
-    font-weight:600;
-    font-size:14px;
-    z-index:10;
-    transition: opacity 0.3s;
-    text-align:center;
-    max-width:90%;
-  }
-
-  .palette {
-    display:flex;
-    gap:8px;
-    justify-content:center;
-    margin:12px 0;
-  }
-  .dot {
-    width:32px; height:32px; border-radius:50%;
-    box-shadow:0 4px 12px rgba(0,0,0,0.15);
-  }
-
-  .game-stats {
-    margin-top: 12px;
-    font-size: 14px;
-    color: #666;
-  }
-  .level-indicator {
-    margin-top: 8px;
-    font-weight: bold;
-    color: var(--primary);
-  }
-
-  @media (max-width:420px){
-    .card { font-size:14px; padding:6px 10px; }
-    .panel h1 { font-size:20px; }
-    .panel p { font-size:14px; }
-    .btn { padding:10px 16px; min-width:110px; font-size:15px; }
-    .hint { font-size:13px; padding:6px 12px; }
-  }
-  
-  @media (max-height:600px){
-    .hint { display:none; }
-    .topbar { top:5px; }
-  }
-</style>
-
-<script>
-/* ==================== PRODUCTION WEB AUDIO SYNTHESIZER ==================== */
-window.Sound = window.Sound || {
-  ctx: null,
-  muted: false,
-  init() {
-    if (!this.ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) this.ctx = new AudioCtx();
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Color Switch Pro — Neon Arcade Odyssey</title>
+  <style>
+    :root {
+      --bg-dark: #0a0a14;
+      --surface-glass: rgba(15, 23, 42, 0.88);
+      --surface-card: rgba(30, 41, 59, 0.85);
+      --surface-border: rgba(255, 255, 255, 0.14);
+      --c-yellow: #facc15;
+      --c-cyan: #38bdf8;
+      --c-magenta: #f43f5e;
+      --c-purple: #a855f7;
+      --gold: #fbbf24;
+      --gold-glow: rgba(251, 191, 36, 0.5);
+      --emerald: #10b981;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --shadow-lg: 0 14px 32px -4px rgba(0, 0, 0, 0.75);
+      --radius: 16px;
     }
-    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
-  },
-  toggle() { this.muted = !this.muted; return !this.muted; },
-  play(type) {
-    if (this.muted) return;
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      switch(type) {
-        case 'tap': case 'click': case 'select':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-          gain.gain.setValueAtTime(0.12, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'jump': case 'flap': case 'bounce':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(220, now);
-          osc.frequency.exponentialRampToValueAtTime(650, now + 0.12);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now); osc.stop(now + 0.12); break;
-        case 'spring':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(200, now);
-          osc.frequency.exponentialRampToValueAtTime(950, now + 0.2);
-          gain.gain.setValueAtTime(0.22, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'score': case 'point': case 'coin':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, now);
-          osc.frequency.setValueAtTime(659.25, now + 0.08);
-          gain.gain.setValueAtTime(0.18, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
-          osc.start(now); osc.stop(now + 0.18); break;
-        case 'match': case 'clear': case 'pop':
-          osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now);
-          osc.frequency.setValueAtTime(554.37, now + 0.06); osc.frequency.setValueAtTime(659.25, now + 0.12);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
-          osc.start(now); osc.stop(now + 0.22); break;
-        case 'move': case 'slide': case 'step':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(320, now);
-          osc.frequency.exponentialRampToValueAtTime(420, now + 0.05);
-          gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05); break;
-        case 'shoot': case 'laser':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, now);
-          osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
-          gain.gain.setValueAtTime(0.15, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-          osc.start(now); osc.stop(now + 0.1); break;
-        case 'hit': case 'crash': case 'gameover': case 'fail':
-          osc.type = 'sawtooth'; osc.frequency.setValueAtTime(260, now);
-          osc.frequency.exponentialRampToValueAtTime(70, now + 0.35);
-          gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
-          osc.start(now); osc.stop(now + 0.35); break;
-        case 'correct': case 'success':
-          osc.type = 'sine'; osc.frequency.setValueAtTime(587.33, now);
-          osc.frequency.setValueAtTime(880.00, now + 0.1);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now); osc.stop(now + 0.25); break;
-        case 'error': case 'wrong':
-          osc.type = 'square'; osc.frequency.setValueAtTime(160, now);
-          osc.frequency.setValueAtTime(130, now + 0.08);
-          gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now); osc.stop(now + 0.2); break;
-        case 'win': case 'victory':
-          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-            const o = this.ctx.createOscillator();
-            const g = this.ctx.createGain();
-            o.type = 'triangle';
-            o.frequency.setValueAtTime(freq, now + i * 0.09);
-            g.gain.setValueAtTime(0.18, now + i * 0.09);
-            g.gain.linearRampToValueAtTime(0.01, now + i * 0.09 + 0.22);
-            o.connect(g); g.connect(this.ctx.destination);
-            o.start(now + i * 0.09); o.stop(now + i * 0.09 + 0.22);
-          }); break;
-        default:
-          osc.type = 'sine'; osc.frequency.setValueAtTime(440, now);
-          gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now); osc.stop(now + 0.05);
-      }
-    } catch(e) {}
-  }
-};
-['click', 'touchstart', 'keydown'].forEach(evt => {
-  window.addEventListener(evt, () => { if (window.Sound) window.Sound.init(); }, { once: true });
-});
-</script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      background: var(--bg-dark);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: var(--text);
+    }
+
+    #game-app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Two-Tier Responsive Header */
+    header {
+      padding: 8px 12px;
+      padding-top: env(safe-area-inset-top, 8px);
+      background: var(--surface-glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 40;
+      flex-shrink: 0;
+    }
+
+    .header-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      background: conic-gradient(from 0deg, var(--c-yellow), var(--c-magenta), var(--c-purple), var(--c-cyan), var(--c-yellow));
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+    }
+
+    .controls-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    button {
+      background: rgba(51, 65, 85, 0.75);
+      color: var(--text);
+      border: 1px solid var(--surface-border);
+      padding: 6px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      touch-action: manipulation;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    button:active { transform: scale(0.95); }
+
+    button.primary {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      border-color: #38bdf8;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    button.btn-icon {
+      padding: 6px 10px;
+      font-size: 1rem;
+      min-width: 36px;
+      height: 34px;
+    }
+
+    /* Stats Hub Sub-Row */
+    .stats-sub-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.75);
+      padding: 4px 8px;
+      border-radius: 16px;
+      border: 1px solid var(--surface-border);
+      font-size: 0.76rem;
+      font-weight: 700;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .stat-val {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.cyan { color: var(--c-cyan); }
+    .stat-val.emerald { color: var(--emerald); }
+
+    /* Canvas Stage Container */
+    #canvas-container {
+      flex: 1;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Tap-To-Jump Banner */
+    .tap-hint-bar {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--surface-border);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      pointer-events: none;
+      animation: pulseHint 1.8s infinite ease-in-out;
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    @keyframes pulseHint {
+      0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(0.96); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.03); }
+    }
+
+    /* Modals & Overlays */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 16px;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1.5px solid var(--surface-border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 380px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      animation: modalSlide 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes modalSlide {
+      from { transform: scale(0.85) translateY(20px); opacity: 0; }
+      to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .modal-score-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .modal-score-num {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .palette-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 6px 0;
+    }
+
+    .palette-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .modal-btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .modal-btn-row button {
+      flex: 1;
+      height: 44px;
+      font-size: 0.95rem;
+      border-radius: 12px;
+    }
+  </style>
 </head>
 <body>
-  <div class="stage">
-    <canvas id="game" aria-label="Color Switch game"></canvas>
-
-    <div class="topbar" aria-hidden="false">
-      <div class="card score" id="scoreCard">Score: 0</div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <div class="card lives" id="livesCard">
-          <div class="life"></div>
-          <div class="life"></div>
-          <div class="life"></div>
+  <div id="game-app">
+    <!-- Two-Tier Header -->
+    <header>
+      <div class="header-top-row">
+        <div class="brand">
+          <div class="brand-icon">🔄</div>
+          <span>Color Switch Pro</span>
         </div>
-        <button id="soundToggle" class="icon-btn" title="Toggle sound" aria-label="sound toggle">
-          🔊
-        </button>
-      </div>
-    </div>
-
-    <button class="info" id="infoBtn" title="Instructions">i</button>
-
-    <div id="startOverlay" class="overlay">
-      <div class="panel">
-        <h1>Color Switch — Levels & Lives</h1>
-        <p>Control your ball precisely! You have 3 lives. Pass through matching colors to score. Each level gets faster and more challenging!</p>
-        <div class="palette" aria-hidden="true">
-          <div class="dot" style="background:#f1c40f"></div>
-          <div class="dot" style="background:#e74c3c"></div>
-          <div class="dot" style="background:#3498db"></div>
-          <div class="dot" style="background:#9b59b6"></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn primary" id="startBtn">Start Game</button>
-          <button class="btn secondary" id="howBtn">How to Play</button>
+        <div class="controls-top">
+          <button class="btn-icon" id="soundToggle" title="Toggle Sound">🔊</button>
+          <button class="btn-icon" id="pauseBtn" title="Pause Game">⏸️</button>
+          <button class="btn-icon primary" id="helpBtn" title="How to Play">❓</button>
         </div>
       </div>
-    </div>
 
-    <div id="gameOverOverlay" class="overlay" style="display:none;pointer-events:none;">
-      <div class="panel">
-        <h1>Game Over</h1>
-        <p>Your Score: <strong id="finalScore">0</strong></p>
-        <p class="game-stats">Level Reached: <span id="finalLevel">1</span></p>
-        <p class="game-stats">Rings Passed: <span id="ringsPassed">0</span></p>
-        <div class="btn-row">
-          <button class="btn primary" id="retryBtn">Play Again</button>
+      <div class="stats-sub-row">
+        <div class="stat-pill" title="Current Score">
+          <span>⭐</span>
+          <span class="stat-val gold" id="scoreText">0</span>
+        </div>
+        <div class="stat-pill" title="Stars Collected">
+          <span>🌟 Stars</span>
+          <span class="stat-val cyan" id="starsText">0</span>
+        </div>
+        <div class="stat-pill" title="Remaining Lives">
+          <span>❤️ Lives</span>
+          <span class="stat-val emerald" id="livesText">❤️❤️❤️</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Canvas Game Viewport -->
+    <div id="canvas-container">
+      <canvas id="gameCanvas"></canvas>
+      <div class="tap-hint-bar" id="tapHint">👆 Tap anywhere on screen to Jump!</div>
+
+      <!-- Start Overlay Screen -->
+      <div class="modal-overlay open" id="startModal">
+        <div class="modal-card">
+          <div style="font-size: 3rem;">🔄✨</div>
+          <div class="modal-title">Color Switch Odyssey</div>
+          <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.4;">
+            Tap to bounce your ball through matching colored spinning obstacles. Pass through matching colors to score and collect glowing stars!
+          </p>
+          <div class="palette-row">
+            <div class="palette-dot" style="background: var(--c-yellow); color: var(--c-yellow);"></div>
+            <div class="palette-dot" style="background: var(--c-magenta); color: var(--c-magenta);"></div>
+            <div class="palette-dot" style="background: var(--c-purple); color: var(--c-purple);"></div>
+            <div class="palette-dot" style="background: var(--c-cyan); color: var(--c-cyan);"></div>
+          </div>
+          <button class="primary" id="playNowBtn" style="height: 48px; font-size: 1.1rem; margin-top: 6px;">
+            🚀 Tap to Play
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Over Modal -->
+      <div class="modal-overlay" id="gameOverModal">
+        <div class="modal-card">
+          <div style="font-size: 3rem;">💥</div>
+          <div class="modal-title" style="color: var(--danger);">Game Over</div>
+          <div class="modal-score-box">
+            <div style="font-size: 0.8rem; color: #94a3b8;">FINAL SCORE</div>
+            <div class="modal-score-num" id="finalScoreText">0</div>
+            <div style="font-size: 0.75rem; color: #64748b;" id="highScoreText">Best: 0</div>
+          </div>
+          <div class="modal-btn-row">
+            <button class="primary" id="retryBtn">🔄 Play Again</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help / Instructions Modal -->
+      <div class="modal-overlay" id="helpModal">
+        <div class="modal-card">
+          <div class="modal-title">How to Play 🔄</div>
+          <div style="font-size: 0.85rem; line-height: 1.5; color: #cbd5e1; text-align: left; display: flex; flex-direction: column; gap: 8px;">
+            <p>👆 <strong>Tap anywhere on the screen</strong> (or press <code>Space</code> / <code>↑</code>) to make the ball hop upwards.</p>
+            <p>🎨 <strong>Color Match Rule:</strong> You can only pass through segments matching your ball's current color! Touching other colors costs 1 life.</p>
+            <p>🔮 <strong>Color Switcher Orbs:</strong> Passing through a multi-color switcher orb transforms your ball into a new color!</p>
+            <p>⭐ <strong>Stars:</strong> Collect golden stars inside obstacles to boost your score.</p>
+          </div>
+          <button class="primary" id="closeHelpBtn" style="height: 40px; margin-top: 6px;">Got It 👍</button>
         </div>
       </div>
     </div>
-
-    <div id="hint" class="hint">Tap to jump • Match colors to pass • You have 3 lives</div>
   </div>
 
-<script>
-/* -----------------------
-   Configuration & state
-   ----------------------- */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-let W = window.innerWidth;
-let H = window.innerHeight;
-const DPR = Math.min(window.devicePixelRatio || 1, 2);
-
-/* Colors used in the game */
-const COLORS = ['#f1c40f','#e74c3c','#3498db','#9b59b6']; // yellow, red, blue, purple
-
-/* Game parameters - Focus on control and timing */
-// Initialize with default values first
-let BALL_RADIUS = Math.max(8, Math.min(14, window.innerWidth * 0.03));
-let RING_RADIUS = Math.min(window.innerWidth * 0.25, 120);
-let RING_THICKNESS = Math.max(8, Math.min(14, window.innerWidth * 0.02));
-let BASE_OBSTACLE_SPACING = Math.max(200, window.innerHeight * 0.4);
-
-const GRAVITY = 0.15; // Very low gravity for maximum control
-const JUMP_V = -4; // Small, precise jumps
-let OBSTACLE_SPEED = 0.6; // Very slow movement
-let RING_SPIN_SPEED = 0.03; // Fast rotation for more color match opportunities
-
-function resize(){
-  W = window.innerWidth;
-  H = window.innerHeight;
-  
-  // Ensure canvas fits screen properly
-  canvas.style.width = W + 'px';
-  canvas.style.height = H + 'px';
-  canvas.width = Math.floor(W * DPR);
-  canvas.height = Math.floor(H * DPR);
-  ctx.setTransform(DPR,0,0,DPR,0,0);
-  
-  // Update game parameters based on new size
-  updateGameParameters();
-}
-
-// Update game parameters based on screen size
-function updateGameParameters() {
-  // Adjust sizes based on screen dimensions
-  BALL_RADIUS = Math.max(8, Math.min(14, W * 0.03));
-  RING_RADIUS = Math.min(W * 0.25, 120);
-  RING_THICKNESS = Math.max(8, Math.min(14, W * 0.02));
-  BASE_OBSTACLE_SPACING = Math.max(200, H * 0.4);
-}
-
-// Initialize on load
-resize();
-window.addEventListener('resize', resize);
-window.addEventListener('orientationchange', resize);
-
-/* Sound engine */
-let audioCtx = null;
-let soundEnabled = true;
-const soundToggleBtn = document.getElementById('soundToggle');
-soundToggleBtn.addEventListener('click', ()=>{
-  soundEnabled = !soundEnabled;
-  soundToggleBtn.textContent = soundEnabled ? '🔊' : '🔈';
-  if(soundEnabled && !audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-});
-
-function beep(freq=440,dur=0.06,vol=0.04,type='sine'){
-  if(!soundEnabled) return;
-  if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = type;
-  o.frequency.value = freq;
-  g.gain.value = vol;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime + dur);
-}
-
-/* ----- Game objects ----- */
-class Ball {
-  constructor(){
-    this.x = W * 0.5;
-    this.y = H * 0.8; // Start lower on screen
-    this.vy = 0;
-    this.radius = BALL_RADIUS;
-    this.colorIndex = Math.floor(Math.random() * COLORS.length); // Random start color
-    this.jumpCount = 0;
-    this.trail = [];
-    this.maxTrail = 5;
-    this.isJumping = false;
-    this.inRing = false; // Track if ball is inside a ring
-    this.currentRing = null; // Reference to the ring the ball is in
-    this.invincible = false; // For brief invincibility after losing a life
-    this.invincibleTimer = 0;
-    this.lastCollisionRing = null; // Track which ring we last collided with
-  }
-  
-  jump(){
-    if (this.isJumping && this.vy < -2) return; // Prevent excessive double jumps
-    
-    this.vy = JUMP_V;
-    this.isJumping = true;
-    this.jumpCount++;
-    beep(720,0.05,0.03,'triangle');
-    
-    // Add trail effect
-    this.trail.push({x: this.x, y: this.y, alpha: 0.7});
-    if(this.trail.length > this.maxTrail) {
-      this.trail.shift();
-    }
-  }
-  
-  update(dt){
-    // Update invincibility timer
-    if (this.invincible) {
-      this.invincibleTimer -= dt;
-      if (this.invincibleTimer <= 0) {
-        this.invincible = false;
+  <script>
+    /* ==========================================================================
+       SYNTHESIZED NEON ARCADE WEB AUDIO STUDIO
+       ========================================================================== */
+    class ColorSwitchAudio {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
       }
-    }
-    
-    // Update trail
-    for(let i = 0; i < this.trail.length; i++) {
-      this.trail[i].alpha -= 0.1;
-      if(this.trail[i].alpha <= 0) {
-        this.trail.splice(i, 1);
-        i--;
-      }
-    }
-    
-    // Apply gravity
-    this.vy += GRAVITY;
-    this.y += this.vy;
-    
-    // If inside a ring, reduce gravity for better control
-    if (this.inRing && this.currentRing) {
-      this.vy *= 0.9; // Slow down vertical movement when in ring
-    }
-    
-    // Reset jumping state when on ground
-    if (this.y + this.radius >= H) {
-      this.y = H - this.radius;
-      this.vy = 0;
-      this.isJumping = false;
-    }
-    
-    // Prevent going above screen
-    if(this.y - this.radius < 0){
-      this.y = this.radius;
-      this.vy = 0;
-    }
-  }
-  
-  draw(){
-    // Draw trail
-    for(let i = 0; i < this.trail.length; i++) {
-      const t = this.trail[i];
-      ctx.beginPath();
-      ctx.fillStyle = COLORS[this.colorIndex] + Math.round(t.alpha * 100).toString(16).padStart(2, '0');
-      ctx.arc(t.x, t.y, this.radius * 0.7, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    // Outer glow - with invincibility effect
-    if (this.invincible) {
-      // Blinking effect when invincible
-      const blink = Math.sin(Date.now() * 0.02) > 0;
-      if (blink) {
-        ctx.beginPath();
-        ctx.fillStyle = COLORS[this.colorIndex];
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-        ctx.fill();
-      }
-    } else {
-      ctx.beginPath();
-      ctx.fillStyle = COLORS[this.colorIndex];
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    // Highlight
-    ctx.beginPath();
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.arc(this.x - this.radius*0.3, this.y - this.radius*0.4, this.radius*0.5, 0, Math.PI*2);
-    ctx.fill();
-    
-    // Draw a small indicator when inside a ring
-    if (this.inRing) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = 2;
-      ctx.arc(this.x, this.y, this.radius + 5, 0, Math.PI*2);
-      ctx.stroke();
-    }
-  }
-  
-  setColor(colorIndex) {
-    this.colorIndex = colorIndex;
-    beep(600,0.03,0.02,'sine');
-  }
-  
-  // Make ball invincible for a short time
-  makeInvincible(duration = 1.5) {
-    this.invincible = true;
-    this.invincibleTimer = duration;
-  }
-  
-  // Check if ball is inside a ring (for waiting)
-  checkInsideRing(ring) {
-    const dx = this.x - ring.x;
-    const dy = this.y - ring.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const ringInner = ring.radius - ring.thickness/2;
-    const ringOuter = ring.radius + ring.thickness/2;
-    
-    return dist >= ringInner && dist <= ringOuter;
-  }
-}
 
-class Ring {
-  constructor(y, level=1){
-    this.x = W * 0.5;
-    this.y = y;
-    this.radius = RING_RADIUS;
-    this.thickness = RING_THICKNESS;
-    this.rotation = Math.random() * Math.PI * 2; // Random starting rotation
-    // Fast rotation that increases with level
-    this.spinSpeed = RING_SPIN_SPEED * (0.8 + level * 0.1) * (Math.random()>0.5?1:-1);
-    this.segments = COLORS.length;
-    this.passed = false;
-    this.failed = false; // Track if this ring has already caused a life loss
-    this.pulse = 0;
-    this.pulseDirection = 1;
-    this.level = level;
-    this.hasPickup = Math.random() < 0.25; // 25% chance to have a pickup
-    this.pickupColor = Math.floor(Math.random() * COLORS.length);
-    this.ballInside = false; // Track if ball is currently inside this ring
-  }
-  
-  update(dt){
-    this.y += OBSTACLE_SPEED;
-    
-    // Fast rotation for more color match opportunities
-    this.rotation += this.spinSpeed * dt * 60;
-    
-    // Pulsing effect for visual feedback
-    this.pulse += 0.05 * this.pulseDirection;
-    if(this.pulse > 0.5 || this.pulse < 0) {
-      this.pulseDirection *= -1;
-      this.pulse = Math.max(0, Math.min(0.5, this.pulse));
-    }
-  }
-  
-  draw(){
-    const seg = this.segments;
-    const anglePer = (Math.PI*2) / seg;
-    const pulseOffset = this.pulse * 2;
-    
-    // Draw ring segments
-    for(let i=0;i<seg;i++){
-      const a0 = this.rotation + i*anglePer;
-      const a1 = a0 + anglePer;
-      ctx.beginPath();
-      ctx.lineWidth = this.thickness + pulseOffset;
-      ctx.strokeStyle = COLORS[i % COLORS.length];
-      ctx.arc(this.x, this.y, this.radius, a0, a1, false);
-      ctx.stroke();
-    }
-    
-    // Draw pickup if this ring has one
-    if (this.hasPickup && !this.passed) {
-      const pickupAngle = this.rotation + this.pickupColor * anglePer + anglePer/2;
-      const pickupX = this.x + Math.cos(pickupAngle) * (this.radius + this.thickness);
-      const pickupY = this.y + Math.sin(pickupAngle) * (this.radius + this.thickness);
-      
-      ctx.beginPath();
-      ctx.fillStyle = COLORS[this.pickupColor];
-      ctx.arc(pickupX, pickupY, BALL_RADIUS * 0.6, 0, Math.PI*2);
-      ctx.fill();
-      
-      ctx.beginPath();
-      ctx.fillStyle = '#fff';
-      ctx.arc(pickupX, pickupY, BALL_RADIUS * 0.3, 0, Math.PI*2);
-      ctx.fill();
-    }
-    
-    // Visual feedback when ball is inside this ring
-    if (this.ballInside) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-      ctx.lineWidth = 3;
-      ctx.arc(this.x, this.y, this.radius + 10, 0, Math.PI*2);
-      ctx.stroke();
-    }
-  }
-  
-  // Get the color of the segment at the bottom of the ring
-  getBottomSegmentColor(){
-    let bottomAngle = -Math.PI/2;
-    let relativeAngle = bottomAngle - (this.rotation % (Math.PI*2));
-    if(relativeAngle < 0) relativeAngle += Math.PI*2;
-    const anglePer = (Math.PI*2) / this.segments;
-    const segIndex = Math.floor(relativeAngle / anglePer) % this.segments;
-    return segIndex;
-  }
-  
-  // Check if ball can pass through the ring
-  checkPassThrough(ball){
-    const dx = ball.x - this.x;
-    const dy = ball.y - this.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    const inner = this.radius - this.thickness/2 - ball.radius*0.9;
-    const outer = this.radius + this.thickness/2 + ball.radius*0.9;
-    
-    // Check if ball is inside the ring area
-    const isInside = dist >= inner && dist <= outer;
-    this.ballInside = isInside;
-    
-    if(isInside){
-      let a = Math.atan2(dy, dx);
-      if(a < 0) a += Math.PI*2;
-      let rel = a - (this.rotation % (Math.PI*2));
-      if(rel < 0) rel += Math.PI*2;
-      
-      // Define anglePer here to fix the error
-      const anglePer = (Math.PI*2) / this.segments;
-      const segIndex = Math.floor(rel / anglePer) % this.segments;
-      
-      // Return whether colors match and if there's a pickup to collect
-      const colorMatch = segIndex === ball.colorIndex;
-      let pickupCollected = false;
-      
-      // Check if we're collecting a pickup
-      if (colorMatch && this.hasPickup && !this.passed) {
-        const pickupAngle = this.rotation + this.pickupColor * anglePer + anglePer/2;
-        const pickupX = this.x + Math.cos(pickupAngle) * (this.radius + this.thickness);
-        const pickupY = this.y + Math.sin(pickupAngle) * (this.radius + this.thickness);
-        const pickupDist = Math.sqrt((ball.x - pickupX)**2 + (ball.y - pickupY)**2);
-        
-        if (pickupDist < (ball.radius + BALL_RADIUS * 0.6)) {
-          pickupCollected = true;
-          this.hasPickup = false;
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
         }
       }
-      
-      return {
-        passed: colorMatch,
-        pickupCollected: pickupCollected,
-        pickupColor: this.pickupColor,
-        isInside: isInside,
-        segmentIndex: segIndex
-      };
-    }
-    
-    return { passed: false, pickupCollected: false, isInside: false, segmentIndex: -1 };
-  }
-}
 
-/* ----- Game state ----- */
-let ball = null;
-let rings = [];
-let running = false;
-let score = 0;
-let level = 1;
-let lives = 3;
-let ringsPassed = 0;
-let lastSpawnY = -BASE_OBSTACLE_SPACING;
-let currentRingIndex = 0; // Track which ring the player is currently on
-const scoreCard = document.getElementById('scoreCard');
-const finalScoreEl = document.getElementById('finalScore');
-const finalLevelEl = document.getElementById('finalLevel');
-const ringsPassedEl = document.getElementById('ringsPassed');
-const livesCard = document.getElementById('livesCard');
-
-/* ----- Game functions ----- */
-function resetGame(){
-  ball = new Ball();
-  rings = [];
-  running = true;
-  score = 0;
-  level = 1;
-  lives = 3;
-  ringsPassed = 0;
-  currentRingIndex = 0;
-  lastSpawnY = -BASE_OBSTACLE_SPACING;
-  
-  // Reset game parameters
-  OBSTACLE_SPEED = 0.6;
-  RING_SPIN_SPEED = 0.03;
-  
-  // Reset lives display
-  updateLivesUI();
-  spawnInitial();
-  updateScoreUI();
-}
-
-function updateLivesUI() {
-  const lifeElements = livesCard.querySelectorAll('.life');
-  lifeElements.forEach((life, index) => {
-    if (index < lives) {
-      life.classList.remove('lost');
-    } else {
-      life.classList.add('lost');
-    }
-  });
-}
-
-function spawnInitial(){
-  let y = H * 0.2;
-  // Spawn rings closer together for continuous play
-  for (let i = 0; i < 6; i++) {
-    rings.push(new Ring(y, level));
-    y -= BASE_OBSTACLE_SPACING * 0.6; // Even closer spacing
-  }
-  lastSpawnY = y;
-}
-
-function spawnTop(){
-  const y = lastSpawnY - BASE_OBSTACLE_SPACING * 0.6; // Closer spacing
-  rings.push(new Ring(y, level));
-  lastSpawnY = y;
-}
-
-function updateLevel(){
-  // Level up every 5 rings
-  const newLevel = Math.floor(ringsPassed / 5) + 1;
-  if (newLevel > level) {
-    level = newLevel;
-    
-    // Increase difficulty with level
-    OBSTACLE_SPEED = 0.6 + (level * 0.1);
-    RING_SPIN_SPEED = 0.03 + (level * 0.005);
-    
-    // Visual and audio feedback for level up
-    beep(880,0.1,0.06,'sine');
-    setTimeout(() => beep(1100,0.08,0.05,'sine'), 100);
-  }
-}
-
-function updateScoreUI(){
-  scoreCard.textContent = `Score: ${score}`;
-}
-
-function loseLife() {
-  if (ball.invincible) return; // Can't lose life while invincible
-  
-  lives--;
-  updateLivesUI();
-  
-  if (lives <= 0) {
-    gameOver();
-  } else {
-    // Make ball invincible for a short time after losing a life
-    ball.makeInvincible(1.5);
-    beep(200,0.2,0.08,'square');
-  }
-}
-
-// Improved collision detection for life loss
-function checkCollision(ring, ball) {
-  // Only check collision with the current ring
-  const passResult = ring.checkPassThrough(ball);
-  
-  // Update ball's inside ring status
-  if (passResult.isInside) {
-    ball.inRing = true;
-    ball.currentRing = ring;
-  }
-  
-  // If ball is inside the ring and colors don't match, lose a life
-  if (passResult.isInside && !passResult.passed && !ring.failed && !ball.invincible) {
-    // Only lose a life if this is a new collision with this ring
-    if (ball.lastCollisionRing !== ring) {
-      ring.failed = true;
-      ball.lastCollisionRing = ring;
-      loseLife();
-      return false; // Collision occurred
-    }
-  }
-  
-  // If colors match and ring hasn't been passed yet
-  if (passResult.passed && !ring.passed) {
-    ring.passed = true;
-    score += 10;
-    ringsPassed++;
-    updateScoreUI();
-    updateLevel();
-    beep(560,0.04,0.02,'sine');
-    
-    // Change ball color if pickup was collected
-    if (passResult.pickupCollected) {
-      ball.setColor(passResult.pickupColor);
-      beep(950,0.06,0.04,'triangle');
-    }
-    
-    return true; // Successfully passed
-  }
-  
-  return null; // No collision or pass
-}
-
-/* ----- Input handling ----- */
-function pressJump(){
-  if(!running) return;
-  ball.jump();
-}
-
-window.addEventListener('keydown', (e)=>{
-  if(e.code === 'Space') {
-    e.preventDefault();
-    if(!running) return;
-    pressJump();
-  }
-});
-
-// Improved touch handling for mobile
-window.addEventListener('touchstart', (e)=>{
-  e.preventDefault();
-  if(!running) {
-    // If game not running, check if we're clicking on a button
-    const target = e.target;
-    if (!target.closest('.btn') && !target.closest('.info')) {
-      startGame();
-    }
-    return;
-  }
-  pressJump();
-}, {passive:false});
-
-window.addEventListener('mousedown', (e)=>{
-  if(!running) return;
-  pressJump();
-});
-
-/* UI controls */
-const startOverlay = document.getElementById('startOverlay');
-const startBtn = document.getElementById('startBtn');
-const howBtn = document.getElementById('howBtn');
-const infoBtn = document.getElementById('infoBtn');
-const gameOverOverlay = document.getElementById('gameOverOverlay');
-const retryBtn = document.getElementById('retryBtn');
-const hint = document.getElementById('hint');
-
-// Improved button event handling for mobile
-startBtn.addEventListener('click', startGame);
-startBtn.addEventListener('touchend', startGame);
-
-howBtn.addEventListener('click', showInstructions);
-howBtn.addEventListener('touchend', showInstructions);
-
-infoBtn.addEventListener('click', showInstructions);
-infoBtn.addEventListener('touchend', showInstructions);
-
-retryBtn.addEventListener('click', restartGame);
-retryBtn.addEventListener('touchend', restartGame);
-
-function showInstructions(){
-  startOverlay.style.display = 'flex';
-  const p = startOverlay.querySelector('.panel p');
-  p.textContent = 'Control your ball precisely with small jumps. You have 3 lives. Wait inside rings for your color to match the bottom segment. Pass through matching colors to score. Each level gets faster and more challenging!';
-}
-
-function startGame(){
-  startOverlay.style.display = 'none';
-  hint.style.opacity = '1';
-  resetGame();
-  beep(440,0.09,0.05,'sine');
-  setTimeout(() => beep(550,0.07,0.05,'sine'), 100);
-  setTimeout(() => beep(660,0.05,0.05,'sine'), 200);
-  requestAnimationFrame(loop);
-}
-
-function restartGame(){
-  gameOverOverlay.style.display = 'none';
-  gameOverOverlay.style.pointerEvents = 'none';
-  hint.style.opacity = '1';
-  startGame();
-}
-
-function gameOver(){
-  running = false;
-  beep(120,0.18,0.08,'square');
-  setTimeout(() => beep(90,0.15,0.06,'square'), 150);
-  
-  finalScoreEl.textContent = score;
-  finalLevelEl.textContent = level;
-  ringsPassedEl.textContent = ringsPassed;
-  gameOverOverlay.style.display = 'flex';
-  gameOverOverlay.style.pointerEvents = 'auto';
-  hint.style.opacity = '0';
-}
-
-/* ----- Main game loop ----- */
-let lastTime = performance.now();
-function loop(now){
-  const dt = Math.min(1/30, (now - lastTime) / 1000);
-  lastTime = now;
-  
-  // Clear canvas with a dark gradient
-  const gradient = ctx.createLinearGradient(0, 0, 0, H);
-  gradient.addColorStop(0, '#1a1a2e');
-  gradient.addColorStop(1, '#16213e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, W, H);
-  
-  // Draw background elements
-  drawBackground();
-
-  if(running){
-    ball.update(dt);
-    
-    // Improved ring spawning - always keep at least 7 rings on screen
-    if(rings.length < 7 || rings[rings.length-1].y > H * 0.1) {
-      spawnTop();
-    }
-    
-    // Reset ball's inside ring status
-    ball.inRing = false;
-    ball.currentRing = null;
-    
-    // Update rings and check for interactions
-    for(let i=rings.length-1;i>=0;i--){
-      const r = rings[i];
-      r.update(dt);
-      
-      // Only check collision with the current ring
-      if(i === currentRingIndex && !r.passed){
-        const result = checkCollision(r, ball);
-        
-        // If successfully passed, move to next ring
-        if (result === true) {
-          currentRingIndex++;
-        }
+      playJump() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, t);
+        osc.frequency.exponentialRampToValueAtTime(740, t + 0.08);
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.08);
       }
-      
-      // Remove offscreen rings
-      if(r.y - r.radius - r.thickness > H + 40){
-        rings.splice(i,1);
-        // Adjust current ring index if we're removing rings before the current one
-        if (i < currentRingIndex) {
-          currentRingIndex--;
-        }
+
+      playStar() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [880.00, 1174.66, 1760.00].forEach((f, idx) => {
+          const t = this.ctx.currentTime + idx * 0.05;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(f, t);
+          gain.gain.setValueAtTime(0.15, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.14);
+        });
+      }
+
+      playSwitchColor() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, idx) => {
+          const t = this.ctx.currentTime + idx * 0.04;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, t);
+          gain.gain.setValueAtTime(0.2, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + 0.18);
+        });
+      }
+
+      playHit() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, t);
+        osc.frequency.exponentialRampToValueAtTime(50, t + 0.25);
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.25);
       }
     }
-  }
 
-  // Draw game objects
-  for(const r of rings) r.draw();
-  if (ball) ball.draw();
-  
-  // Draw UI elements on canvas
-  drawLevelIndicator();
-  drawLivesIndicator();
+    const audio = new ColorSwitchAudio();
 
-  if(running) requestAnimationFrame(loop);
-}
+    /* ==========================================================================
+       COLOR SWITCH PRO GAME ENGINE
+       ========================================================================== */
+    const GAME_COLORS = ['#facc15', '#f43f5e', '#a855f7', '#38bdf8']; // Yellow, Magenta, Purple, Cyan
 
-function drawBackground(){
-  // Draw subtle grid pattern
-  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-  ctx.lineWidth = 1;
-  
-  // Vertical lines
-  for(let x = 0; x < W; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, H);
-    ctx.stroke();
-  }
-  
-  // Horizontal lines
-  for(let y = 0; y < H; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(W, y);
-    ctx.stroke();
-  }
-}
+    class ColorSwitchGame {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
 
-function drawLevelIndicator() {
-  // Show the current level at the top
-  ctx.fillStyle = 'white';
-  ctx.font = 'bold 16px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText(`Level ${level}`, W/2, 30);
-  
-  // Show progress to next level
-  const progress = ringsPassed % 5;
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fillRect(W/2 - 40, 35, 80, 6);
-  ctx.fillStyle = '#3498db';
-  ctx.fillRect(W/2 - 40, 35, (80 / 5) * progress, 6);
-}
+        this.score = 0;
+        this.starsCollected = 0;
+        this.lives = 3;
+        this.highScore = parseInt(localStorage.getItem('color_switch_highscore') || '0', 10);
 
-function drawLivesIndicator() {
-  // Show lives on the canvas as well (in case the top bar is not visible)
-  ctx.fillStyle = 'white';
-  ctx.font = '14px Arial';
-  ctx.textAlign = 'left';
-  ctx.fillText(`Lives: ${lives}`, 20, 30);
-}
+        this.isPlaying = false;
+        this.isPaused = false;
+        this.isGameOver = false;
 
-/* Start paused (show overlay) */
-showInstructions();
+        this.cameraY = 0;
+        this.particles = [];
+        this.floatingTexts = [];
+        this.obstacles = [];
+        this.switchers = [];
+        this.stars = [];
 
-/* Prevent scrolling on mobile while playing */
-document.addEventListener('touchmove', function(e){ 
-  if(running) e.preventDefault(); 
-}, {passive:false});
+        this.initCanvas();
+        this.bindEvents();
+        this.initGame();
+        this.lastTime = performance.now();
+        this.animate(this.lastTime);
+      }
 
-// Additional mobile optimizations
-document.addEventListener('DOMContentLoaded', function() {
-  // Prevent zoom on double-tap
-  document.addEventListener('touchend', function(e) {
-    if (running) {
-      e.preventDefault();
+      initCanvas() {
+        const resize = () => {
+          const rect = this.canvas.parentElement.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          this.width = rect.width;
+          this.height = rect.height;
+          this.canvas.width = rect.width * dpr;
+          this.canvas.height = rect.height * dpr;
+          this.ctx.scale(dpr, dpr);
+        };
+        window.addEventListener('resize', resize);
+        resize();
+      }
+
+      bindEvents() {
+        // Tap / Click to jump anywhere on the screen
+        const handleJumpInput = (e) => {
+          if (e.target.closest('button') || e.target.closest('.modal-overlay')) return;
+          if (e.type === 'touchstart') e.preventDefault();
+          this.jump();
+        };
+
+        this.canvas.addEventListener('touchstart', handleJumpInput, { passive: false });
+        this.canvas.addEventListener('mousedown', handleJumpInput);
+
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+            e.preventDefault();
+            this.jump();
+          }
+          if (e.code === 'KeyP') this.togglePause();
+        });
+
+        document.getElementById('playNowBtn').onclick = () => this.startGame();
+        document.getElementById('retryBtn').onclick = () => this.restartGame();
+        document.getElementById('soundToggle').onclick = () => {
+          audio.enabled = !audio.enabled;
+          document.getElementById('soundToggle').textContent = audio.enabled ? '🔊' : '🔇';
+        };
+        document.getElementById('pauseBtn').onclick = () => this.togglePause();
+        document.getElementById('helpBtn').onclick = () => document.getElementById('helpModal').classList.add('open');
+        document.getElementById('closeHelpBtn').onclick = () => document.getElementById('helpModal').classList.remove('open');
+      }
+
+      initGame() {
+        this.ball = {
+          x: this.width * 0.5,
+          y: this.height * 0.72,
+          r: 10,
+          vy: 0,
+          gravity: 0.38,
+          jumpPower: 7.6,
+          colorIdx: Math.floor(Math.random() * 4),
+          invulnerableTime: 0,
+          trail: []
+        };
+
+        this.cameraY = 0;
+        this.obstacles = [];
+        this.switchers = [];
+        this.stars = [];
+        this.particles = [];
+        this.floatingTexts = [];
+        this.highestObstacleY = this.ball.y - 180;
+
+        // Generate initial batch of varied obstacles
+        for (let i = 0; i < 6; i++) {
+          this.spawnNextObstacle();
+        }
+
+        this.updateUI();
+      }
+
+      spawnNextObstacle() {
+        const obsY = this.highestObstacleY;
+        const types = ['circle', 'square', 'cross', 'concentric'];
+        const type = types[Math.floor(Math.random() * types.length)];
+        const speed = (0.015 + Math.random() * 0.012) * (Math.random() > 0.5 ? 1 : -1);
+
+        this.obstacles.push({
+          type,
+          x: this.width * 0.5,
+          y: obsY,
+          size: Math.min(this.width * 0.32, 100),
+          angle: Math.random() * Math.PI * 2,
+          speed,
+          passed: false
+        });
+
+        // Spawn Star in the center of the obstacle
+        this.stars.push({
+          x: this.width * 0.5,
+          y: obsY,
+          r: 12,
+          collected: false
+        });
+
+        // Spawn Color Switcher Orb above the obstacle
+        this.switchers.push({
+          x: this.width * 0.5,
+          y: obsY - 140,
+          r: 12,
+          rotation: 0,
+          collected: false
+        });
+
+        this.highestObstacleY -= 280;
+      }
+
+      startGame() {
+        document.getElementById('startModal').classList.remove('open');
+        this.isPlaying = true;
+        this.isGameOver = false;
+        this.score = 0;
+        this.starsCollected = 0;
+        this.lives = 3;
+        this.initGame();
+        this.jump();
+      }
+
+      restartGame() {
+        document.getElementById('gameOverModal').classList.remove('open');
+        this.startGame();
+      }
+
+      togglePause() {
+        if (!this.isPlaying || this.isGameOver) return;
+        this.isPaused = !this.isPaused;
+        document.getElementById('pauseBtn').textContent = this.isPaused ? '▶️' : '⏸️';
+      }
+
+      jump() {
+        if (!this.isPlaying || this.isPaused || this.isGameOver) return;
+        this.ball.vy = -this.ball.jumpPower;
+        audio.playJump();
+
+        // Spawn jump ring particles
+        for (let i = 0; i < 4; i++) {
+          this.particles.push({
+            x: this.ball.x,
+            y: this.ball.y + this.ball.r,
+            vx: (Math.random() - 0.5) * 3,
+            vy: Math.random() * 2 + 1,
+            size: 3 + Math.random() * 3,
+            color: GAME_COLORS[this.ball.colorIdx],
+            alpha: 1,
+            life: 0.3
+          });
+        }
+      }
+
+      update(dt) {
+        if (!this.isPlaying || this.isPaused || this.isGameOver) return;
+
+        const b = this.ball;
+
+        // Ball Physics
+        b.vy += b.gravity;
+        b.y += b.vy;
+
+        if (b.invulnerableTime > 0) b.invulnerableTime -= dt;
+
+        // Trail
+        b.trail.push({ x: b.x, y: b.y, alpha: 0.6 });
+        if (b.trail.length > 6) b.trail.shift();
+
+        // Camera tracking (follows ball upwards)
+        const targetCamY = (this.height * 0.65) - b.y;
+        if (targetCamY > this.cameraY) {
+          this.cameraY += (targetCamY - this.cameraY) * 0.15;
+        }
+
+        // Spawn new obstacles as camera scrolls
+        const topVisibleY = -this.cameraY;
+        if (this.highestObstacleY > topVisibleY - 500) {
+          this.spawnNextObstacle();
+        }
+
+        // Update Obstacles Rotation & Collisions
+        this.obstacles.forEach(obs => {
+          obs.angle += obs.speed;
+
+          // Check if ball passed obstacle to award points
+          if (!obs.passed && b.y < obs.y - obs.size * 0.6) {
+            obs.passed = true;
+            this.score += 10;
+            this.addFloatingText('+10', obs.x, obs.y - 30, '#38bdf8');
+            this.updateUI();
+          }
+
+          // Check Obstacle Color Collisions
+          if (b.invulnerableTime <= 0) {
+            this.checkObstacleCollision(obs);
+          }
+        });
+
+        // Update Stars Collection
+        this.stars.forEach(s => {
+          if (s.collected) return;
+          const dist = Math.hypot(b.x - s.x, b.y - s.y);
+          if (dist < b.r + s.r) {
+            s.collected = true;
+            this.starsCollected++;
+            this.score += 25;
+            this.createExplosion(s.x, s.y, '#fbbf24', 12);
+            this.addFloatingText('+25 STAR ⭐', s.x, s.y - 15, '#fbbf24');
+            audio.playStar();
+            this.updateUI();
+          }
+        });
+
+        // Update Color Switchers
+        this.switchers.forEach(sw => {
+          if (sw.collected) return;
+          sw.rotation += dt * 4;
+          const dist = Math.hypot(b.x - sw.x, b.y - sw.y);
+          if (dist < b.r + sw.r) {
+            sw.collected = true;
+            let nextColor = Math.floor(Math.random() * 4);
+            if (nextColor === b.colorIdx) nextColor = (nextColor + 1) % 4;
+            b.colorIdx = nextColor;
+
+            this.createExplosion(sw.x, sw.y, GAME_COLORS[b.colorIdx], 16);
+            this.addFloatingText('COLOR SWITCH! 🎨', sw.x, sw.y - 18, GAME_COLORS[b.colorIdx]);
+            audio.playSwitchColor();
+          }
+        });
+
+        // Bottom Screen Fall Loss
+        const screenBottomY = this.height - this.cameraY;
+        if (b.y > screenBottomY + 40) {
+          this.loseLife();
+          if (this.lives > 0) {
+            b.y = screenBottomY - 140;
+            b.vy = -b.jumpPower * 0.9;
+          }
+        }
+
+        // Particle updates
+        this.updateParticles(dt);
+      }
+
+      checkObstacleCollision(obs) {
+        const b = this.ball;
+
+        if (obs.type === 'circle') {
+          const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
+          const innerR = obs.size - 12;
+          const outerR = obs.size + 12;
+
+          if (dist >= innerR && dist <= outerR) {
+            let angle = Math.atan2(b.y - obs.y, b.x - obs.x) - obs.angle;
+            angle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            const quadrant = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
+
+            if (quadrant !== b.colorIdx) {
+              this.loseLife();
+            }
+          }
+        } else if (obs.type === 'concentric') {
+          // Double Concentric Rings
+          [obs.size * 0.7, obs.size].forEach((rad, idx) => {
+            const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
+            if (dist >= rad - 10 && dist <= rad + 10) {
+              const ringAngle = obs.angle * (idx === 0 ? -1.3 : 1);
+              let angle = Math.atan2(b.y - obs.y, b.x - obs.x) - ringAngle;
+              angle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+              const quadrant = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
+
+              if (quadrant !== b.colorIdx) {
+                this.loseLife();
+              }
+            }
+          });
+        } else if (obs.type === 'square' || obs.type === 'cross') {
+          const dist = Math.hypot(b.x - obs.x, b.y - obs.y);
+          if (dist < obs.size * 1.1 && dist > obs.size * 0.5) {
+            let angle = Math.atan2(b.y - obs.y, b.x - obs.x) - obs.angle;
+            angle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+            const quadrant = Math.floor((angle / (Math.PI * 2)) * 4) % 4;
+
+            if (quadrant !== b.colorIdx) {
+              this.loseLife();
+            }
+          }
+        }
+      }
+
+      loseLife() {
+        this.lives--;
+        this.ball.invulnerableTime = 1.6;
+        this.createExplosion(this.ball.x, this.ball.y, GAME_COLORS[this.ball.colorIdx], 20);
+        audio.playHit();
+        this.updateUI();
+
+        if (this.lives <= 0) {
+          this.triggerGameOver();
+        } else {
+          this.addFloatingText('💔 -1 LIFE', this.ball.x, this.ball.y - 20, '#ef4444');
+        }
+      }
+
+      triggerGameOver() {
+        this.isGameOver = true;
+        this.isPlaying = false;
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('color_switch_highscore', this.highScore);
+        }
+        document.getElementById('finalScoreText').textContent = this.score;
+        document.getElementById('highScoreText').textContent = `Best: ${this.highScore}`;
+        document.getElementById('gameOverModal').classList.add('open');
+      }
+
+      createExplosion(x, y, color, count = 12) {
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 5;
+          this.particles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            size: 3 + Math.random() * 4,
+            color,
+            alpha: 1,
+            life: 0.5
+          });
+        }
+      }
+
+      addFloatingText(text, x, y, color = '#fbbf24') {
+        this.floatingTexts.push({
+          text, x, y,
+          vy: -1.6,
+          alpha: 1,
+          color,
+          life: 0.8
+        });
+      }
+
+      updateParticles(dt) {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const pt = this.particles[i];
+          pt.x += pt.vx;
+          pt.y += pt.vy;
+          pt.alpha -= dt / pt.life;
+          if (pt.alpha <= 0) this.particles.splice(i, 1);
+        }
+
+        for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+          const ft = this.floatingTexts[i];
+          ft.y += ft.vy;
+          ft.alpha -= dt / ft.life;
+          if (ft.alpha <= 0) this.floatingTexts.splice(i, 1);
+        }
+      }
+
+      updateUI() {
+        document.getElementById('scoreText').textContent = this.score;
+        document.getElementById('starsText').textContent = this.starsCollected;
+        document.getElementById('livesText').textContent = '❤️'.repeat(Math.max(0, this.lives)) || '💀';
+      }
+
+      render() {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Neon Radial Dark Background
+        const bgGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 50, w * 0.5, h * 0.5, w);
+        bgGrad.addColorStop(0, '#16192b');
+        bgGrad.addColorStop(1, '#090a12');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.save();
+        ctx.translate(0, this.cameraY);
+
+        // Draw Obstacles
+        this.obstacles.forEach(obs => {
+          this.renderObstacle(ctx, obs);
+        });
+
+        // Draw Stars
+        this.stars.forEach(s => {
+          if (s.collected) return;
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.fillStyle = '#fbbf24';
+          ctx.shadowColor = '#fbbf24';
+          ctx.shadowBlur = 14;
+
+          ctx.beginPath();
+          for (let i = 0; i < 5; i++) {
+            const rot = (i * Math.PI * 2) / 5 - Math.PI / 2;
+            const innRot = rot + Math.PI / 5;
+            ctx.lineTo(Math.cos(rot) * s.r, Math.sin(rot) * s.r);
+            ctx.lineTo(Math.cos(innRot) * (s.r * 0.45), Math.sin(innRot) * (s.r * 0.45));
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Draw Color Switchers
+        this.switchers.forEach(sw => {
+          if (sw.collected) return;
+          ctx.save();
+          ctx.translate(sw.x, sw.y);
+          ctx.rotate(sw.rotation);
+
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.fillStyle = GAME_COLORS[i];
+            ctx.moveTo(0, 0);
+            ctx.arc(0, 0, sw.r, (i * Math.PI) / 2, ((i + 1) * Math.PI) / 2);
+            ctx.closePath();
+            ctx.fill();
+          }
+
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(0, 0, sw.r * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Draw Player Ball & Trail
+        const b = this.ball;
+
+        // Trail
+        b.trail.forEach(t => {
+          ctx.save();
+          ctx.fillStyle = GAME_COLORS[b.colorIdx];
+          ctx.globalAlpha = t.alpha * 0.4;
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, b.r * 0.7, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Ball with invulnerability blink
+        if (b.invulnerableTime <= 0 || Math.floor(performance.now() / 80) % 2 === 0) {
+          ctx.save();
+          ctx.translate(b.x, b.y);
+          ctx.fillStyle = GAME_COLORS[b.colorIdx];
+          ctx.shadowColor = GAME_COLORS[b.colorIdx];
+          ctx.shadowBlur = 18;
+
+          ctx.beginPath();
+          ctx.arc(0, 0, b.r, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Shiny Glint
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.beginPath();
+          ctx.arc(-b.r * 0.3, -b.r * 0.3, b.r * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Draw Particles
+        this.particles.forEach(pt => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, pt.alpha);
+          ctx.fillStyle = pt.color;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+
+        // Draw Floating Point Texts
+        this.floatingTexts.forEach(ft => {
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, ft.alpha);
+          ctx.fillStyle = ft.color;
+          ctx.font = '900 14px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.shadowColor = '#000';
+          ctx.shadowBlur = 6;
+          ctx.fillText(ft.text, ft.x, ft.y);
+          ctx.restore();
+        });
+
+        ctx.restore();
+      }
+
+      renderObstacle(ctx, obs) {
+        ctx.save();
+        ctx.translate(obs.x, obs.y);
+
+        if (obs.type === 'circle') {
+          ctx.lineWidth = 14;
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = GAME_COLORS[i];
+            const startA = obs.angle + (i * Math.PI) / 2;
+            const endA = startA + Math.PI / 2;
+            ctx.arc(0, 0, obs.size, startA, endA);
+            ctx.stroke();
+          }
+        } else if (obs.type === 'concentric') {
+          [obs.size * 0.7, obs.size].forEach((rad, idx) => {
+            ctx.lineWidth = 12;
+            const ringAngle = obs.angle * (idx === 0 ? -1.3 : 1);
+            for (let i = 0; i < 4; i++) {
+              ctx.beginPath();
+              ctx.strokeStyle = GAME_COLORS[i];
+              const startA = ringAngle + (i * Math.PI) / 2;
+              const endA = startA + Math.PI / 2;
+              ctx.arc(0, 0, rad, startA, endA);
+              ctx.stroke();
+            }
+          });
+        } else if (obs.type === 'square') {
+          ctx.rotate(obs.angle);
+          ctx.lineWidth = 14;
+          const s = obs.size * 0.85;
+
+          const points = [
+            { x: -s, y: -s }, { x: s, y: -s },
+            { x: s, y: s }, { x: -s, y: s }
+          ];
+
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = GAME_COLORS[i];
+            const p1 = points[i];
+            const p2 = points[(i + 1) % 4];
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+          }
+        } else if (obs.type === 'cross') {
+          ctx.rotate(obs.angle);
+          ctx.lineWidth = 14;
+          ctx.lineCap = 'round';
+          const len = obs.size * 0.95;
+
+          for (let i = 0; i < 4; i++) {
+            ctx.beginPath();
+            ctx.strokeStyle = GAME_COLORS[i];
+            const rot = (i * Math.PI) / 2;
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(rot) * len, Math.sin(rot) * len);
+            ctx.stroke();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      animate(now) {
+        const dt = Math.min((now - this.lastTime) / 1000, 0.05);
+        this.lastTime = now;
+
+        this.update(dt);
+        this.render();
+
+        requestAnimationFrame(t => this.animate(t));
+      }
     }
-  }, { passive: false });
-  
-  // Prevent context menu on long press
-  document.addEventListener('contextmenu', function(e) {
-    if (running) {
-      e.preventDefault();
-    }
-  });
-});
 
-</script>
-
-<script data-sound-bound="true">
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('button, .btn, [role="button"]').forEach(btn => {
-    btn.addEventListener('click', () => { if(window.Sound) Sound.play('tap'); });
-  });
-});
-</script>
-
-
-<script>
-/* Universal Modern In-Game Modal Polyfill */
-window.showGameModal = function(title, msg, btnText = 'Continue', onConfirm = null) {
-  let modal = document.getElementById('brainsta-universal-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'brainsta-universal-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;font-family:\'Segoe UI\',system-ui,-apple-system,sans-serif;';
-    modal.innerHTML = '<div style="background:#ffffff;border-radius:24px;padding:24px;width:100%;max-width:360px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.25);animation:bumPop 0.25s ease-out;"><h3 id="bum-title" style="margin:0 0 10px;font-size:20px;font-weight:800;color:#1e1b4b;"></h3><p id="bum-msg" style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.5;"></p><button id="bum-btn" style="width:100%;padding:12px 18px;border:none;border-radius:14px;font-weight:700;font-size:15px;cursor:pointer;background:linear-gradient(135deg,#3498db,#2563eb);color:#ffffff;box-shadow:0 4px 14px rgba(52,152,219,0.35);transition:transform 0.1s;"></button></div><style>@keyframes bumPop{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}#bum-btn:active{transform:scale(0.97)}</style>';
-    document.body.appendChild(modal);
-  }
-  document.getElementById('bum-title').textContent = title || 'Notice';
-  document.getElementById('bum-msg').innerHTML = msg || '';
-  const btn = document.getElementById('bum-btn');
-  btn.textContent = btnText;
-  modal.style.display = 'flex';
-  btn.onclick = () => {
-    modal.style.display = 'none';
-    if (window.Sound) Sound.play('tap');
-    if (onConfirm) onConfirm();
-  };
-};
-window.alert = function(msg) {
-  window.showGameModal('Game Notification', msg, 'OK');
-};
-</script>
-
+    window.addEventListener('DOMContentLoaded', () => {
+      window.game = new ColorSwitchGame();
+    });
+  </script>
 </body>
 </html>
