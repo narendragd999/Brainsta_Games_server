@@ -381,7 +381,7 @@
             <p>🕹️ <strong>Movement:</strong> Use <code>← / →</code> arrow buttons, <code>A/D</code>, or tap the left/right screen half.</p>
             <p>🎯 <strong>Auto-Bounce:</strong> Landing on platforms from above automatically launches you upward.</p>
             <p>🔥 <strong>Shoot:</strong> Tap <code>🔥 Fire</code> (or press <code>Space</code> / tap upper screen) to pop monsters.</p>
-            <p>🚀 <strong>Power-Ups:</strong> Collect Springs, Propeller Hats, and Jetpacks for super altitude boosts!</p>
+            <p>🚀 <strong>Power-Ups:</strong> Collect Springs, Propeller Hats, and Jetpacks for controlled altitude boosts!</p>
           </div>
           <button class="btn-action" id="closeHelpBtn" style="margin-top: 4px;">Got It 👍</button>
         </div>
@@ -704,7 +704,22 @@
         this.updateUI();
       }
 
-      spawnPlatform() {
+      spawnPlatform(customY = null, customW = null) {
+        if (customY !== null) {
+          const w = customW || 90;
+          const x = Math.max(15, Math.min(this.width - w - 15, this.doodler.x - w * 0.5));
+          this.platforms.push({
+            x,
+            y: customY,
+            w,
+            h: 15,
+            type: 'normal',
+            vx: 0,
+            broken: false
+          });
+          return;
+        }
+
         const gap = 52 + Math.random() * 25;
         this.highestPlatformY -= gap;
 
@@ -746,7 +761,7 @@
           });
         }
 
-        if (type === 'normal' && Math.random() < 0.09) {
+        if (type === 'normal' && Math.random() < 0.08) {
           const powerTypes = ['jetpack', 'propeller', 'shield'];
           const pType = powerTypes[Math.floor(Math.random() * powerTypes.length)];
           this.items.push({
@@ -826,30 +841,41 @@
         if (d.x < -d.w * 0.5) d.x = this.width + d.w * 0.5;
         if (d.x > this.width + d.w * 0.5) d.x = -d.w * 0.5;
 
-        // Power-Up Handling
+        // Controlled Power-Up Physics (Smooth Flight & Soft Deceleration)
         if (d.powerup) {
           d.powerupTimer -= dt;
+
           if (d.powerup === 'jetpack') {
-            d.vy = -14;
+            // Smooth cruise speed (not crazy fast)
+            const targetSpeed = (d.powerupTimer < 0.8) ? -4.5 : -8.5;
+            d.vy = targetSpeed;
+
             for (let i = 0; i < 2; i++) {
               this.particles.push({
-                x: d.x + (Math.random() - 0.5) * 16,
+                x: d.x + (Math.random() - 0.5) * 14,
                 y: d.y + d.h * 0.4,
                 vx: (Math.random() - 0.5) * 2,
-                vy: Math.random() * 3 + 3,
-                size: 4 + Math.random() * 4,
+                vy: Math.random() * 2 + 2,
+                size: 3 + Math.random() * 3,
                 color: Math.random() > 0.5 ? '#f97316' : '#facc15',
                 alpha: 1,
-                life: 0.3
+                life: 0.25
               });
             }
           } else if (d.powerup === 'propeller') {
-            d.vy = -10;
+            const targetSpeed = (d.powerupTimer < 0.8) ? -3.5 : -6.0;
+            d.vy = targetSpeed;
           }
 
+          // When power-up ends, gently float & guarantee safe landing platform underneath
           if (d.powerupTimer <= 0) {
             d.powerup = null;
+            d.vy = -3.5; // Soft gentle float
             document.getElementById('powerUpIndicator').style.display = 'none';
+
+            // Guaranteed Landing Platform right under player's feet
+            this.spawnPlatform(d.y + 70, 100);
+            this.addFloatingText('SOFT LANDING 🪂', d.x, d.y - 20, '#22c55e');
           }
         } else {
           d.vy += d.gravity;
@@ -857,10 +883,10 @@
 
         d.y += d.vy;
 
-        // Smooth Camera Tracking
+        // Smooth Camera Tracking (No wild acceleration jumps)
         const targetCamY = (this.height * 0.55) - d.y;
         if (targetCamY > this.cameraY) {
-          this.cameraY += (targetCamY - this.cameraY) * 0.2;
+          this.cameraY += (targetCamY - this.cameraY) * 0.18;
         }
 
         // Height & Score Calculation
@@ -872,13 +898,13 @@
           this.updateUI();
         }
 
-        // Platform Generation
+        // Platform Generation ahead of camera
         const topViewY = -this.cameraY;
         while (this.highestPlatformY > topViewY - 300) {
           this.spawnPlatform();
         }
 
-        // Platform Collisions (Landing)
+        // Platform Collisions (Landing from above)
         if (d.vy > 0) {
           this.platforms.forEach(p => {
             if (p.broken) return;
@@ -933,12 +959,12 @@
               audio.playCoin();
             } else if (it.type === 'jetpack') {
               d.powerup = 'jetpack';
-              d.powerupTimer = 4.5;
+              d.powerupTimer = 3.5;
               this.showPowerUpUI('🚀', 'JETPACK FLIGHT');
               audio.playSpring();
             } else if (it.type === 'propeller') {
               d.powerup = 'propeller';
-              d.powerupTimer = 5.0;
+              d.powerupTimer = 4.0;
               this.showPowerUpUI('🌀', 'PROPELLER HAT');
               audio.playSpring();
             } else if (it.type === 'shield') {
@@ -1111,6 +1137,7 @@
           ctx.lineWidth = 2;
           ctx.stroke();
 
+          // Spring Coil on Spring platform
           if (p.type === 'spring') {
             ctx.fillStyle = '#facc15';
             ctx.fillRect(p.x + p.w * 0.5 - 6, p.y - 6, 12, 6);
@@ -1138,6 +1165,7 @@
             ctx.textBaseline = 'middle';
             ctx.fillText('$', 0, 1);
           } else {
+            // Power-up orb
             ctx.fillStyle = '#38bdf8';
             ctx.shadowColor = '#38bdf8';
             ctx.shadowBlur = 12;
@@ -1228,6 +1256,15 @@
         ctx.fillStyle = '#4d7c0f';
         ctx.fillRect(-d.w * 0.35, d.h * 0.45, 10, 8);
         ctx.fillRect(d.w * 0.1, d.h * 0.45, 10, 8);
+
+        // Jetpack / Propeller Visual on Doodler
+        if (d.powerup === 'jetpack') {
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(-d.w * 0.55, -d.h * 0.3, 8, 20);
+        } else if (d.powerup === 'propeller') {
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(-d.w * 0.2, -d.h * 0.65, 16, 6);
+        }
 
         // Shield Bubble
         if (d.shield) {
